@@ -16,7 +16,20 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PayrollExportController;
 use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\PositionController;
-use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Reports\AttendanceRecordReportController;
+use App\Http\Controllers\Reports\CandidateProfileReportController;
+use App\Http\Controllers\Reports\DocumentReportController;
+use App\Http\Controllers\Reports\EmployeeReportController;
+use App\Http\Controllers\Reports\JobRequisitionReportController;
+use App\Http\Controllers\Reports\LearningCourseReportController;
+use App\Http\Controllers\Reports\LeaveRequestReportController;
+use App\Http\Controllers\Reports\OffboardingTaskReportController;
+use App\Http\Controllers\Reports\OnboardingTaskReportController;
+use App\Http\Controllers\Reports\PayrollExportReportController;
+use App\Http\Controllers\Reports\PerformanceReviewReportController;
+use App\Http\Controllers\Reports\ReportCenterController;
+use App\Http\Controllers\Reports\TimesheetReportController;
+use App\Http\Controllers\Reports\WorkflowDefinitionReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
@@ -140,7 +153,137 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('document-types', DocumentTypeController::class);
     Route::resource('documents', DocumentController::class);
 
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::middleware([
+        'auth',
+        'verified',
+        'throttle:20,1',
+        // Add your permission middleware here if you have one, e.g.:
+        // 'permission:view reports'
+    ])->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportCenterController::class, 'index'])->name('index');
+
+        Route::prefix('employees')->name('employees.')->group(function () {
+            Route::get('master-list', [EmployeeReportController::class, 'masterList'])->name('master-list');
+            Route::get('active-inactive', [EmployeeReportController::class, 'activeInactive'])->name('active-inactive');
+            Route::get('headcount-by-department', [EmployeeReportController::class, 'headcountByDepartment'])->name('headcount-by-department');
+            Route::get('headcount-by-location', [EmployeeReportController::class, 'headcountByLocation'])->name('headcount-by-location');
+            Route::get('headcount-by-position', [EmployeeReportController::class, 'headcountByPosition'])->name('headcount-by-position');
+            Route::get('headcount-by-manager', [EmployeeReportController::class, 'headcountByManager'])->name('headcount-by-manager');
+            Route::get('new-hires-by-month', [EmployeeReportController::class, 'newHiresByMonth'])->name('new-hires-by-month');
+            Route::get('terminations-by-month', [EmployeeReportController::class, 'terminationsByMonth'])->name('terminations-by-month');
+            Route::get('tenure', [EmployeeReportController::class, 'tenure'])->name('tenure');
+            Route::get('birthdays', [EmployeeReportController::class, 'birthdays'])->name('birthdays');
+            Route::get('missing-profile-fields', [EmployeeReportController::class, 'missingProfileFields'])->name('missing-profile-fields');
+        });
+
+        Route::prefix('workflows')->name('workflows.')->group(function () {
+            Route::get('register', [WorkflowDefinitionReportController::class, 'register'])->name('register');
+            Route::get('by-module', [WorkflowDefinitionReportController::class, 'byModule'])->name('by-module');
+            Route::get('by-status', [WorkflowDefinitionReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-version', [WorkflowDefinitionReportController::class, 'byVersion'])->name('by-version');
+            Route::get('by-owner', [WorkflowDefinitionReportController::class, 'byOwner'])->name('by-owner');
+            Route::get('updated-trend', [WorkflowDefinitionReportController::class, 'updatedTrend'])->name('updated-trend');
+        });
+
+        Route::prefix('leave-requests')->name('leave-requests.')->group(function () {
+            Route::get('register', [LeaveRequestReportController::class, 'register'])->name('register');
+            Route::get('by-status', [LeaveRequestReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-type', [LeaveRequestReportController::class, 'byType'])->name('by-type');
+            Route::get('by-employee', [LeaveRequestReportController::class, 'byEmployee'])->name('by-employee');
+            Route::get('by-month', [LeaveRequestReportController::class, 'byMonth'])->name('by-month');
+            Route::get('pending-approvals', [LeaveRequestReportController::class, 'pendingApprovals'])->name('pending-approvals');
+            Route::get('duration-summary', [LeaveRequestReportController::class, 'durationSummary'])->name('duration-summary');
+        });
+
+        Route::prefix('attendance-records')->name('attendance-records.')->group(function () {
+            Route::get('register', [AttendanceRecordReportController::class, 'register'])->name('register');
+            Route::get('by-status', [AttendanceRecordReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-date', [AttendanceRecordReportController::class, 'byDate'])->name('by-date');
+            Route::get('missing-clock-in', [AttendanceRecordReportController::class, 'missingClockIn'])->name('missing-clock-in');
+            Route::get('missing-clock-out', [AttendanceRecordReportController::class, 'missingClockOut'])->name('missing-clock-out');
+            Route::get('late-arrivals', [AttendanceRecordReportController::class, 'lateArrivals'])->name('late-arrivals');
+            Route::get('exceptions', [AttendanceRecordReportController::class, 'exceptions'])->name('exceptions');
+        });
+
+        Route::prefix('timesheets')->name('timesheets.')->group(function () {
+            Route::get('register', [TimesheetReportController::class, 'register'])->name('register');
+            Route::get('by-status', [TimesheetReportController::class, 'byStatus'])->name('by-status');
+            Route::get('pending-approvals', [TimesheetReportController::class, 'pendingApprovals'])->name('pending-approvals');
+            Route::get('overtime-by-employee', [TimesheetReportController::class, 'overtimeByEmployee'])->name('overtime-by-employee');
+            Route::get('overtime-summary', [TimesheetReportController::class, 'overtimeSummary'])->name('overtime-summary');
+            Route::get('total-minutes-by-period', [TimesheetReportController::class, 'totalMinutesByPeriod'])->name('total-minutes-by-period');
+            Route::get('exception-timesheets', [TimesheetReportController::class, 'exceptionTimesheets'])->name('exception-timesheets');
+        });
+
+        Route::prefix('payroll-exports')->name('payroll-exports.')->group(function () {
+            Route::get('register', [PayrollExportReportController::class, 'register'])->name('register');
+            Route::get('by-status', [PayrollExportReportController::class, 'byStatus'])->name('by-status');
+            Route::get('failed', [PayrollExportReportController::class, 'failed'])->name('failed');
+            Route::get('completed', [PayrollExportReportController::class, 'completed'])->name('completed');
+            Route::get('version-history', [PayrollExportReportController::class, 'versionHistory'])->name('version-history');
+            Route::get('by-period', [PayrollExportReportController::class, 'byPeriod'])->name('by-period');
+        });
+
+        Route::prefix('job-requisitions')->name('job-requisitions.')->group(function () {
+            Route::get('register', [JobRequisitionReportController::class, 'register'])->name('register');
+            Route::get('by-status', [JobRequisitionReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-department', [JobRequisitionReportController::class, 'byDepartment'])->name('by-department');
+            Route::get('by-hiring-manager', [JobRequisitionReportController::class, 'byHiringManager'])->name('by-hiring-manager');
+            Route::get('opening-trend', [JobRequisitionReportController::class, 'openingTrend'])->name('opening-trend');
+        });
+
+        Route::prefix('candidate-profiles')->name('candidate-profiles.')->group(function () {
+            Route::get('register', [CandidateProfileReportController::class, 'register'])->name('register');
+            Route::get('by-stage', [CandidateProfileReportController::class, 'byStage'])->name('by-stage');
+            Route::get('by-source', [CandidateProfileReportController::class, 'bySource'])->name('by-source');
+            Route::get('by-requisition', [CandidateProfileReportController::class, 'byRequisition'])->name('by-requisition');
+            Route::get('hired', [CandidateProfileReportController::class, 'hired'])->name('hired');
+            Route::get('rejected', [CandidateProfileReportController::class, 'rejected'])->name('rejected');
+        });
+
+        Route::prefix('onboarding-tasks')->name('onboarding-tasks.')->group(function () {
+            Route::get('register', [OnboardingTaskReportController::class, 'register'])->name('register');
+            Route::get('by-status', [OnboardingTaskReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-employee', [OnboardingTaskReportController::class, 'byEmployee'])->name('by-employee');
+            Route::get('by-owner', [OnboardingTaskReportController::class, 'byOwner'])->name('by-owner');
+            Route::get('overdue', [OnboardingTaskReportController::class, 'overdue'])->name('overdue');
+        });
+
+        Route::prefix('offboarding-tasks')->name('offboarding-tasks.')->group(function () {
+            Route::get('register', [OffboardingTaskReportController::class, 'register'])->name('register');
+            Route::get('by-status', [OffboardingTaskReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-employee', [OffboardingTaskReportController::class, 'byEmployee'])->name('by-employee');
+            Route::get('by-owner', [OffboardingTaskReportController::class, 'byOwner'])->name('by-owner');
+            Route::get('overdue', [OffboardingTaskReportController::class, 'overdue'])->name('overdue');
+        });
+
+        Route::prefix('performance-reviews')->name('performance-reviews.')->group(function () {
+            Route::get('register', [PerformanceReviewReportController::class, 'register'])->name('register');
+            Route::get('by-status', [PerformanceReviewReportController::class, 'byStatus'])->name('by-status');
+            Route::get('by-cycle', [PerformanceReviewReportController::class, 'byCycle'])->name('by-cycle');
+            Route::get('by-reviewer', [PerformanceReviewReportController::class, 'byReviewer'])->name('by-reviewer');
+            Route::get('by-rating', [PerformanceReviewReportController::class, 'byRating'])->name('by-rating');
+            Route::get('overdue', [PerformanceReviewReportController::class, 'overdue'])->name('overdue');
+        });
+
+        Route::prefix('learning-courses')->name('learning-courses.')->group(function () {
+            Route::get('catalog', [LearningCourseReportController::class, 'catalog'])->name('catalog');
+            Route::get('by-category', [LearningCourseReportController::class, 'byCategory'])->name('by-category');
+            Route::get('by-status', [LearningCourseReportController::class, 'byStatus'])->name('by-status');
+            Route::get('mandatory', [LearningCourseReportController::class, 'mandatory'])->name('mandatory');
+            Route::get('expiring', [LearningCourseReportController::class, 'expiring'])->name('expiring');
+            Route::get('expired', [LearningCourseReportController::class, 'expired'])->name('expired');
+        });
+
+        Route::prefix('documents')->name('documents.')->group(function () {
+            Route::get('register', [DocumentReportController::class, 'register'])->name('register');
+            Route::get('by-type', [DocumentReportController::class, 'byType'])->name('by-type');
+            Route::get('by-employee', [DocumentReportController::class, 'byEmployee'])->name('by-employee');
+            Route::get('expiring', [DocumentReportController::class, 'expiring'])->name('expiring');
+            Route::get('expired', [DocumentReportController::class, 'expired'])->name('expired');
+            Route::get('missing-file-reference', [DocumentReportController::class, 'missingFileReference'])->name('missing-file-reference');
+        });
+    });
 });
 
 require __DIR__.'/settings.php';

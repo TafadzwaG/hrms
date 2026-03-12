@@ -1,27 +1,42 @@
 import { API } from '@/config';
 import AppLayout from '@/layouts/app-layout';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     ArchiveRestore,
     Calendar as CalendarIcon,
     CheckCircle2,
-    ChevronLeft,
-    ChevronRight,
     Download,
     Eye,
+    FileText,
     Info,
     Plus,
     RotateCcw,
     Search,
     Trash2,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
-import { useState } from 'react';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+import ReactPaginate from 'react-paginate';
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -38,70 +53,75 @@ import {
     TableRow,
 } from '@/components/ui/table';
 
-// Mock data matching the exact screenshot layout
-const MOCK_DATA = [
-    {
-        id: 1,
-        period_start: 'Feb 01, 2026',
-        period_end: 'Feb 15, 2026',
-        version: 'v2.4.1',
-        status: 'Completed',
-        exported_at: 'Feb 15, 10:45 AM',
-        file_ref: 'EX-2026-042',
-        notes: 'Mid-month cycle',
-        is_error: false,
-    },
-    {
-        id: 2,
-        period_start: 'Jan 16, 2026',
-        period_end: 'Jan 31, 2026',
-        version: 'v2.4.0',
-        status: 'Processing',
-        exported_at: 'Feb 15, 09:12 AM',
-        file_ref: 'EX-2026-041',
-        notes: 'Recalculated adjustments',
-        is_error: false,
-    },
-    {
-        id: 3,
-        period_start: 'Jan 01, 2026',
-        period_end: 'Jan 15, 2026',
-        version: 'v2.4.0',
-        status: 'Failed',
-        exported_at: 'Feb 14, 04:30 PM',
-        file_ref: 'EX-2026-040',
-        notes: 'Validation error: Row 156',
-        is_error: true,
-    },
-    {
-        id: 4,
-        period_start: 'Dec 16, 2025',
-        period_end: 'Dec 31, 2025',
-        version: 'v2.3.8',
-        status: 'Cancelled',
-        exported_at: 'Dec 31, 11:59 PM',
-        file_ref: 'EX-2025-189',
-        notes: 'Manual cancellation',
-        is_error: false,
-    },
-    {
-        id: 5,
-        period_start: 'Dec 01, 2025',
-        period_end: 'Dec 15, 2025',
-        version: 'v2.3.8',
-        status: 'Completed',
-        exported_at: 'Dec 15, 05:00 PM',
-        file_ref: 'EX-2025-188',
-        notes: '-',
-        is_error: false,
-    },
-];
+type PaginatedRecords = {
+    data: any[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+};
 
 export default function PayrollExportsIndex() {
-    const [search, setSearch] = useState('');
-    const [period, setPeriod] = useState('');
-    const [status, setStatus] = useState('');
-    const [version, setVersion] = useState('');
+    const { module, records, filters, stats } = usePage().props as {
+        module: any;
+        records: PaginatedRecords;
+        filters: { search?: string; status?: string };
+        stats: {
+            total: number;
+            completed: number;
+            failed: number;
+            latest: any;
+        };
+    };
+
+    const [search, setSearch] = useState(filters?.search ?? '');
+    const [status, setStatus] = useState(filters?.status ?? 'all');
+    const [period, setPeriod] = useState('all');
+    const [version, setVersion] = useState('all');
+
+    // Debounce search filter
+    useEffect(() => {
+        const timer = setTimeout(() => applyFilters(), 300);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const applyFilters = () => {
+        router.get(
+            `${API}/${module?.slug || 'payroll-exports'}`,
+            {
+                search,
+                status: status === 'all' ? '' : status,
+            },
+            { preserveState: true, replace: true, preserveScroll: true },
+        );
+    };
+
+    const handlePageChange = (selectedItem: { selected: number }) => {
+        router.get(
+            `${API}/${module?.slug || 'payroll-exports'}`,
+            {
+                page: selectedItem.selected + 1,
+                search,
+                status: status === 'all' ? '' : status,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    // Actions (Browser native confirms removed in favor of AlertDialogs)
+    const handleDelete = (id: number) => {
+        router.delete(`${API}/${module?.slug || 'payroll-exports'}/${id}`, {
+            preserveScroll: true,
+        });
+    };
+
+    const handleRetryFailed = () => {
+        router.post(
+            `${API}/${module?.slug || 'payroll-exports'}/retry-failed`,
+            {},
+            { preserveScroll: true },
+        );
+    };
 
     const getStatusBadge = (statusStr: string) => {
         switch (statusStr) {
@@ -142,13 +162,30 @@ export default function PayrollExportsIndex() {
                     </Badge>
                 );
             default:
-                return <Badge variant="outline">{statusStr}</Badge>;
+                return <Badge variant="outline">{statusStr || 'Draft'}</Badge>;
         }
     };
 
+    const pageData = records?.data ?? [];
+
+    // Safe stat calculations
+    const completedPercent =
+        stats?.total > 0
+            ? ((stats.completed / stats.total) * 100).toFixed(1)
+            : '0';
+    const failedPercent =
+        stats?.total > 0
+            ? ((stats.failed / stats.total) * 100).toFixed(1)
+            : '0';
+
     return (
         <AppLayout
-            breadcrumbs={[{ title: 'Payroll Exports', href: '/payroll' }]}
+            breadcrumbs={[
+                {
+                    title: 'Payroll Exports',
+                    href: `${API}/${module?.slug || 'payroll-exports'}`,
+                },
+            ]}
         >
             <Head title="Payroll Exports" />
 
@@ -165,14 +202,51 @@ export default function PayrollExportsIndex() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        {/* Download Template Alert Dialog */}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="font-medium shadow-sm"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download Template
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Download Payroll Template
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to download the
+                                        standard Excel template for payroll
+                                        imports?
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() =>
+                                            (window.location.href = `${API}/${module?.slug || 'payroll-exports'}/template/download`)
+                                        }
+                                    >
+                                        Download
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
                         <Button
-                            variant="outline"
-                            className="font-medium shadow-sm"
+                            className="bg-indigo-600 font-medium text-white shadow-sm hover:bg-indigo-700"
+                            onClick={() =>
+                                router.visit(
+                                    `${API}/${module?.slug || 'payroll-exports'}/create`,
+                                )
+                            }
                         >
-                            <Download className="mr-2 h-4 w-4" />
-                            Download Template
-                        </Button>
-                        <Button className="bg-indigo-600 font-medium text-white shadow-sm hover:bg-indigo-700">
                             <Plus className="mr-2 h-4 w-4" />
                             New Export
                         </Button>
@@ -181,7 +255,6 @@ export default function PayrollExportsIndex() {
 
                 {/* Metrics Row */}
                 <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {/* Total Exports */}
                     <Card className="shadow-sm">
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-2">
@@ -190,10 +263,7 @@ export default function PayrollExportsIndex() {
                                 </p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl font-bold tracking-tight">
-                                        156
-                                    </span>
-                                    <span className="text-xs font-semibold text-emerald-500">
-                                        +2.4%
+                                        {stats?.total || 0}
                                     </span>
                                 </div>
                             </div>
@@ -203,7 +273,6 @@ export default function PayrollExportsIndex() {
                         </CardContent>
                     </Card>
 
-                    {/* Completed */}
                     <Card className="shadow-sm">
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-2">
@@ -212,10 +281,10 @@ export default function PayrollExportsIndex() {
                                 </p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl font-bold tracking-tight">
-                                        148
+                                        {stats?.completed || 0}
                                     </span>
                                     <span className="text-xs font-semibold text-emerald-500">
-                                        94.8%
+                                        {completedPercent}%
                                     </span>
                                 </div>
                             </div>
@@ -225,7 +294,6 @@ export default function PayrollExportsIndex() {
                         </CardContent>
                     </Card>
 
-                    {/* Failed */}
                     <Card className="shadow-sm">
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-2">
@@ -234,10 +302,10 @@ export default function PayrollExportsIndex() {
                                 </p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-3xl font-bold tracking-tight">
-                                        5
+                                        {stats?.failed || 0}
                                     </span>
                                     <span className="text-xs font-semibold text-destructive">
-                                        3.2%
+                                        {failedPercent}%
                                     </span>
                                 </div>
                             </div>
@@ -247,7 +315,6 @@ export default function PayrollExportsIndex() {
                         </CardContent>
                     </Card>
 
-                    {/* Latest Export */}
                     <Card className="shadow-sm">
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-2">
@@ -256,10 +323,18 @@ export default function PayrollExportsIndex() {
                                 </p>
                                 <div>
                                     <p className="text-2xl font-bold tracking-tight whitespace-nowrap">
-                                        Feb 15, 2026
+                                        {stats?.latest?.exported_at
+                                            ? moment(
+                                                  stats.latest.exported_at,
+                                              ).format('MMM DD, YYYY')
+                                            : '—'}
                                     </p>
                                     <p className="mt-1 text-xs font-medium text-muted-foreground">
-                                        10:45 AM EST
+                                        {stats?.latest?.exported_at
+                                            ? moment(
+                                                  stats.latest.exported_at,
+                                              ).format('hh:mm A z')
+                                            : 'No recent exports'}
                                     </p>
                                 </div>
                             </div>
@@ -294,7 +369,13 @@ export default function PayrollExportsIndex() {
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Select value={status} onValueChange={setStatus}>
+                            <Select
+                                value={status}
+                                onValueChange={(val) => {
+                                    setStatus(val);
+                                    setTimeout(applyFilters, 0);
+                                }}
+                            >
                                 <SelectTrigger className="h-10 w-[140px] border-muted-foreground/30 shadow-none">
                                     <SelectValue placeholder="All Statuses" />
                                 </SelectTrigger>
@@ -319,12 +400,6 @@ export default function PayrollExportsIndex() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Version</SelectItem>
-                                    <SelectItem value="v2.4.1">
-                                        v2.4.1
-                                    </SelectItem>
-                                    <SelectItem value="v2.4.0">
-                                        v2.4.0
-                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                             <div className="relative">
@@ -337,13 +412,41 @@ export default function PayrollExportsIndex() {
                             </div>
                         </div>
 
-                        <Button
-                            variant="outline"
-                            className="h-10 font-medium shadow-sm"
-                        >
-                            <RotateCcw className="mr-2 h-4 w-4" />
-                            Retry Failed
-                        </Button>
+                        {/* Retry Failed Alert Dialog */}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 font-medium shadow-sm"
+                                >
+                                    <RotateCcw className="mr-2 h-4 w-4" /> Retry
+                                    Failed
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Retry Failed Exports
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will immediately attempt to
+                                        re-process all payroll exports currently
+                                        marked with a "Failed" status. Do you
+                                        want to proceed?
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={handleRetryFailed}
+                                    >
+                                        Confirm Retry
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
 
                     {/* Table */}
@@ -372,162 +475,388 @@ export default function PayrollExportsIndex() {
                                     <TableHead className="min-w-[200px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
                                         Notes
                                     </TableHead>
-                                    <TableHead className="w-[120px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    <TableHead className="w-[140px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
                                         Actions
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {MOCK_DATA.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        className="hover:bg-muted/30"
-                                    >
-                                        <TableCell className="py-4 pl-6 font-medium text-foreground">
-                                            {row.period_start}
-                                        </TableCell>
-                                        <TableCell className="font-medium text-foreground">
-                                            {row.period_end}
-                                        </TableCell>
-                                        <TableCell className="font-medium text-muted-foreground">
-                                            <span className="rounded-md bg-indigo-50 px-2 py-1 text-indigo-600">
-                                                {row.version}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {getStatusBadge(row.status)}
-                                        </TableCell>
-                                        <TableCell className="font-medium text-muted-foreground">
-                                            {row.exported_at}
-                                        </TableCell>
-                                        <TableCell className="font-medium text-muted-foreground">
-                                            {row.file_ref}
-                                        </TableCell>
-                                        <TableCell>
-                                            <span
-                                                className={`${row.is_error ? 'font-medium text-destructive' : 'text-muted-foreground italic'}`}
-                                            >
-                                                {row.notes}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="pr-6 text-right">
-                                            <div className="flex items-center justify-end gap-1 text-muted-foreground">
-                                                {row.status === 'Failed' ? (
-                                                    <>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
-                                                        >
-                                                            <RotateCcw className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                        >
-                                                            <Info className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                ) : row.status ===
-                                                  'Cancelled' ? (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                ) : (
-                                                    <>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                        >
-                                                            <Download className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                {pageData.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={8}
+                                            className="h-48 text-center text-muted-foreground"
+                                        >
+                                            No payroll exports found matching
+                                            your criteria.
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : (
+                                    pageData.map((row: any) => {
+                                        const version =
+                                            row.export_version ||
+                                            `EXP-${row.id}`;
+                                        const start = row.period_start
+                                            ? moment(row.period_start).format(
+                                                  'MMM DD, YYYY',
+                                              )
+                                            : '—';
+                                        const end = row.period_end
+                                            ? moment(row.period_end).format(
+                                                  'MMM DD, YYYY',
+                                              )
+                                            : '—';
+                                        const exportedAt = row.exported_at
+                                            ? moment(row.exported_at).format(
+                                                  'MMM DD, hh:mm A',
+                                              )
+                                            : '—';
+                                        const isError = row.status === 'Failed';
+
+                                        return (
+                                            <TableRow
+                                                key={row.id}
+                                                className="hover:bg-muted/30"
+                                            >
+                                                <TableCell className="py-4 pl-6 font-medium text-foreground">
+                                                    {start}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground">
+                                                    {end}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-muted-foreground">
+                                                    <span className="rounded-md bg-indigo-50 px-2 py-1 text-indigo-600">
+                                                        {version}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {getStatusBadge(row.status)}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-muted-foreground">
+                                                    {exportedAt}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-muted-foreground">
+                                                    {row.file_reference || '—'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span
+                                                        className={`${isError ? 'font-medium text-destructive' : 'text-muted-foreground italic'}`}
+                                                    >
+                                                        {row.notes || '—'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="pr-6 text-right">
+                                                    <div className="flex items-center justify-end gap-1 text-muted-foreground">
+                                                        {/* Status specific actions */}
+                                                        {row.status ===
+                                                        'Failed' ? (
+                                                            <>
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger
+                                                                        asChild
+                                                                    >
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8 text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+                                                                            title="Retry"
+                                                                        >
+                                                                            <RotateCcw className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>
+                                                                                Retry
+                                                                                Export
+                                                                            </AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                Are
+                                                                                you
+                                                                                sure
+                                                                                you
+                                                                                want
+                                                                                to
+                                                                                manually
+                                                                                retry
+                                                                                processing
+                                                                                this
+                                                                                failed
+                                                                                payroll
+                                                                                export?
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>
+                                                                                Cancel
+                                                                            </AlertDialogCancel>
+                                                                            <AlertDialogAction
+                                                                                onClick={() =>
+                                                                                    router.post(
+                                                                                        `${API}/${module?.slug || 'payroll-exports'}/${row.id}/retry`,
+                                                                                        {},
+                                                                                        {
+                                                                                            preserveScroll: true,
+                                                                                        },
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                Retry
+                                                                                Export
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                                    onClick={() =>
+                                                                        router.visit(
+                                                                            `${API}/${module?.slug || 'payroll-exports'}/${row.id}`,
+                                                                        )
+                                                                    }
+                                                                    title="View Details"
+                                                                >
+                                                                    <Info className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        ) : row.status ===
+                                                          'Cancelled' ? (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                                onClick={() =>
+                                                                    router.visit(
+                                                                        `${API}/${module?.slug || 'payroll-exports'}/${row.id}`,
+                                                                    )
+                                                                }
+                                                                title="View Details"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        ) : (
+                                                            <>
+                                                                {/* PDF Download Alert */}
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger
+                                                                        asChild
+                                                                    >
+                                                                        <button
+                                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                                                                            title="Download PDF Summary"
+                                                                        >
+                                                                            <FileText className="h-4 w-4" />
+                                                                        </button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>
+                                                                                Download
+                                                                                PDF
+                                                                                Summary
+                                                                            </AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                Generate
+                                                                                and
+                                                                                download
+                                                                                the
+                                                                                formatted
+                                                                                PDF
+                                                                                summary
+                                                                                for
+                                                                                this
+                                                                                payroll
+                                                                                export
+                                                                                batch?
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>
+                                                                                Cancel
+                                                                            </AlertDialogCancel>
+                                                                            <AlertDialogAction
+                                                                                onClick={() =>
+                                                                                    (window.location.href = `${API}/${module?.slug || 'payroll-exports'}/${row.id}/pdf`)
+                                                                                }
+                                                                            >
+                                                                                Download
+                                                                                PDF
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+
+                                                                {/* Excel Download Alert */}
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger
+                                                                        asChild
+                                                                    >
+                                                                        <button
+                                                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none"
+                                                                            title="Download Excel Export"
+                                                                        >
+                                                                            <Download className="h-4 w-4" />
+                                                                        </button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>
+                                                                                Download
+                                                                                Excel
+                                                                                Export
+                                                                            </AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                Download
+                                                                                the
+                                                                                raw
+                                                                                Excel
+                                                                                (.xlsx)
+                                                                                file
+                                                                                containing
+                                                                                all
+                                                                                timesheet
+                                                                                entries
+                                                                                for
+                                                                                this
+                                                                                payroll
+                                                                                batch?
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>
+                                                                                Cancel
+                                                                            </AlertDialogCancel>
+                                                                            <AlertDialogAction
+                                                                                onClick={() =>
+                                                                                    (window.location.href = `${API}/${module?.slug || 'payroll-exports'}/${row.id}/download`)
+                                                                                }
+                                                                            >
+                                                                                Download
+                                                                                Excel
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                                    onClick={() =>
+                                                                        router.visit(
+                                                                            `${API}/${module?.slug || 'payroll-exports'}/${row.id}`,
+                                                                        )
+                                                                    }
+                                                                    title="View Details"
+                                                                >
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Button>
+                                                            </>
+                                                        )}
+
+                                                        {/* Delete Row Alert Dialog */}
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger
+                                                                asChild
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                                    title="Delete Export"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle className="text-destructive">
+                                                                        Delete
+                                                                        Payroll
+                                                                        Export
+                                                                    </AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you
+                                                                        sure you
+                                                                        want to
+                                                                        permanently
+                                                                        delete
+                                                                        this
+                                                                        payroll
+                                                                        export?
+                                                                        This
+                                                                        action
+                                                                        cannot
+                                                                        be
+                                                                        undone.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>
+                                                                        Cancel
+                                                                    </AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={() =>
+                                                                            handleDelete(
+                                                                                row.id,
+                                                                            )
+                                                                        }
+                                                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                                                    >
+                                                                        Yes,
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                     </div>
 
                     {/* Footer Pagination */}
-                    <div className="flex items-center justify-between border-t p-4">
-                        <div className="text-sm font-medium text-muted-foreground">
-                            Showing{' '}
-                            <span className="font-bold text-foreground">1</span>{' '}
-                            to{' '}
-                            <span className="font-bold text-foreground">5</span>{' '}
-                            of{' '}
-                            <span className="font-bold text-foreground">
-                                156
-                            </span>{' '}
-                            results
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 rounded-r-none border-r-0 shadow-none"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="default"
-                                className="h-9 w-9 rounded-none bg-indigo-600 font-bold text-white shadow-none"
-                            >
-                                1
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="h-9 w-9 rounded-none border-x-0 font-medium shadow-none hover:bg-muted"
-                            >
-                                2
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="h-9 w-9 rounded-none border-r-0 font-medium shadow-none hover:bg-muted"
-                            >
-                                3
-                            </Button>
-                            <div className="flex h-9 w-9 items-center justify-center border-y border-input bg-background text-sm font-medium text-muted-foreground">
-                                ...
+                    {records?.last_page > 1 && (
+                        <div className="flex items-center justify-between border-t p-4">
+                            <div className="text-sm font-medium text-muted-foreground">
+                                Showing{' '}
+                                <span className="font-bold text-foreground">
+                                    {pageData.length}
+                                </span>{' '}
+                                of{' '}
+                                <span className="font-bold text-foreground">
+                                    {records.total}
+                                </span>{' '}
+                                results
                             </div>
-                            <Button
-                                variant="outline"
-                                className="h-9 w-9 rounded-none border-x-0 font-medium shadow-none hover:bg-muted"
-                            >
-                                32
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 rounded-l-none border-l-0 shadow-none"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
+                            <ReactPaginate
+                                pageCount={records.last_page}
+                                forcePage={records.current_page - 1}
+                                onPageChange={handlePageChange}
+                                marginPagesDisplayed={1}
+                                pageRangeDisplayed={3}
+                                previousLabel={
+                                    <ChevronLeft className="h-4 w-4" />
+                                }
+                                nextLabel={<ChevronRight className="h-4 w-4" />}
+                                breakLabel="..."
+                                containerClassName="flex items-center gap-1"
+                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background font-medium hover:bg-muted text-sm shadow-sm"
+                                activeLinkClassName="!bg-indigo-600 text-white font-bold border-indigo-600 hover:!bg-indigo-700"
+                                previousLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted"
+                                nextLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted"
+                                breakClassName="flex h-9 w-9 items-center justify-center text-sm font-medium text-muted-foreground"
+                                disabledClassName="opacity-50 pointer-events-none"
+                            />
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </AppLayout>
