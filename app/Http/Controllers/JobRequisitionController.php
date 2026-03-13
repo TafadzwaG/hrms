@@ -14,15 +14,20 @@ class JobRequisitionController extends Controller
 {
     private const MODULE_KEY = 'job_requisitions';
 
+    private const PAGE_ROOT = 'JobRequisitions';
+
     public function index(Request $request)
     {
+        // 1. Retrieve filter values from the request
         $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
+        $department = $request->string('department')->toString();
+        $status = $request->string('status')->toString();
 
         $query = JobRequisition::query();
 
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
+        // 2. Apply Search Filter
+        $searchable = Arr::get($this->moduleConfig(), 'searchable', []);
+        if ($search !== '' && ! empty($searchable)) {
             $query->where(function (Builder $builder) use ($search, $searchable) {
                 foreach ($searchable as $idx => $column) {
                     if ($idx === 0) {
@@ -34,25 +39,36 @@ class JobRequisitionController extends Controller
             });
         }
 
+        // 3. Apply Department Filter
+        if ($department !== '' && $department !== 'all') {
+            $query->where('department', $department);
+        }
+
+        // 4. Apply Status Filter
+        if ($status !== '' && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
         $records = $query
             ->orderByDesc('id')
             ->paginate(12)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
+        return Inertia::render(self::PAGE_ROOT.'/Index', [
             'module' => $this->moduleMeta(),
             'records' => $records,
             'filters' => [
                 'search' => $search,
+                'department' => $department, // Passed back to React
+                'status' => $status,         // Passed back to React
             ],
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Modules/Form', [
+        return Inertia::render(self::PAGE_ROOT.'/Create', [
             'module' => $this->moduleMeta(),
-            'mode' => 'create',
             'record' => null,
         ]);
     }
@@ -64,15 +80,15 @@ class JobRequisitionController extends Controller
         JobRequisition::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' created successfully.');
     }
 
     public function show(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Show', [
+        return Inertia::render(self::PAGE_ROOT.'/Show', [
             'module' => $this->moduleMeta(),
             'record' => $record,
         ]);
@@ -82,9 +98,8 @@ class JobRequisitionController extends Controller
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Form', [
+        return Inertia::render(self::PAGE_ROOT.'/Edit', [
             'module' => $this->moduleMeta(),
-            'mode' => 'edit',
             'record' => $record,
         ]);
     }
@@ -99,8 +114,8 @@ class JobRequisitionController extends Controller
         $slug = Arr::get($this->moduleConfig(), 'slug');
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->to('/'.$slug.'/'.$record->id)
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' updated successfully.');
     }
 
     public function destroy(Request $request)
@@ -109,8 +124,8 @@ class JobRequisitionController extends Controller
         $record->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' deleted successfully.');
     }
 
     private function moduleMeta(): array
@@ -144,10 +159,10 @@ class JobRequisitionController extends Controller
 
     private function moduleConfig(): array
     {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
+        $config = config('hrms_modules.'.self::MODULE_KEY, []);
 
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
+        if (! is_array($config) || empty($config)) {
+            abort(500, 'Module configuration missing for key: '.self::MODULE_KEY);
         }
 
         return $config;
@@ -162,7 +177,7 @@ class JobRequisitionController extends Controller
             $fieldRules = $field['rules'] ?? ['nullable'];
 
             if (($field['unique'] ?? false) === true) {
-                $table = (new JobRequisition())->getTable();
+                $table = (new JobRequisition)->getTable();
                 $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
             }
 
@@ -172,7 +187,7 @@ class JobRequisitionController extends Controller
         return $rules;
     }
 
-    private function findOrFail(string $id): Model
+    private function findOrFail(string $id): JobRequisition
     {
         return JobRequisition::query()->findOrFail($id);
     }

@@ -14,15 +14,16 @@ class WorkflowDefinitionController extends Controller
 {
     private const MODULE_KEY = 'workflow_definitions';
 
+    private const PAGE_ROOT = 'WorkflowDefinitions';
+
     public function index(Request $request)
     {
         $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
 
         $query = WorkflowDefinition::query();
 
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
+        $searchable = Arr::get($this->moduleConfig(), 'searchable', []);
+        if ($search !== '' && ! empty($searchable)) {
             $query->where(function (Builder $builder) use ($search, $searchable) {
                 foreach ($searchable as $idx => $column) {
                     if ($idx === 0) {
@@ -39,7 +40,7 @@ class WorkflowDefinitionController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
+        return Inertia::render(self::PAGE_ROOT.'/Index', [
             'module' => $this->moduleMeta(),
             'records' => $records,
             'filters' => [
@@ -50,9 +51,8 @@ class WorkflowDefinitionController extends Controller
 
     public function create()
     {
-        return Inertia::render('Modules/Form', [
+        return Inertia::render(self::PAGE_ROOT.'/Create', [
             'module' => $this->moduleMeta(),
-            'mode' => 'create',
             'record' => null,
         ]);
     }
@@ -64,15 +64,15 @@ class WorkflowDefinitionController extends Controller
         WorkflowDefinition::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' created successfully.');
     }
 
     public function show(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Show', [
+        return Inertia::render(self::PAGE_ROOT.'/Show', [
             'module' => $this->moduleMeta(),
             'record' => $record,
         ]);
@@ -82,9 +82,8 @@ class WorkflowDefinitionController extends Controller
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Form', [
+        return Inertia::render(self::PAGE_ROOT.'/Edit', [
             'module' => $this->moduleMeta(),
-            'mode' => 'edit',
             'record' => $record,
         ]);
     }
@@ -99,8 +98,8 @@ class WorkflowDefinitionController extends Controller
         $slug = Arr::get($this->moduleConfig(), 'slug');
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->to('/'.$slug.'/'.$record->id)
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' updated successfully.');
     }
 
     public function destroy(Request $request)
@@ -109,8 +108,8 @@ class WorkflowDefinitionController extends Controller
         $record->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' deleted successfully.');
     }
 
     private function moduleMeta(): array
@@ -144,10 +143,10 @@ class WorkflowDefinitionController extends Controller
 
     private function moduleConfig(): array
     {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
+        $config = config('hrms_modules.'.self::MODULE_KEY, []);
 
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
+        if (! is_array($config) || empty($config)) {
+            abort(500, 'Module configuration missing for key: '.self::MODULE_KEY);
         }
 
         return $config;
@@ -162,7 +161,7 @@ class WorkflowDefinitionController extends Controller
             $fieldRules = $field['rules'] ?? ['nullable'];
 
             if (($field['unique'] ?? false) === true) {
-                $table = (new WorkflowDefinition())->getTable();
+                $table = (new WorkflowDefinition)->getTable();
                 $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
             }
 
@@ -172,7 +171,7 @@ class WorkflowDefinitionController extends Controller
         return $rules;
     }
 
-    private function findOrFail(string $id): Model
+    private function findOrFail(string $id): WorkflowDefinition
     {
         return WorkflowDefinition::query()->findOrFail($id);
     }

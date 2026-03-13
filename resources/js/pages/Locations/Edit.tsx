@@ -1,273 +1,522 @@
-import { API } from "@/config";
-import AppLayout from "@/layouts/app-layout";
-import { Head, router, useForm, usePage } from "@inertiajs/react";
-import { ArrowLeft, Save, MapPin, Globe, Clock, Hash } from "lucide-react";
-import { useMemo, useState } from "react";
+import { API } from '@/config';
+import AppLayout from '@/layouts/app-layout';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import {
+    CheckCircle2,
+    Compass,
+    MapPin,
+    Minus,
+    Plus,
+    Search,
+    Settings,
+} from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export default function LocationEdit() {
-  const { location } = usePage().props as any;
+    const { location } = usePage().props as any;
 
-  const PATHS = useMemo(
-    () => ({
-      index: `${API}/locations`,
-      show: `${API}/locations/${location.id}`,
-      edit: `${API}/locations/${location.id}/edit`,
-      update: `${API}/locations/${location.id}`,
-    }),
-    [location?.id]
-  );
-
-  const { data, setData, errors, put, processing } = useForm({
-    name: location?.name ?? "",
-    timezone: location?.timezone ?? "Africa/Harare",
-    address_line1: location?.address_line1 ?? "",
-    address_line2: location?.address_line2 ?? "",
-    city: location?.city ?? "",
-    state: location?.state ?? "",
-    country: location?.country ?? "Zimbabwe",
-    postal_code: location?.postal_code ?? "",
-    latitude: location?.latitude ?? "",
-    longitude: location?.longitude ?? "",
-  });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    put(PATHS.update, {
-      preserveScroll: true,
-      onFinish: () => setIsSubmitting(false),
+    const { data, setData, put, processing, errors } = useForm({
+        name: location?.name || '',
+        timezone: location?.timezone || '',
+        address_line1: location?.address_line1 || '',
+        address_line2: location?.address_line2 || '',
+        city: location?.city || '',
+        state: location?.state || '',
+        country: location?.country || 'United States',
+        postal_code: location?.postal_code || '',
+        latitude: location?.latitude || '',
+        longitude: location?.longitude || '',
     });
-  };
 
-  return (
-    <AppLayout
-      breadcrumbs={[
-        { title: "Locations", href: `${API}/locations` },
-        { title: location?.name ?? "Location", href: `${API}/locations/${location.id}` },
-        { title: "Edit", href: `${API}/locations/${location.id}/edit` },
-      ]}
-    >
-      <Head title={`Edit Location: ${location?.name ?? ""}`} />
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-      <div className="bg-background mx-2 sm:mx-4 md:mx-8 my-6 rounded-xl p-1 md:p-6 shadow-sm">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => router.visit(PATHS.show)}
-              className="h-8 w-8"
-              type="button"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        put(`${API}/locations/${location.id}`, {
+            preserveScroll: true,
+            onFinish: () => setIsSubmitting(false),
+        });
+    };
 
-            <div>
-              <h1 className="text-2xl font-bold">Edit Location</h1>
-              <p className="text-muted-foreground">Update location details for {location?.name}</p>
-            </div>
-          </div>
-        </div>
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Admin', href: '#' },
+                { title: 'Settings', href: '#' },
+                {
+                    title: 'Edit Location',
+                    href: `${API}/locations/${location.id}/edit`,
+                },
+            ]}
+        >
+            <Head title={`Edit ${location.name}`} />
 
-        {/* Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form Column */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Location Information</CardTitle>
-                <CardDescription>Modify details and save changes</CardDescription>
-              </CardHeader>
+            <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10 p-4 md:p-6 lg:p-8">
+                {/* Header */}
+                <div className="mb-6 max-w-3xl">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                        Edit Location Setup
+                    </h1>
+                    <p className="mt-2 text-base leading-relaxed text-muted-foreground">
+                        Update the geographical and address details for{' '}
+                        <strong className="text-foreground">
+                            {location.name}
+                        </strong>
+                        .
+                    </p>
+                </div>
 
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Name */}
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="name" className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        Location Name *
-                      </Label>
-                      <Input
-                        id="name"
-                        value={data.name}
-                        onChange={(e) => setData("name", e.target.value)}
-                        className={errors.name ? "border-red-500" : ""}
-                        required
-                      />
-                      {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                <form onSubmit={handleSubmit} className="pb-24">
+                    {/* Interactive Map Area (Mock) */}
+                    <div className="relative mb-8 flex h-[400px] w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 shadow-sm">
+                        {/* Map Pattern Background */}
+                        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-30"></div>
+
+                        {/* Search Bar Overlay */}
+                        <div className="absolute top-6 left-6 z-10 w-full max-w-md">
+                            <div className="relative overflow-hidden rounded-md bg-background shadow-md">
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search for a city, address or landmark..."
+                                    className="h-12 border-none pl-10 text-base shadow-none focus-visible:ring-0"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Zoom Controls Overlay */}
+                        <div className="absolute right-6 bottom-6 z-10 flex flex-col overflow-hidden rounded-md bg-background shadow-md">
+                            <button
+                                type="button"
+                                className="flex h-10 w-10 items-center justify-center border-b border-border text-muted-foreground hover:bg-muted"
+                            >
+                                <Plus className="h-5 w-5" />
+                            </button>
+                            <button
+                                type="button"
+                                className="flex h-10 w-10 items-center justify-center text-muted-foreground hover:bg-muted"
+                            >
+                                <Minus className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {/* Central Map Pin Graphic (Locked State) */}
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="mb-2 flex h-20 w-14 justify-center text-primary opacity-90 drop-shadow-xl">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="h-full w-full"
+                                >
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                            </div>
+                            <div className="flex cursor-pointer items-center gap-2 rounded-full border border-emerald-200 bg-background/90 px-4 py-2 text-xs font-bold tracking-wider text-emerald-600 uppercase shadow-md backdrop-blur-sm transition-colors hover:bg-background">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Existing Location Pinned
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Timezone */}
-                    <div className="space-y-2">
-                      <Label htmlFor="timezone" className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Timezone *
-                      </Label>
-                      <Input
-                        id="timezone"
-                        value={data.timezone}
-                        onChange={(e) => setData("timezone", e.target.value)}
-                        className={errors.timezone ? "border-red-500" : ""}
-                        required
-                      />
-                      {errors.timezone && <p className="text-sm text-red-500">{errors.timezone}</p>}
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                        {/* LEFT COLUMN: Form Fields */}
+                        <div className="space-y-6 lg:col-span-8">
+                            {/* Primary Address Details */}
+                            <Card className="border-border shadow-sm">
+                                <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+                                    <CardTitle className="flex items-center gap-2 text-base font-bold">
+                                        <MapPin className="h-5 w-5 text-primary" />
+                                        Primary Address Details
+                                    </CardTitle>
+                                    <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                        Auto-Populated from Map
+                                    </span>
+                                </CardHeader>
+                                <CardContent className="space-y-6 p-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">
+                                            Address Line 1
+                                        </Label>
+                                        <Input
+                                            value={data.address_line1}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'address_line1',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className={`h-11 bg-background ${errors.address_line1 ? 'border-destructive' : ''}`}
+                                        />
+                                        {errors.address_line1 && (
+                                            <p className="text-xs font-medium text-destructive">
+                                                {errors.address_line1}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-semibold">
+                                            Address Line 2 (Optional)
+                                        </Label>
+                                        <Input
+                                            value={data.address_line2}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'address_line2',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            className={`h-11 bg-background ${errors.address_line2 ? 'border-destructive' : ''}`}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                City
+                                            </Label>
+                                            <Input
+                                                value={data.city}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'city',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className={`h-11 bg-background ${errors.city ? 'border-destructive' : ''}`}
+                                            />
+                                            {errors.city && (
+                                                <p className="text-xs font-medium text-destructive">
+                                                    {errors.city}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                State / Province
+                                            </Label>
+                                            <Input
+                                                value={data.state}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'state',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className={`h-11 bg-background ${errors.state ? 'border-destructive' : ''}`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Country
+                                            </Label>
+                                            <Select
+                                                value={data.country}
+                                                onValueChange={(val) =>
+                                                    setData('country', val)
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className={`h-11 bg-background ${errors.country ? 'border-destructive' : ''}`}
+                                                >
+                                                    <SelectValue placeholder="Select Country" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="United States">
+                                                        United States
+                                                    </SelectItem>
+                                                    <SelectItem value="United Kingdom">
+                                                        United Kingdom
+                                                    </SelectItem>
+                                                    <SelectItem value="Zimbabwe">
+                                                        Zimbabwe
+                                                    </SelectItem>
+                                                    <SelectItem value="Singapore">
+                                                        Singapore
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.country && (
+                                                <p className="text-xs font-medium text-destructive">
+                                                    {errors.country}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Postal Code
+                                            </Label>
+                                            <Input
+                                                value={data.postal_code}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'postal_code',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className={`h-11 bg-background ${errors.postal_code ? 'border-destructive' : ''}`}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Split Row: Settings & Coordinates */}
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {/* Settings */}
+                                <Card className="border-border shadow-sm">
+                                    <CardHeader className="border-b border-border/50 pb-4">
+                                        <CardTitle className="flex items-center gap-2 text-base font-bold">
+                                            <Settings className="h-5 w-5 text-primary" />
+                                            Settings
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6 p-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Location Name
+                                            </Label>
+                                            <Input
+                                                value={data.name}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className={`h-11 bg-background ${errors.name ? 'border-destructive' : ''}`}
+                                            />
+                                            {errors.name && (
+                                                <p className="text-xs font-medium text-destructive">
+                                                    {errors.name}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Timezone
+                                            </Label>
+                                            <Select
+                                                value={data.timezone}
+                                                onValueChange={(val) =>
+                                                    setData('timezone', val)
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className={`h-11 bg-background ${errors.timezone ? 'border-destructive' : ''}`}
+                                                >
+                                                    <SelectValue placeholder="Select Timezone" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="(GMT-08:00) Pacific Time (US & Canada)">
+                                                        (GMT-08:00) Pacific Time
+                                                        (US & Canada)
+                                                    </SelectItem>
+                                                    <SelectItem value="(GMT-05:00) Eastern Time (US & Canada)">
+                                                        (GMT-05:00) Eastern Time
+                                                        (US & Canada)
+                                                    </SelectItem>
+                                                    <SelectItem value="(GMT+00:00) London">
+                                                        (GMT+00:00) London
+                                                    </SelectItem>
+                                                    <SelectItem value="(GMT+02:00) Harare">
+                                                        (GMT+02:00) Harare
+                                                    </SelectItem>
+                                                    <SelectItem value="America/New_York">
+                                                        America/New_York (EST)
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.timezone && (
+                                                <p className="text-xs font-medium text-destructive">
+                                                    {errors.timezone}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Coordinates */}
+                                <Card className="border-border shadow-sm">
+                                    <CardHeader className="border-b border-border/50 pb-4">
+                                        <CardTitle className="flex items-center gap-2 text-base font-bold">
+                                            <Compass className="h-5 w-5 text-primary" />
+                                            Coordinates
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6 p-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Latitude
+                                            </Label>
+                                            <Input
+                                                value={data.latitude}
+                                                readOnly
+                                                className="h-11 cursor-not-allowed bg-muted/50 font-mono text-muted-foreground"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">
+                                                Longitude
+                                            </Label>
+                                            <Input
+                                                value={data.longitude}
+                                                readOnly
+                                                className="h-11 cursor-not-allowed bg-muted/50 font-mono text-muted-foreground"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-muted-foreground italic">
+                                            These values are locked to map
+                                            selection for precision.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+
+                        {/* RIGHT COLUMN: Info Context */}
+                        <div className="space-y-6 lg:col-span-4">
+                            <Card className="border-primary/20 bg-primary/5 shadow-sm">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-sm font-bold text-primary">
+                                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary font-serif text-xs text-primary-foreground italic">
+                                            ?
+                                        </div>
+                                        Why this matters
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4 pt-2">
+                                    <p className="text-sm leading-relaxed text-foreground/80">
+                                        Accurate location data drives essential
+                                        HR functions:
+                                    </p>
+                                    <ul className="space-y-3 text-sm font-medium text-foreground">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                            <span className="leading-snug">
+                                                Ensures tax compliance based on
+                                                physical workplace location.
+                                            </span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                            <span className="leading-snug">
+                                                Automates holiday calendars and
+                                                working hour policies.
+                                            </span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                            <span className="leading-snug">
+                                                Enables proximity-based
+                                                check-ins for onsite employees.
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="relative overflow-hidden border-transparent bg-primary text-primary-foreground shadow-md">
+                                {/* Abstract chart graphic */}
+                                <div className="absolute right-0 bottom-0 opacity-20">
+                                    <svg
+                                        width="120"
+                                        height="100"
+                                        viewBox="0 0 120 100"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <rect
+                                            x="10"
+                                            y="60"
+                                            width="20"
+                                            height="40"
+                                            rx="4"
+                                            fill="currentColor"
+                                        />
+                                        <rect
+                                            x="40"
+                                            y="30"
+                                            width="20"
+                                            height="70"
+                                            rx="4"
+                                            fill="currentColor"
+                                        />
+                                        <rect
+                                            x="70"
+                                            y="45"
+                                            width="20"
+                                            height="55"
+                                            rx="4"
+                                            fill="currentColor"
+                                        />
+                                        <rect
+                                            x="100"
+                                            y="10"
+                                            width="20"
+                                            height="90"
+                                            rx="4"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                </div>
+                                <CardContent className="relative z-10 space-y-4 p-6">
+                                    <p className="text-[10px] font-bold tracking-widest text-primary-foreground/70 uppercase">
+                                        Regional Analytics
+                                    </p>
+                                    <p className="text-sm leading-relaxed font-medium text-primary-foreground/90">
+                                        Updating this location will instantly
+                                        refresh compliance parameters for all
+                                        bound Organization Units.
+                                    </p>
+                                    <div className="flex items-center gap-2 pt-2 text-xs font-semibold text-emerald-400">
+                                        <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></div>
+                                        Active Geofence Node
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
 
-                    {/* Country */}
-                    <div className="space-y-2">
-                      <Label htmlFor="country" className="flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        Country
-                      </Label>
-                      <Input
-                        id="country"
-                        value={data.country}
-                        onChange={(e) => setData("country", e.target.value)}
-                        className={errors.country ? "border-red-500" : ""}
-                      />
-                      {errors.country && <p className="text-sm text-red-500">{errors.country}</p>}
+                    {/* Bottom Action Bar */}
+                    <div className="mt-8 flex flex-col-reverse items-center justify-between gap-4 border-t pt-6 pb-4 sm:flex-row">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="font-bold text-muted-foreground hover:text-foreground"
+                            onClick={() => router.visit(`${API}/locations`)}
+                        >
+                            Cancel
+                        </Button>
+                        <div className="flex w-full items-center gap-3 sm:w-auto">
+                            <Button
+                                type="submit"
+                                className="w-full px-8 font-bold shadow-sm sm:w-auto"
+                                disabled={processing || isSubmitting}
+                            >
+                                {processing || isSubmitting
+                                    ? 'Saving...'
+                                    : 'Update Location'}
+                            </Button>
+                        </div>
                     </div>
-
-                    {/* City */}
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={data.city}
-                        onChange={(e) => setData("city", e.target.value)}
-                        className={errors.city ? "border-red-500" : ""}
-                      />
-                      {errors.city && <p className="text-sm text-red-500">{errors.city}</p>}
-                    </div>
-
-                    {/* State */}
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State/Province</Label>
-                      <Input
-                        id="state"
-                        value={data.state}
-                        onChange={(e) => setData("state", e.target.value)}
-                        className={errors.state ? "border-red-500" : ""}
-                      />
-                      {errors.state && <p className="text-sm text-red-500">{errors.state}</p>}
-                    </div>
-
-                    {/* Address 1 */}
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address_line1">Address Line 1</Label>
-                      <Input
-                        id="address_line1"
-                        value={data.address_line1}
-                        onChange={(e) => setData("address_line1", e.target.value)}
-                        className={errors.address_line1 ? "border-red-500" : ""}
-                      />
-                      {errors.address_line1 && <p className="text-sm text-red-500">{errors.address_line1}</p>}
-                    </div>
-
-                    {/* Address 2 */}
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address_line2">Address Line 2</Label>
-                      <Input
-                        id="address_line2"
-                        value={data.address_line2}
-                        onChange={(e) => setData("address_line2", e.target.value)}
-                        className={errors.address_line2 ? "border-red-500" : ""}
-                      />
-                      {errors.address_line2 && <p className="text-sm text-red-500">{errors.address_line2}</p>}
-                    </div>
-
-                    {/* Postal */}
-                    <div className="space-y-2">
-                      <Label htmlFor="postal_code" className="flex items-center gap-2">
-                        <Hash className="h-4 w-4" />
-                        Postal Code
-                      </Label>
-                      <Input
-                        id="postal_code"
-                        value={data.postal_code}
-                        onChange={(e) => setData("postal_code", e.target.value)}
-                        className={errors.postal_code ? "border-red-500" : ""}
-                      />
-                      {errors.postal_code && <p className="text-sm text-red-500">{errors.postal_code}</p>}
-                    </div>
-
-                    {/* Lat */}
-                    <div className="space-y-2">
-                      <Label htmlFor="latitude">Latitude</Label>
-                      <Input
-                        id="latitude"
-                        value={data.latitude}
-                        onChange={(e) => setData("latitude", e.target.value)}
-                        className={errors.latitude ? "border-red-500" : ""}
-                      />
-                      {errors.latitude && <p className="text-sm text-red-500">{errors.latitude}</p>}
-                    </div>
-
-                    {/* Lng */}
-                    <div className="space-y-2">
-                      <Label htmlFor="longitude">Longitude</Label>
-                      <Input
-                        id="longitude"
-                        value={data.longitude}
-                        onChange={(e) => setData("longitude", e.target.value)}
-                        className={errors.longitude ? "border-red-500" : ""}
-                      />
-                      {errors.longitude && <p className="text-sm text-red-500">{errors.longitude}</p>}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-4 pt-6">
-                    <Button type="button" variant="outline" onClick={() => router.visit(PATHS.show)} disabled={processing}>
-                      Cancel
-                    </Button>
-
-                    <Button type="submit" disabled={processing || isSubmitting} className="min-w-[160px]" style={{ cursor: "pointer" }}>
-                      {processing || isSubmitting ? (
-                        <>
-                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </div>
                 </form>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Info */}
-          <div className="space-y-6">
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="text-lg">Editing Notes</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-muted-foreground">
-                <p>
-                  Keep timezone accurate for attendance and reporting.
-                </p>
-                <p>
-                  If you use mobile clock-in, GPS coordinates improve geo-fencing reliability.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </AppLayout>
-  );
+            </div>
+        </AppLayout>
+    );
 }

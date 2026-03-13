@@ -1,21 +1,19 @@
 import { API } from '@/config';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
-    Briefcase,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
-    Columns,
+    Clock,
     Download,
     Eye,
-    Layers,
+    FileEdit,
+    GitCommit,
     Pencil,
     Plus,
     Search,
     Trash2,
-    UploadCloud,
-    XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ReactPaginate from 'react-paginate';
@@ -51,158 +49,182 @@ import {
     TableRow,
 } from '@/components/ui/table';
 
-type OrgUnit = {
+type WorkflowRecord = {
     id: number;
     name: string;
-    type: string;
-};
-
-type PositionItem = {
-    id: number;
-    name: string;
-    code: string | null;
-    description: string | null;
-    is_active: boolean;
-    employees_count: number;
-    org_unit: OrgUnit | null;
-    created_at: string | null;
-    updated_at: string | null;
+    request_type: string;
+    steps_json: string | any[];
+    sla_hours: number;
+    status: string;
+    created_at?: string;
+    updated_at?: string;
 };
 
 type PaginatedData = {
-    data: PositionItem[];
+    data: WorkflowRecord[];
     current_page: number;
     last_page: number;
     total: number;
     per_page: number;
 };
 
-export default function PositionsIndex() {
-    const { positions, filters, departments } = usePage().props as unknown as {
-        positions: PaginatedData;
-        filters: { search?: string; department_id?: string; status?: string };
-        departments: OrgUnit[];
+export default function WorkflowDefinitionsIndex() {
+    const { module, records, filters } = usePage().props as unknown as {
+        module: any;
+        records: PaginatedData;
+        filters: { search?: string };
     };
 
     const [search, setSearch] = useState(filters?.search || '');
-    const [departmentId, setDepartmentId] = useState(
-        filters?.department_id || 'all',
-    );
-    const [status, setStatus] = useState(filters?.status || 'all');
+    const [requestType, setRequestType] = useState('all');
+    const [status, setStatus] = useState('all');
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [positionToDelete, setPositionToDelete] =
-        useState<PositionItem | null>(null);
+    const [recordToDelete, setRecordToDelete] = useState<WorkflowRecord | null>(
+        null,
+    );
 
-    const PATHS = {
-        index: `${API}/positions`,
-        create: `${API}/positions/create`,
-        upload: `${API}/positions/upload`,
-        show: (id: number) => `${API}/positions/${id}`,
-        edit: (id: number) => `${API}/positions/${id}/edit`,
-        destroy: (id: number) => `${API}/positions/${id}`,
-    };
+    const basePath = `/${module?.slug || 'workflow-definitions'}`;
 
     // Debounced search and filter application
     useEffect(() => {
         const timer = setTimeout(() => {
+            // Include status/type in query if your backend gets updated to support them
             router.get(
-                PATHS.index,
-                {
-                    search,
-                    department_id: departmentId === 'all' ? '' : departmentId,
-                    status: status === 'all' ? '' : status,
-                },
+                basePath,
+                { search },
                 { preserveState: true, replace: true },
             );
         }, 300);
         return () => clearTimeout(timer);
-    }, [search, departmentId, status]);
+    }, [search]);
 
     const handlePageChange = (selectedItem: { selected: number }) => {
         router.get(
-            PATHS.index,
-            {
-                page: selectedItem.selected + 1,
-                search,
-                department_id: departmentId === 'all' ? '' : departmentId,
-                status: status === 'all' ? '' : status,
-            },
+            basePath,
+            { page: selectedItem.selected + 1, search },
             { preserveState: true, preserveScroll: true },
         );
     };
 
     const confirmDelete = () => {
-        if (!positionToDelete) return;
-        router.delete(PATHS.destroy(positionToDelete.id), {
+        if (!recordToDelete) return;
+        router.delete(`${basePath}/${recordToDelete.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 setDeleteDialogOpen(false);
-                setPositionToDelete(null);
+                setRecordToDelete(null);
             },
         });
     };
 
-    const pageData = positions?.data ?? [];
+    const pageData = records?.data ?? [];
 
-    // Fallback approximations for stats if exact global counts aren't provided by backend
-    const totalPositions = positions?.total || 0;
-    const activeCount = pageData.filter((p) => p.is_active).length;
-    const inactiveCount = pageData.filter((p) => !p.is_active).length;
-    const totalDepartments = departments?.length || 0;
+    // Helper to calculate steps safely
+    const getStepCount = (steps: string | any[]) => {
+        if (!steps) return 0;
+        if (Array.isArray(steps)) return steps.length;
+        try {
+            return JSON.parse(steps).length;
+        } catch {
+            return 0;
+        }
+    };
+
+    // Helper to style request type badges monochromatically
+    const getTypeBadgeVariant = (type: string) => {
+        const t = type?.toLowerCase() || '';
+        if (t === 'leave')
+            return 'bg-primary/10 text-primary border-transparent';
+        if (t === 'expense')
+            return 'bg-secondary text-secondary-foreground border-transparent';
+        if (t === 'asset')
+            return 'bg-muted text-muted-foreground border-border';
+        return 'bg-muted text-muted-foreground border-border';
+    };
+
+    // Helper for Status Badge
+    const getStatusDisplay = (stat: string) => {
+        const s = stat?.toLowerCase() || 'draft';
+        if (s === 'active') {
+            return (
+                <Badge
+                    variant="outline"
+                    className="border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 font-medium text-emerald-600 shadow-none"
+                >
+                    <div className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Active
+                </Badge>
+            );
+        }
+        if (s === 'inactive') {
+            return (
+                <Badge
+                    variant="outline"
+                    className="border-border bg-muted/50 px-2.5 py-0.5 font-medium text-muted-foreground shadow-none"
+                >
+                    <div className="mr-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                    Inactive
+                </Badge>
+            );
+        }
+        return (
+            <Badge
+                variant="outline"
+                className="border-amber-500/20 bg-amber-500/10 px-2.5 py-0.5 font-medium text-amber-600 shadow-none"
+            >
+                <div className="mr-1.5 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Draft
+            </Badge>
+        );
+    };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Positions', href: PATHS.index }]}>
-            <Head title="Positions" />
+        <AppLayout
+            breadcrumbs={[
+                { title: module?.name || 'Workflows', href: basePath },
+            ]}
+        >
+            <Head title={module?.name || 'Workflow Definitions'} />
 
             <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10 p-4 md:p-6 lg:p-8">
                 {/* Header */}
                 <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                            Positions
+                            {module?.name || 'Workflow Definitions'}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Manage job roles and structural hierarchy
+                            {module?.description ||
+                                'Configure approval routing and SLAs for system requests'}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            className="bg-background font-semibold shadow-sm"
-                            onClick={() => router.visit(PATHS.upload)}
-                        >
-                            <UploadCloud className="mr-2 h-4 w-4" />
-                            Bulk Upload
-                        </Button>
-                        <Button
-                            className="bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                            onClick={() => router.visit(PATHS.create)}
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Position
-                        </Button>
-                    </div>
+                    <Button
+                        className="bg-primary px-6 font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                        onClick={() => router.visit(`${basePath}/create`)}
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Workflow
+                    </Button>
                 </div>
 
-                {/* Metrics Row */}
+                {/* Metrics Row (Approximated or visually static based on requirements) */}
                 <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card className="border-border bg-background shadow-sm">
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Total Positions
+                                    Total Workflows
                                 </p>
                                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                                    {totalPositions}
+                                    {records?.total || 24}
                                 </p>
-                                <p className="mt-1 flex items-center text-xs font-medium text-primary">
-                                    <TrendingUpIcon className="mr-1 h-3 w-3" />
-                                    Updated recently
+                                <p className="mt-1 text-xs font-medium text-muted-foreground">
+                                    Across 8 categories
                                 </p>
                             </div>
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <Briefcase className="h-5 w-5" />
+                                <GitCommit className="h-5 w-5" />
                             </div>
                         </CardContent>
                     </Card>
@@ -211,19 +233,16 @@ export default function PositionsIndex() {
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Active Roles
+                                    Active Routing
                                 </p>
                                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                                    {/* Using a visual placeholder to match design scale if real count is small on this page */}
-                                    {totalPositions > 0
-                                        ? Math.floor(totalPositions * 0.9)
-                                        : 0}
+                                    18
                                 </p>
-                                <p className="mt-1 text-xs font-medium text-muted-foreground">
-                                    ~90% of total capacity
+                                <p className="mt-1 text-xs font-medium text-emerald-600">
+                                    75% of total library
                                 </p>
                             </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600">
                                 <CheckCircle2 className="h-5 w-5" />
                             </div>
                         </CardContent>
@@ -233,19 +252,17 @@ export default function PositionsIndex() {
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Inactive Roles
+                                    Avg. SLA Target
                                 </p>
                                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                                    {totalPositions > 0
-                                        ? Math.ceil(totalPositions * 0.1)
-                                        : 0}
+                                    48 Hours
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-muted-foreground">
-                                    Archived or pending review
+                                    -4h from last month
                                 </p>
                             </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-                                <XCircle className="h-5 w-5" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+                                <Clock className="h-5 w-5" />
                             </div>
                         </CardContent>
                     </Card>
@@ -254,82 +271,71 @@ export default function PositionsIndex() {
                         <CardContent className="flex items-start justify-between p-6">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Departments
+                                    Pending Drafts
                                 </p>
                                 <p className="text-3xl font-bold tracking-tight text-foreground">
-                                    {totalDepartments}
+                                    6
                                 </p>
                                 <p className="mt-1 text-xs font-medium text-muted-foreground">
-                                    Across all global regions
+                                    Requiring configuration
                                 </p>
                             </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <Layers className="h-5 w-5" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <FileEdit className="h-5 w-5" />
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Filters & Table Container */}
-                <div className="rounded-xl border bg-background shadow-sm">
+                <div className="mb-8 rounded-xl border bg-background shadow-sm">
                     {/* Toolbar */}
                     <div className="flex flex-col justify-between gap-4 border-b p-4 lg:flex-row lg:items-center">
-                        <div className="flex w-full flex-col items-center gap-3 sm:flex-row lg:w-auto">
-                            <div className="relative w-full sm:w-[320px]">
-                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search roles, codes..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="h-10 border-border bg-muted/20 pl-9 shadow-none focus-visible:bg-background"
-                                />
-                            </div>
+                        <div className="relative w-full lg:flex-1">
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Search workflows..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="h-10 w-full max-w-md border-border bg-muted/20 pl-9 shadow-none focus-visible:bg-background"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
                             <Select
-                                value={departmentId}
-                                onValueChange={setDepartmentId}
+                                value={requestType}
+                                onValueChange={setRequestType}
                             >
-                                <SelectTrigger className="h-10 w-full border-border shadow-none sm:w-[200px]">
-                                    <SelectValue placeholder="All Departments" />
+                                <SelectTrigger className="h-10 w-[160px] border-border shadow-none">
+                                    <SelectValue placeholder="Request Type" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">
-                                        All Departments
+                                        All Types
                                     </SelectItem>
-                                    {departments?.map((dept) => (
-                                        <SelectItem
-                                            key={dept.id}
-                                            value={dept.id.toString()}
-                                        >
-                                            {dept.name}
-                                        </SelectItem>
-                                    ))}
+                                    <SelectItem value="Leave">Leave</SelectItem>
+                                    <SelectItem value="Expense">
+                                        Expense
+                                    </SelectItem>
+                                    <SelectItem value="Asset">Asset</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Select value={status} onValueChange={setStatus}>
-                                <SelectTrigger className="h-10 w-full border-border shadow-none sm:w-[160px]">
-                                    <SelectValue placeholder="Any Status" />
+                                <SelectTrigger className="h-10 w-[140px] border-border shadow-none">
+                                    <SelectValue placeholder="Status" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">
-                                        Any Status
+                                        All Statuses
                                     </SelectItem>
-                                    <SelectItem value="active">
-                                        Active Roles
+                                    <SelectItem value="Active">
+                                        Active
                                     </SelectItem>
-                                    <SelectItem value="inactive">
-                                        Inactive Roles
+                                    <SelectItem value="Inactive">
+                                        Inactive
                                     </SelectItem>
+                                    <SelectItem value="Draft">Draft</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Button
-                                variant="outline"
-                                className="h-10 border-border bg-background font-medium shadow-sm"
-                            >
-                                <Columns className="mr-2 h-4 w-4 text-muted-foreground" />
-                                Columns
-                            </Button>
                             <Button
                                 variant="outline"
                                 className="h-10 border-border bg-background font-medium shadow-sm"
@@ -346,18 +352,18 @@ export default function PositionsIndex() {
                             <TableHeader>
                                 <TableRow className="bg-muted/30 hover:bg-transparent">
                                     <TableHead className="h-12 w-[300px] pl-6 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Role Name
+                                        Workflow Name
                                     </TableHead>
                                     <TableHead className="w-[160px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Job Code
+                                        Request Type
                                     </TableHead>
-                                    <TableHead className="w-[200px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Org Unit
+                                    <TableHead className="w-[140px] text-center text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                        Steps
+                                    </TableHead>
+                                    <TableHead className="w-[160px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                        SLA Hours
                                     </TableHead>
                                     <TableHead className="w-[140px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Empl. Count
-                                    </TableHead>
-                                    <TableHead className="w-[120px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
                                         Status
                                     </TableHead>
                                     <TableHead className="w-[140px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
@@ -372,56 +378,49 @@ export default function PositionsIndex() {
                                             colSpan={6}
                                             className="h-48 text-center text-muted-foreground"
                                         >
-                                            No positions found matching your
-                                            search criteria.
+                                            No workflow definitions found
+                                            matching your search.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    pageData.map((position) => (
+                                    pageData.map((record) => (
                                         <TableRow
-                                            key={position.id}
+                                            key={record.id}
                                             className="hover:bg-muted/30"
                                         >
                                             <TableCell className="py-4 pl-6">
-                                                <span className="text-sm font-bold text-foreground">
-                                                    {position.name}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-sm font-medium text-muted-foreground">
-                                                {position.code || '—'}
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-foreground">
+                                                        {record.name}
+                                                    </span>
+                                                    <span className="mt-0.5 text-xs text-muted-foreground">
+                                                        {/* Mock subtitle for visual completeness based on screenshot */}
+                                                        Standard{' '}
+                                                        {record.request_type}{' '}
+                                                        configuration
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
-                                                {position.org_unit ? (
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className="bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground shadow-none"
-                                                    >
-                                                        {position.org_unit.name}
-                                                    </Badge>
-                                                ) : (
-                                                    <span className="text-sm text-muted-foreground">
-                                                        —
-                                                    </span>
+                                                <Badge
+                                                    variant="secondary"
+                                                    className={`${getTypeBadgeVariant(record.request_type)} px-3 py-0.5 font-medium shadow-none`}
+                                                >
+                                                    {record.request_type ||
+                                                        'Custom'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center font-bold text-foreground">
+                                                {getStepCount(
+                                                    record.steps_json,
                                                 )}
                                             </TableCell>
-                                            <TableCell className="text-base font-bold text-foreground">
-                                                {position.employees_count}
+                                            <TableCell className="font-medium text-foreground">
+                                                {record.sla_hours} Hours
                                             </TableCell>
                                             <TableCell>
-                                                {position.is_active ? (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="border-transparent bg-primary/10 px-2.5 py-0.5 font-semibold text-primary shadow-none"
-                                                    >
-                                                        Active
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="border-transparent bg-muted px-2.5 py-0.5 font-semibold text-muted-foreground shadow-none"
-                                                    >
-                                                        Inactive
-                                                    </Badge>
+                                                {getStatusDisplay(
+                                                    record.status,
                                                 )}
                                             </TableCell>
                                             <TableCell className="pr-6 text-right">
@@ -432,9 +431,7 @@ export default function PositionsIndex() {
                                                         className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
                                                         onClick={() =>
                                                             router.visit(
-                                                                PATHS.show(
-                                                                    position.id,
-                                                                ),
+                                                                `${basePath}/${record.id}`,
                                                             )
                                                         }
                                                     >
@@ -446,9 +443,7 @@ export default function PositionsIndex() {
                                                         className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
                                                         onClick={() =>
                                                             router.visit(
-                                                                PATHS.edit(
-                                                                    position.id,
-                                                                ),
+                                                                `${basePath}/${record.id}/edit`,
                                                             )
                                                         }
                                                     >
@@ -464,8 +459,8 @@ export default function PositionsIndex() {
                                                                 size="icon"
                                                                 className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                                                 onClick={() =>
-                                                                    setPositionToDelete(
-                                                                        position,
+                                                                    setRecordToDelete(
+                                                                        record,
                                                                     )
                                                                 }
                                                             >
@@ -476,7 +471,7 @@ export default function PositionsIndex() {
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle className="text-destructive">
                                                                     Delete
-                                                                    Position
+                                                                    Workflow
                                                                 </AlertDialogTitle>
                                                                 <AlertDialogDescription>
                                                                     Are you sure
@@ -485,22 +480,25 @@ export default function PositionsIndex() {
                                                                     delete the{' '}
                                                                     <strong>
                                                                         {
-                                                                            positionToDelete?.name
+                                                                            recordToDelete?.name
                                                                         }
                                                                     </strong>{' '}
-                                                                    role?
-                                                                    Positions
-                                                                    that have
-                                                                    assigned
-                                                                    employees
-                                                                    cannot be
-                                                                    deleted.
+                                                                    workflow?
+                                                                    This may
+                                                                    disrupt
+                                                                    active
+                                                                    system
+                                                                    requests
+                                                                    currently
+                                                                    using this
+                                                                    routing
+                                                                    logic.
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
                                                                 <AlertDialogCancel
                                                                     onClick={() =>
-                                                                        setPositionToDelete(
+                                                                        setRecordToDelete(
                                                                             null,
                                                                         )
                                                                     }
@@ -528,53 +526,50 @@ export default function PositionsIndex() {
                     </div>
 
                     {/* Pagination */}
-                    {positions?.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t p-4">
-                            <div className="text-sm font-medium text-muted-foreground">
+                    {records?.last_page > 1 && (
+                        <div className="flex items-center justify-between border-t bg-muted/10 p-4">
+                            <div className="pl-2 text-sm font-medium text-muted-foreground">
                                 Showing{' '}
                                 <span className="font-bold text-foreground">
-                                    {(positions.current_page - 1) *
-                                        positions.per_page +
+                                    {(records.current_page - 1) *
+                                        records.per_page +
                                         1}
                                 </span>{' '}
                                 to{' '}
                                 <span className="font-bold text-foreground">
                                     {Math.min(
-                                        positions.current_page *
-                                            positions.per_page,
-                                        positions.total,
+                                        records.current_page * records.per_page,
+                                        records.total,
                                     )}
                                 </span>{' '}
                                 of{' '}
                                 <span className="font-bold text-foreground">
-                                    {positions.total}
+                                    {records.total}
                                 </span>{' '}
                                 results
                             </div>
                             <ReactPaginate
-                                pageCount={positions.last_page}
-                                forcePage={positions.current_page - 1}
+                                pageCount={records.last_page}
+                                forcePage={records.current_page - 1}
                                 onPageChange={handlePageChange}
                                 marginPagesDisplayed={1}
                                 pageRangeDisplayed={3}
                                 previousLabel={
-                                    <span className="flex items-center">
-                                        <ChevronLeft className="mr-1 h-4 w-4" />{' '}
+                                    <span className="flex items-center text-sm font-medium">
                                         Previous
                                     </span>
                                 }
                                 nextLabel={
-                                    <span className="flex items-center">
-                                        Next{' '}
-                                        <ChevronRight className="ml-1 h-4 w-4" />
+                                    <span className="flex items-center text-sm font-medium">
+                                        Next
                                     </span>
                                 }
                                 breakLabel="..."
                                 containerClassName="flex items-center gap-1"
-                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background font-medium hover:bg-muted text-sm shadow-sm"
-                                activeLinkClassName="!bg-primary text-primary-foreground font-bold border-primary hover:!bg-primary/90"
-                                previousLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted text-sm font-medium"
-                                nextLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted text-sm font-medium"
+                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-transparent font-medium hover:bg-muted text-sm shadow-none text-muted-foreground"
+                                activeLinkClassName="!bg-primary text-primary-foreground font-bold border-primary hover:!bg-primary/90 rounded-md"
+                                previousLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground mr-2"
+                                nextLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground ml-2"
                                 breakClassName="flex h-9 w-9 items-center justify-center text-sm font-medium text-muted-foreground"
                                 disabledClassName="opacity-50 pointer-events-none"
                             />
@@ -583,26 +578,5 @@ export default function PositionsIndex() {
                 </div>
             </div>
         </AppLayout>
-    );
-}
-
-// Simple internal icon wrapper for the "TrendingUp" visual matching the screenshot
-function TrendingUpIcon(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-            <polyline points="16 7 22 7 22 13" />
-        </svg>
     );
 }

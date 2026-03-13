@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LocationController extends Controller
@@ -14,7 +16,7 @@ class LocationController extends Controller
     public function index(Request $request)
     {
         $filters = [
-            'search'  => $request->string('search')->toString(),
+            'search' => $request->string('search')->toString(),
             'country' => $request->string('country')->toString(),
         ];
 
@@ -22,19 +24,19 @@ class LocationController extends Controller
             ->withCount('orgUnits')
             ->orderBy('name');
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $s = $filters['search'];
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('city', 'like', "%{$s}%")
-                  ->orWhere('country', 'like', "%{$s}%")
-                  ->orWhere('timezone', 'like', "%{$s}%")
-                  ->orWhere('address_line1', 'like', "%{$s}%")
-                  ->orWhere('address_line2', 'like', "%{$s}%");
+                    ->orWhere('city', 'like', "%{$s}%")
+                    ->orWhere('country', 'like', "%{$s}%")
+                    ->orWhere('timezone', 'like', "%{$s}%")
+                    ->orWhere('address_line1', 'like', "%{$s}%")
+                    ->orWhere('address_line2', 'like', "%{$s}%");
             });
         }
 
-        if (!empty($filters['country'])) {
+        if (! empty($filters['country'])) {
             $query->where('country', $filters['country']);
         }
 
@@ -68,11 +70,78 @@ class LocationController extends Controller
             ->pluck('country')
             ->values();
 
+        // Calculate stats for the frontend cards
+        $stats = [
+            'total_locations' => Location::count(),
+            'total_countries' => Location::distinct('country')->count('country'),
+            'total_timezones' => Location::distinct('timezone')->count('timezone'),
+            'primary_hubs' => Location::has('orgUnits')->count(),
+        ];
+
         return Inertia::render('Locations/Index', [
             'locations' => $locations,
             'filters' => $filters,
             'countries' => $countries,
+            'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Export the filtered locations to Excel using OpenSpout
+     */
+    public function export(Request $request)
+    {
+        $search = $request->string('search')->toString();
+        $country = $request->string('country')->toString();
+
+        $query = Location::query()->withCount('orgUnits')->orderBy('name');
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%")
+                    ->orWhere('timezone', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($country)) {
+            $query->where('country', $country);
+        }
+
+        $writer = new Writer;
+        $writer->openToBrowser('locations_export_'.date('Y-m-d').'.xlsx');
+
+        // Headers
+        $writer->addRow(Row::fromValues([
+            'ID', 'Name', 'City', 'State/Province', 'Country', 'Postal Code',
+            'Address Line 1', 'Address Line 2', 'Timezone', 'Latitude', 'Longitude',
+            'Attached Org Units', 'Created At',
+        ]));
+
+        // Chunk data to prevent memory exhaustion on large datasets
+        $query->chunk(500, function ($locations) use ($writer) {
+            foreach ($locations as $location) {
+                $writer->addRow(Row::fromValues([
+                    $location->id,
+                    $location->name,
+                    $location->city,
+                    $location->state,
+                    $location->country,
+                    $location->postal_code,
+                    $location->address_line1,
+                    $location->address_line2,
+                    $location->timezone,
+                    $location->latitude,
+                    $location->longitude,
+                    $location->org_units_count,
+                    $location->created_at ? $location->created_at->format('Y-m-d H:i:s') : '',
+                ]));
+            }
+        });
+
+        $writer->close();
+        exit;
     }
 
     public function create()
@@ -83,7 +152,6 @@ class LocationController extends Controller
     public function store(Request $request)
     {
         $data = $this->validateLocation($request);
-
         $location = Location::create($data);
 
         return redirect()
@@ -110,15 +178,12 @@ class LocationController extends Controller
                 'postal_code' => $location->postal_code,
                 'latitude' => $location->latitude,
                 'longitude' => $location->longitude,
-
-                // Provide both list + count so your Show.tsx can use either
                 'org_units_count' => $location->orgUnits->count(),
                 'org_units' => $location->orgUnits->map(fn ($ou) => [
                     'id' => $ou->id,
                     'name' => $ou->name,
                     'type' => $ou->type,
                 ])->values(),
-
                 'created_at' => optional($location->created_at)->toDateTimeString(),
                 'updated_at' => optional($location->updated_at)->toDateTimeString(),
             ],
@@ -147,7 +212,6 @@ class LocationController extends Controller
     public function update(Request $request, Location $location)
     {
         $data = $this->validateLocation($request);
-
         $location->update($data);
 
         return redirect()
@@ -192,30 +256,13 @@ class LocationController extends Controller
             $out = fopen('php://output', 'w');
 
             fputcsv($out, [
-                'name',
-                'timezone',
-                'address_line1',
-                'address_line2',
-                'city',
-                'state',
-                'country',
-                'postal_code',
-                'latitude',
-                'longitude',
+                'name', 'timezone', 'address_line1', 'address_line2',
+                'city', 'state', 'country', 'postal_code', 'latitude', 'longitude',
             ]);
 
-            // Example rows
             fputcsv($out, [
-                'Harare HQ',
-                'Africa/Harare',
-                '123 Samora Machel Ave',
-                '4th Floor',
-                'Harare',
-                '',
-                'Zimbabwe',
-                '',
-                '-17.8252',
-                '31.0335'
+                'Harare HQ', 'Africa/Harare', '123 Samora Machel Ave', '4th Floor',
+                'Harare', '', 'Zimbabwe', '', '-17.8252', '31.0335',
             ]);
 
             fclose($out);
@@ -241,7 +288,7 @@ class LocationController extends Controller
             }
 
             $header = fgetcsv($handle);
-            if (!$header) {
+            if (! $header) {
                 fclose($handle);
                 throw new \RuntimeException('CSV file is empty.');
             }
@@ -249,9 +296,8 @@ class LocationController extends Controller
             $header = array_map(fn ($h) => Str::of($h)->trim()->lower()->toString(), $header);
             $idx = array_flip($header);
 
-            // Required columns
             foreach (['name', 'timezone'] as $col) {
-                if (!array_key_exists($col, $idx)) {
+                if (! array_key_exists($col, $idx)) {
                     fclose($handle);
                     throw new \RuntimeException("Missing required column: {$col}");
                 }
@@ -263,6 +309,7 @@ class LocationController extends Controller
 
                 if ($name === '' || $timezone === '') {
                     $skipped++;
+
                     continue;
                 }
 
@@ -279,7 +326,6 @@ class LocationController extends Controller
                     'longitude' => trim($row[$idx['longitude']] ?? '') ?: null,
                 ];
 
-                // Upsert by name (recommended: make location name unique in your business rules)
                 $existing = Location::where('name', $name)->first();
                 if ($existing) {
                     $existing->update($payload);
@@ -303,14 +349,12 @@ class LocationController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'timezone' => ['required', 'string', 'max:64'],
-
             'address_line1' => ['nullable', 'string', 'max:255'],
             'address_line2' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:128'],
             'state' => ['nullable', 'string', 'max:128'],
             'country' => ['nullable', 'string', 'max:128'],
             'postal_code' => ['nullable', 'string', 'max:32'],
-
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);

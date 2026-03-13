@@ -2,21 +2,23 @@ import { API } from '@/config';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-    Pencil,
-    Plus,
-    Trash2,
+    Building,
+    Building2,
+    Columns,
     Eye,
     Filter,
-    UploadCloud,
-    Search,
-    Settings2,
-    RotateCcw,
-    Building2,
-    Layers3,
-    Network,
     GitBranch,
     Info,
-    Building,
+    Layers3,
+    Network,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Search,
+    Trash2,
+    UploadCloud,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,14 +27,14 @@ import Swal from 'sweetalert2';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
-    DialogFooter,
-    DialogTitle,
     DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 import {
     DropdownMenu,
@@ -61,7 +63,6 @@ import {
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -92,7 +93,7 @@ type PageProps = {
         per_page: number;
     };
     filters: { search?: string; type?: string };
-    types: string[]; // e.g. COMPANY, SBU, DEPARTMENT, TEAM
+    types: string[];
 };
 
 const PATHS = {
@@ -110,40 +111,43 @@ const ALL_COLUMNS = [
     { key: 'parent', label: 'Parent' },
     { key: 'code', label: 'Code' },
     { key: 'children', label: 'Children' },
-    { key: 'effective', label: 'Effective' },
-    { key: 'created_at', label: 'Created' },
+    { key: 'effective', label: 'Effective Dates' },
+    { key: 'created_at', label: 'Created At' },
 ] as const;
 
+// Refactored to use semantic monochromatic classes
 function getTypeBadgeClass(type: string) {
     const map: Record<string, string> = {
-        COMPANY: 'bg-blue-600 text-white hover:bg-blue-700',
-        SBU: 'bg-emerald-600 text-white hover:bg-emerald-700',
-        DEPARTMENT: 'bg-indigo-600 text-white hover:bg-indigo-700',
-        TEAM: 'bg-purple-600 text-white hover:bg-purple-700',
+        COMPANY:
+            'bg-foreground text-background hover:bg-foreground border-transparent shadow-sm',
+        SBU: 'bg-primary/20 text-primary hover:bg-primary/30 border-transparent',
+        DEPARTMENT:
+            'bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent',
+        TEAM: 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
     };
-    return map[type] || 'bg-slate-600 text-white hover:bg-slate-700';
+    return map[type] || 'bg-muted text-muted-foreground border-border';
 }
 
 function formatDate(dateString?: string | null) {
     if (!dateString) return '—';
     const d = new Date(dateString);
     if (Number.isNaN(d.getTime())) return '—';
-    return moment(d).format('ll');
+    return moment(d).format('MMM DD, YYYY');
 }
 
 export default function OrgUnitsIndex() {
     const { orgUnits, filters, types } = usePage<PageProps>().props;
 
-    // ------- Filters -------
+    // Filters
     const [search, setSearch] = useState<string>(filters.search || '');
     const [type, setType] = useState<string>(filters.type || 'all');
 
-    // ------- Column Toggles -------
+    // Column Toggles
     const [visibleColumns, setVisibleColumns] = useState<string[]>([
         ...DEFAULT_VISIBLE,
     ]);
 
-    // ------- UI State -------
+    // UI State
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [orgUnitToDelete, setOrgUnitToDelete] =
         useState<OrgUnitListItem | null>(null);
@@ -157,7 +161,7 @@ export default function OrgUnitsIndex() {
 
     const resetColumns = () => setVisibleColumns([...DEFAULT_VISIBLE]);
 
-    // ------- Fetch filtered data (debounced) -------
+    // Fetch filtered data (debounced)
     useEffect(() => {
         const timer = setTimeout(() => {
             router.get(
@@ -170,7 +174,6 @@ export default function OrgUnitsIndex() {
         return () => clearTimeout(timer);
     }, [search, type]);
 
-    // ------- Handlers -------
     const resetFilters = () => {
         setSearch('');
         setType('all');
@@ -218,7 +221,7 @@ export default function OrgUnitsIndex() {
         });
     };
 
-    // ------- Stats (page-level) -------
+    // Stats
     const companyCount = useMemo(
         () => pageData.filter((x) => x.type === 'COMPANY').length,
         [pageData],
@@ -237,602 +240,522 @@ export default function OrgUnitsIndex() {
     );
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Org Units', href: PATHS.index }]}>
-            <Head title="Org Units" />
+        <AppLayout
+            breadcrumbs={[{ title: 'Organization Units', href: PATHS.index }]}
+        >
+            <Head title="Organization Units" />
 
-            <div className="mx-2 my-6 rounded-xl bg-background p-1 shadow-sm sm:mx-4 md:mx-8 md:p-6">
+            <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10 p-4 md:p-6 lg:p-8">
                 {/* Header */}
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
-                        <Network className="h-6 w-6 text-primary" />
-                        Org Unit Management
-                    </h1>
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                            Organization Units
+                        </h1>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Manage your corporate hierarchy, departments, and
+                            team structures.
+                        </p>
+                    </div>
 
-                    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                         <Button
-                            size="sm"
-                            variant="secondary"
+                            variant="outline"
                             asChild
-                            className="w-full sm:w-auto"
+                            className="w-full bg-background shadow-sm sm:w-auto"
                         >
-                            <Link
-                                href={PATHS.upload}
-                                className="flex items-center justify-center gap-2"
-                            >
-                                <UploadCloud className="h-4 w-4" />
-                                Bulk Upload Org Units
+                            <Link href={PATHS.upload}>
+                                <UploadCloud className="mr-2 h-4 w-4" />
+                                Bulk Upload
                             </Link>
                         </Button>
-
                         <Button
-                            size="sm"
-                            variant="secondary"
                             asChild
-                            className="w-full sm:w-auto"
+                            className="w-full font-semibold shadow-sm sm:w-auto"
                         >
-                            <Link
-                                href={PATHS.create}
-                                className="flex items-center justify-center gap-2"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Add New Org Unit
+                            <Link href={PATHS.create}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Org Unit
                             </Link>
                         </Button>
                     </div>
                 </div>
 
                 {/* Info Banner */}
-                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                    <div className="flex items-start gap-3">
-                        <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
-                        <div>
-                            <p className="font-medium text-blue-800">
-                                Manage your organizational structure
-                                dynamically.
-                            </p>
-                            <p className="mt-1 text-sm text-blue-600">
-                                Use filters to find specific companies, SBUs,
-                                departments, or teams. Ensure parent-child
-                                relationships remain intact before deleting.
-                            </p>
-                        </div>
+                <div className="mb-8 flex items-start gap-3 rounded-lg border bg-background p-4 shadow-sm">
+                    <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                    <div>
+                        <p className="text-sm font-semibold text-foreground">
+                            Structural Integrity Note
+                        </p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                            Use filters to find specific companies, SBUs,
+                            departments, or teams. Ensure parent-child
+                            relationships remain intact before reassigning or
+                            deleting units.
+                        </p>
                     </div>
                 </div>
 
-                {/* Filters — Mobile (Sheet) */}
-                <div className="mb-4 sm:hidden">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="outline" className="w-full gap-2">
-                                <Filter className="h-4 w-4" />
-                                Filters
-                            </Button>
-                        </SheetTrigger>
-
-                        <SheetContent side="top" className="space-y-4 p-4">
-                            <SheetHeader>
-                                <SheetTitle>Filter Org Units</SheetTitle>
-                            </SheetHeader>
-
-                            <div className="grid grid-cols-1 gap-3">
-                                {/* Search */}
-                                <div className="relative">
-                                    <Label
-                                        htmlFor="m-search"
-                                        className="sr-only"
-                                    >
-                                        Search
-                                    </Label>
-                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        id="m-search"
-                                        value={search}
-                                        onChange={(e) =>
-                                            setSearch(e.target.value)
-                                        }
-                                        placeholder="Search by name or code..."
-                                        className="w-full rounded border border-border bg-background py-2 pr-3 pl-9 text-sm"
-                                    />
-                                </div>
-
-                                {/* Type Filter */}
-                                <div>
-                                    <Label className="mb-1 block text-xs text-muted-foreground">
-                                        Org Unit Type
-                                    </Label>
-                                    <select
-                                        value={type}
-                                        onChange={(e) =>
-                                            setType(e.target.value)
-                                        }
-                                        className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-                                    >
-                                        <option value="all">All Types</option>
-                                        {types.map((t) => (
-                                            <option key={t} value={t}>
-                                                {t}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Columns */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="w-full justify-start gap-2"
-                                        >
-                                            <Settings2 className="h-4 w-4" />
-                                            Columns
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                        align="start"
-                                        className="w-60"
-                                    >
-                                        <DropdownMenuLabel>
-                                            Toggle Columns
-                                        </DropdownMenuLabel>
-                                        {ALL_COLUMNS.map((col) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={col.key}
-                                                checked={visibleColumns.includes(
-                                                    col.key,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleColumn(col.key)
-                                                }
-                                            >
-                                                {col.label}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                        <DropdownMenuSeparator />
-                                        <Button
-                                            variant="ghost"
-                                            className="h-8 w-full justify-start px-2 text-sm"
-                                            onClick={resetColumns}
-                                        >
-                                            <RotateCcw className="mr-2 h-4 w-4" />
-                                            Reset to defaults
-                                        </Button>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                {/* Actions */}
-                                <div className="flex flex-col gap-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={resetFilters}
-                                        className="w-full gap-2"
-                                        title="Reset all filters"
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                        Reset
-                                    </Button>
-
-                                    <SheetTrigger asChild>
-                                        <Button className="w-full">
-                                            Apply &amp; Close
-                                        </Button>
-                                    </SheetTrigger>
-                                </div>
-                            </div>
-                        </SheetContent>
-                    </Sheet>
-                </div>
-
-                {/* Filters — Desktop */}
-                <div className="mb-4 hidden flex-wrap items-center gap-2 sm:flex">
-                    {/* Search */}
-                    <div className="relative w-full sm:w-80">
-                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                        <Input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search by name or code..."
-                            className="w-full rounded border border-border bg-background py-2 pr-3 pl-9 text-sm"
-                        />
-                    </div>
-
-                    {/* Type Filter */}
-                    <div className="w-full sm:w-56">
-                        <select
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-                        >
-                            <option value="all">All Types</option>
-                            {types.map((t) => (
-                                <option key={t} value={t}>
-                                    {t}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Columns */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
-                                <Settings2 className="h-4 w-4" />
-                                Columns
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>
-                                Toggle Columns
-                            </DropdownMenuLabel>
-                            {ALL_COLUMNS.map((col) => (
-                                <DropdownMenuCheckboxItem
-                                    key={col.key}
-                                    checked={visibleColumns.includes(col.key)}
-                                    onCheckedChange={() =>
-                                        toggleColumn(col.key)
-                                    }
-                                >
-                                    {col.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                            <DropdownMenuSeparator />
-                            <Button
-                                variant="ghost"
-                                className="h-8 w-full justify-start px-2 text-sm"
-                                onClick={resetColumns}
-                            >
-                                <RotateCcw className="mr-2 h-4 w-4" />
-                                Reset to defaults
-                            </Button>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Button
-                        variant="outline"
-                        onClick={resetFilters}
-                        className="ml-auto flex w-full items-center gap-2 sm:w-auto"
-                        title="Reset all filters"
-                    >
-                        <RotateCcw className="h-4 w-4" />
-                        Reset
-                    </Button>
-                </div>
-
-                {/* Stats */}
-                <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Total Org Units
+                {/* Metrics Row */}
+                <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card className="border-border bg-background shadow-sm">
+                        <CardContent className="flex items-start justify-between p-6">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    Total Units
                                 </p>
-                                <p className="text-2xl font-bold">
+                                <p className="text-3xl font-bold tracking-tight text-foreground">
                                     {orgUnits.total}
                                 </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                    Visible on page: {pageData.length}
-                                </p>
                             </div>
-                            <div className="rounded-full bg-indigo-100 p-3">
-                                <Network className="h-6 w-6 text-indigo-600" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <Network className="h-5 w-5" />
                             </div>
-                        </div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Companies (this page)
+                    <Card className="border-border bg-background shadow-sm">
+                        <CardContent className="flex items-start justify-between p-6">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    Companies
                                 </p>
-                                <p className="text-2xl font-bold">
+                                <p className="text-3xl font-bold tracking-tight text-foreground">
                                     {companyCount}
                                 </p>
                             </div>
-                            <div className="rounded-full bg-indigo-100 p-3">
-                                <Building2 className="h-6 w-6 text-indigo-600" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <Building2 className="h-5 w-5" />
                             </div>
-                        </div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    SBUs (this page)
+                    <Card className="border-border bg-background shadow-sm">
+                        <CardContent className="flex items-start justify-between p-6">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    Active SBUs
                                 </p>
-                                <p className="text-2xl font-bold">{sbuCount}</p>
+                                <p className="text-3xl font-bold tracking-tight text-foreground">
+                                    {sbuCount}
+                                </p>
                             </div>
-                            <div className="rounded-full bg-emerald-100 p-3">
-                                <GitBranch className="h-6 w-6 text-emerald-600" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <GitBranch className="h-5 w-5" />
                             </div>
-                        </div>
+                        </CardContent>
                     </Card>
 
-                    <Card className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Dept/Teams (this page)
+                    <Card className="border-border bg-background shadow-sm">
+                        <CardContent className="flex items-start justify-between p-6">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    Depts / Teams
                                 </p>
-                                <p className="text-2xl font-bold">
+                                <p className="text-3xl font-bold tracking-tight text-foreground">
                                     {deptCount + teamCount}
                                 </p>
                             </div>
-                            <div className="rounded-full bg-blue-100 p-3">
-                                <Layers3 className="h-6 w-6 text-blue-600" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <Layers3 className="h-5 w-5" />
                             </div>
-                        </div>
+                        </CardContent>
                     </Card>
                 </div>
 
-                {/* Mobile cards */}
-                <div className="space-y-3 md:hidden">
-                    {pageData.length === 0 ? (
-                        <Card className="p-4 text-sm text-muted-foreground">
-                            No org units found.
-                        </Card>
-                    ) : (
-                        pageData.map((ou) => (
-                            <Card key={ou.id} className="space-y-3 border p-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2 truncate font-semibold">
-                                            <Network className="h-4 w-4 text-primary" />
-                                            {ou.name}
-                                        </div>
-                                        {ou.code && (
-                                            <div className="truncate text-xs text-muted-foreground">
-                                                Code: {ou.code}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col items-end gap-1">
-                                        <Badge
-                                            className={getTypeBadgeClass(
-                                                ou.type,
-                                            )}
-                                        >
-                                            {ou.type}
-                                        </Badge>
-                                    </div>
-                                </div>
+                {/* Filters & Table Container */}
+                <div className="rounded-xl border bg-background shadow-sm">
+                    {/* Toolbar */}
+                    <div className="flex flex-col justify-between gap-4 border-b p-4 lg:flex-row lg:items-center">
+                        <div className="flex w-full flex-col items-center gap-3 sm:flex-row lg:w-auto">
+                            {/* Search */}
+                            <div className="relative w-full sm:w-[320px]">
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by name or code..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="h-10 w-full border-border bg-muted/20 pl-9 shadow-none focus-visible:bg-background"
+                                />
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-y-1 text-sm text-muted-foreground">
-                                    <div className="font-medium text-foreground">
-                                        Parent:
-                                    </div>
-                                    <div className="truncate">
-                                        {ou.parent
-                                            ? `${ou.parent.name} (${ou.parent.type})`
-                                            : '—'}
-                                    </div>
+                            {/* Type Filter */}
+                            <Select value={type} onValueChange={setType}>
+                                <SelectTrigger className="h-10 w-full border-border shadow-none sm:w-[180px]">
+                                    <SelectValue placeholder="All Types" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All Types
+                                    </SelectItem>
+                                    {types.map((t) => (
+                                        <SelectItem key={t} value={t}>
+                                            {t}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                    <div className="font-medium text-foreground">
-                                        Children:
-                                    </div>
-                                    <div className="truncate">
-                                        {ou.children_count}
-                                    </div>
-
-                                    <div className="font-medium text-foreground">
-                                        Effective:
-                                    </div>
-                                    <div className="truncate">
-                                        {(ou.effective_from ?? '—') +
-                                            ' to ' +
-                                            (ou.effective_to ?? '—')}
-                                    </div>
-
-                                    <div className="font-medium text-foreground">
-                                        Created:
-                                    </div>
-                                    <div className="truncate">
-                                        {formatDate(ou.created_at)}
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap justify-end gap-2 pt-2">
+                        <div className="flex w-full items-center gap-3 lg:w-auto">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
                                     <Button
-                                        asChild
                                         variant="outline"
-                                        className="h-8 gap-1 px-3"
+                                        className="h-10 w-full border-border bg-background font-medium shadow-sm sm:w-auto"
                                     >
-                                        <Link href={PATHS.show(ou.id)}>
-                                            <Eye className="h-4 w-4" /> View
-                                        </Link>
+                                        <Columns className="mr-2 h-4 w-4 text-muted-foreground" />
+                                        Columns
                                     </Button>
-
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-48"
+                                >
+                                    <DropdownMenuLabel>
+                                        Toggle Columns
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {ALL_COLUMNS.map((col) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={col.key}
+                                            checked={visibleColumns.includes(
+                                                col.key,
+                                            )}
+                                            onCheckedChange={() =>
+                                                toggleColumn(col.key)
+                                            }
+                                        >
+                                            {col.label}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
                                     <Button
-                                        asChild
-                                        variant="secondary"
-                                        className="h-8 gap-1 px-3"
+                                        variant="ghost"
+                                        className="h-8 w-full justify-start px-2 text-sm"
+                                        onClick={resetColumns}
                                     >
-                                        <Link href={PATHS.edit(ou.id)}>
-                                            <Pencil className="h-4 w-4" /> Edit
-                                        </Link>
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        Reset defaults
                                     </Button>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
-                                    <Button
-                                        variant="destructive"
-                                        className="h-8 gap-1 px-3"
-                                        onClick={() => openDeleteDialog(ou)}
-                                    >
-                                        <Trash2 className="h-4 w-4" /> Delete
-                                    </Button>
-                                </div>
-                            </Card>
-                        ))
-                    )}
-                </div>
+                            <Button
+                                variant="outline"
+                                onClick={resetFilters}
+                                className="h-10 w-full border-border bg-background font-medium shadow-sm sm:w-auto"
+                                title="Reset all filters"
+                            >
+                                <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
+                                Reset
+                            </Button>
+                        </div>
+                    </div>
 
-                {/* Desktop table */}
-                <div className="hidden overflow-x-auto rounded-xl border md:block">
-                    <Table>
-                        <TableCaption>
-                            List of Org Units ({orgUnits.total} total)
-                        </TableCaption>
-                        <TableHeader>
-                            <TableRow>
-                                {visibleColumns.map((col) => {
-                                    const column = ALL_COLUMNS.find(
-                                        (c) => c.key === col,
-                                    );
-                                    return column ? (
-                                        <TableHead key={col}>
-                                            {column.label}
+                    {/* Table */}
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-muted/30 hover:bg-transparent">
+                                    {visibleColumns.includes('name') && (
+                                        <TableHead className="h-12 w-[300px] pl-6 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Organization Unit
                                         </TableHead>
-                                    ) : null;
-                                })}
-                                <TableHead className="text-right">
-                                    Actions
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {pageData.length > 0 ? (
-                                pageData.map((ou) => (
-                                    <TableRow key={ou.id}>
-                                        {visibleColumns.includes('name') && (
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-shrink-0">
-                                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                                                            <Building className="h-5 w-5 text-gray-700" />
+                                    )}
+                                    {visibleColumns.includes('type') && (
+                                        <TableHead className="w-[140px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Type
+                                        </TableHead>
+                                    )}
+                                    {visibleColumns.includes('parent') && (
+                                        <TableHead className="min-w-[200px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Parent Unit
+                                        </TableHead>
+                                    )}
+                                    {visibleColumns.includes('code') && (
+                                        <TableHead className="w-[120px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Code
+                                        </TableHead>
+                                    )}
+                                    {visibleColumns.includes('children') && (
+                                        <TableHead className="w-[100px] text-center text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Children
+                                        </TableHead>
+                                    )}
+                                    {visibleColumns.includes('effective') && (
+                                        <TableHead className="w-[160px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Effective
+                                        </TableHead>
+                                    )}
+                                    {visibleColumns.includes('created_at') && (
+                                        <TableHead className="w-[140px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                            Created
+                                        </TableHead>
+                                    )}
+                                    <TableHead className="w-[120px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                        Actions
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {pageData.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={visibleColumns.length + 1}
+                                            className="h-48 text-center text-muted-foreground"
+                                        >
+                                            No organization units found matching
+                                            your search criteria.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    pageData.map((ou) => (
+                                        <TableRow
+                                            key={ou.id}
+                                            className="hover:bg-muted/30"
+                                        >
+                                            {visibleColumns.includes(
+                                                'name',
+                                            ) && (
+                                                <TableCell className="py-4 pl-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+                                                            <Building className="h-4 w-4" />
                                                         </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium">
+                                                        <div className="flex flex-col">
                                                             <Link
                                                                 href={PATHS.show(
                                                                     ou.id,
                                                                 )}
-                                                                className="hover:underline"
+                                                                className="text-sm font-bold text-foreground transition-colors hover:text-primary"
                                                             >
                                                                 {ou.name}
                                                             </Link>
+                                                            {ou.cost_center && (
+                                                                <span className="mt-0.5 text-xs font-medium text-muted-foreground">
+                                                                    CC:{' '}
+                                                                    {
+                                                                        ou.cost_center
+                                                                    }
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {ou.cost_center
-                                                                ? `Cost Center: ${ou.cost_center}`
-                                                                : ''}
+                                                    </div>
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'type',
+                                            ) && (
+                                                <TableCell>
+                                                    <Badge
+                                                        className={`px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase ${getTypeBadgeClass(ou.type)}`}
+                                                    >
+                                                        {ou.type}
+                                                    </Badge>
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'parent',
+                                            ) && (
+                                                <TableCell>
+                                                    {ou.parent ? (
+                                                        <Link
+                                                            href={PATHS.show(
+                                                                ou.parent.id,
+                                                            )}
+                                                            className="group flex flex-col"
+                                                        >
+                                                            <span className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                                                                {ou.parent.name}
+                                                            </span>
+                                                            <span className="mt-0.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                                                {ou.parent.type}
+                                                            </span>
+                                                        </Link>
+                                                    ) : (
+                                                        <span className="text-sm text-muted-foreground italic">
+                                                            — Top Level —
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'code',
+                                            ) && (
+                                                <TableCell>
+                                                    {ou.code ? (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="bg-muted px-2 font-mono text-xs text-muted-foreground shadow-none"
+                                                        >
+                                                            {ou.code}
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">
+                                                            —
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'children',
+                                            ) && (
+                                                <TableCell className="text-center font-bold text-foreground">
+                                                    {ou.children_count > 0
+                                                        ? ou.children_count
+                                                        : '—'}
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'effective',
+                                            ) && (
+                                                <TableCell className="text-xs font-medium text-muted-foreground">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span>
+                                                            {ou.effective_from
+                                                                ? moment(
+                                                                      ou.effective_from,
+                                                                  ).format(
+                                                                      'MMM DD, YYYY',
+                                                                  )
+                                                                : '—'}
+                                                        </span>
+                                                        <span className="text-muted-foreground/50">
+                                                            to
+                                                        </span>
+                                                        <span>
+                                                            {ou.effective_to
+                                                                ? moment(
+                                                                      ou.effective_to,
+                                                                  ).format(
+                                                                      'MMM DD, YYYY',
+                                                                  )
+                                                                : 'Present'}
                                                         </span>
                                                     </div>
+                                                </TableCell>
+                                            )}
+
+                                            {visibleColumns.includes(
+                                                'created_at',
+                                            ) && (
+                                                <TableCell className="text-sm font-medium text-muted-foreground">
+                                                    {formatDate(ou.created_at)}
+                                                </TableCell>
+                                            )}
+
+                                            <TableCell className="pr-6 text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        asChild
+                                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                    >
+                                                        <Link
+                                                            href={PATHS.show(
+                                                                ou.id,
+                                                            )}
+                                                            title="View Details"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        asChild
+                                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                    >
+                                                        <Link
+                                                            href={PATHS.edit(
+                                                                ou.id,
+                                                            )}
+                                                            title="Edit Org Unit"
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                                        onClick={() =>
+                                                            openDeleteDialog(ou)
+                                                        }
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </TableCell>
-                                        )}
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
 
-                                        {visibleColumns.includes('type') && (
-                                            <TableCell>
-                                                <Badge
-                                                    className={getTypeBadgeClass(
-                                                        ou.type,
-                                                    )}
-                                                >
-                                                    {ou.type}
-                                                </Badge>
-                                            </TableCell>
-                                        )}
-
-                                        {visibleColumns.includes('parent') && (
-                                            <TableCell>
-                                                {ou.parent ? (
-                                                    <Link
-                                                        href={PATHS.show(
-                                                            ou.parent.id,
-                                                        )}
-                                                        className="text-sm hover:underline"
-                                                    >
-                                                        <span className="font-medium">
-                                                            {ou.parent.name}
-                                                        </span>
-                                                        <br />
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {ou.parent.type}
-                                                        </span>
-                                                    </Link>
-                                                ) : (
-                                                    <span className="text-sm text-muted-foreground">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </TableCell>
-                                        )}
-
-                                        {visibleColumns.includes('code') && (
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {ou.code ?? '—'}
-                                            </TableCell>
-                                        )}
-
-                                        {visibleColumns.includes(
-                                            'children',
-                                        ) && (
-                                            <TableCell>
-                                                <Badge variant="secondary">
-                                                    {ou.children_count}
-                                                </Badge>
-                                            </TableCell>
-                                        )}
-
-                                        {visibleColumns.includes(
-                                            'effective',
-                                        ) && (
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {ou.effective_from ?? '—'}{' '}
-                                                <br /> {ou.effective_to ?? '—'}
-                                            </TableCell>
-                                        )}
-
-                                        {visibleColumns.includes(
-                                            'created_at',
-                                        ) && (
-                                            <TableCell className="text-sm text-muted-foreground">
-                                                {formatDate(ou.created_at)}
-                                            </TableCell>
-                                        )}
-
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={PATHS.show(ou.id)}
-                                                    className="inline-flex cursor-pointer items-center justify-center rounded-full bg-blue-500 p-2 text-white hover:bg-blue-600"
-                                                    title="View"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                                <Link
-                                                    href={PATHS.edit(ou.id)}
-                                                    className="inline-flex cursor-pointer items-center justify-center rounded-full bg-yellow-500 p-2 text-white hover:bg-yellow-600"
-                                                    title="Edit"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
-                                                <button
-                                                    onClick={() =>
-                                                        openDeleteDialog(ou)
-                                                    }
-                                                    className="inline-flex cursor-pointer items-center justify-center rounded-full bg-red-600 p-2 text-white hover:bg-red-700"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={visibleColumns.length + 1}
-                                        className="text-center text-gray-500"
-                                    >
-                                        No org units found. Try adjusting your
-                                        filters.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    {/* Pagination */}
+                    {orgUnits.last_page > 1 && (
+                        <div className="flex items-center justify-between border-t bg-muted/10 p-4">
+                            <div className="pl-2 text-sm font-medium text-muted-foreground">
+                                Showing{' '}
+                                <span className="font-bold text-foreground">
+                                    {(orgUnits.current_page - 1) *
+                                        orgUnits.per_page +
+                                        1}
+                                </span>{' '}
+                                to{' '}
+                                <span className="font-bold text-foreground">
+                                    {Math.min(
+                                        orgUnits.current_page *
+                                            orgUnits.per_page,
+                                        orgUnits.total,
+                                    )}
+                                </span>{' '}
+                                of{' '}
+                                <span className="font-bold text-foreground">
+                                    {orgUnits.total}
+                                </span>{' '}
+                                entries
+                            </div>
+                            <ReactPaginate
+                                pageCount={orgUnits.last_page}
+                                forcePage={orgUnits.current_page - 1}
+                                onPageChange={handlePageChange}
+                                marginPagesDisplayed={1}
+                                pageRangeDisplayed={3}
+                                previousLabel={
+                                    <span className="flex items-center text-sm font-medium">
+                                        <ChevronLeft className="mr-1 h-4 w-4" />{' '}
+                                        Prev
+                                    </span>
+                                }
+                                nextLabel={
+                                    <span className="flex items-center text-sm font-medium">
+                                        Next{' '}
+                                        <ChevronRight className="ml-1 h-4 w-4" />
+                                    </span>
+                                }
+                                breakLabel="..."
+                                containerClassName="flex items-center gap-1"
+                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-transparent font-medium hover:bg-muted text-sm shadow-none text-muted-foreground"
+                                activeLinkClassName="!bg-primary text-primary-foreground font-bold border-primary hover:!bg-primary/90 rounded-md"
+                                previousLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground mr-2"
+                                nextLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground ml-2"
+                                breakClassName="flex h-9 w-9 items-center justify-center text-sm font-medium text-muted-foreground"
+                                disabledClassName="opacity-50 pointer-events-none"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* Delete Confirmation Dialog */}
@@ -842,16 +765,23 @@ export default function OrgUnitsIndex() {
                 >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Delete Org Unit</DialogTitle>
+                            <DialogTitle className="text-destructive">
+                                Delete Organization Unit?
+                            </DialogTitle>
                             <DialogDescription>
-                                Are you sure you want to delete{' '}
+                                Are you sure you want to permanently delete{' '}
                                 <strong>{orgUnitToDelete?.name}</strong>? This
                                 action cannot be undone.
                                 <br />
-                                If it has child org units, deletion may fail.
+                                <br />
+                                <span className="font-semibold text-foreground">
+                                    Note:
+                                </span>{' '}
+                                Deletion will fail if this unit currently has
+                                child departments or assigned employees.
                             </DialogDescription>
                         </DialogHeader>
-                        <DialogFooter className="flex justify-end gap-2">
+                        <DialogFooter className="mt-4 flex gap-2 sm:justify-end">
                             <Button
                                 variant="outline"
                                 onClick={() => setDeleteDialogOpen(false)}
@@ -859,36 +789,14 @@ export default function OrgUnitsIndex() {
                                 Cancel
                             </Button>
                             <Button
-                                onClick={confirmDelete}
                                 variant="destructive"
+                                onClick={confirmDelete}
                             >
-                                Confirm Delete
+                                Yes, Delete Unit
                             </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-
-                {/* Pagination */}
-                {orgUnits.last_page > 1 && (
-                    <div className="mt-4 flex justify-center">
-                        <ReactPaginate
-                            pageCount={orgUnits.last_page}
-                            forcePage={orgUnits.current_page - 1}
-                            onPageChange={handlePageChange}
-                            marginPagesDisplayed={1}
-                            pageRangeDisplayed={3}
-                            previousLabel="← Previous"
-                            nextLabel="Next →"
-                            breakLabel="..."
-                            containerClassName="flex items-center gap-2 text-sm"
-                            pageClassName="rounded border px-3 py-1 hover:bg-muted"
-                            activeClassName="bg-blue-600 text-white"
-                            previousClassName="rounded border px-3 py-1 hover:bg-muted"
-                            nextClassName="rounded border px-3 py-1 hover:bg-muted"
-                            breakClassName="px-2"
-                        />
-                    </div>
-                )}
             </div>
         </AppLayout>
     );

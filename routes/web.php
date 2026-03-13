@@ -56,7 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/org-units/template', [OrgUnitController::class, 'downloadTemplate'])->name('org-units.template');
     Route::post('/org-units/import', [OrgUnitController::class, 'import'])->name('org-units.import');
     Route::resource('org-units', OrgUnitController::class);
-
+    Route::get('/locations/export', [LocationController::class, 'export'])->name('locations.export');
     Route::get('/locations/upload', [LocationController::class, 'upload'])->name('locations.upload');
     Route::get('/locations/template', [LocationController::class, 'downloadTemplate'])->name('locations.template');
     Route::post('/locations/import', [LocationController::class, 'import'])->name('locations.import');
