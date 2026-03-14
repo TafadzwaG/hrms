@@ -8,9 +8,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Database,
-    FileText,
-    Info,
-    LayoutList,
     Save,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -86,8 +83,8 @@ export default function JobRequisitionEdit() {
             <Head title="Edit Requisition" />
 
             <div className="flex min-h-[calc(100vh-64px)] w-full flex-col bg-muted/10">
-                {/* Main Content Area - Centered Layout */}
-                <div className="mx-auto w-full max-w-4xl flex-1 p-4 md:p-8 lg:px-12">
+                {/* CHANGED: Removed max-w-4xl mx-auto to make it span full width */}
+                <div className="w-full flex-1 p-4 md:p-8 lg:p-12">
                     <div className="mb-12">
                         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                             Edit Requisition
@@ -114,7 +111,7 @@ export default function JobRequisitionEdit() {
                             return (
                                 <div
                                     key={step.id}
-                                    className="relative z-10 flex flex-col items-center gap-3 bg-muted/10 px-2"
+                                    className="relative z-10 flex flex-col items-center gap-3 bg-muted/10 px-2 sm:px-6"
                                 >
                                     <div
                                         className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
@@ -175,22 +172,6 @@ export default function JobRequisitionEdit() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-8 p-6 md:p-8">
-                                        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-5">
-                                            <Info className="mt-0.5 h-5 w-5 shrink-0 text-foreground" />
-                                            <div>
-                                                <p className="text-sm font-bold text-foreground">
-                                                    Budget Review Note
-                                                </p>
-                                                <p className="mt-1 text-sm leading-relaxed font-medium text-muted-foreground">
-                                                    If modifying the job title
-                                                    or department, ensure the
-                                                    salary range still aligns
-                                                    with the approved
-                                                    departmental budget.
-                                                </p>
-                                            </div>
-                                        </div>
-
                                         <div className="space-y-3">
                                             <Label className="text-sm font-semibold">
                                                 Job Title
@@ -213,7 +194,7 @@ export default function JobRequisitionEdit() {
                                             )}
                                         </div>
 
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-12">
                                             <div className="space-y-3">
                                                 <Label className="text-sm font-semibold">
                                                     Department
@@ -301,7 +282,7 @@ export default function JobRequisitionEdit() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-8 p-6 md:p-8">
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3 xl:gap-12">
                                             <div className="space-y-3">
                                                 <Label className="text-sm font-semibold">
                                                     Number of Openings
@@ -356,7 +337,7 @@ export default function JobRequisitionEdit() {
                                                 )}
                                             </div>
 
-                                            <div className="space-y-3 md:col-span-2">
+                                            <div className="space-y-3 md:col-span-2 xl:col-span-1">
                                                 <Label className="text-sm font-semibold">
                                                     Current Status
                                                 </Label>
@@ -407,7 +388,7 @@ export default function JobRequisitionEdit() {
                         {currentStep === 3 && (
                             <div className="animate-in duration-500 fade-in slide-in-from-right-4">
                                 <Card className="border-border shadow-sm">
-                                    <CardHeader className="border-b border-border/50 pb-5">
+                                    <CardHeader className="border-b border-border/50 bg-muted/5 pb-5">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-muted-foreground">
                                                 <Database className="h-5 w-5" />
@@ -417,32 +398,26 @@ export default function JobRequisitionEdit() {
                                                     System Data
                                                 </CardTitle>
                                                 <p className="text-sm text-muted-foreground">
-                                                    Finalize database tracking
+                                                    Review database tracking
                                                     identifiers.
                                                 </p>
                                             </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="p-6 md:p-8">
-                                        <div className="space-y-3">
+                                        <div className="max-w-lg space-y-3">
                                             <Label className="text-sm font-semibold">
                                                 Requisition Code
                                             </Label>
                                             <Input
+                                                disabled
                                                 value={data.requisition_code}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'requisition_code',
-                                                        e.target.value.toUpperCase(),
-                                                    )
-                                                }
-                                                className={`h-11 bg-background font-mono text-base uppercase ${errors.requisition_code ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                                                className="h-11 cursor-not-allowed border-transparent bg-muted/50 font-mono text-base font-bold text-foreground select-none"
                                             />
-                                            {errors.requisition_code && (
-                                                <p className="text-xs font-medium text-destructive">
-                                                    {errors.requisition_code}
-                                                </p>
-                                            )}
+                                            <p className="text-xs font-medium text-muted-foreground">
+                                                System-generated unique
+                                                identifier (Immutable).
+                                            </p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -451,8 +426,8 @@ export default function JobRequisitionEdit() {
                     </form>
                 </div>
 
-                {/* Sticky Footer Navigation */}
-                <div className="sticky bottom-0 z-40 flex items-center justify-between border-t bg-background p-4 px-6 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.05)] md:px-12">
+                {/* CHANGED: Sticky Footer Navigation now spans full width implicitly within the flex column */}
+                <div className="sticky bottom-0 z-40 flex w-full items-center justify-between border-t bg-background p-4 px-6 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.05)] md:px-12">
                     <div className="flex items-center gap-2">
                         <Button
                             type="button"

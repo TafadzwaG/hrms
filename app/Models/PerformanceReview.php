@@ -3,19 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class PerformanceReview extends Model
-{    protected $fillable = [
+{
+    protected $fillable = [
         'employee_id',
         'cycle_name',
         'reviewer_name',
         'rating',
         'status',
         'review_date',
-        'comments'
+        'comments',
     ];
+
     protected $casts = [
         'rating' => 'decimal:2',
-        'review_date' => 'date'
+        'review_date' => 'date',
     ];
-}
 
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+}

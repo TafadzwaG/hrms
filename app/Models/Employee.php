@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -37,9 +38,11 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function leaveRequest(): HasMany {
+    public function leaveRequest(): HasMany
+    {
         return $this->hasMany(LeaveRequest::class);
     }
+
     public function orgUnit(): BelongsTo
     {
         return $this->belongsTo(OrgUnit::class, 'org_unit_id');
@@ -60,14 +63,29 @@ class Employee extends Model
         return $this->belongsTo(Employee::class, 'manager_id');
     }
 
+    public function onboardingTasks(): HasMany
+    {
+        return $this->hasMany(OnboardingTask::class);
+    }
+
+    public function performanceReviews(): HasMany
+    {
+        return $this->hasMany(PerformanceReview::class);
+    }
+
     public function directReports(): HasMany
     {
         return $this->hasMany(Employee::class, 'manager_id');
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class, 'owner_employee_id');
+    }
+
     // Helpful computed full name (optional)
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . ($this->middle_name ? $this->middle_name . ' ' : '') . $this->surname);
+        return trim($this->first_name.' '.($this->middle_name ? $this->middle_name.' ' : '').$this->surname);
     }
 }

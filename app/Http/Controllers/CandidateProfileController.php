@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CandidateProfile;
+use App\Models\JobRequisition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -14,23 +15,32 @@ class CandidateProfileController extends Controller
 {
     private const MODULE_KEY = 'candidate_profiles';
 
+    private const PAGE_ROOT = 'CandidateProfiles';
+
     public function index(Request $request)
     {
         $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
 
-        $query = CandidateProfile::query();
+        $query = CandidateProfile::query()
+            ->with('requisition');
 
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
-            $query->where(function (Builder $builder) use ($search, $searchable) {
-                foreach ($searchable as $idx => $column) {
-                    if ($idx === 0) {
-                        $builder->where($column, 'like', "%{$search}%");
-                    } else {
-                        $builder->orWhere($column, 'like', "%{$search}%");
-                    }
-                }
+        if ($search !== '') {
+            $query->where(function (Builder $builder) use ($search) {
+                $builder
+                    ->where('requisition_code', 'like', "%{$search}%")
+                    ->orWhere('full_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('stage', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('requisition', function (Builder $requisitionQuery) use ($search) {
+                        $requisitionQuery
+                            ->where('requisition_code', 'like', "%{$search}%")
+                            ->orWhere('title', 'like', "%{$search}%")
+                            ->orWhere('department', 'like', "%{$search}%")
+                            ->orWhere('hiring_manager', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -39,7 +49,7 @@ class CandidateProfileController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
+        return Inertia::render(self::PAGE_ROOT.'/Index', [
             'module' => $this->moduleMeta(),
             'records' => $records,
             'filters' => [
@@ -48,12 +58,29 @@ class CandidateProfileController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('Modules/Form', [
+        $selectedRequisitionCode = $request->string('requisition_code')->toString();
+
+        return Inertia::render(self::PAGE_ROOT.'/Create', [
             'module' => $this->moduleMeta(),
-            'mode' => 'create',
             'record' => null,
+            'requisitions' => $this->requisitionOptions(),
+            'selected_requisition_code' => $selectedRequisitionCode !== '' ? $selectedRequisitionCode : null,
+            'stages' => $this->candidateStages(),
+            'statuses' => $this->candidateStatuses(),
+        ]);
+    }
+
+    public function createForRequisition(JobRequisition $jobRequisition)
+    {
+        return Inertia::render(self::PAGE_ROOT.'/Create', [
+            'module' => $this->moduleMeta(),
+            'record' => null,
+            'requisitions' => $this->requisitionOptions(),
+            'selected_requisition_code' => $jobRequisition->requisition_code,
+            'stages' => $this->candidateStages(),
+            'statuses' => $this->candidateStatuses(),
         ]);
     }
 
@@ -61,18 +88,18 @@ class CandidateProfileController extends Controller
     {
         $validated = $request->validate($this->validationRules());
 
-        CandidateProfile::create($validated);
+        $candidate = CandidateProfile::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$candidate->id)
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' created successfully.');
     }
 
     public function show(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Show', [
+        return Inertia::render(self::PAGE_ROOT.'/Show', [
             'module' => $this->moduleMeta(),
             'record' => $record,
         ]);
@@ -82,10 +109,13 @@ class CandidateProfileController extends Controller
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
 
-        return Inertia::render('Modules/Form', [
+        return Inertia::render(self::PAGE_ROOT.'/Edit', [
             'module' => $this->moduleMeta(),
-            'mode' => 'edit',
             'record' => $record,
+            'requisitions' => $this->requisitionOptions(),
+            'selected_requisition_code' => $record->requisition_code,
+            'stages' => $this->candidateStages(),
+            'statuses' => $this->candidateStatuses(),
         ]);
     }
 
@@ -99,8 +129,8 @@ class CandidateProfileController extends Controller
         $slug = Arr::get($this->moduleConfig(), 'slug');
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->to('/'.$slug.'/'.$record->id)
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' updated successfully.');
     }
 
     public function destroy(Request $request)
@@ -109,8 +139,8 @@ class CandidateProfileController extends Controller
         $record->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+            ->with('success', Arr::get($this->moduleConfig(), 'name').' deleted successfully.');
     }
 
     private function moduleMeta(): array
@@ -144,10 +174,10 @@ class CandidateProfileController extends Controller
 
     private function moduleConfig(): array
     {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
+        $config = config('hrms_modules.'.self::MODULE_KEY, []);
 
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
+        if (! is_array($config) || empty($config)) {
+            abort(500, 'Module configuration missing for key: '.self::MODULE_KEY);
         }
 
         return $config;
@@ -161,8 +191,12 @@ class CandidateProfileController extends Controller
         foreach ($fields as $name => $field) {
             $fieldRules = $field['rules'] ?? ['nullable'];
 
+            if ($name === 'requisition_code') {
+                $fieldRules[] = Rule::exists((new JobRequisition)->getTable(), 'requisition_code');
+            }
+
             if (($field['unique'] ?? false) === true) {
-                $table = (new CandidateProfile())->getTable();
+                $table = (new CandidateProfile)->getTable();
                 $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
             }
 
@@ -172,9 +206,11 @@ class CandidateProfileController extends Controller
         return $rules;
     }
 
-    private function findOrFail(string $id): Model
+    private function findOrFail(string $id): CandidateProfile
     {
-        return CandidateProfile::query()->findOrFail($id);
+        return CandidateProfile::query()
+            ->with('requisition')
+            ->findOrFail($id);
     }
 
     private function resolveRouteRecordId(Request $request): string
@@ -192,5 +228,50 @@ class CandidateProfileController extends Controller
         }
 
         abort(404, 'Record not found.');
+    }
+
+    private function requisitionOptions(): array
+    {
+        return JobRequisition::query()
+            ->orderByDesc('id')
+            ->get(['id', 'requisition_code', 'title', 'department', 'status', 'hiring_manager'])
+            ->map(function (JobRequisition $requisition) {
+                return [
+                    'id' => $requisition->id,
+                    'requisition_code' => $requisition->requisition_code,
+                    'title' => $requisition->title,
+                    'department' => $requisition->department,
+                    'status' => $requisition->status,
+                    'hiring_manager' => $requisition->hiring_manager,
+                    'label' => $requisition->requisition_code.' - '.$requisition->title,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function candidateStages(): array
+    {
+        return [
+            'Applied',
+            'Screening',
+            'Interview',
+            'Assessment',
+            'Offer',
+            'Hired',
+            'Rejected',
+        ];
+    }
+
+    private function candidateStatuses(): array
+    {
+        return [
+            'Active',
+            'On Hold',
+            'Shortlisted',
+            'Rejected',
+            'Hired',
+            'Withdrawn',
+        ];
     }
 }

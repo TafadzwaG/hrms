@@ -145,12 +145,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{payroll_export}/pdf', [PayrollExportController::class, 'downloadPdfSummary']);
     });
     Route::resource('job-requisitions', JobRequisitionController::class);
+    Route::get(
+        'job-requisitions/{jobRequisition}/candidates/create',
+        [CandidateProfileController::class, 'createForRequisition']
+    )->name('job-requisitions.candidates.create');
     Route::resource('candidates', CandidateProfileController::class);
     Route::resource('onboarding-tasks', OnboardingTaskController::class);
     Route::resource('offboarding-tasks', OffboardingTaskController::class);
     Route::resource('performance-reviews', PerformanceReviewController::class);
     Route::resource('learning-courses', LearningCourseController::class);
     Route::resource('document-types', DocumentTypeController::class);
+    Route::get('documents/trash', [DocumentController::class, 'trash'])->name('documents.trash');
+    Route::post('documents/{id}/restore', [DocumentController::class, 'restore'])->name('documents.restore');
+    Route::delete('documents/{id}/force-destroy', [DocumentController::class, 'forceDestroy'])->name('documents.force-destroy');
     Route::resource('documents', DocumentController::class);
 
     Route::middleware([

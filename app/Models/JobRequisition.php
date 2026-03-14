@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JobRequisition extends Model
 {
@@ -20,14 +21,10 @@ class JobRequisition extends Model
         'target_start_date' => 'date',
     ];
 
-    /**
-     * Boot the model.
-     */
     protected static function boot()
     {
         parent::boot();
 
-        // Listen for the 'creating' event to auto-generate the requisition code
         static::creating(function ($model) {
             if (empty($model->requisition_code)) {
                 $model->requisition_code = self::generateUniqueCode();
@@ -35,15 +32,15 @@ class JobRequisition extends Model
         });
     }
 
-    /**
-     * Generate a unique Requisition Code.
-     * Format: REQ-{YEAR}-{000X}
-     */
+    public function candidates(): HasMany
+    {
+        return $this->hasMany(CandidateProfile::class, 'requisition_code', 'requisition_code');
+    }
+
     private static function generateUniqueCode(): string
     {
         $year = date('Y');
 
-        // Get the latest requisition created this year
         $latestRequisition = self::where('requisition_code', 'like', "REQ-{$year}-%")
             ->orderBy('id', 'desc')
             ->first();
@@ -51,16 +48,14 @@ class JobRequisition extends Model
         if (! $latestRequisition) {
             $number = 1;
         } else {
-            // Extract the sequence number from the latest code (e.g., "REQ-2024-012" -> "012")
             $parts = explode('-', $latestRequisition->requisition_code);
             $number = intval(end($parts)) + 1;
         }
 
-        // Format the new code with padding (e.g., REQ-2024-001)
         do {
             $code = sprintf('REQ-%s-%03d', $year, $number);
             $number++;
-        } while (self::where('requisition_code', $code)->exists()); // Double check uniqueness
+        } while (self::where('requisition_code', $code)->exists());
 
         return $code;
     }

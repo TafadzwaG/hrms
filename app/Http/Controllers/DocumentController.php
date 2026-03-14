@@ -3,194 +3,273 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\DocumentType;
+use App\Models\Employee;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DocumentController extends Controller
 {
-    private const MODULE_KEY = 'documents';
-
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
+        $search = trim((string) $request->input('search', ''));
+        $accessPolicy = (string) $request->input('access_policy', 'all');
+        $documentTypeId = $request->input('document_type_id', 'all');
+        $ownerEmployeeId = $request->input('owner_employee_id', 'all');
+        $expiryState = (string) $request->input('expiry_state', 'all');
 
-        $query = Document::query();
-
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
-            $query->where(function (Builder $builder) use ($search, $searchable) {
-                foreach ($searchable as $idx => $column) {
-                    if ($idx === 0) {
-                        $builder->where($column, 'like', "%{$search}%");
-                    } else {
-                        $builder->orWhere($column, 'like', "%{$search}%");
-                    }
-                }
-            });
-        }
-
-        $records = $query
+        $documents = Document::query()
+            ->with([
+                'documentType:id,code,name,sensitivity_level',
+                'ownerEmployee:id,first_name,middle_name,surname,staff_number',
+            ])
+            ->search($search)
+            ->accessPolicy($accessPolicy)
+            ->documentTypeFilter($documentTypeId)
+            ->ownerFilter($ownerEmployeeId)
+            ->expiryState($expiryState)
+            ->orderByDesc('issue_date')
             ->orderByDesc('id')
-            ->paginate(12)
+            ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
-            'module' => $this->moduleMeta(),
-            'records' => $records,
+        $statsBase = Document::query();
+
+        return Inertia::render('Documents/Index', [
+            'documents' => $documents,
             'filters' => [
                 'search' => $search,
+                'access_policy' => $accessPolicy,
+                'document_type_id' => (string) $documentTypeId,
+                'owner_employee_id' => (string) $ownerEmployeeId,
+                'expiry_state' => $expiryState,
+            ],
+            'accessPolicyOptions' => $this->accessPolicyOptions(),
+            'expiryStateOptions' => $this->expiryStateOptions(),
+            'documentTypes' => $this->documentTypes(),
+            'employees' => $this->employees(),
+            'stats' => [
+                'total' => (clone $statsBase)->count(),
+                'expired' => (clone $statsBase)->whereDate('expiry_date', '<', now()->startOfDay())->count(),
+                'expiring_30' => (clone $statsBase)
+                    ->whereDate('expiry_date', '>=', now()->startOfDay())
+                    ->whereDate('expiry_date', '<=', now()->addDays(30)->endOfDay())
+                    ->count(),
+                'restricted' => (clone $statsBase)->where('access_policy', 'restricted')->count(),
             ],
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'create',
-            'record' => null,
+        return Inertia::render('Documents/Create', [
+            'employees' => $this->employees(),
+            'documentTypes' => $this->documentTypes(),
+            'accessPolicyOptions' => $this->accessPolicyOptions(),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules());
+        $validated = $this->validatedPayload($request);
 
-        Document::create($validated);
+        $document = Document::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->route('documents.show', $document)
+            ->with('success', 'Document created successfully.');
     }
 
-    public function show(Request $request)
+    public function show(Document $document): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $document->load([
+            'documentType:id,code,name,retention_policy,sensitivity_level',
+            'ownerEmployee:id,first_name,middle_name,surname,staff_number',
+        ]);
 
-        return Inertia::render('Modules/Show', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
+        return Inertia::render('Documents/Show', [
+            'document' => [
+                ...$document->toArray(),
+                'metadata_pretty' => $document->metadata_pretty,
+                'is_expired' => $document->isExpired(),
+                'is_expiring_soon' => $document->isExpiringSoon(),
+            ],
         ]);
     }
 
-    public function edit(Request $request)
+    public function edit(Document $document): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $document->load([
+            'documentType:id,code,name,sensitivity_level',
+            'ownerEmployee:id,first_name,middle_name,surname,staff_number',
+        ]);
 
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'edit',
-            'record' => $record,
+        return Inertia::render('Documents/Edit', [
+            'document' => [
+                ...$document->toArray(),
+                'metadata_pretty' => $document->metadata_pretty,
+            ],
+            'employees' => $this->employees(),
+            'documentTypes' => $this->documentTypes(),
+            'accessPolicyOptions' => $this->accessPolicyOptions(),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, Document $document): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $validated = $this->validatedPayload($request);
 
-        $validated = $request->validate($this->validationRules($record));
-        $record->update($validated);
-
-        $slug = Arr::get($this->moduleConfig(), 'slug');
+        $document->update($validated);
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->route('documents.show', $document)
+            ->with('success', 'Document updated successfully.');
     }
 
-    public function destroy(Request $request)
+    public function destroy(Document $document): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $record->delete();
+        $document->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->route('documents.index')
+            ->with('success', 'Document moved to trash successfully.');
     }
 
-    private function moduleMeta(): array
+    public function trash(Request $request): Response
     {
-        $config = $this->moduleConfig();
-        $fields = Arr::get($config, 'fields', []);
+        $search = trim((string) $request->input('search', ''));
 
-        $defaultIndex = collect($fields)
-            ->filter(fn (array $field) => (bool) ($field['index'] ?? false))
-            ->keys()
-            ->values()
-            ->all();
+        $documents = Document::onlyTrashed()
+            ->with([
+                'documentType:id,code,name',
+                'ownerEmployee:id,first_name,middle_name,surname,staff_number',
+            ])
+            ->search($search)
+            ->orderByDesc('deleted_at')
+            ->paginate(10)
+            ->withQueryString();
 
+        return Inertia::render('Documents/Index', [
+            'documents' => $documents,
+            'filters' => [
+                'search' => $search,
+                'access_policy' => 'all',
+                'document_type_id' => 'all',
+                'owner_employee_id' => 'all',
+                'expiry_state' => 'all',
+            ],
+            'accessPolicyOptions' => $this->accessPolicyOptions(),
+            'expiryStateOptions' => $this->expiryStateOptions(),
+            'documentTypes' => $this->documentTypes(),
+            'employees' => $this->employees(),
+            'stats' => [
+                'total' => Document::onlyTrashed()->count(),
+                'expired' => 0,
+                'expiring_30' => 0,
+                'restricted' => 0,
+            ],
+            'isTrashView' => true,
+        ]);
+    }
+
+    public function restore(int $id): RedirectResponse
+    {
+        $document = Document::withTrashed()->findOrFail($id);
+        $document->restore();
+
+        return redirect()
+            ->route('documents.show', $document->id)
+            ->with('success', 'Document restored successfully.');
+    }
+
+    public function forceDestroy(int $id): RedirectResponse
+    {
+        $document = Document::withTrashed()->findOrFail($id);
+        $document->forceDelete();
+
+        return redirect()
+            ->route('documents.trash')
+            ->with('success', 'Document permanently deleted successfully.');
+    }
+
+    private function employees()
+    {
+        return Employee::query()
+            ->select('id', 'first_name', 'middle_name', 'surname', 'staff_number')
+            ->orderBy('first_name')
+            ->orderBy('surname')
+            ->get();
+    }
+
+    private function documentTypes()
+    {
+        return DocumentType::query()
+            ->select('id', 'code', 'name', 'sensitivity_level')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function accessPolicyOptions(): array
+    {
+        return ['public', 'internal', 'confidential', 'restricted'];
+    }
+
+    private function expiryStateOptions(): array
+    {
+        return ['all', 'active', 'expired', 'expiring_30', 'no_expiry'];
+    }
+
+    private function validatedPayload(Request $request): array
+    {
+        $payload = $request->all();
+        $payload['metadata_json'] = $this->parseMetadata($request->input('metadata_json'));
+
+        $validator = validator($payload, $this->rules());
+
+        return $validator->validate();
+    }
+
+    private function rules(): array
+    {
         return [
-            'slug' => Arr::get($config, 'slug'),
-            'name' => Arr::get($config, 'name'),
-            'description' => Arr::get($config, 'description'),
-            'fields' => collect($fields)->map(function (array $field, string $name) {
-                return [
-                    'name' => $name,
-                    'label' => $field['label'] ?? ucwords(str_replace('_', ' ', $name)),
-                    'type' => $field['type'] ?? 'text',
-                    'placeholder' => $field['placeholder'] ?? null,
-                    'options' => $field['options'] ?? [],
-                    'index' => (bool) ($field['index'] ?? false),
-                ];
-            })->values(),
-            'index_columns' => Arr::get($config, 'index_columns', $defaultIndex),
+            'owner_employee_id' => ['required', 'exists:employees,id'],
+            'document_type_id' => ['required', 'exists:document_types,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'file_uri' => ['required', 'string', 'max:2048'],
+            'issue_date' => ['nullable', 'date'],
+            'expiry_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
+            'metadata_json' => ['nullable', 'array'],
+            'access_policy' => ['required', 'in:'.implode(',', $this->accessPolicyOptions())],
         ];
     }
 
-    private function moduleConfig(): array
+    private function parseMetadata(mixed $metadata): ?array
     {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
-
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
+        if ($metadata === null || $metadata === '') {
+            return null;
         }
 
-        return $config;
-    }
-
-    private function validationRules(?Model $record = null): array
-    {
-        $fields = Arr::get($this->moduleConfig(), 'fields', []);
-        $rules = [];
-
-        foreach ($fields as $name => $field) {
-            $fieldRules = $field['rules'] ?? ['nullable'];
-
-            if (($field['unique'] ?? false) === true) {
-                $table = (new Document())->getTable();
-                $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
-            }
-
-            $rules[$name] = $fieldRules;
+        if (is_array($metadata)) {
+            return $metadata;
         }
 
-        return $rules;
-    }
+        if (is_string($metadata)) {
+            $decoded = json_decode($metadata, true);
 
-    private function findOrFail(string $id): Model
-    {
-        return Document::query()->findOrFail($id);
-    }
-
-    private function resolveRouteRecordId(Request $request): string
-    {
-        $parameters = $request->route()?->parameters() ?? [];
-
-        foreach ($parameters as $value) {
-            if ($value instanceof Model) {
-                return (string) $value->getKey();
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw ValidationException::withMessages([
+                    'metadata_json' => 'Metadata must be valid JSON.',
+                ]);
             }
 
-            if (is_scalar($value)) {
-                return (string) $value;
-            }
+            return $decoded;
         }
 
-        abort(404, 'Record not found.');
+        throw ValidationException::withMessages([
+            'metadata_json' => 'Metadata format is invalid.',
+        ]);
     }
 }

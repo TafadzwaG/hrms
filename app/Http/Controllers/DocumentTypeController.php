@@ -3,194 +3,123 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentType;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DocumentTypeController extends Controller
 {
-    private const MODULE_KEY = 'document_types';
-
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
+        $search = trim((string) $request->input('search', ''));
+        $sensitivity = (string) $request->input('sensitivity_level', 'all');
 
-        $query = DocumentType::query();
-
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
-            $query->where(function (Builder $builder) use ($search, $searchable) {
-                foreach ($searchable as $idx => $column) {
-                    if ($idx === 0) {
-                        $builder->where($column, 'like', "%{$search}%");
-                    } else {
-                        $builder->orWhere($column, 'like', "%{$search}%");
-                    }
-                }
-            });
-        }
-
-        $records = $query
-            ->orderByDesc('id')
-            ->paginate(12)
+        $documentTypes = DocumentType::query()
+            ->withCount('documents')
+            ->search($search)
+            ->sensitivity($sensitivity)
+            ->orderBy('name')
+            ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
-            'module' => $this->moduleMeta(),
-            'records' => $records,
+        $statsBase = DocumentType::query();
+
+        return Inertia::render('DocumentTypes/Index', [
+            'documentTypes' => $documentTypes,
             'filters' => [
                 'search' => $search,
+                'sensitivity_level' => $sensitivity,
+            ],
+            'sensitivityOptions' => $this->sensitivityOptions(),
+            'stats' => [
+                'total' => (clone $statsBase)->count(),
+                'confidential' => (clone $statsBase)->where('sensitivity_level', 'confidential')->count(),
+                'restricted' => (clone $statsBase)->where('sensitivity_level', 'restricted')->count(),
+                'total_documents' => DocumentType::query()->withCount('documents')->get()->sum('documents_count'),
             ],
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'create',
-            'record' => null,
+        return Inertia::render('DocumentTypes/Create', [
+            'sensitivityOptions' => $this->sensitivityOptions(),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules());
+        $validated = $request->validate($this->rules());
 
-        DocumentType::create($validated);
+        $documentType = DocumentType::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->route('document-types.show', $documentType)
+            ->with('success', 'Document type created successfully.');
     }
 
-    public function show(Request $request)
+    public function show(DocumentType $documentType): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $documentType->loadCount('documents');
 
-        return Inertia::render('Modules/Show', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
+        return Inertia::render('DocumentTypes/Show', [
+            'documentType' => $documentType,
+            'canDelete' => $documentType->canBeDeleted(),
         ]);
     }
 
-    public function edit(Request $request)
+    public function edit(DocumentType $documentType): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $documentType->loadCount('documents');
 
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'edit',
-            'record' => $record,
+        return Inertia::render('DocumentTypes/Edit', [
+            'documentType' => $documentType,
+            'sensitivityOptions' => $this->sensitivityOptions(),
+            'canDelete' => $documentType->canBeDeleted(),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, DocumentType $documentType): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $validated = $request->validate($this->rules($documentType->id));
 
-        $validated = $request->validate($this->validationRules($record));
-        $record->update($validated);
-
-        $slug = Arr::get($this->moduleConfig(), 'slug');
+        $documentType->update($validated);
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->route('document-types.show', $documentType)
+            ->with('success', 'Document type updated successfully.');
     }
 
-    public function destroy(Request $request)
+    public function destroy(DocumentType $documentType): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $record->delete();
+        $documentType->loadCount('documents');
+
+        if (! $documentType->canBeDeleted()) {
+            return redirect()
+                ->route('document-types.show', $documentType)
+                ->with('error', 'This document type cannot be deleted because documents are already linked to it.');
+        }
+
+        $documentType->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->route('document-types.index')
+            ->with('success', 'Document type deleted successfully.');
     }
 
-    private function moduleMeta(): array
+    private function sensitivityOptions(): array
     {
-        $config = $this->moduleConfig();
-        $fields = Arr::get($config, 'fields', []);
+        return ['public', 'internal', 'confidential', 'restricted'];
+    }
 
-        $defaultIndex = collect($fields)
-            ->filter(fn (array $field) => (bool) ($field['index'] ?? false))
-            ->keys()
-            ->values()
-            ->all();
-
+    private function rules(?int $ignoreId = null): array
+    {
         return [
-            'slug' => Arr::get($config, 'slug'),
-            'name' => Arr::get($config, 'name'),
-            'description' => Arr::get($config, 'description'),
-            'fields' => collect($fields)->map(function (array $field, string $name) {
-                return [
-                    'name' => $name,
-                    'label' => $field['label'] ?? ucwords(str_replace('_', ' ', $name)),
-                    'type' => $field['type'] ?? 'text',
-                    'placeholder' => $field['placeholder'] ?? null,
-                    'options' => $field['options'] ?? [],
-                    'index' => (bool) ($field['index'] ?? false),
-                ];
-            })->values(),
-            'index_columns' => Arr::get($config, 'index_columns', $defaultIndex),
+            'code' => ['required', 'string', 'max:50', 'unique:document_types,code,'.$ignoreId],
+            'name' => ['required', 'string', 'max:255', 'unique:document_types,name,'.$ignoreId],
+            'retention_policy' => ['nullable', 'string', 'max:255'],
+            'sensitivity_level' => ['required', 'in:'.implode(',', $this->sensitivityOptions())],
         ];
-    }
-
-    private function moduleConfig(): array
-    {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
-
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
-        }
-
-        return $config;
-    }
-
-    private function validationRules(?Model $record = null): array
-    {
-        $fields = Arr::get($this->moduleConfig(), 'fields', []);
-        $rules = [];
-
-        foreach ($fields as $name => $field) {
-            $fieldRules = $field['rules'] ?? ['nullable'];
-
-            if (($field['unique'] ?? false) === true) {
-                $table = (new DocumentType())->getTable();
-                $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
-            }
-
-            $rules[$name] = $fieldRules;
-        }
-
-        return $rules;
-    }
-
-    private function findOrFail(string $id): Model
-    {
-        return DocumentType::query()->findOrFail($id);
-    }
-
-    private function resolveRouteRecordId(Request $request): string
-    {
-        $parameters = $request->route()?->parameters() ?? [];
-
-        foreach ($parameters as $value) {
-            if ($value instanceof Model) {
-                return (string) $value->getKey();
-            }
-
-            if (is_scalar($value)) {
-                return (string) $value;
-            }
-        }
-
-        abort(404, 'Record not found.');
     }
 }

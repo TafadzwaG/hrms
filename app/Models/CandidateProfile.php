@@ -3,15 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class CandidateProfile extends Model
-{    protected $fillable = [
+{
+    protected $fillable = [
         'requisition_code',
         'full_name',
         'email',
         'phone',
         'stage',
         'status',
-        'notes'
+        'notes',
     ];
-}
 
+    public function requisition(): BelongsTo
+    {
+        return $this->belongsTo(JobRequisition::class, 'requisition_code', 'requisition_code');
+    }
+}

@@ -4,193 +4,114 @@ namespace App\Http\Controllers;
 
 use App\Models\LearningCourse;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class LearningCourseController extends Controller
 {
-    private const MODULE_KEY = 'learning_courses';
-
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
+        $search = trim((string) $request->input('search', ''));
+        $status = (string) $request->input('status', 'all');
 
-        $query = LearningCourse::query();
-
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
-            $query->where(function (Builder $builder) use ($search, $searchable) {
-                foreach ($searchable as $idx => $column) {
-                    if ($idx === 0) {
-                        $builder->where($column, 'like', "%{$search}%");
-                    } else {
-                        $builder->orWhere($column, 'like', "%{$search}%");
-                    }
-                }
-            });
-        }
-
-        $records = $query
+        $courses = LearningCourse::query()
+            ->when($search !== '', function (Builder $query) use ($search) {
+                $query->where(function (Builder $builder) use ($search) {
+                    $builder
+                        ->where('course_code', 'like', "%{$search}%")
+                        ->orWhere('title', 'like', "%{$search}%")
+                        ->orWhere('category', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%");
+                });
+            })
+            ->when($status !== 'all', fn (Builder $query) => $query->where('status', $status))
+            ->orderBy('title')
             ->orderByDesc('id')
-            ->paginate(12)
+            ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
-            'module' => $this->moduleMeta(),
-            'records' => $records,
+        return Inertia::render('LearningCourses/Index', [
+            'courses' => $courses,
             'filters' => [
                 'search' => $search,
+                'status' => $status,
             ],
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'create',
-            'record' => null,
+        return Inertia::render('LearningCourses/Create', [
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules());
+        $validated = $request->validate($this->rules());
+        $validated['compliance_required'] = $request->boolean('compliance_required');
 
-        LearningCourse::create($validated);
+        $course = LearningCourse::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->route('learning-courses.show', $course)
+            ->with('success', 'Learning course created successfully.');
     }
 
-    public function show(Request $request)
+    public function show(LearningCourse $learningCourse): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-
-        return Inertia::render('Modules/Show', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
+        return Inertia::render('LearningCourses/Show', [
+            'course' => $learningCourse,
         ]);
     }
 
-    public function edit(Request $request)
+    public function edit(LearningCourse $learningCourse): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'edit',
-            'record' => $record,
+        return Inertia::render('LearningCourses/Edit', [
+            'course' => $learningCourse,
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, LearningCourse $learningCourse): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $validated = $request->validate($this->rules($learningCourse));
+        $validated['compliance_required'] = $request->boolean('compliance_required');
 
-        $validated = $request->validate($this->validationRules($record));
-        $record->update($validated);
-
-        $slug = Arr::get($this->moduleConfig(), 'slug');
+        $learningCourse->update($validated);
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->route('learning-courses.show', $learningCourse)
+            ->with('success', 'Learning course updated successfully.');
     }
 
-    public function destroy(Request $request)
+    public function destroy(LearningCourse $learningCourse): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $record->delete();
+        $learningCourse->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->route('learning-courses.index')
+            ->with('success', 'Learning course deleted successfully.');
     }
 
-    private function moduleMeta(): array
+    private function statusOptions(): array
     {
-        $config = $this->moduleConfig();
-        $fields = Arr::get($config, 'fields', []);
+        return ['active', 'inactive', 'archived'];
+    }
 
-        $defaultIndex = collect($fields)
-            ->filter(fn (array $field) => (bool) ($field['index'] ?? false))
-            ->keys()
-            ->values()
-            ->all();
-
+    private function rules(?LearningCourse $learningCourse = null): array
+    {
         return [
-            'slug' => Arr::get($config, 'slug'),
-            'name' => Arr::get($config, 'name'),
-            'description' => Arr::get($config, 'description'),
-            'fields' => collect($fields)->map(function (array $field, string $name) {
-                return [
-                    'name' => $name,
-                    'label' => $field['label'] ?? ucwords(str_replace('_', ' ', $name)),
-                    'type' => $field['type'] ?? 'text',
-                    'placeholder' => $field['placeholder'] ?? null,
-                    'options' => $field['options'] ?? [],
-                    'index' => (bool) ($field['index'] ?? false),
-                ];
-            })->values(),
-            'index_columns' => Arr::get($config, 'index_columns', $defaultIndex),
+            'course_code' => ['required', 'string', 'max:100', 'unique:learning_courses,course_code,'.($learningCourse?->id ?? 'NULL').',id'],
+            'title' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', 'max:255'],
+            'duration_hours' => ['required', 'numeric', 'min:0'],
+            'compliance_required' => ['nullable', 'boolean'],
+            'expires_after_days' => ['nullable', 'integer', 'min:1'],
+            'status' => ['required', 'in:active,inactive,archived'],
         ];
-    }
-
-    private function moduleConfig(): array
-    {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
-
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
-        }
-
-        return $config;
-    }
-
-    private function validationRules(?Model $record = null): array
-    {
-        $fields = Arr::get($this->moduleConfig(), 'fields', []);
-        $rules = [];
-
-        foreach ($fields as $name => $field) {
-            $fieldRules = $field['rules'] ?? ['nullable'];
-
-            if (($field['unique'] ?? false) === true) {
-                $table = (new LearningCourse())->getTable();
-                $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
-            }
-
-            $rules[$name] = $fieldRules;
-        }
-
-        return $rules;
-    }
-
-    private function findOrFail(string $id): Model
-    {
-        return LearningCourse::query()->findOrFail($id);
-    }
-
-    private function resolveRouteRecordId(Request $request): string
-    {
-        $parameters = $request->route()?->parameters() ?? [];
-
-        foreach ($parameters as $value) {
-            if ($value instanceof Model) {
-                return (string) $value->getKey();
-            }
-
-            if (is_scalar($value)) {
-                return (string) $value;
-            }
-        }
-
-        abort(404, 'Record not found.');
     }
 }

@@ -2,195 +2,149 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\OnboardingTask;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class OnboardingTaskController extends Controller
 {
-    private const MODULE_KEY = 'onboarding_tasks';
-
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $search = $request->string('search')->toString();
-        $config = $this->moduleConfig();
+        $search = trim((string) $request->input('search', ''));
+        $status = (string) $request->input('status', 'all');
 
-        $query = OnboardingTask::query();
-
-        $searchable = Arr::get($config, 'searchable', []);
-        if ($search !== '' && !empty($searchable)) {
-            $query->where(function (Builder $builder) use ($search, $searchable) {
-                foreach ($searchable as $idx => $column) {
-                    if ($idx === 0) {
-                        $builder->where($column, 'like', "%{$search}%");
-                    } else {
-                        $builder->orWhere($column, 'like', "%{$search}%");
-                    }
-                }
-            });
-        }
-
-        $records = $query
+        $tasks = OnboardingTask::query()
+            ->with([
+                'employee:id,first_name,middle_name,surname,staff_number,user_id',
+                'employee.user:id,email',
+            ])
+            ->when($search !== '', function (Builder $query) use ($search) {
+                $query->where(function (Builder $builder) use ($search) {
+                    $builder
+                        ->where('task_name', 'like', "%{$search}%")
+                        ->orWhere('owner_team', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhereHas('employee', function (Builder $employeeQuery) use ($search) {
+                            $employeeQuery
+                                ->where('first_name', 'like', "%{$search}%")
+                                ->orWhere('middle_name', 'like', "%{$search}%")
+                                ->orWhere('surname', 'like', "%{$search}%")
+                                ->orWhere('staff_number', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('employee.user', function (Builder $userQuery) use ($search) {
+                            $userQuery->where('email', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when($status !== 'all', fn (Builder $query) => $query->where('status', $status))
+            ->orderBy('due_date')
             ->orderByDesc('id')
-            ->paginate(12)
+            ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Modules/Index', [
-            'module' => $this->moduleMeta(),
-            'records' => $records,
+        return Inertia::render('OnboardingTasks/Index', [
+            'tasks' => $tasks,
             'filters' => [
                 'search' => $search,
+                'status' => $status,
             ],
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'create',
-            'record' => null,
+        return Inertia::render('OnboardingTasks/Create', [
+            'employees' => $this->employees(),
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate($this->validationRules());
+        $validated = $request->validate($this->rules());
 
-        OnboardingTask::create($validated);
+        $task = OnboardingTask::create($validated);
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' created successfully.');
+            ->route('onboarding-tasks.show', $task)
+            ->with('success', 'Onboarding task created successfully.');
     }
 
-    public function show(Request $request)
+    public function show(OnboardingTask $onboardingTask): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $onboardingTask->load([
+            'employee:id,first_name,middle_name,surname,staff_number,user_id',
+            'employee.user:id,email',
+        ]);
 
-        return Inertia::render('Modules/Show', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
+        return Inertia::render('OnboardingTasks/Show', [
+            'task' => $onboardingTask,
         ]);
     }
 
-    public function edit(Request $request)
+    public function edit(OnboardingTask $onboardingTask): Response
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $onboardingTask->load([
+            'employee:id,first_name,middle_name,surname,staff_number,user_id',
+            'employee.user:id,email',
+        ]);
 
-        return Inertia::render('Modules/Form', [
-            'module' => $this->moduleMeta(),
-            'mode' => 'edit',
-            'record' => $record,
+        return Inertia::render('OnboardingTasks/Edit', [
+            'task' => $onboardingTask,
+            'employees' => $this->employees(),
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, OnboardingTask $onboardingTask): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $validated = $request->validate($this->rules());
 
-        $validated = $request->validate($this->validationRules($record));
-        $record->update($validated);
-
-        $slug = Arr::get($this->moduleConfig(), 'slug');
+        $onboardingTask->update($validated);
 
         return redirect()
-            ->to('/' . $slug . '/' . $record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' updated successfully.');
+            ->route('onboarding-tasks.show', $onboardingTask)
+            ->with('success', 'Onboarding task updated successfully.');
     }
 
-    public function destroy(Request $request)
+    public function destroy(OnboardingTask $onboardingTask): RedirectResponse
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $record->delete();
+        $onboardingTask->delete();
 
         return redirect()
-            ->to('/' . Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name') . ' deleted successfully.');
+            ->route('onboarding-tasks.index')
+            ->with('success', 'Onboarding task deleted successfully.');
     }
 
-    private function moduleMeta(): array
+    private function employees()
     {
-        $config = $this->moduleConfig();
-        $fields = Arr::get($config, 'fields', []);
+        return Employee::query()
+            ->select('id', 'user_id', 'first_name', 'middle_name', 'surname', 'staff_number')
+            ->with('user:id,email')
+            ->orderBy('first_name')
+            ->orderBy('surname')
+            ->get();
+    }
 
-        $defaultIndex = collect($fields)
-            ->filter(fn (array $field) => (bool) ($field['index'] ?? false))
-            ->keys()
-            ->values()
-            ->all();
+    private function statusOptions(): array
+    {
+        return ['pending', 'in_progress', 'completed', 'cancelled'];
+    }
 
+    private function rules(): array
+    {
         return [
-            'slug' => Arr::get($config, 'slug'),
-            'name' => Arr::get($config, 'name'),
-            'description' => Arr::get($config, 'description'),
-            'fields' => collect($fields)->map(function (array $field, string $name) {
-                return [
-                    'name' => $name,
-                    'label' => $field['label'] ?? ucwords(str_replace('_', ' ', $name)),
-                    'type' => $field['type'] ?? 'text',
-                    'placeholder' => $field['placeholder'] ?? null,
-                    'options' => $field['options'] ?? [],
-                    'index' => (bool) ($field['index'] ?? false),
-                ];
-            })->values(),
-            'index_columns' => Arr::get($config, 'index_columns', $defaultIndex),
+            'employee_id' => ['required', 'exists:employees,id'],
+            'task_name' => ['required', 'string', 'max:255'],
+            'owner_team' => ['required', 'string', 'max:255'],
+            'due_date' => ['nullable', 'date'],
+            'status' => ['required', 'in:pending,in_progress,completed,cancelled'],
+            'notes' => ['nullable', 'string'],
         ];
-    }
-
-    private function moduleConfig(): array
-    {
-        $config = config('hrms_modules.' . self::MODULE_KEY, []);
-
-        if (!is_array($config) || empty($config)) {
-            abort(500, 'Module configuration missing for key: ' . self::MODULE_KEY);
-        }
-
-        return $config;
-    }
-
-    private function validationRules(?Model $record = null): array
-    {
-        $fields = Arr::get($this->moduleConfig(), 'fields', []);
-        $rules = [];
-
-        foreach ($fields as $name => $field) {
-            $fieldRules = $field['rules'] ?? ['nullable'];
-
-            if (($field['unique'] ?? false) === true) {
-                $table = (new OnboardingTask())->getTable();
-                $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
-            }
-
-            $rules[$name] = $fieldRules;
-        }
-
-        return $rules;
-    }
-
-    private function findOrFail(string $id): Model
-    {
-        return OnboardingTask::query()->findOrFail($id);
-    }
-
-    private function resolveRouteRecordId(Request $request): string
-    {
-        $parameters = $request->route()?->parameters() ?? [];
-
-        foreach ($parameters as $value) {
-            if ($value instanceof Model) {
-                return (string) $value->getKey();
-            }
-
-            if (is_scalar($value)) {
-                return (string) $value;
-            }
-        }
-
-        abort(404, 'Record not found.');
     }
 }
