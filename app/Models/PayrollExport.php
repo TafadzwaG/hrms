@@ -2,21 +2,29 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
+
 class PayrollExport extends Model
-{    protected $fillable = [
+{
+    use Auditable;
+
+    protected string $auditModule = 'payroll';
+
+    protected $fillable = [
         'period_start',
         'period_end',
         'export_version',
         'status',
         'exported_at',
         'file_reference',
-        'notes'
+        'notes',
     ];
+
     protected $casts = [
         'exported_at' => 'datetime',
         'period_start' => 'date',
-        'period_end' => 'date'
+        'period_end' => 'date',
     ];
 }
 

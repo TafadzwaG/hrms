@@ -1,8 +1,8 @@
-import { AppContent } from '@/components/app-content';
+﻿import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
-import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import type { AppLayoutProps } from '@/types';
+import { RbacSidebar } from '@/lib/app-sidebar-rbac';
 
 export default function AppSidebarLayout({
     children,
@@ -10,7 +10,7 @@ export default function AppSidebarLayout({
 }: AppLayoutProps) {
     return (
         <AppShell variant="sidebar">
-            <AppSidebar />
+            <RbacSidebar />
             <AppContent
                 variant="sidebar"
                 className="relative overflow-x-hidden bg-[radial-gradient(circle_at_0%_0%,rgba(99,102,241,0.12),transparent_40%),radial-gradient(circle_at_100%_0%,rgba(20,184,166,0.14),transparent_45%),radial-gradient(circle_at_50%_100%,rgba(59,130,246,0.1),transparent_50%)]"

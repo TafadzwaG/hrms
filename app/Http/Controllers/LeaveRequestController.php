@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Support\Audit\AuditContext;
+use App\Support\Audit\AuditLogger;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Builder;
@@ -180,10 +182,27 @@ class LeaveRequestController extends Controller
     public function approve(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $before = [
+            'status' => $record->status,
+            'approver_name' => $record->approver_name,
+        ];
 
-        $record->update([
-            'status' => 'Approved',
-            'approver_name' => $this->actorName($request),
+        AuditContext::withoutAuditing(function () use ($record, $request): void {
+            $record->update([
+                'status' => 'Approved',
+                'approver_name' => $this->actorName($request),
+            ]);
+        });
+
+        app(AuditLogger::class)->logCustom('approve', $record, [
+            'module' => 'leave',
+            'category' => 'workflow',
+            'description' => 'Approved leave request.',
+            'old_values' => $before,
+            'new_values' => [
+                'status' => $record->status,
+                'approver_name' => $record->approver_name,
+            ],
         ]);
 
         return redirect()
@@ -194,10 +213,27 @@ class LeaveRequestController extends Controller
     public function deny(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $before = [
+            'status' => $record->status,
+            'approver_name' => $record->approver_name,
+        ];
 
-        $record->update([
-            'status' => 'Rejected',
-            'approver_name' => $this->actorName($request),
+        AuditContext::withoutAuditing(function () use ($record, $request): void {
+            $record->update([
+                'status' => 'Rejected',
+                'approver_name' => $this->actorName($request),
+            ]);
+        });
+
+        app(AuditLogger::class)->logCustom('reject', $record, [
+            'module' => 'leave',
+            'category' => 'workflow',
+            'description' => 'Rejected leave request.',
+            'old_values' => $before,
+            'new_values' => [
+                'status' => $record->status,
+                'approver_name' => $record->approver_name,
+            ],
         ]);
 
         return redirect()
@@ -212,10 +248,30 @@ class LeaveRequestController extends Controller
         ]);
 
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $before = [
+            'status' => $record->status,
+            'approver_name' => $record->approver_name,
+        ];
 
-        $record->update([
-            'status' => 'Changes Requested',
-            'approver_name' => $this->actorName($request),
+        AuditContext::withoutAuditing(function () use ($record, $request): void {
+            $record->update([
+                'status' => 'Changes Requested',
+                'approver_name' => $this->actorName($request),
+            ]);
+        });
+
+        app(AuditLogger::class)->logCustom('request_changes', $record, [
+            'module' => 'leave',
+            'category' => 'workflow',
+            'description' => 'Requested changes on leave request.',
+            'old_values' => $before,
+            'new_values' => [
+                'status' => $record->status,
+                'approver_name' => $record->approver_name,
+            ],
+            'metadata' => [
+                'note' => (string) $request->input('note', ''),
+            ],
         ]);
 
         return redirect()
@@ -232,6 +288,16 @@ class LeaveRequestController extends Controller
         ]);
 
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+
+        app(AuditLogger::class)->logCustom('add_note', $record, [
+            'module' => 'leave',
+            'category' => 'workflow',
+            'description' => 'Saved an internal note on a leave request.',
+            'metadata' => [
+                'note' => $validated['note'],
+                'notify_manager' => (bool) ($validated['notify_manager'] ?? false),
+            ],
+        ]);
 
         return redirect()
             ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$record->id)

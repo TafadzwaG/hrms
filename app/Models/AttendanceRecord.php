@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceRecord extends Model
 {
+    use Auditable;
+
+    protected string $auditModule = 'attendance';
+
     protected $fillable = [
         'employee_id',
         'work_date',

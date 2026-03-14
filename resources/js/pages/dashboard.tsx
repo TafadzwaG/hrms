@@ -1,6 +1,29 @@
-import { Head } from '@inertiajs/react';
-import { Activity, Clock3, Users } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    Activity,
+    AlertTriangle,
+    ArrowUpRight,
+    BookOpen,
+    Briefcase,
+    Building2,
+    CalendarDays,
+    Clock3,
+    FileText,
+    Folder,
+    LayoutGrid,
+    MapPin,
+    Proportions,
+    RefreshCcw,
+    Shield,
+    User,
+    UserRoundCheckIcon,
+    Users,
+    type LucideIcon,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,126 +31,709 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
+import { cn } from '@/lib/utils';
+import { dashboard as dashboardRoute } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+
+type Metric = {
+    key: string;
+    label: string;
+    value: number;
+    helper: string;
+    href?: string | null;
+    format: 'number' | 'percentage';
+};
+
+type AlertItem = {
+    key: string;
+    severity: 'critical' | 'warning' | 'info' | 'success';
+    title: string;
+    description: string;
+    href: string;
+};
+
+type QuickLinkItem = {
+    key: string;
+    label: string;
+    href: string;
+    description: string;
+};
+
+type BreakdownPoint = {
+    label: string;
+    value: number;
+    percentage: number;
+};
+
+type SeriesPoint = {
+    label: string;
+    primary: number;
+    secondary?: number;
+    tertiary?: number;
+};
+
+type ChartBlock = {
+    title: string;
+    description: string;
+    data: BreakdownPoint[] | SeriesPoint[];
+    primary_label?: string;
+    secondary_label?: string;
+    tertiary_label?: string;
+};
+
+type RecordItem = {
+    title: string;
+    subtitle: string;
+    meta: string;
+    href?: string | null;
+    status?: string | null;
+};
+
+type ListBlock = {
+    title: string;
+    description: string;
+    items: RecordItem[];
+};
+
+type SectionData = {
+    title: string;
+    description: string;
+    module_keys: string[];
+    metrics: Metric[];
+    charts: Record<string, ChartBlock>;
+    lists: Record<string, ListBlock>;
+    meta: Record<string, number>;
+};
+
+type ModuleSummary = {
+    key: string;
+    name: string;
+    group: string;
+    href: string;
+    total: number;
+    summary: string;
+    highlights: string[];
+    breakdown: BreakdownPoint[];
+    records: RecordItem[];
+    trend: SeriesPoint[];
+    trend_labels: Record<string, string>;
+};
+
+type DashboardPayload = {
+    generated_at: string;
+    summary: Metric[];
+    alerts: AlertItem[];
+    quick_links: QuickLinkItem[];
+    overview: {
+        spotlight_keys: string[];
+        headcount_movement: ChartBlock;
+        attendance_pulse: ChartBlock;
+        recruitment_pipeline: ChartBlock;
+    };
+    sections: {
+        workforce: SectionData;
+        operations: SectionData;
+        talent: SectionData;
+        governance: SectionData;
+    };
+    modules: Record<string, ModuleSummary>;
+    module_order: string[];
+};
+
+type PageProps = {
+    auth?: {
+        user?: {
+            name?: string;
+        } | null;
+    };
+    dashboard: DashboardPayload;
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard().url,
+        href: dashboardRoute().url,
     },
 ];
 
+const metricIconMap: Record<string, LucideIcon> = {
+    headcount: Users,
+    pending_approvals: Clock3,
+    attendance_compliance: Activity,
+    open_hiring: Briefcase,
+    lifecycle_risk: AlertTriangle,
+    document_watch: Shield,
+    employees: Users,
+    org_units: Building2,
+    locations: MapPin,
+    positions: Proportions,
+    leave_requests: CalendarDays,
+    attendance: Activity,
+    timesheets: Clock3,
+    payroll_exports: Folder,
+    open_requisitions: Briefcase,
+    active_candidates: User,
+    overdue_onboarding: AlertTriangle,
+    reviews_in_flight: UserRoundCheckIcon,
+    users: User,
+    roles: Shield,
+    workflows: BookOpen,
+    documents: FileText,
+};
+
+const moduleIconMap: Record<string, LucideIcon> = {
+    employees: Users,
+    org_units: Building2,
+    locations: MapPin,
+    positions: Proportions,
+    leave_requests: CalendarDays,
+    attendance_records: Activity,
+    timesheets: Clock3,
+    payroll_exports: Folder,
+    job_requisitions: Briefcase,
+    candidate_profiles: User,
+    onboarding_tasks: Users,
+    offboarding_tasks: AlertTriangle,
+    performance_reviews: UserRoundCheckIcon,
+    learning_courses: BookOpen,
+    users: User,
+    roles: Shield,
+    workflow_definitions: LayoutGrid,
+    document_types: Folder,
+    documents: FileText,
+};
+
+const severityClassMap: Record<AlertItem['severity'], string> = {
+    critical: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200',
+    warning: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200',
+    info: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200',
+};
+
 export default function Dashboard() {
+    const { auth, dashboard } = usePage<PageProps>().props;
+    const [activeTab, setActiveTab] = useState('overview');
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const stopStart = router.on('start', () => setIsLoading(true));
+        const stopFinish = router.on('finish', () => setIsLoading(false));
+
+        return () => {
+            stopStart();
+            stopFinish();
+        };
+    }, []);
+
+    const moduleGroups = useMemo(
+        () => ({
+            workforce: dashboard.sections.workforce.module_keys.map((key) => dashboard.modules[key]).filter(Boolean),
+            operations: dashboard.sections.operations.module_keys.map((key) => dashboard.modules[key]).filter(Boolean),
+            talent: dashboard.sections.talent.module_keys.map((key) => dashboard.modules[key]).filter(Boolean),
+            governance: dashboard.sections.governance.module_keys.map((key) => dashboard.modules[key]).filter(Boolean),
+            all: dashboard.module_order.map((key) => dashboard.modules[key]).filter(Boolean),
+        }),
+        [dashboard],
+    );
+
+    const firstName = auth?.user?.name?.split(' ')[0] || 'Team';
+    const generatedAt = formatDateTime(dashboard.generated_at);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="mx-2 my-6 rounded-2xl border bg-gradient-to-br from-indigo-50/95 via-white to-teal-100/70 p-1 shadow-sm sm:mx-4 md:mx-8 md:p-6 dark:from-indigo-950/25 dark:via-background dark:to-teal-950/20">
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <h1 className="bg-gradient-to-r from-indigo-700 to-teal-600 bg-clip-text text-2xl font-bold text-transparent">
-                            Operations Dashboard
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Live pulse of your HR modules and workflows.
-                        </p>
-                    </div>
-                    <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-100">
-                        Today
-                    </Badge>
-                </div>
-
-                <div className="grid auto-rows-fr gap-4 md:grid-cols-3">
-                    <Card className="border-white/70 bg-background/90 backdrop-blur">
-                        <CardHeader>
-                            <CardDescription>Total Employees</CardDescription>
-                            <CardTitle className="text-3xl">680</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                                +18 this week
-                            </span>
-                            <Users className="h-5 w-5 text-indigo-600" />
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-white/70 bg-background/90 backdrop-blur">
-                        <CardHeader>
-                            <CardDescription>
-                                Attendance Compliance
-                            </CardDescription>
-                            <CardTitle className="text-3xl">94%</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <Progress value={94} className="h-2" />
-                            <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                <span>Target: 90%</span>
-                                <Activity className="h-4 w-4 text-emerald-600" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-white/70 bg-background/90 backdrop-blur">
-                        <CardHeader>
-                            <CardDescription>Pending Reviews</CardDescription>
-                            <CardTitle className="text-3xl">27</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                                Due within 5 days
-                            </span>
-                            <Clock3 className="h-5 w-5 text-amber-600" />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card className="mt-4 border-white/70 bg-background/90 backdrop-blur">
-                    <CardHeader>
-                        <CardTitle>Snapshot</CardTitle>
-                        <CardDescription>
-                            Color-coded progress indicators to quickly spot
-                            where follow-up is needed.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="rounded-xl border bg-cyan-50/80 p-4 dark:bg-cyan-950/20">
-                            <div className="text-xs text-muted-foreground">
-                                Leave Requests
-                            </div>
-                            <div className="mt-1 text-xl font-semibold">
-                                42 open
+            <div className="min-h-[calc(100vh-64px)] space-y-6 px-4 py-6 md:px-6 lg:px-8">
+                <Card className="overflow-hidden border-border/70 bg-background/95 shadow-sm">
+                    <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
+                        <div className="space-y-3">
+                            <Badge className="w-fit rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary shadow-none">
+                                HRMS command centre
+                            </Badge>
+                            <div className="space-y-2">
+                                <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                                    Welcome back, {firstName}.
+                                </h1>
+                                <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+                                    This dashboard consolidates workforce, operations, talent, and governance metrics across every active module in your HRMS.
+                                </p>
                             </div>
                         </div>
-                        <div className="rounded-xl border bg-violet-50/80 p-4 dark:bg-violet-950/20">
-                            <div className="text-xs text-muted-foreground">
-                                Timesheets
-                            </div>
-                            <div className="mt-1 text-xl font-semibold">
-                                88% submitted
-                            </div>
-                        </div>
-                        <div className="rounded-xl border bg-emerald-50/80 p-4 dark:bg-emerald-950/20">
-                            <div className="text-xs text-muted-foreground">
-                                Onboarding
-                            </div>
-                            <div className="mt-1 text-xl font-semibold">
-                                16 active
-                            </div>
-                        </div>
-                        <div className="rounded-xl border bg-amber-50/80 p-4 dark:bg-amber-950/20">
-                            <div className="text-xs text-muted-foreground">
-                                Payroll
-                            </div>
-                            <div className="mt-1 text-xl font-semibold">
-                                2 exports queued
-                            </div>
+
+                        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs font-medium">
+                                Updated {generatedAt}
+                            </Badge>
+                            <Button variant="outline" className="shadow-sm" onClick={() => router.reload()}>
+                                <RefreshCcw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
+                                Refresh data
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
+
+                {isLoading ? (
+                    <DashboardSkeleton />
+                ) : (
+                    <>
+                        <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+                            {dashboard.summary.map((metric) => (
+                                <MetricCard key={metric.key} metric={metric} />
+                            ))}
+                        </div>
+
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                            <div className="overflow-x-auto">
+                                <TabsList variant="line" className="min-w-max gap-1 bg-transparent p-0">
+                                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                                    <TabsTrigger value="workforce">Workforce</TabsTrigger>
+                                    <TabsTrigger value="operations">Operations</TabsTrigger>
+                                    <TabsTrigger value="talent">Talent</TabsTrigger>
+                                    <TabsTrigger value="governance">Governance</TabsTrigger>
+                                    <TabsTrigger value="modules">All modules</TabsTrigger>
+                                </TabsList>
+                            </div>
+
+                            <TabsContent value="overview" className="space-y-6">
+                                <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                                    <Card className="border-border/70 shadow-sm">
+                                        <CardHeader>
+                                            <CardTitle>Attention queue</CardTitle>
+                                            <CardDescription>High-signal items that need immediate review.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            {dashboard.alerts.map((alert) => (
+                                                <Link key={alert.key} href={alert.href} className={cn('flex items-start justify-between gap-3 rounded-2xl border p-4 transition-colors hover:border-primary/40 hover:bg-accent/40', severityClassMap[alert.severity])}>
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm font-semibold">{alert.title}</div>
+                                                        <div className="text-xs leading-5 opacity-90">{alert.description}</div>
+                                                    </div>
+                                                    <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0" />
+                                                </Link>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="border-border/70 shadow-sm">
+                                        <CardHeader>
+                                            <CardTitle>Quick actions</CardTitle>
+                                            <CardDescription>Jump straight into the busiest HR workflows.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="grid gap-3 sm:grid-cols-2">
+                                            {dashboard.quick_links.map((item) => {
+                                                const Icon = moduleIconMap[item.key] || LayoutGrid;
+
+                                                return (
+                                                    <Link key={item.key} href={item.href} className="rounded-2xl border border-border/70 bg-muted/20 p-4 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                                                        <div className="mb-3 flex items-center gap-3">
+                                                            <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                                                                <Icon className="h-4 w-4" />
+                                                            </div>
+                                                            <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                                                        </div>
+                                                        <p className="text-xs leading-5 text-muted-foreground">{item.description}</p>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                <div className="grid gap-4 xl:grid-cols-3">
+                                    <SeriesChartCard chart={dashboard.overview.headcount_movement} variant="dual" />
+                                    <SeriesChartCard chart={dashboard.overview.attendance_pulse} variant="triple" />
+                                    <BreakdownChartCard chart={dashboard.overview.recruitment_pipeline} />
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+                                    {dashboard.overview.spotlight_keys.map((key) => (
+                                        <MiniModuleCard key={key} module={dashboard.modules[key]} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="workforce" className="space-y-6">
+                                <SectionMetrics metrics={dashboard.sections.workforce.metrics} />
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <SeriesChartCard chart={dashboard.sections.workforce.charts.headcount_movement} variant="dual" />
+                                    <BreakdownChartCard chart={dashboard.sections.workforce.charts.department_headcount} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <BreakdownChartCard chart={dashboard.sections.workforce.charts.pay_points} />
+                                    <BreakdownChartCard chart={dashboard.sections.workforce.charts.data_quality} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <RecordListCard block={dashboard.sections.workforce.lists.recent_hires} />
+                                    <RecordListCard block={dashboard.sections.workforce.lists.location_coverage} />
+                                </div>
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                    {moduleGroups.workforce.map((module) => (
+                                        <MiniModuleCard key={module.key} module={module} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="operations" className="space-y-6">
+                                <SectionMetrics metrics={dashboard.sections.operations.metrics} />
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <SeriesChartCard chart={dashboard.sections.operations.charts.attendance_pulse} variant="triple" />
+                                    <BreakdownChartCard chart={dashboard.sections.operations.charts.leave_status} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <SeriesChartCard chart={dashboard.sections.operations.charts.timesheet_hours} variant="dual" />
+                                    <BreakdownChartCard chart={dashboard.sections.operations.charts.payroll_status} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <RecordListCard block={dashboard.sections.operations.lists.leave_queue} />
+                                    <RecordListCard block={dashboard.sections.operations.lists.recent_exports} />
+                                </div>
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                    {moduleGroups.operations.map((module) => (
+                                        <MiniModuleCard key={module.key} module={module} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="talent" className="space-y-6">
+                                <SectionMetrics metrics={dashboard.sections.talent.metrics} />
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <BreakdownChartCard chart={dashboard.sections.talent.charts.candidate_pipeline} />
+                                    <BreakdownChartCard chart={dashboard.sections.talent.charts.requisition_status} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <BreakdownChartCard chart={dashboard.sections.talent.charts.performance_ratings} />
+                                    <BreakdownChartCard chart={dashboard.sections.talent.charts.learning_categories} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <RecordListCard block={dashboard.sections.talent.lists.requisition_watch} />
+                                    <RecordListCard block={dashboard.sections.talent.lists.onboarding_watch} />
+                                </div>
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+                                    {moduleGroups.talent.map((module) => (
+                                        <MiniModuleCard key={module.key} module={module} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="governance" className="space-y-6">
+                                <SectionMetrics metrics={dashboard.sections.governance.metrics} />
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <BreakdownChartCard chart={dashboard.sections.governance.charts.role_assignments} />
+                                    <BreakdownChartCard chart={dashboard.sections.governance.charts.workflow_request_types} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <BreakdownChartCard chart={dashboard.sections.governance.charts.document_access} />
+                                    <BreakdownChartCard chart={dashboard.sections.governance.charts.document_type_usage} />
+                                </div>
+                                <div className="grid gap-4 xl:grid-cols-2">
+                                    <RecordListCard block={dashboard.sections.governance.lists.recent_workflows} />
+                                    <RecordListCard block={dashboard.sections.governance.lists.recent_documents} />
+                                </div>
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+                                    {moduleGroups.governance.map((module) => (
+                                        <MiniModuleCard key={module.key} module={module} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="modules" className="space-y-6">
+                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    {moduleGroups.all.map((module) => (
+                                        <ModuleCard key={module.key} module={module} />
+                                    ))}
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </>
+                )}
             </div>
         </AppLayout>
     );
+}
+
+function SectionMetrics({ metrics }: { metrics: Metric[] }) {
+    return (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {metrics.map((metric) => (
+                <MetricCard key={metric.key} metric={metric} compact />
+            ))}
+        </div>
+    );
+}
+
+function MetricCard({ metric, compact = false }: { metric: Metric; compact?: boolean }) {
+    const Icon = metricIconMap[metric.key] || LayoutGrid;
+
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardContent className={cn('flex items-start justify-between gap-4 p-6', compact && 'p-5')}>
+                <div className="space-y-2">
+                    <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">{metric.label}</div>
+                    <div className="text-3xl font-semibold tracking-tight text-foreground">{formatMetricValue(metric.value, metric.format)}</div>
+                    <div className="text-sm leading-6 text-muted-foreground">{metric.helper}</div>
+                    {metric.href ? (
+                        <Link href={metric.href} className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                            Open module
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                        </Link>
+                    ) : null}
+                </div>
+                <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                    <Icon className="h-5 w-5" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function BreakdownChartCard({ chart }: { chart: ChartBlock }) {
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardHeader>
+                <CardTitle>{chart.title}</CardTitle>
+                <CardDescription>{chart.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <BreakdownBars data={chart.data as BreakdownPoint[]} />
+            </CardContent>
+        </Card>
+    );
+}
+
+function SeriesChartCard({ chart, variant }: { chart: ChartBlock; variant: 'dual' | 'triple' }) {
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardHeader>
+                <CardTitle>{chart.title}</CardTitle>
+                <CardDescription>{chart.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <SeriesBars data={chart.data as SeriesPoint[]} variant={variant} />
+                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    {chart.primary_label ? <LegendPill label={chart.primary_label} tone="primary" /> : null}
+                    {chart.secondary_label ? <LegendPill label={chart.secondary_label} tone="secondary" /> : null}
+                    {chart.tertiary_label ? <LegendPill label={chart.tertiary_label} tone="tertiary" /> : null}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function RecordListCard({ block }: { block: ListBlock }) {
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardHeader>
+                <CardTitle>{block.title}</CardTitle>
+                <CardDescription>{block.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {block.items.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">No records to display.</div>
+                ) : (
+                    block.items.map((item, index) => <RecordRow key={`${item.title}-${index}`} item={item} />)
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function MiniModuleCard({ module }: { module: ModuleSummary }) {
+    const Icon = moduleIconMap[module.key] || LayoutGrid;
+    const primaryBreakdown = module.breakdown[0];
+
+    return (
+        <Link href={module.href} className="group block rounded-2xl">
+            <Card className="h-full border-border/70 bg-background/95 shadow-sm transition-colors group-hover:border-primary/40">
+                <CardContent className="space-y-4 p-5">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                            <div className="text-sm font-semibold text-foreground">{module.name}</div>
+                            <div className="text-2xl font-semibold tracking-tight text-foreground">{formatNumber(module.total)}</div>
+                        </div>
+                        <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                            <Icon className="h-4 w-4" />
+                        </div>
+                    </div>
+                    <p className="text-sm leading-6 text-muted-foreground">{module.summary}</p>
+                    {primaryBreakdown ? (
+                        <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">{primaryBreakdown.label}</span> represents {primaryBreakdown.percentage}% of the visible module mix.
+                        </div>
+                    ) : null}
+                </CardContent>
+            </Card>
+        </Link>
+    );
+}
+
+function ModuleCard({ module }: { module: ModuleSummary }) {
+    const Icon = moduleIconMap[module.key] || LayoutGrid;
+
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardHeader className="space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                        <CardTitle className="text-lg">{module.name}</CardTitle>
+                        <CardDescription>{module.summary}</CardDescription>
+                    </div>
+                    <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                        <Icon className="h-5 w-5" />
+                    </div>
+                </div>
+                <div className="text-3xl font-semibold tracking-tight text-foreground">{formatNumber(module.total)}</div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+                <div className="space-y-2">
+                    {module.highlights.slice(0, 3).map((highlight) => (
+                        <div key={highlight} className="rounded-xl bg-muted/30 px-3 py-2 text-sm text-muted-foreground">{highlight}</div>
+                    ))}
+                </div>
+
+                {module.breakdown.length > 0 ? <BreakdownBars data={module.breakdown.slice(0, 4)} compact /> : null}
+
+                <div className="space-y-3">
+                    <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Recent activity</div>
+                    <div className="space-y-3">
+                        {module.records.slice(0, 3).map((item, index) => (
+                            <RecordRow key={`${module.key}-${index}`} item={item} compact />
+                        ))}
+                    </div>
+                </div>
+
+                <Button asChild variant="outline" className="w-full shadow-sm">
+                    <Link href={module.href}>
+                        Open module
+                        <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
+
+function RecordRow({ item, compact = false }: { item: RecordItem; compact?: boolean }) {
+    const content = (
+        <div className={cn('rounded-2xl border border-border/70 bg-muted/20 p-4 transition-colors hover:border-primary/40 hover:bg-accent/30', compact && 'p-3')}>
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1">
+                    <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
+                    <div className="text-sm text-muted-foreground">{item.subtitle}</div>
+                    <div className="text-xs text-muted-foreground">{item.meta}</div>
+                </div>
+                {item.status ? <Badge variant="outline" className="shrink-0">{item.status}</Badge> : null}
+            </div>
+        </div>
+    );
+
+    return item.href ? <Link href={item.href}>{content}</Link> : content;
+}
+
+function BreakdownBars({ data, compact = false }: { data: BreakdownPoint[]; compact?: boolean }) {
+    const max = Math.max(...data.map((item) => item.value), 1);
+
+    return (
+        <div className={cn('space-y-4', compact && 'space-y-3')}>
+            {data.map((item) => (
+                <div key={item.label} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate text-foreground">{item.label}</span>
+                        <span className="shrink-0 text-muted-foreground">{formatNumber(item.value)}</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max((item.value / max) * 100, 4)}%` }} />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function SeriesBars({ data, variant }: { data: SeriesPoint[]; variant: 'dual' | 'triple' }) {
+    const max = Math.max(...data.flatMap((item) => [item.primary, item.secondary ?? 0, item.tertiary ?? 0]), 1);
+
+    return (
+        <div className="flex h-52 items-end gap-3 rounded-2xl border border-border/70 bg-muted/20 p-4">
+            {data.map((item) => (
+                <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                    <div className="flex h-36 items-end justify-center gap-1.5">
+                        <Bar height={(item.primary / max) * 100} tone="primary" />
+                        {variant === 'dual' || variant === 'triple' ? <Bar height={((item.secondary ?? 0) / max) * 100} tone="secondary" /> : null}
+                        {variant === 'triple' ? <Bar height={((item.tertiary ?? 0) / max) * 100} tone="tertiary" /> : null}
+                    </div>
+                    <div className="w-full truncate text-center text-xs text-muted-foreground">{item.label}</div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function Bar({ height, tone }: { height: number; tone: 'primary' | 'secondary' | 'tertiary' }) {
+    return <div className={cn('w-3 rounded-t-full', tone === 'primary' && 'bg-primary', tone === 'secondary' && 'bg-blue-400', tone === 'tertiary' && 'bg-amber-400')} style={{ height: `${Math.max(height, 6)}%` }} />;
+}
+
+function LegendPill({ label, tone }: { label: string; tone: 'primary' | 'secondary' | 'tertiary' }) {
+    return (
+        <div className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1">
+            <span className={cn('h-2 w-2 rounded-full', tone === 'primary' && 'bg-primary', tone === 'secondary' && 'bg-blue-400', tone === 'tertiary' && 'bg-amber-400')} />
+            {label}
+        </div>
+    );
+}
+
+function DashboardSkeleton() {
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                    <Card key={index} className="border-border/70 bg-background/95 shadow-sm">
+                        <CardContent className="space-y-4 p-6">
+                            <Skeleton className="h-3 w-24" />
+                            <Skeleton className="h-9 w-28" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+            <Card className="border-border/70 bg-background/95 shadow-sm">
+                <CardContent className="space-y-4 p-6">
+                    <Skeleton className="h-10 w-80" />
+                    <div className="grid gap-4 xl:grid-cols-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <div key={index} className="space-y-3 rounded-2xl border border-border/70 p-4">
+                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-40 w-full" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <Skeleton key={index} className="h-40 w-full rounded-2xl" />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+function formatMetricValue(value: number, format: Metric['format']) {
+    if (format === 'percentage') {
+        return `${value.toFixed(1)}%`;
+    }
+
+    return formatNumber(value);
+}
+
+function formatNumber(value: number) {
+    return new Intl.NumberFormat().format(value);
+}
+
+function formatDateTime(value: string) {
+    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }

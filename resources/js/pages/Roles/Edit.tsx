@@ -1,254 +1,158 @@
-import { API } from '@/config';
-import AppLayout from '@/layouts/app-layout';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import {
-    FileText,
-    Fingerprint,
-    Lightbulb,
-    Save,
-    ShieldCheck,
-} from 'lucide-react';
-import { useState } from 'react';
-
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { PermissionSelector } from '@/lib/permission-selector';
+import { roleBadgeClass } from '@/lib/authorization';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { AlertTriangle, Save } from 'lucide-react';
+import type { FormEvent } from 'react';
+
+type PermissionGroup = {
+    key: string;
+    label: string;
+    description: string;
+    permissions: Array<{
+        id: number;
+        name: string;
+        label: string;
+        description: string | null;
+        module: string;
+        checked: boolean;
+    }>;
+};
+
+type RolePayload = {
+    id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    users_count: number;
+    permissions_count: number;
+    permission_ids: number[];
+    is_protected: boolean;
+};
 
 export default function RoleEdit() {
-    const { role } = usePage().props as any;
-
-    const { data, setData, put, processing, errors } = useForm({
-        name: role?.name || '',
-        code: role?.code || '',
-        description: role?.description || '',
+    const { role, permissionGroups } = usePage<{ role: RolePayload; permissionGroups: PermissionGroup[] }>().props;
+    const form = useForm({
+        code: role.code,
+        name: role.name,
+        description: role.description ?? '',
+        permission_ids: role.permission_ids,
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        put(`${API}/roles/${role.id}`, {
-            preserveScroll: true,
-            onFinish: () => setIsSubmitting(false),
-        });
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        form.put(`/roles/${role.id}`);
     };
 
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'System Settings', href: '#' },
-                { title: 'Roles & Permissions', href: `${API}/roles` },
-                { title: `Edit: ${role.code}`, href: '#' },
+                { title: 'Control Center', href: '/control-center' },
+                { title: 'Roles', href: '/roles' },
+                { title: role.name, href: `/roles/${role.id}` },
+                { title: 'Edit', href: `/roles/${role.id}/edit` },
             ]}
         >
-            <Head title={`Edit Role: ${role.name}`} />
+            <Head title={`Edit ${role.name}`} />
 
-            <div className="flex min-h-[calc(100vh-64px)] w-full flex-col bg-muted/10">
-                <div className="flex-1 p-4 md:p-6 lg:p-8">
-                    {/* Header */}
-                    <div className="mb-8 max-w-3xl">
-                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                            Configure System Role
-                        </h1>
-                        <p className="mt-2 text-base leading-relaxed text-muted-foreground">
-                            Roles dictate user access levels and system
-                            permissions.
+            <form onSubmit={submit} className="space-y-6 p-4 md:p-6 lg:p-8">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${roleBadgeClass(role.code, role.name)}`}>
+                                {role.code}
+                            </span>
+                            {role.is_protected ? <Badge variant="outline">Seeded role</Badge> : null}
+                        </div>
+                        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Edit role</h1>
+                        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                            Update role details and permission coverage. Changes are applied immediately to users assigned to this role.
                         </p>
                     </div>
-
-                    <form id="role-form" onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 gap-8 pb-8 lg:grid-cols-12">
-                            {/* LEFT COLUMN: Form Sections */}
-                            <div className="space-y-6 lg:col-span-8">
-                                {/* Role Identification */}
-                                <Card className="border-border shadow-sm">
-                                    <CardHeader className="border-b border-border/50 pb-4">
-                                        <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-                                            <Fingerprint className="h-5 w-5 text-primary" />
-                                            Role Identification
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-semibold">
-                                                Role Name
-                                            </Label>
-                                            <Input
-                                                value={data.name}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'name',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className={`h-11 bg-background text-base ${errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                            />
-                                            {errors.name && (
-                                                <p className="mt-1 text-xs font-medium text-destructive">
-                                                    {errors.name}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-semibold">
-                                                Role Code
-                                            </Label>
-                                            <Input
-                                                value={data.code}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'code',
-                                                        e.target.value.toUpperCase(),
-                                                    )
-                                                }
-                                                className={`h-11 bg-background text-base uppercase ${errors.code ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                            />
-                                            {errors.code ? (
-                                                <p className="mt-1 text-xs font-medium text-destructive">
-                                                    <span className="font-bold">
-                                                        !
-                                                    </span>{' '}
-                                                    {errors.code}
-                                                </p>
-                                            ) : (
-                                                <p className="mt-1 text-xs text-muted-foreground">
-                                                    Role codes must be unique
-                                                    and are used for system
-                                                    mapping (no spaces).
-                                                </p>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Role Context */}
-                                <Card className="border-border shadow-sm">
-                                    <CardHeader className="border-b border-border/50 pb-4">
-                                        <CardTitle className="flex items-center gap-2 text-base font-bold text-foreground">
-                                            <FileText className="h-5 w-5 text-primary" />
-                                            Role Context
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-2 p-6">
-                                        <Label className="text-sm font-semibold">
-                                            Role Description
-                                        </Label>
-                                        <Textarea
-                                            placeholder="Briefly describe the purpose and scope of this role..."
-                                            value={data.description}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'description',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className={`min-h-[140px] resize-none bg-background text-base ${errors.description ? 'border-destructive' : ''}`}
-                                        />
-                                        {errors.description && (
-                                            <p className="mt-1 text-xs font-medium text-destructive">
-                                                {errors.description}
-                                            </p>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </div>
-
-                            {/* RIGHT COLUMN: Guidelines & Context */}
-                            <div className="space-y-6 lg:col-span-4">
-                                {/* Guidelines Card */}
-                                <Card className="border-border bg-muted/30 shadow-sm">
-                                    <CardHeader className="border-b border-border/50 pb-3">
-                                        <CardTitle className="flex items-center gap-2 text-sm font-bold text-foreground">
-                                            <Lightbulb className="h-5 w-5 text-primary" />
-                                            Configuration Guidelines
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6 pt-6">
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                                1
-                                            </div>
-                                            <p className="text-sm leading-relaxed font-medium text-muted-foreground">
-                                                Codes should be{' '}
-                                                <span className="font-bold text-foreground">
-                                                    UPPERCASE
-                                                </span>{' '}
-                                                with hyphens for consistency.
-                                            </p>
-                                        </div>
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                                2
-                                            </div>
-                                            <p className="text-sm leading-relaxed font-medium text-muted-foreground">
-                                                Deleting roles is restricted if
-                                                users are currently attached.
-                                            </p>
-                                        </div>
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                                                3
-                                            </div>
-                                            <p className="text-sm leading-relaxed font-medium text-muted-foreground">
-                                                Permissions can be assigned to
-                                                this role in the{' '}
-                                                <span className="cursor-pointer text-foreground underline hover:text-primary">
-                                                    Permissions Matrix
-                                                </span>{' '}
-                                                after creation.
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* System State Card */}
-                                <Card className="border-primary/20 bg-primary/5 shadow-sm">
-                                    <CardContent className="flex items-center gap-4 p-5">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background">
-                                            <ShieldCheck className="h-5 w-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                System State
-                                            </p>
-                                            <p className="text-sm font-bold text-foreground">
-                                                Editing Existing Role
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-                    </form>
+                    <div className="flex gap-3">
+                        <Button asChild variant="outline" className="rounded-xl">
+                            <Link href={`/roles/${role.id}`}>Cancel</Link>
+                        </Button>
+                        <Button type="submit" className="rounded-xl" disabled={form.processing}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Update role
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Sticky Footer */}
-                <div className="sticky bottom-0 z-40 flex flex-col items-center justify-end gap-4 border-t bg-background p-4 px-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:flex-row md:px-8">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="w-full font-bold text-muted-foreground hover:text-foreground sm:w-auto"
-                        onClick={() => router.visit(`${API}/roles`)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        form="role-form"
-                        className="w-full bg-primary px-8 font-bold text-primary-foreground shadow-sm hover:bg-primary/90 sm:w-auto"
-                        disabled={processing || isSubmitting}
-                    >
-                        <Save className="mr-2 h-4 w-4" />
-                        {processing || isSubmitting
-                            ? 'Saving...'
-                            : 'Update Role'}
-                    </Button>
+                <div className="grid gap-6 xl:grid-cols-[0.9fr,1.1fr]">
+                    <div className="space-y-6">
+                        <Card className="rounded-2xl border-border shadow-sm">
+                            <CardHeader>
+                                <CardTitle>Role details</CardTitle>
+                                <CardDescription>These values are shown throughout the Control Center and user assignment flows.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="code">Role code</Label>
+                                    <Input id="code" value={form.data.code} onChange={(event) => form.setData('code', event.target.value.toUpperCase().replace(/\s+/g, '_'))} className="rounded-xl" disabled={role.is_protected} />
+                                    {form.errors.code ? <p className="text-sm text-destructive">{form.errors.code}</p> : null}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Role name</Label>
+                                    <Input id="name" value={form.data.name} onChange={(event) => form.setData('name', event.target.value)} className="rounded-xl" />
+                                    {form.errors.name ? <p className="text-sm text-destructive">{form.errors.name}</p> : null}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea id="description" value={form.data.description} onChange={(event) => form.setData('description', event.target.value)} className="min-h-32 rounded-xl" />
+                                    {form.errors.description ? <p className="text-sm text-destructive">{form.errors.description}</p> : null}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="rounded-2xl border-border shadow-sm">
+                            <CardContent className="space-y-4 p-5">
+                                <div>
+                                    <p className="text-sm font-medium text-foreground">Impact summary</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        {role.users_count} user{role.users_count === 1 ? '' : 's'} currently inherit this role. {role.permissions_count} permission{role.permissions_count === 1 ? '' : 's'} are assigned today.
+                                    </p>
+                                </div>
+                                {role.is_protected ? (
+                                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <AlertTriangle className="h-4 w-4" />
+                                            This is a seeded role.
+                                        </div>
+                                        <p className="mt-2 text-amber-800">
+                                            Updating permissions is supported, but deletion is blocked to preserve seeded role compatibility.
+                                        </p>
+                                    </div>
+                                ) : null}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <Card className="rounded-2xl border-border shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Role permissions</CardTitle>
+                            <CardDescription>Adjust permission coverage by module.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <PermissionSelector
+                                groups={permissionGroups}
+                                selectedIds={form.data.permission_ids}
+                                onChange={(next) => form.setData('permission_ids', next)}
+                                disabled={form.processing}
+                                error={form.errors.permission_ids}
+                            />
+                        </CardContent>
+                    </Card>
                 </div>
-            </div>
+            </form>
         </AppLayout>
     );
 }
+

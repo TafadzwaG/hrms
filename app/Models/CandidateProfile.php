@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CandidateProfile extends Model
 {
+    use Auditable;
+
+    protected string $auditModule = 'candidates';
+
     protected $fillable = [
         'requisition_code',
         'full_name',

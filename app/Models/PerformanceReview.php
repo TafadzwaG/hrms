@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PerformanceReview extends Model
 {
+    use Auditable;
+
+    protected string $auditModule = 'performance';
+
     protected $fillable = [
         'employee_id',
         'cycle_name',

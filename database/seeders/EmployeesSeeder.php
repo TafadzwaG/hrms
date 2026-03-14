@@ -75,7 +75,7 @@ class EmployeesSeeder extends Seeder
 
                 $companyEmployeeIds = [];
 
-                // ✅ At least 5 employees per company
+                // âœ… At least 5 employees per company
                 for ($i = 1; $i <= 5; $i++) {
                     $orgUnitId = $deptOrTeamIds[array_rand($deptOrTeamIds)];
                     $locationId = !empty($locationPool) ? $locationPool[array_rand($locationPool)] : null;
@@ -231,7 +231,7 @@ class EmployeesSeeder extends Seeder
 
     private function attachEmployeeRoleIfAvailable(User $user): void
     {
-        if (!Schema::hasTable('roles') || !Schema::hasTable('role_user')) {
+        if (!Schema::hasTable('roles') || !Schema::hasTable('role_users')) {
             return;
         }
 

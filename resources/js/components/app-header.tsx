@@ -69,6 +69,12 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
     const { auth } = page.props;
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+    const user = auth.user;
+
+    if (!user) {
+        return null;
+    }
+
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -223,17 +229,17 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 >
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         <AvatarImage
-                                            src={auth.user.avatar}
-                                            alt={auth.user.name}
+                                            src={user.avatar}
+                                            alt={user.name}
                                         />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                            {getInitials(auth.user.name)}
+                                            {getInitials(user.name)}
                                         </AvatarFallback>
                                     </Avatar>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end">
-                                <UserMenuContent user={auth.user} />
+                                <UserMenuContent user={user} />
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Location extends Model
 {
+    use Auditable;
+
     protected $table = 'locations';
 
     protected $fillable = [

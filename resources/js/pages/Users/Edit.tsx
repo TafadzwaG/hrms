@@ -1,611 +1,511 @@
-import { API } from '@/config';
-import AppLayout from '@/layouts/app-layout';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Copy,
-    FileText,
-    Hash,
-    Info,
-    KeyRound,
-    Mail,
-    Save,
-    Shield,
-    ShieldCheck,
-    User,
-    Wand2,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
-
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import AppLayout from '@/layouts/app-layout';
+import { useAuthorization } from '@/lib/authorization';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Fingerprint, KeyRound, Save, ShieldCheck, Users } from 'lucide-react';
+import type { FormEvent, ReactNode } from 'react';
 
-function generateStrongPassword(length = 12) {
+type RoleOption = {
+    id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    users_count: number;
+    permissions_count: number;
+};
+
+type Meta = {
+    supportsUsername: boolean;
+    supportsRoleColumn: boolean;
+    supportsEmailVerification: boolean;
+};
+
+type UserPayload = {
+    id: number;
+    name: string;
+    email: string;
+    username: string | null;
+    role: string | null;
+    email_verified_at: string | null;
+    role_ids: number[];
+};
+
+function generatePassword(length = 12) {
     const charset =
         'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?';
-    const arr = new Uint32Array(length);
-
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-        crypto.getRandomValues(arr);
-    } else {
-        for (let i = 0; i < length; i++)
-            arr[i] = Math.floor(Math.random() * charset.length);
-    }
-
-    return Array.from(arr, (x) => charset[x % charset.length]).join('');
+    const values = new Uint32Array(length);
+    crypto.getRandomValues(values);
+    return Array.from(values, (value) => charset[value % charset.length]).join(
+        '',
+    );
 }
 
 export default function UserEdit() {
-    const { user, roles, meta } = usePage().props as any;
+    const { user, roles, meta } = usePage<{
+        user: UserPayload;
+        roles: RoleOption[];
+        meta: Meta;
+    }>().props;
+    const { can } = useAuthorization();
+    const canAssignRoles = can('users.assign_roles');
 
-    const PATHS = useMemo(
-        () => ({
-            index: `${API}/users`,
-            show: `${API}/users/${user.id}`,
-            update: `${API}/users/${user.id}`,
-        }),
-        [user?.id],
-    );
-
-    const { data, setData, errors, put, processing } = useForm({
-        name: user.name ?? '',
-        email: user.email ?? '',
+    const form = useForm({
+        name: user.name,
+        email: user.email,
         username: user.username ?? '',
         role: user.role ?? 'employee',
-
         password: '',
         password_confirmation: '',
-
         mark_email_verified: false,
         unverify_email: false,
-
         send_password_email: true,
-
-        role_ids: (user.role_ids ?? []) as number[],
+        role_ids: user.role_ids,
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const toggleRole = (id: number) => {
-        setData(
+    const toggleRole = (roleId: number) => {
+        form.setData(
             'role_ids',
-            data.role_ids.includes(id)
-                ? data.role_ids.filter((x: number) => x !== id)
-                : [...data.role_ids, id],
+            form.data.role_ids.includes(roleId)
+                ? form.data.role_ids.filter((id) => id !== roleId)
+                : [...form.data.role_ids, roleId],
         );
     };
 
-    const handleGeneratePassword = () => {
-        const pwd = generateStrongPassword(12);
-        setData('password', pwd);
-        setData('password_confirmation', pwd);
-        setData('send_password_email', true);
+    const fillGeneratedPassword = () => {
+        const password = generatePassword();
+        form.setData('password', password);
+        form.setData('password_confirmation', password);
+        form.setData('send_password_email', true);
     };
 
-    const copyPassword = async () => {
-        if (!data.password) return;
-        try {
-            await navigator.clipboard.writeText(data.password);
-        } catch {
-            // ignore
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        put(PATHS.update, {
-            preserveScroll: true,
-            onFinish: () => setIsSubmitting(false),
-        });
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        form.put(`/users/${user.id}`);
     };
 
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Users', href: PATHS.index },
-                { title: user.name, href: PATHS.show },
+                { title: 'Control Center', href: '/control-center' },
+                { title: 'Users', href: '/users' },
+                { title: user.name, href: `/users/${user.id}` },
                 { title: 'Edit', href: '#' },
             ]}
         >
             <Head title={`Edit User: ${user.name}`} />
 
-            <div className="flex min-h-[calc(100vh-64px)] w-full flex-col bg-muted/10 p-4 md:p-6 lg:p-8 xl:p-12">
-                {/* Visual Context Breadcrumb */}
-                <div className="mb-6 flex items-center text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                    <span
-                        className="cursor-pointer transition-colors hover:text-foreground"
-                        onClick={() => router.visit(PATHS.index)}
-                    >
-                        Users
-                    </span>
-                    <span className="mx-2">&rsaquo;</span>
-                    <span className="text-foreground">Edit Profile</span>
-                </div>
+            <form
+                onSubmit={submit}
+                className="flex min-h-[calc(100vh-64px)] w-full flex-col gap-8 bg-muted/5 p-4 md:p-6 lg:p-8 xl:p-12"
+            >
+                {/* Header Section */}
+                <div className="flex w-full flex-col gap-6 border-b border-border/50 pb-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                            Edit user
+                        </h1>
+                        <p className="mt-2 max-w-3xl text-sm leading-relaxed font-medium text-muted-foreground">
+                            Update the user profile, credentials, and role
+                            assignments.
+                        </p>
+                    </div>
 
-                <div className="mb-8 flex w-full flex-col gap-6 border-b border-border/50 pb-6 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="flex items-start gap-4">
+                    <div className="flex shrink-0 flex-wrap items-center gap-3">
                         <Button
+                            asChild
                             variant="outline"
-                            size="icon"
-                            className="mt-1 hidden h-10 w-10 shrink-0 border-border bg-background shadow-sm sm:flex"
-                            onClick={() => router.visit(PATHS.show)}
+                            className="h-11 border-border bg-background px-6 font-bold text-foreground shadow-sm"
                         >
-                            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                            <Link href={`/users/${user.id}`}>Cancel</Link>
                         </Button>
-                        <div>
-                            <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
-                                Edit User: {user.name}
-                            </h1>
-                            <div className="mt-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                                <Badge
-                                    variant="outline"
-                                    className="border-transparent bg-primary/10 px-1.5 py-0 text-[9px] tracking-widest text-primary uppercase shadow-none"
-                                >
-                                    Active
-                                </Badge>
-                                <span className="opacity-50">•</span>
-                                <span className="font-mono">
-                                    USR-{user.id.toString().padStart(5, '0')}
-                                </span>
-                            </div>
-                        </div>
+                        <Button
+                            type="submit"
+                            className="h-11 bg-foreground px-8 font-bold text-background shadow-sm hover:bg-foreground/90"
+                            disabled={form.processing}
+                        >
+                            {form.processing ? 'Saving...' : 'Save changes'}
+                        </Button>
                     </div>
                 </div>
 
-                <form
-                    id="edit-user-form"
-                    onSubmit={handleSubmit}
-                    className="grid w-full grid-cols-1 gap-8 lg:grid-cols-12 xl:gap-8"
-                >
-                    {/* LEFT COLUMN: Main Form (Spans 8/12) */}
-                    <div className="space-y-6 lg:col-span-8">
-                        {/* User Information */}
+                {/* Main Split Layout */}
+                <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-12 xl:gap-12">
+                    {/* LEFT COLUMN: Identity (Spans 5/12) */}
+                    <div className="space-y-6 lg:col-span-5">
                         <Card className="border-border bg-background shadow-sm">
                             <CardHeader className="border-b border-border/50 pb-4">
                                 <CardTitle className="flex items-center gap-2 text-sm font-bold tracking-widest text-foreground uppercase">
-                                    <User className="h-5 w-5 text-muted-foreground" />
-                                    User Information
+                                    <Fingerprint className="h-5 w-5 text-muted-foreground" />{' '}
+                                    Identity
                                 </CardTitle>
+                                <CardDescription className="text-xs">
+                                    Maintain the account profile and credential
+                                    state.
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6 p-6 md:p-8">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:gap-8">
-                                    <div className="space-y-2">
-                                        <Label className="flex items-center gap-2 text-sm font-bold">
-                                            <User className="h-4 w-4 text-muted-foreground" />{' '}
-                                            Full Name{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                    <Field
+                                        label="Full Name"
+                                        error={form.errors.name}
+                                    >
                                         <Input
-                                            value={data.name}
-                                            onChange={(e) =>
-                                                setData('name', e.target.value)
+                                            value={form.data.name}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'name',
+                                                    event.target.value,
+                                                )
                                             }
-                                            className={`h-11 bg-background text-base ${errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                                            className="h-11 bg-background text-base shadow-sm"
                                         />
-                                        {errors.name && (
-                                            <p className="text-xs font-medium text-destructive">
-                                                {errors.name}
-                                            </p>
-                                        )}
-                                    </div>
+                                    </Field>
 
-                                    <div className="space-y-2">
-                                        <Label className="flex items-center gap-2 text-sm font-bold">
-                                            <Mail className="h-4 w-4 text-muted-foreground" />{' '}
-                                            Email Address{' '}
-                                            <span className="text-destructive">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Input
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) =>
-                                                setData('email', e.target.value)
-                                            }
-                                            className={`h-11 bg-background text-base ${errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                        />
-                                        {errors.email && (
-                                            <p className="text-xs font-medium text-destructive">
-                                                {errors.email}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {meta?.supportsUsername && (
-                                        <div className="space-y-2">
-                                            <Label className="flex items-center gap-2 text-sm font-bold">
-                                                <Hash className="h-4 w-4 text-muted-foreground" />{' '}
-                                                Username
-                                            </Label>
+                                    {meta.supportsUsername ? (
+                                        <Field
+                                            label="Username"
+                                            error={form.errors.username}
+                                        >
                                             <Input
-                                                value={data.username}
-                                                onChange={(e) =>
-                                                    setData(
+                                                value={form.data.username}
+                                                onChange={(event) =>
+                                                    form.setData(
                                                         'username',
-                                                        e.target.value,
+                                                        event.target.value,
                                                     )
                                                 }
-                                                className={`h-11 bg-background text-base ${errors.username ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                                                className="h-11 bg-background text-base shadow-sm"
                                             />
-                                            {errors.username && (
-                                                <p className="text-xs font-medium text-destructive">
-                                                    {errors.username}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {meta?.supportsRoleColumn && (
-                                        <div className="space-y-2">
-                                            <Label className="flex items-center gap-2 text-sm font-bold">
-                                                <Shield className="h-4 w-4 text-muted-foreground" />{' '}
-                                                Legacy Role
-                                            </Label>
-                                            <Input
-                                                value={data.role}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'role',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className={`h-11 bg-background text-base ${errors.role ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                            />
-                                            {errors.role && (
-                                                <p className="text-xs font-medium text-destructive">
-                                                    {errors.role}
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Security & Password */}
-                        <Card className="border-border bg-background shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
-                                <CardTitle className="text-sm font-bold tracking-widest text-foreground uppercase">
-                                    Security & Password
-                                </CardTitle>
-                                <div className="flex gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleGeneratePassword}
-                                        className="h-8 bg-muted/20 text-xs font-bold"
-                                    >
-                                        <Wand2 className="mr-2 h-3.5 w-3.5" />{' '}
-                                        Generate
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={copyPassword}
-                                        disabled={!data.password}
-                                        className="h-8 bg-muted/20 text-xs font-bold"
-                                    >
-                                        <Copy className="mr-2 h-3.5 w-3.5" />{' '}
-                                        Copy
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6 md:p-8">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:gap-8">
-                                    <div className="space-y-2">
-                                        <Label className="text-sm font-bold">
-                                            New Password
-                                        </Label>
-                                        <Input
-                                            type="text"
-                                            value={data.password}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'password',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="Leave blank to keep current"
-                                            className={`h-11 bg-background font-mono text-base ${errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                        />
-                                        {errors.password && (
-                                            <p className="text-xs font-medium text-destructive">
-                                                {errors.password}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label className="text-sm font-bold">
-                                            Confirm Password
-                                        </Label>
-                                        <Input
-                                            type="text"
-                                            value={data.password_confirmation}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'password_confirmation',
-                                                    e.target.value,
-                                                )
-                                            }
-                                            placeholder="Must match new password"
-                                            className={`h-11 bg-background font-mono text-base ${errors.password_confirmation ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                        />
-                                        {errors.password_confirmation && (
-                                            <p className="text-xs font-medium text-destructive">
-                                                {errors.password_confirmation}
-                                            </p>
-                                        )}
-                                    </div>
+                                        </Field>
+                                    ) : null}
                                 </div>
 
-                                <div className="mt-4 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                                    <Checkbox
-                                        id="send_email"
-                                        checked={!!data.send_password_email}
-                                        onCheckedChange={(v) =>
-                                            setData('send_password_email', !!v)
+                                <Field
+                                    label="Email Address"
+                                    error={form.errors.email}
+                                >
+                                    <Input
+                                        type="email"
+                                        value={form.data.email}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'email',
+                                                event.target.value,
+                                            )
                                         }
-                                        disabled={!data.email || !data.password}
-                                        className="mt-0.5"
+                                        className="h-11 bg-background text-base shadow-sm"
                                     />
-                                    <div className="space-y-1">
-                                        <Label
-                                            htmlFor="send_email"
-                                            className="cursor-pointer text-sm font-bold text-primary"
+                                </Field>
+
+                                {meta.supportsRoleColumn ? (
+                                    <Field
+                                        label="Legacy Role Column"
+                                        error={form.errors.role}
+                                    >
+                                        <Input
+                                            value={form.data.role}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'role',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="h-11 bg-background text-base shadow-sm"
+                                        />
+                                    </Field>
+                                ) : null}
+
+                                <div className="border-t border-border/50 pt-6">
+                                    <h4 className="mb-4 text-sm font-bold text-foreground">
+                                        Security & Verification
+                                    </h4>
+
+                                    <div className="mb-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                        <Field
+                                            label="Reset Password"
+                                            error={form.errors.password}
                                         >
-                                            Email new password to user
-                                        </Label>
-                                        <p className="text-xs leading-relaxed font-medium text-muted-foreground">
-                                            Recommended if you generated a
-                                            temporary password. This will
-                                            trigger an automated secure
-                                            notification.
-                                        </p>
+                                            <Input
+                                                type="text"
+                                                value={form.data.password}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'password',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                className="h-11 bg-background font-mono text-base shadow-sm"
+                                                placeholder="Leave blank to keep"
+                                            />
+                                        </Field>
+                                        <Field
+                                            label="Confirm Password"
+                                            error={
+                                                form.errors
+                                                    .password_confirmation
+                                            }
+                                        >
+                                            <Input
+                                                type="text"
+                                                value={
+                                                    form.data
+                                                        .password_confirmation
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'password_confirmation',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                className="h-11 bg-background font-mono text-base shadow-sm"
+                                            />
+                                        </Field>
+                                    </div>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="mb-6 h-11 w-full border-border/50 bg-muted/10 font-bold text-muted-foreground shadow-none hover:text-foreground"
+                                        onClick={fillGeneratedPassword}
+                                    >
+                                        <KeyRound className="mr-2 h-4 w-4" />
+                                        Generate secure password
+                                    </Button>
+
+                                    <div className="space-y-4">
+                                        <label className="flex cursor-pointer items-center gap-3">
+                                            <Checkbox
+                                                checked={
+                                                    form.data
+                                                        .send_password_email
+                                                }
+                                                onCheckedChange={(value) =>
+                                                    form.setData(
+                                                        'send_password_email',
+                                                        Boolean(value),
+                                                    )
+                                                }
+                                                className="border-border/50 data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+                                            />
+                                            <span className="text-sm font-medium text-foreground">
+                                                Email password reset link to
+                                                user
+                                            </span>
+                                        </label>
+
+                                        {meta.supportsEmailVerification ? (
+                                            <>
+                                                <label className="flex cursor-pointer items-center gap-3">
+                                                    <Checkbox
+                                                        checked={
+                                                            form.data
+                                                                .mark_email_verified
+                                                        }
+                                                        onCheckedChange={(
+                                                            value,
+                                                        ) =>
+                                                            form.setData(
+                                                                'mark_email_verified',
+                                                                Boolean(value),
+                                                            )
+                                                        }
+                                                        className="border-border/50 data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+                                                    />
+                                                    <span className="text-sm font-medium text-foreground">
+                                                        Mark account as verified
+                                                    </span>
+                                                </label>
+                                                <label className="flex cursor-pointer items-center gap-3">
+                                                    <Checkbox
+                                                        checked={
+                                                            form.data
+                                                                .unverify_email
+                                                        }
+                                                        onCheckedChange={(
+                                                            value,
+                                                        ) =>
+                                                            form.setData(
+                                                                'unverify_email',
+                                                                Boolean(value),
+                                                            )
+                                                        }
+                                                        className="border-border/50 data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+                                                    />
+                                                    <span className="text-sm font-medium text-foreground">
+                                                        Force unverified status
+                                                        on next login
+                                                    </span>
+                                                </label>
+                                            </>
+                                        ) : null}
                                     </div>
                                 </div>
-
-                                {meta?.supportsEmailVerification && (
-                                    <>
-                                        <Separator className="my-6 bg-border/50" />
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                                Email Verification Status
-                                            </p>
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/10">
-                                                    <Checkbox
-                                                        checked={
-                                                            !!data.mark_email_verified
-                                                        }
-                                                        onCheckedChange={(v) =>
-                                                            setData(
-                                                                'mark_email_verified',
-                                                                !!v,
-                                                            )
-                                                        }
-                                                    />
-                                                    <div>
-                                                        <p className="text-sm font-bold text-foreground">
-                                                            Mark email as
-                                                            verified
-                                                        </p>
-                                                    </div>
-                                                </label>
-                                                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-4 transition-colors hover:bg-muted/10">
-                                                    <Checkbox
-                                                        checked={
-                                                            !!data.unverify_email
-                                                        }
-                                                        onCheckedChange={(v) =>
-                                                            setData(
-                                                                'unverify_email',
-                                                                !!v,
-                                                            )
-                                                        }
-                                                    />
-                                                    <div>
-                                                        <p className="text-sm font-bold text-foreground">
-                                                            Unverify email
-                                                        </p>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
                             </CardContent>
                         </Card>
+                    </div>
 
-                        {/* Assign Roles */}
-                        <Card className="border-border bg-muted/5 shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+                    {/* RIGHT COLUMN: Role Assignment (Spans 7/12) */}
+                    <div className="space-y-6 lg:col-span-7">
+                        <Card className="h-full border-border bg-background shadow-sm">
+                            <CardHeader className="border-b border-border/50 pb-4">
                                 <CardTitle className="flex items-center gap-2 text-sm font-bold tracking-widest text-foreground uppercase">
-                                    <ShieldCheck className="h-5 w-5 text-primary" />
-                                    Assign Roles (RBAC)
+                                    <ShieldCheck className="h-5 w-5 text-muted-foreground" />{' '}
+                                    Role assignment
                                 </CardTitle>
-                                <span className="font-mono text-[10px] text-muted-foreground">
-                                    v3.2.0-secure
-                                </span>
+                                <CardDescription className="text-xs">
+                                    {canAssignRoles
+                                        ? 'Adjust role memberships for this account.'
+                                        : 'You do not have permission to assign roles.'}
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="p-6 md:p-8">
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                    {roles.map((r: any) => (
-                                        <label
-                                            key={r.id}
-                                            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${data.role_ids.includes(r.id) ? 'border-primary/50 bg-background shadow-sm' : 'border-border bg-background hover:bg-muted/20'}`}
-                                        >
-                                            <Checkbox
-                                                checked={data.role_ids.includes(
-                                                    r.id,
-                                                )}
-                                                onCheckedChange={() =>
-                                                    toggleRole(r.id)
-                                                }
-                                                className="mt-0.5"
-                                            />
-                                            <div className="w-full space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="mr-2 truncate text-sm font-bold text-foreground">
-                                                        {r.name}
-                                                    </span>
+                            <CardContent className="space-y-4 p-6 md:p-8">
+                                {canAssignRoles ? (
+                                    roles.map((roleOption) => {
+                                        const checked =
+                                            form.data.role_ids.includes(
+                                                roleOption.id,
+                                            );
+
+                                        return (
+                                            <label
+                                                key={roleOption.id}
+                                                className={`flex cursor-pointer items-start gap-4 rounded-xl border p-5 transition-colors ${checked ? 'border-foreground bg-muted/5 shadow-sm' : 'border-border/50 bg-background hover:bg-muted/10'}`}
+                                            >
+                                                <Checkbox
+                                                    checked={checked}
+                                                    onCheckedChange={() =>
+                                                        toggleRole(
+                                                            roleOption.id,
+                                                        )
+                                                    }
+                                                    className="mt-1 data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+                                                />
+                                                <div className="w-full space-y-3">
+                                                    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                                                        <div className="flex items-center gap-3">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={`px-1.5 py-0 font-mono text-[9px] tracking-widest uppercase shadow-none ${checked ? 'border-transparent bg-foreground text-background' : 'border-transparent bg-muted text-muted-foreground'}`}
+                                                            >
+                                                                {roleOption.name.substring(
+                                                                    0,
+                                                                    3,
+                                                                )}
+                                                            </Badge>
+                                                            <span className="text-base leading-none font-bold text-foreground">
+                                                                {
+                                                                    roleOption.name
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <span className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                                                            Code:{' '}
+                                                            {roleOption.code}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm leading-relaxed font-medium text-muted-foreground">
+                                                        {roleOption.description ||
+                                                            'No role description provided.'}
+                                                    </p>
+                                                    <div className="flex items-center gap-6 pt-1 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                                        <span className="flex items-center gap-1.5">
+                                                            <KeyRound className="h-3.5 w-3.5 opacity-70" />{' '}
+                                                            {
+                                                                roleOption.permissions_count
+                                                            }{' '}
+                                                            Permissions
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Users className="h-3.5 w-3.5 opacity-70" />{' '}
+                                                            {
+                                                                roleOption.users_count
+                                                            }{' '}
+                                                            Assigned
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="bg-muted px-1.5 py-0 font-mono text-[9px] tracking-widest text-foreground uppercase shadow-none"
-                                                >
-                                                    {r.code}
-                                                </Badge>
-                                            </div>
-                                        </label>
-                                    ))}
-                                </div>
-                                {errors.role_ids && (
-                                    <p className="mt-3 text-xs font-medium text-destructive">
-                                        {errors.role_ids}
+                                            </label>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm font-medium text-muted-foreground">
+                                        Role assignments are controlled by the{' '}
+                                        <strong className="text-foreground">
+                                            users.assign_roles
+                                        </strong>{' '}
+                                        permission.
+                                    </div>
+                                )}
+                                {form.errors.role_ids && (
+                                    <p className="mt-2 text-sm font-bold text-destructive">
+                                        {form.errors.role_ids}
                                     </p>
                                 )}
                             </CardContent>
                         </Card>
                     </div>
+                </div>
+            </form>
 
-                    {/* RIGHT COLUMN: Side Panels (Spans 4/12) */}
-                    <div className="space-y-6 lg:col-span-4">
-                        {/* System Tip */}
-                        <Card className="relative overflow-hidden border-transparent bg-foreground text-background shadow-md">
-                            <div className="pointer-events-none absolute -top-4 -right-4 opacity-5">
-                                <Shield className="h-32 w-32" />
-                            </div>
-                            <CardContent className="relative z-10 space-y-4 p-6">
-                                <h3 className="flex items-center gap-2 text-sm font-bold tracking-widest uppercase">
-                                    <KeyRound className="h-4 w-4" /> System Tip
-                                </h3>
-                                <p className="text-xs leading-relaxed font-medium opacity-90">
-                                    When updating a user's password, use the{' '}
-                                    <strong className="rounded bg-foreground/20 px-1 text-background">
-                                        'Generate'
-                                    </strong>{' '}
-                                    tool to create a cryptographically secure
-                                    string.
-                                </p>
-                                <p className="text-xs leading-relaxed font-medium opacity-90">
-                                    Checking{' '}
-                                    <strong className="rounded bg-foreground/20 px-1 text-background">
-                                        'Email new password'
-                                    </strong>{' '}
-                                    will trigger an automated secure
-                                    notification containing the temporary
-                                    credentials.
-                                </p>
-                                <Button
-                                    variant="secondary"
-                                    className="mt-2 h-10 w-full text-xs font-bold shadow-none"
-                                >
-                                    Learn More About RBAC
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        {/* Current Status Summary */}
-                        <Card className="border-border bg-background shadow-sm">
-                            <CardHeader className="border-b border-border/50 pb-4">
-                                <CardTitle className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Current Status Summary
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6 p-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="rounded-lg border border-border bg-muted/10 p-4">
-                                        <p className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                            Total Roles
-                                        </p>
-                                        <p className="text-2xl font-extrabold text-foreground">
-                                            {(user.roles?.length ?? 0)
-                                                .toString()
-                                                .padStart(2, '0')}
-                                        </p>
-                                    </div>
-                                    <div className="rounded-lg border border-border bg-muted/10 p-4">
-                                        <p className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                            Login Count
-                                        </p>
-                                        <p className="text-2xl font-extrabold text-foreground">
-                                            {/* Mock data to match screenshot design */}
-                                            124
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <Button
-                                    variant="outline"
-                                    className="h-11 w-full border-border bg-background font-bold text-foreground shadow-sm"
-                                >
-                                    <FileText className="mr-2 h-4 w-4 text-muted-foreground" />{' '}
-                                    View Activity Log
-                                </Button>
-                            </CardContent>
-                        </Card>
-
-                        {/* Security Policy Note */}
-                        <Card className="relative overflow-hidden border-border bg-zinc-950 text-zinc-50 shadow-sm">
-                            <CardContent className="relative z-10 space-y-4 p-6">
-                                <h3 className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
-                                    Security Policy
-                                </h3>
-                                <p className="text-xs leading-relaxed font-medium text-zinc-300">
-                                    This user holds high-level system
-                                    privileges. All role changes are logged for
-                                    annual compliance audit.
-                                </p>
-                                <div className="mt-4 flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-[10px] font-bold tracking-widest text-amber-500 uppercase">
-                                    <Info className="h-4 w-4 shrink-0" /> Audits
-                                    are strictly enforced.
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </form>
-
-                {/* Sticky Footer Actions */}
-                <div className="sticky bottom-0 z-40 mt-4 flex w-full items-center justify-end gap-4 border-t bg-background p-4 px-6 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.05)] md:px-12">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="h-11 font-bold text-muted-foreground hover:text-foreground"
-                        onClick={() => router.visit(PATHS.show)}
+            {/* Minimal Footer */}
+            <div className="flex flex-col items-center justify-between gap-4 border-t bg-background px-8 py-6 md:flex-row">
+                <p className="text-[11px] font-medium text-muted-foreground">
+                    © 2024 Enterprise HRMS Portal. All rights reserved.
+                </p>
+                <div className="flex items-center gap-6 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                    <a
+                        href="#"
+                        className="transition-colors hover:text-foreground"
                     >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        form="edit-user-form"
-                        className="h-11 min-w-[160px] bg-primary px-8 font-bold text-primary-foreground shadow-sm hover:bg-primary/90"
-                        disabled={processing || isSubmitting}
+                        Privacy Policy
+                    </a>
+                    <a
+                        href="#"
+                        className="transition-colors hover:text-foreground"
                     >
-                        {processing || isSubmitting ? (
-                            <>
-                                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="mr-2 h-4 w-4" /> Save Changes
-                            </>
-                        )}
-                    </Button>
+                        Terms of Service
+                    </a>
+                    <a
+                        href="#"
+                        className="transition-colors hover:text-foreground"
+                    >
+                        Help Center
+                    </a>
                 </div>
             </div>
         </AppLayout>
+    );
+}
+
+function Field({
+    label,
+    error,
+    children,
+}: {
+    label: string;
+    error?: string;
+    children: ReactNode;
+}) {
+    return (
+        <div className="space-y-2">
+            <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                {label}
+            </Label>
+            {children}
+            {error && (
+                <p className="text-xs font-bold text-destructive">{error}</p>
+            )}
+        </div>
     );
 }

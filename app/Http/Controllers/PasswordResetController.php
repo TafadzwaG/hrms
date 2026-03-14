@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\PasswordResetLinkMail;
 use App\Models\User;
+use App\Support\Audit\AuditLogger;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +35,15 @@ class PasswordResetController extends Controller
 
         // Queued mail (Mailable implements ShouldQueue)
         Mail::to($user->email)->queue(new PasswordResetLinkMail($user, $resetUrl));
+
+        app(AuditLogger::class)->logCustom('password_reset_requested', $user, [
+            'module' => 'users',
+            'category' => 'security',
+            'description' => 'Queued a password reset link for the user account.',
+            'metadata' => [
+                'delivery_channel' => 'email',
+            ],
+        ]);
 
         return back()->with('success', 'Password reset link has been queued for sending.');
     }

@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Timesheet;
+use App\Support\Audit\AuditContext;
+use App\Support\Audit\AuditLogger;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -143,10 +146,27 @@ class TimesheetController extends Controller
     public function approve(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $before = [
+            'status' => $record->status,
+            'approved_by' => $record->approved_by,
+        ];
 
-        $record->update([
-            'status' => 'Approved',
-            'approved_by' => $this->actorName($request),
+        AuditContext::withoutAuditing(function () use ($record, $request): void {
+            $record->update([
+                'status' => 'Approved',
+                'approved_by' => $this->actorName($request),
+            ]);
+        });
+
+        app(AuditLogger::class)->logCustom('approve', $record, [
+            'module' => 'timesheets',
+            'category' => 'workflow',
+            'description' => 'Approved timesheet.',
+            'old_values' => $before,
+            'new_values' => [
+                'status' => $record->status,
+                'approved_by' => $record->approved_by,
+            ],
         ]);
 
         return redirect()
@@ -157,10 +177,27 @@ class TimesheetController extends Controller
     public function reject(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $before = [
+            'status' => $record->status,
+            'approved_by' => $record->approved_by,
+        ];
 
-        $record->update([
-            'status' => 'Rejected',
-            'approved_by' => $this->actorName($request),
+        AuditContext::withoutAuditing(function () use ($record, $request): void {
+            $record->update([
+                'status' => 'Rejected',
+                'approved_by' => $this->actorName($request),
+            ]);
+        });
+
+        app(AuditLogger::class)->logCustom('reject', $record, [
+            'module' => 'timesheets',
+            'category' => 'workflow',
+            'description' => 'Rejected timesheet.',
+            'old_values' => $before,
+            'new_values' => [
+                'status' => $record->status,
+                'approved_by' => $record->approved_by,
+            ],
         ]);
 
         return redirect()
@@ -385,32 +422,46 @@ class TimesheetController extends Controller
 
         $processed = 0;
         $skipped = 0;
+        $batchId = (string) Str::uuid();
 
-        foreach ($preview['rows'] as $row) {
-            if (! ($row['is_valid'] ?? false) || empty($row['employee_id'])) {
-                $skipped++;
+        AuditContext::withBatch($batchId, function () use ($preview, &$processed, &$skipped): void {
+            foreach ($preview['rows'] as $row) {
+                if (! ($row['is_valid'] ?? false) || empty($row['employee_id'])) {
+                    $skipped++;
 
-                continue;
+                    continue;
+                }
+
+                Timesheet::updateOrCreate(
+                    [
+                        'employee_id' => $row['employee_id'],
+                        'period_start' => $row['period_start'],
+                        'period_end' => $row['period_end'],
+                    ],
+                    [
+                        'total_minutes' => (int) $row['total_minutes'],
+                        'overtime_minutes' => (int) $row['overtime_minutes'],
+                        'status' => $row['status'] ?: 'Submitted',
+                        'approved_by' => null,
+                    ]
+                );
+
+                $processed++;
             }
-
-            Timesheet::updateOrCreate(
-                [
-                    'employee_id' => $row['employee_id'],
-                    'period_start' => $row['period_start'],
-                    'period_end' => $row['period_end'],
-                ],
-                [
-                    'total_minutes' => (int) $row['total_minutes'],
-                    'overtime_minutes' => (int) $row['overtime_minutes'],
-                    'status' => $row['status'] ?: 'Submitted',
-                    'approved_by' => null,
-                ]
-            );
-
-            $processed++;
-        }
+        });
 
         session()->forget('timesheets_bulk_preview');
+
+        app(AuditLogger::class)->logCustom('bulk_upload', null, [
+            'module' => 'timesheets',
+            'category' => 'bulk',
+            'description' => 'Processed timesheet bulk upload batch.',
+            'metadata' => [
+                'processed' => $processed,
+                'skipped' => $skipped,
+            ],
+            'batch_id' => $batchId,
+        ]);
 
         return redirect()
             ->to('/timesheets')

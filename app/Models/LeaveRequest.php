@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LeaveRequest extends Model
-{    protected $fillable = [
+{
+    use Auditable;
+
+    protected string $auditModule = 'leave';
+
+    protected $fillable = [
         'employee_id',
         'leave_type',
         'start_date',
@@ -14,18 +20,18 @@ class LeaveRequest extends Model
         'days',
         'status',
         'reason',
-        'approver_name'
+        'approver_name',
     ];
+
     protected $casts = [
         'days' => 'decimal:2',
         'start_date' => 'date',
-        'end_date' => 'date'
+        'end_date' => 'date',
     ];
 
 
-    public function employee(): BelongsTo {
+    public function employee(): BelongsTo
+    {
         return $this->belongsTo(Employee::class);
     }
-
 }
-

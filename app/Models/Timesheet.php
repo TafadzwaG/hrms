@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Timesheet extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'employee_id',
         'period_start',

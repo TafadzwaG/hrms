@@ -1,571 +1,242 @@
-import { API } from '@/config';
-import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    CheckCircle2,
-    ChevronLeft,
-    ChevronRight,
-    Download,
-    Filter,
-    History,
-    Key,
-    Pencil,
-    Plus,
-    Search,
-    Shield,
-    Trash2,
-    Users,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
-
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import { roleBadgeClass, useAuthorization } from '@/lib/authorization';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { ArrowRight, Pencil, Search, ShieldCheck, Trash2, Users } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 
-type RoleItem = {
+type RoleRow = {
     id: number;
     code: string;
     name: string;
     description: string | null;
     users_count: number;
+    permissions_count: number;
+    is_protected: boolean;
     created_at: string | null;
+    updated_at: string | null;
 };
 
-type PaginatedData = {
-    data: RoleItem[];
+type PaginatedRoles = {
+    data: RoleRow[];
+    total: number;
     current_page: number;
     last_page: number;
-    total: number;
     per_page: number;
 };
 
+type Stats = {
+    total_roles: number;
+    total_permissions: number;
+    users_with_roles: number;
+    recently_updated: number;
+};
+
 export default function RolesIndex() {
-    const { roles, filters } = usePage().props as unknown as {
-        roles: PaginatedData;
+    const { roles, filters, stats, usersByRole } = usePage<{
+        roles: PaginatedRoles;
         filters: { search?: string };
-    };
+        stats: Stats;
+        usersByRole: Array<{ id: number; code: string; name: string; users_count: number }>;
+    }>().props;
+    const { can } = useAuthorization();
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [roleToDelete, setRoleToDelete] = useState<RoleRow | null>(null);
 
-    const [search, setSearch] = useState(filters?.search || '');
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [roleToDelete, setRoleToDelete] = useState<RoleItem | null>(null);
-
-    // Debounce search
     useEffect(() => {
-        const timer = setTimeout(() => {
-            router.get(
-                `${API}/roles`,
-                { search },
-                { preserveState: true, replace: true },
-            );
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [search]);
+        const timer = window.setTimeout(() => {
+            router.get('/roles', { search }, { preserveState: true, replace: true, preserveScroll: true });
+        }, 250);
 
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            `${API}/roles`,
-            { page: selectedItem.selected + 1, search },
-            { preserveState: true, preserveScroll: true },
-        );
-    };
+        return () => window.clearTimeout(timer);
+    }, [search]);
 
     const confirmDelete = () => {
         if (!roleToDelete) return;
-        router.delete(`${API}/roles/${roleToDelete.id}`, {
+
+        router.delete(`/roles/${roleToDelete.id}`, {
             preserveScroll: true,
-            onSuccess: () => {
-                setDeleteDialogOpen(false);
-                setRoleToDelete(null);
-            },
+            onSuccess: () => setRoleToDelete(null),
         });
     };
 
-    const pageData = roles?.data ?? [];
-
-    // Mock global stats based on page data
-    const totalRoles = roles?.total || 0;
-    const activeUsers =
-        pageData.reduce((acc, role) => acc + role.users_count, 0) || 1240;
-
     return (
-        <AppLayout breadcrumbs={[{ title: 'Roles', href: `${API}/roles` }]}>
-            <Head title="Roles & Permissions" />
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Control Center', href: '/control-center' },
+                { title: 'Roles', href: '/roles' },
+            ]}
+        >
+            <Head title="Roles" />
 
-            <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10 p-4 md:p-6 lg:p-8">
-                {/* Header */}
-                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-6 p-4 md:p-6 lg:p-8">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                            Roles & Permissions
-                        </h1>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Define access levels and assign permissions to
-                            manage organization workflows.
+                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Roles</h1>
+                        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                            Browse and maintain dynamic roles. New roles become immediately assignable to users without backend or frontend hardcoding.
                         </p>
                     </div>
-                    <Button
-                        className="px-6 font-semibold shadow-sm"
-                        onClick={() => router.visit(`${API}/roles/create`)}
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create New Role
-                    </Button>
-                </div>
-
-                {/* Metrics Row */}
-                <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card className="border-border bg-background shadow-sm">
-                        <CardContent className="flex items-start justify-between p-6">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Total Roles
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-3xl font-bold tracking-tight text-foreground">
-                                        {totalRoles}
-                                    </p>
-                                    <span className="text-xs font-semibold text-emerald-600">
-                                        +2 New
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <Users className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-border bg-background shadow-sm">
-                        <CardContent className="flex items-start justify-between p-6">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Active Users
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-3xl font-bold tracking-tight text-foreground">
-                                        {activeUsers.toLocaleString()}
-                                    </p>
-                                    <span className="text-xs font-semibold text-emerald-600">
-                                        +15%
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <Shield className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-border bg-background shadow-sm">
-                        <CardContent className="flex items-start justify-between p-6">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Permissions
-                                </p>
-                                <p className="text-3xl font-bold tracking-tight text-foreground">
-                                    84
-                                </p>
-                                <p className="mt-1 text-xs font-medium text-muted-foreground">
-                                    Global scope
-                                </p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                <Key className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-border bg-background shadow-sm">
-                        <CardContent className="flex items-start justify-between p-6">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                    Pending Audit
-                                </p>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-3xl font-bold tracking-tight text-foreground">
-                                        3
-                                    </p>
-                                    <span className="text-xs font-semibold text-amber-600">
-                                        Action Req.
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
-                                <History className="h-5 w-5" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Filters & Table Container */}
-                <div className="mb-8 rounded-xl border bg-background shadow-sm">
-                    {/* Toolbar */}
-                    <div className="flex flex-col justify-between gap-4 border-b p-4 sm:flex-row sm:items-center">
-                        <div className="relative w-full sm:w-[380px]">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                placeholder="Search roles by name, code or description..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="h-10 border-border bg-muted/20 pl-9 shadow-none focus-visible:bg-background"
-                            />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Button
-                                variant="outline"
-                                className="h-10 border-border bg-background font-medium shadow-sm"
-                            >
-                                <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-                                Filter
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        {can('permissions.view') ? (
+                            <Button asChild variant="outline" className="rounded-xl">
+                                <Link href="/roles/matrix">Permission matrix</Link>
                             </Button>
-                            <Button
-                                variant="outline"
-                                className="h-10 border-border bg-background font-medium shadow-sm"
-                            >
-                                <Download className="mr-2 h-4 w-4 text-muted-foreground" />
-                                Export
+                        ) : null}
+                        {can('roles.create') ? (
+                            <Button asChild className="rounded-xl">
+                                <Link href="/roles/create">Create role</Link>
                             </Button>
-                        </div>
+                        ) : null}
                     </div>
+                </div>
 
-                    {/* Table */}
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-muted/30 hover:bg-transparent">
-                                    <TableHead className="h-12 w-[240px] pl-6 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Role Name
-                                    </TableHead>
-                                    <TableHead className="w-[140px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Code
-                                    </TableHead>
-                                    <TableHead className="min-w-[300px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Description
-                                    </TableHead>
-                                    <TableHead className="w-[140px] text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Active Users
-                                    </TableHead>
-                                    <TableHead className="w-[120px] text-center text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Status
-                                    </TableHead>
-                                    <TableHead className="w-[120px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-                                        Actions
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pageData.length === 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard title="Roles" value={stats.total_roles} description="Configured roles" icon={<ShieldCheck className="h-5 w-5" />} />
+                    <StatCard title="Permissions" value={stats.total_permissions} description="Available permissions" icon={<ArrowRight className="h-5 w-5" />} />
+                    <StatCard title="Assigned users" value={stats.users_with_roles} description="Users with roles" icon={<Users className="h-5 w-5" />} />
+                    <StatCard title="Updated this week" value={stats.recently_updated} description="Recently touched roles" icon={<Pencil className="h-5 w-5" />} />
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
+                    <Card className="rounded-2xl border-border shadow-sm">
+                        <CardHeader className="gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle>Role catalogue</CardTitle>
+                                <CardDescription>Search by role name, code, or description.</CardDescription>
+                            </div>
+                            <div className="relative w-full sm:max-w-sm">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search roles" className="rounded-xl pl-9" />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="h-48 text-center text-muted-foreground"
-                                        >
-                                            No roles found matching your search
-                                            criteria.
-                                        </TableCell>
+                                        <TableHead>Role</TableHead>
+                                        <TableHead>Coverage</TableHead>
+                                        <TableHead>Users</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
-                                ) : (
-                                    pageData.map((role) => (
-                                        <TableRow
-                                            key={role.id}
-                                            className="group cursor-pointer hover:bg-muted/30"
-                                            onClick={() =>
-                                                router.visit(
-                                                    `${API}/roles/${role.id}`,
-                                                )
-                                            }
-                                        >
-                                            <TableCell className="py-4 pl-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                                                        <Shield className="h-4 w-4" />
+                                </TableHeader>
+                                <TableBody>
+                                    {roles.data.map((role) => (
+                                        <TableRow key={role.id}>
+                                            <TableCell>
+                                                <div className="space-y-1 py-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Link href={`/roles/${role.id}`} className="font-medium text-foreground hover:text-primary">
+                                                            {role.name}
+                                                        </Link>
+                                                        <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${roleBadgeClass(role.code, role.name)}`}>
+                                                            {role.code}
+                                                        </span>
+                                                        {role.is_protected ? (
+                                                            <Badge variant="outline" className="text-[11px]">Seeded</Badge>
+                                                        ) : null}
                                                     </div>
-                                                    <span className="text-sm font-bold text-foreground transition-colors group-hover:text-primary">
-                                                        {role.name}
-                                                    </span>
+                                                    <p className="max-w-xl text-sm text-muted-foreground">{role.description || 'No role description provided.'}</p>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground shadow-none"
-                                                >
-                                                    {role.code}
-                                                </Badge>
+                                                <div className="text-sm font-medium text-foreground">{role.permissions_count} permissions</div>
+                                                <div className="text-sm text-muted-foreground">Updated {role.updated_at ? new Date(role.updated_at).toLocaleDateString() : 'recently'}</div>
                                             </TableCell>
-                                            <TableCell className="max-w-[300px] truncate text-sm font-medium text-muted-foreground">
-                                                {role.description || '—'}
+                                            <TableCell>
+                                                <div className="text-sm font-medium text-foreground">{role.users_count}</div>
                                             </TableCell>
-                                            <TableCell className="text-right text-base font-bold text-foreground">
-                                                {role.users_count.toLocaleString()}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {role.users_count > 0 ? (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="border-transparent bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-600 shadow-none"
-                                                    >
-                                                        Active
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="border-transparent bg-muted px-2.5 py-0.5 font-semibold text-muted-foreground shadow-none"
-                                                    >
-                                                        Inactive
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="pr-6 text-right">
-                                                <div
-                                                    className="flex items-center justify-end gap-1"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                >
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                        onClick={() =>
-                                                            router.visit(
-                                                                `${API}/roles/${role.id}/edit`,
-                                                            )
-                                                        }
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                        onClick={() => {
-                                                            setRoleToDelete(
-                                                                role,
-                                                            );
-                                                            setDeleteDialogOpen(
-                                                                true,
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                            <TableCell>
+                                                <div className="flex justify-end gap-2">
+                                                    {can('roles.update') ? (
+                                                        <Button asChild variant="ghost" size="sm">
+                                                            <Link href={`/roles/${role.id}/edit`}>Edit</Link>
+                                                        </Button>
+                                                    ) : null}
+                                                    {can('roles.delete') ? (
+                                                        <Button variant="ghost" size="icon" disabled={role.is_protected || role.users_count > 0} onClick={() => setRoleToDelete(role)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    ) : null}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination */}
-                    {roles?.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t p-4">
-                            <div className="text-sm font-medium text-muted-foreground">
-                                Showing{' '}
-                                <span className="font-bold text-foreground">
-                                    {(roles.current_page - 1) * roles.per_page +
-                                        1}
-                                </span>{' '}
-                                to{' '}
-                                <span className="font-bold text-foreground">
-                                    {Math.min(
-                                        roles.current_page * roles.per_page,
-                                        roles.total,
-                                    )}
-                                </span>{' '}
-                                of{' '}
-                                <span className="font-bold text-foreground">
-                                    {roles.total}
-                                </span>{' '}
-                                roles
-                            </div>
-                            <ReactPaginate
-                                pageCount={roles.last_page}
-                                forcePage={roles.current_page - 1}
-                                onPageChange={handlePageChange}
-                                marginPagesDisplayed={1}
-                                pageRangeDisplayed={3}
-                                previousLabel={
-                                    <span className="flex items-center">
-                                        Previous
-                                    </span>
-                                }
-                                nextLabel={
-                                    <span className="flex items-center">
-                                        Next
-                                    </span>
-                                }
-                                breakLabel="..."
-                                containerClassName="flex items-center gap-2"
-                                pageLinkClassName="hidden"
-                                activeLinkClassName="hidden"
-                                previousLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted text-sm font-medium transition-colors"
-                                nextLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-input bg-background shadow-sm hover:bg-muted text-sm font-medium transition-colors"
-                                breakClassName="hidden"
-                                disabledClassName="opacity-50 pointer-events-none"
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Bottom Section */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Quick Permissions Audit */}
-                    <Card className="border-primary/20 bg-primary/5 shadow-sm lg:col-span-2">
-                        <CardHeader className="pb-4">
-                            <CardTitle className="flex items-center gap-2 font-bold text-foreground">
-                                <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-foreground">
-                                    <Shield className="h-4 w-4" />
-                                </div>
-                                Quick Permissions Audit
-                            </CardTitle>
-                            <p className="pl-10 text-sm font-medium text-muted-foreground">
-                                Monitor sensitive access levels across the
-                                organization.
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div className="flex h-24 flex-col justify-between rounded-lg border bg-background p-4">
-                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                        Super Admins
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-2xl font-bold">2</p>
-                                        <div className="h-0 w-0 rounded-sm border-r-8 border-b-[14px] border-l-8 border-r-transparent border-b-amber-500 border-l-transparent"></div>
-                                    </div>
-                                </div>
-                                <div className="flex h-24 flex-col justify-between rounded-lg border bg-background p-4">
-                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                        API Keys
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-2xl font-bold">8</p>
-                                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white">
-                                            <CheckCircle2 className="h-3.5 w-3.5" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex h-24 flex-col justify-between rounded-lg border bg-background p-4">
-                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                        MFA Compliance
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-2xl font-bold">
-                                            98%
-                                        </p>
-                                        <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-500 text-white">
-                                            <Shield className="h-3 w-3" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    ))}
+                                    {roles.data.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
+                                                No roles match the current search.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : null}
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
 
-                    {/* Recent Activity */}
-                    <Card className="border-border bg-background shadow-sm">
-                        <CardHeader className="pb-4">
-                            <CardTitle className="text-base font-bold text-foreground">
-                                Recent Activity
-                            </CardTitle>
+                    <Card className="rounded-2xl border-border shadow-sm">
+                        <CardHeader>
+                            <CardTitle>Users by role</CardTitle>
+                            <CardDescription>Top role allocations across the user directory.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="relative ml-2 space-y-6 border-l-2 border-muted">
-                                <div className="relative pl-4">
-                                    <div className="absolute top-1.5 -left-[5px] h-2 w-2 rounded-full bg-primary ring-4 ring-background"></div>
-                                    <p className="text-sm font-semibold text-foreground">
-                                        Role "HR_ADMIN" permissions updated
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                        2 hours ago by Sarah Connor
-                                    </p>
+                        <CardContent className="space-y-3">
+                            {usersByRole.map((role) => (
+                                <div key={role.id} className="flex items-center justify-between rounded-xl border border-border p-3">
+                                    <div>
+                                        <div className="text-sm font-medium text-foreground">{role.name}</div>
+                                        <div className="font-mono text-xs text-muted-foreground">{role.code}</div>
+                                    </div>
+                                    <div className="text-sm font-semibold text-foreground">{role.users_count}</div>
                                 </div>
-                                <div className="relative pl-4">
-                                    <div className="absolute top-1.5 -left-[5px] h-2 w-2 rounded-full bg-primary ring-4 ring-background"></div>
-                                    <p className="text-sm font-semibold text-foreground">
-                                        New role "INTERN" created
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                        Yesterday by Mike Ross
-                                    </p>
-                                </div>
-                                <div className="relative pl-4">
-                                    <div className="absolute top-1.5 -left-[5px] h-2 w-2 rounded-full bg-muted-foreground ring-4 ring-background"></div>
-                                    <p className="text-sm font-semibold text-foreground">
-                                        Role "SUPPORT" deleted
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-muted-foreground">
-                                        2 days ago by Admin
-                                    </p>
-                                </div>
-                            </div>
-                            <Button
-                                variant="link"
-                                className="mt-2 w-full font-semibold text-primary"
-                            >
-                                View All Logs
+                            ))}
+                            <Button asChild variant="outline" className="mt-2 w-full rounded-xl">
+                                <Link href="/control-center">Back to Control Center</Link>
                             </Button>
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* Delete Confirmation Dialog */}
-                <AlertDialog
-                    open={deleteDialogOpen}
-                    onOpenChange={setDeleteDialogOpen}
-                >
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="text-destructive">
-                                Delete Role
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to permanently delete the{' '}
-                                <strong>{roleToDelete?.name}</strong> role?
-                                Roles assigned to active users cannot be
-                                deleted.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel
-                                onClick={() => setRoleToDelete(null)}
-                            >
-                                Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={confirmDelete}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                                Yes, Delete
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
             </div>
+
+            <AlertDialog open={Boolean(roleToDelete)} onOpenChange={(open) => !open && setRoleToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete role</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {roleToDelete
+                                ? `Delete ${roleToDelete.name}? This is only allowed for non-seeded roles that are not currently assigned to users.`
+                                : 'Delete the selected role.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete role
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }
+
+function StatCard({ title, value, description, icon }: { title: string; value: number; description: string; icon: ReactNode }) {
+    return (
+        <Card className="rounded-2xl border-border shadow-sm">
+            <CardContent className="flex items-start justify-between p-5">
+                <div>
+                    <div className="text-sm font-medium text-muted-foreground">{title}</div>
+                    <div className="mt-2 text-3xl font-semibold text-foreground">{value}</div>
+                    <div className="mt-2 text-sm text-muted-foreground">{description}</div>
+                </div>
+                <div className="rounded-2xl bg-primary/10 p-3 text-primary">{icon}</div>
+            </CardContent>
+        </Card>
+    );
+}
+

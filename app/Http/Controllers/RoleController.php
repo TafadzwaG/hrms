@@ -2,71 +2,119 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Rbac\StoreRoleRequest;
+use App\Http\Requests\Rbac\UpdateRoleRequest;
+use App\Models\Permission;
 use App\Models\Role;
+use App\Support\Audit\AuditLogger;
+use App\Support\Rbac\PermissionCatalogueSynchronizer;
+use App\Support\Rbac\PermissionRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class RoleController extends Controller
 {
     public function index(Request $request)
     {
+        $this->syncPermissionCatalogue();
+
         $filters = [
             'search' => $request->string('search')->toString(),
         ];
 
         $query = Role::query()
-            ->withCount('users')
+            ->withCount(['users', 'permissions'])
             ->orderBy('name');
 
         if (!empty($filters['search'])) {
-            $s = $filters['search'];
-            $query->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('code', 'like', "%{$s}%")
-                  ->orWhere('description', 'like', "%{$s}%");
+            $search = $filters['search'];
+            $query->where(function ($builder) use ($search): void {
+                $builder->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
         $roles = $query
-            ->paginate(15)
+            ->paginate(12)
             ->withQueryString()
-            ->through(function (Role $r) {
-                return [
-                    'id' => $r->id,
-                    'code' => $r->code,
-                    'name' => $r->name,
-                    'description' => $r->description,
-                    'users_count' => $r->users_count ?? 0,
-                    'created_at' => optional($r->created_at)->toDateTimeString(),
-                    'updated_at' => optional($r->updated_at)->toDateTimeString(),
-                ];
-            });
+            ->through(fn (Role $role) => [
+                'id' => $role->id,
+                'code' => $role->code,
+                'name' => $role->name,
+                'description' => $role->description,
+                'users_count' => $role->users_count ?? 0,
+                'permissions_count' => $role->permissions_count ?? 0,
+                'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
+                'created_at' => optional($role->created_at)->toDateTimeString(),
+                'updated_at' => optional($role->updated_at)->toDateTimeString(),
+            ]);
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
             'filters' => $filters,
+            'stats' => [
+                'total_roles' => Role::count(),
+                'total_permissions' => Permission::count(),
+                'users_with_roles' => DB::table('role_users')->distinct('user_id')->count('user_id'),
+                'recently_updated' => Role::query()->whereDate('updated_at', '>=', now()->subDays(7))->count(),
+            ],
+            'usersByRole' => Role::query()
+                ->withCount('users')
+                ->orderByDesc('users_count')
+                ->take(6)
+                ->get()
+                ->map(fn (Role $role) => [
+                    'id' => $role->id,
+                    'code' => $role->code,
+                    'name' => $role->name,
+                    'users_count' => $role->users_count,
+                ])
+                ->values(),
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Roles/Create');
+        $this->syncPermissionCatalogue();
+
+        return Inertia::render('Roles/Create', [
+            'permissionGroups' => $this->permissionGroups(),
+            'meta' => [
+                'total_permissions' => Permission::count(),
+            ],
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $data = $this->validateRole($request);
+        $validated = $request->validated();
 
-        $role = Role::create($data);
+        $role = Role::query()->create([
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        $role->syncPermissions($validated['permission_ids'] ?? []);
+
+        app(AuditLogger::class)->logCreate($role, $this->auditPayload($role), [
+            'module' => 'roles',
+            'description' => 'Created role and assigned permissions.',
+        ]);
 
         return redirect()
-            ->route('roles.show', $role->id)
+            ->route('roles.show', $role)
             ->with('success', 'Role created successfully.');
     }
 
     public function show(Role $role)
     {
-        $role->load(['users:id,name,email']);
+        $this->syncPermissionCatalogue();
+
+        $role->load(['permissions:id,name,module,label,description', 'users:id,name,email']);
+        $role->loadCount(['users', 'permissions']);
 
         return Inertia::render('Roles/Show', [
             'role' => [
@@ -74,67 +122,166 @@ class RoleController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users->count(),
-                'users' => $role->users->map(fn ($u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'email' => $u->email,
-                ])->values(),
+                'users_count' => $role->users_count,
+                'permissions_count' => $role->permissions_count,
+                'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
+                'permission_ids' => $role->permissions->pluck('id')->values()->all(),
+                'permissions' => $role->permissions
+                    ->sortBy(['module', 'label'])
+                    ->map(fn (Permission $permission) => [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                        'label' => $permission->label,
+                        'description' => $permission->description,
+                        'module' => $permission->module,
+                    ])
+                    ->values(),
+                'users' => $role->users
+                    ->sortBy('name')
+                    ->map(fn ($user) => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ])
+                    ->values(),
                 'created_at' => optional($role->created_at)->toDateTimeString(),
                 'updated_at' => optional($role->updated_at)->toDateTimeString(),
             ],
+            'permissionGroups' => $this->permissionGroups($role->permissions->pluck('id')->all()),
         ]);
     }
 
     public function edit(Role $role)
     {
+        $this->syncPermissionCatalogue();
+
+        $role->loadCount(['users', 'permissions']);
+        $role->load('permissions:id');
+
         return Inertia::render('Roles/Edit', [
             'role' => [
                 'id' => $role->id,
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
+                'users_count' => $role->users_count,
+                'permissions_count' => $role->permissions_count,
+                'permission_ids' => $role->permissions->pluck('id')->values()->all(),
+                'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
             ],
+            'permissionGroups' => $this->permissionGroups($role->permissions->pluck('id')->all()),
         ]);
     }
 
-    public function update(Request $request, Role $role)
+    public function update(UpdateRoleRequest $request, Role $role)
     {
-        $data = $this->validateRole($request, $role->id);
+        $validated = $request->validated();
+        $before = $this->auditPayload($role->loadMissing('permissions:id,name'));
 
-        $role->update($data);
+        $role->update([
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        $role->syncPermissions($validated['permission_ids'] ?? []);
+        $role->load('permissions:id,name');
+
+        app(AuditLogger::class)->logUpdate($role, $before, $this->auditPayload($role), [
+            'module' => 'roles',
+            'description' => 'Updated role details and permission coverage.',
+        ]);
 
         return redirect()
-            ->route('roles.show', $role->id)
+            ->route('roles.show', $role)
             ->with('success', 'Role updated successfully.');
     }
 
     public function destroy(Role $role)
     {
+        if (PermissionRegistry::isProtectedRoleCode($role->code)) {
+            return back()->withErrors([
+                'delete' => 'Seeded roles are protected and cannot be deleted.',
+            ]);
+        }
+
         if ($role->users()->exists()) {
             return back()->withErrors([
                 'delete' => 'Cannot delete this role because it is assigned to users.',
             ]);
         }
 
+        $before = $this->auditPayload($role->loadMissing('permissions:id,name'));
+        $role->permissions()->detach();
         $role->delete();
+
+        app(AuditLogger::class)->logDelete($role, $before, [
+            'module' => 'roles',
+            'description' => 'Deleted role from the RBAC catalogue.',
+        ]);
 
         return redirect()
             ->route('roles.index')
             ->with('success', 'Role deleted successfully.');
     }
 
-    private function validateRole(Request $request, ?int $ignoreId = null): array
+    private function auditPayload(Role $role): array
     {
-        return $request->validate([
-            'code' => [
-                'required',
-                'string',
-                'max:64',
-                'unique:roles,code' . ($ignoreId ? ',' . $ignoreId : ''),
-            ],
-            'name' => ['required', 'string', 'max:128'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $permissions = $role->relationLoaded('permissions')
+            ? $role->permissions
+            : $role->permissions()->get(['permissions.id', 'permissions.name']);
+
+        return [
+            'id' => $role->id,
+            'code' => $role->code,
+            'name' => $role->name,
+            'description' => $role->description,
+            'permission_ids' => $permissions->pluck('id')->values()->all(),
+            'permission_names' => $permissions->pluck('name')->values()->all(),
+        ];
+    }
+
+    private function permissionGroups(array $selectedPermissionIds = []): array
+    {
+        $permissionsByName = Permission::query()
+            ->whereIn('name', PermissionRegistry::names())
+            ->get(['id', 'name', 'module', 'label', 'description'])
+            ->keyBy('name');
+
+        return PermissionRegistry::groups()
+            ->map(function (array $group) use ($permissionsByName, $selectedPermissionIds): array {
+                return [
+                    'key' => $group['key'],
+                    'label' => $group['label'],
+                    'description' => $group['description'],
+                    'permissions' => collect($group['permissions'])
+                        ->map(function (array $definition) use ($permissionsByName, $selectedPermissionIds): ?array {
+                            $permission = $permissionsByName->get($definition['name']);
+
+                            if (!$permission) {
+                                return null;
+                            }
+
+                            return [
+                                'id' => $permission->id,
+                                'name' => $permission->name,
+                                'label' => $permission->label,
+                                'description' => $permission->description,
+                                'module' => $permission->module,
+                                'checked' => in_array($permission->id, $selectedPermissionIds, true),
+                            ];
+                        })
+                        ->filter()
+                        ->values()
+                        ->all(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function syncPermissionCatalogue(): void
+    {
+        app(PermissionCatalogueSynchronizer::class)->sync();
     }
 }

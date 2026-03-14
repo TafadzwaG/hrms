@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JobRequisition extends Model
 {
+    use Auditable;
+
+    protected string $auditModule = 'requisitions';
+
     protected $fillable = [
         'requisition_code',
         'title',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Support\Audit\AuditLogger;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,12 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $before = [
+            'name' => $request->user()->name,
+            'email' => $request->user()->email,
+            'email_verified_at' => optional($request->user()->email_verified_at)->toDateTimeString(),
+        ];
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -37,6 +44,17 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        app(AuditLogger::class)->logCustom('profile_update', $request->user(), [
+            'module' => 'settings',
+            'description' => 'Updated personal profile settings.',
+            'old_values' => $before,
+            'new_values' => [
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+                'email_verified_at' => optional($request->user()->email_verified_at)->toDateTimeString(),
+            ],
+        ]);
 
         return to_route('profile.edit');
     }
@@ -47,6 +65,16 @@ class ProfileController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        app(AuditLogger::class)->logCustom('profile_delete', $user, [
+            'module' => 'settings',
+            'description' => 'Deleted personal account profile.',
+            'old_values' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ]);
 
         Auth::logout();
 

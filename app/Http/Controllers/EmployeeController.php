@@ -7,6 +7,8 @@ use App\Models\OrgUnit;
 use App\Models\Position;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Audit\AuditContext;
+use App\Support\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -165,13 +167,13 @@ class EmployeeController extends Controller
     public function show(Employee $employee)
     {
         $employee->load([
-            'user',
+            'user.roles:id,code,name',
             'orgUnit:id,name,type',
             'position:id,name',
             'manager:id,first_name,surname,staff_number',
         ]);
 
-        // If you don’t have leave tables yet, keep counts at 0 safely.
+        // If you donÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t have leave tables yet, keep counts at 0 safely.
         $leaveApplicationsCount = 0;
         $leaveBalancesCount = 0;
 
@@ -210,6 +212,11 @@ class EmployeeController extends Controller
                     'email' => $employee->user->email,
                     'username' => Schema::hasColumn('users', 'username') ? $employee->user->username : null,
                     'role' => Schema::hasColumn('users', 'role') ? $employee->user->role : null,
+                    'roles' => $employee->user->roles->map(fn ($role) => [
+                        'id' => $role->id,
+                        'code' => $role->code,
+                        'name' => $role->name,
+                    ])->values()->all(),
                     'created_at' => optional($employee->user->created_at)->toDateTimeString(),
                     'updated_at' => optional($employee->user->updated_at)->toDateTimeString(),
                     'email_verified_at' => Schema::hasColumn('users', 'email_verified_at')
@@ -296,7 +303,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        // Add “cannot delete” business rules later (leave, payroll etc.)
+        // Add ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œcannot deleteÃƒÂ¢Ã¢â€šÂ¬Ã‚Â business rules later (leave, payroll etc.)
         $userId = $employee->user_id;
 
         $employee->delete();
@@ -375,89 +382,104 @@ class EmployeeController extends Controller
         $created = 0;
         $updated = 0;
         $skipped = 0;
+        $batchId = (string) Str::uuid();
 
-        DB::transaction(function () use ($path, &$created, &$updated, &$skipped) {
-            $handle = fopen($path, 'r');
-            if ($handle === false) {
-                throw new \RuntimeException('Failed to open uploaded file.');
-            }
+        AuditContext::withBatch($batchId, function () use ($path, &$created, &$updated, &$skipped) {
+            DB::transaction(function () use ($path, &$created, &$updated, &$skipped) {
+                $handle = fopen($path, 'r');
+                if ($handle === false) {
+                    throw new \RuntimeException('Failed to open uploaded file.');
+                }
 
-            $header = fgetcsv($handle);
-            if (!$header) {
-                fclose($handle);
-                throw new \RuntimeException('CSV file is empty.');
-            }
-
-            $header = array_map(fn ($h) => Str::of($h)->trim()->lower()->toString(), $header);
-            $idx = array_flip($header);
-
-            foreach (['staff_number', 'first_name', 'surname'] as $col) {
-                if (!array_key_exists($col, $idx)) {
+                $header = fgetcsv($handle);
+                if (!$header) {
                     fclose($handle);
-                    throw new \RuntimeException("Missing required column: {$col}");
-                }
-            }
-
-            while (($row = fgetcsv($handle)) !== false) {
-                $staffNumber = trim($row[$idx['staff_number']] ?? '');
-                $firstName = trim($row[$idx['first_name']] ?? '');
-                $surname = trim($row[$idx['surname']] ?? '');
-
-                if ($staffNumber === '' || $firstName === '' || $surname === '') {
-                    $skipped++;
-                    continue;
+                    throw new \RuntimeException('CSV file is empty.');
                 }
 
-                $payload = [
-                    'staff_number' => $staffNumber,
-                    'first_name' => $firstName,
-                    'middle_name' => trim($row[$idx['middle_name']] ?? '') ?: null,
-                    'surname' => $surname,
-                    'date_of_birth' => trim($row[$idx['date_of_birth']] ?? '') ?: null,
-                    'pay_point' => trim($row[$idx['pay_point']] ?? '') ?: null,
-                    'contact_number' => trim($row[$idx['contact_number']] ?? '') ?: null,
-                    'address' => trim($row[$idx['address']] ?? '') ?: null,
-                    'email' => trim($row[$idx['email']] ?? '') ?: null,
-                    'department_id' => trim($row[$idx['department_id']] ?? '') ?: null,
-                    'position_id' => trim($row[$idx['position_id']] ?? '') ?: null,
-                ];
+                $header = array_map(fn ($h) => Str::of($h)->trim()->lower()->toString(), $header);
+                $idx = array_flip($header);
 
-                $existing = Employee::where('staff_number', $staffNumber)->first();
-
-                // Create/update user if email exists
-                $userId = $existing?->user_id;
-                if (!empty($payload['email'])) {
-                    $user = $this->createOrUpdateUserForEmployee($payload, $userId);
-                    $this->attachEmployeeRoleIfAvailable($user);
-                    $userId = $user->id;
+                foreach (['staff_number', 'first_name', 'surname'] as $col) {
+                    if (!array_key_exists($col, $idx)) {
+                        fclose($handle);
+                        throw new \RuntimeException("Missing required column: {$col}");
+                    }
                 }
 
-                $saveData = [
-                    'user_id' => $userId,
-                    'staff_number' => $payload['staff_number'],
-                    'first_name' => $payload['first_name'],
-                    'middle_name' => $payload['middle_name'],
-                    'surname' => $payload['surname'],
-                    'date_of_birth' => $payload['date_of_birth'],
-                    'pay_point' => $payload['pay_point'],
-                    'contact_number' => $payload['contact_number'],
-                    'address' => $payload['address'],
-                    'org_unit_id' => $payload['department_id'] ? (int)$payload['department_id'] : null,
-                    'position_id' => $payload['position_id'] ? (int)$payload['position_id'] : null,
-                    'status' => 'ACTIVE',
-                ];
+                while (($row = fgetcsv($handle)) !== false) {
+                    $staffNumber = trim($row[$idx['staff_number']] ?? '');
+                    $firstName = trim($row[$idx['first_name']] ?? '');
+                    $surname = trim($row[$idx['surname']] ?? '');
 
-                if ($existing) {
-                    $existing->update($saveData);
-                    $updated++;
-                } else {
-                    Employee::create($saveData);
-                    $created++;
+                    if ($staffNumber === '' || $firstName === '' || $surname === '') {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $payload = [
+                        'staff_number' => $staffNumber,
+                        'first_name' => $firstName,
+                        'middle_name' => trim($row[$idx['middle_name']] ?? '') ?: null,
+                        'surname' => $surname,
+                        'date_of_birth' => trim($row[$idx['date_of_birth']] ?? '') ?: null,
+                        'pay_point' => trim($row[$idx['pay_point']] ?? '') ?: null,
+                        'contact_number' => trim($row[$idx['contact_number']] ?? '') ?: null,
+                        'address' => trim($row[$idx['address']] ?? '') ?: null,
+                        'email' => trim($row[$idx['email']] ?? '') ?: null,
+                        'department_id' => trim($row[$idx['department_id']] ?? '') ?: null,
+                        'position_id' => trim($row[$idx['position_id']] ?? '') ?: null,
+                    ];
+
+                    $existing = Employee::where('staff_number', $staffNumber)->first();
+
+                    // Create/update user if email exists
+                    $userId = $existing?->user_id;
+                    if (!empty($payload['email'])) {
+                        $user = $this->createOrUpdateUserForEmployee($payload, $userId);
+                        $this->attachEmployeeRoleIfAvailable($user);
+                        $userId = $user->id;
+                    }
+
+                    $saveData = [
+                        'user_id' => $userId,
+                        'staff_number' => $payload['staff_number'],
+                        'first_name' => $payload['first_name'],
+                        'middle_name' => $payload['middle_name'],
+                        'surname' => $payload['surname'],
+                        'date_of_birth' => $payload['date_of_birth'],
+                        'pay_point' => $payload['pay_point'],
+                        'contact_number' => $payload['contact_number'],
+                        'address' => $payload['address'],
+                        'org_unit_id' => $payload['department_id'] ? (int) $payload['department_id'] : null,
+                        'position_id' => $payload['position_id'] ? (int) $payload['position_id'] : null,
+                        'status' => 'ACTIVE',
+                    ];
+
+                    if ($existing) {
+                        $existing->update($saveData);
+                        $updated++;
+                    } else {
+                        Employee::create($saveData);
+                        $created++;
+                    }
                 }
-            }
 
-            fclose($handle);
+                fclose($handle);
+            });
         });
+
+        app(AuditLogger::class)->logCustom('bulk_upload', null, [
+            'module' => 'employees',
+            'category' => 'bulk',
+            'description' => 'Processed employee bulk upload import.',
+            'metadata' => [
+                'created' => $created,
+                'updated' => $updated,
+                'skipped' => $skipped,
+            ],
+            'batch_id' => $batchId,
+        ]);
 
         return redirect()
             ->to('/employees')
@@ -543,7 +565,7 @@ class EmployeeController extends Controller
 
     private function attachEmployeeRoleIfAvailable(User $user): void
     {
-        if (!Schema::hasTable('roles') || !Schema::hasTable('role_user')) return;
+        if (!Schema::hasTable('roles') || !Schema::hasTable('role_users')) return;
 
         $role = Role::query()->where('code', 'EMPLOYEE')->first();
         if (!$role) return;
