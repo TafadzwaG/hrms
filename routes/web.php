@@ -144,6 +144,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/employees/import', [EmployeeController::class, 'import'])
         ->middleware('permission:employees.bulk_upload')
         ->name('employees.import');
+    Route::post('/employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])
+        ->middleware('permission:documents.create')
+        ->name('employees.documents.store');
+    Route::get('/employees/{employee}/documents/{document}/download', [EmployeeController::class, 'downloadDocument'])
+        ->middleware('permission:documents.view')
+        ->name('employees.documents.download');
+    Route::delete('/employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])
+        ->middleware('permission:documents.delete')
+        ->name('employees.documents.destroy');
+    Route::post('/employees/{employee}/next-of-kin', [EmployeeController::class, 'storeNextOfKin'])
+        ->middleware('permission:employees.update')
+        ->name('employees.next-of-kin.store');
+    Route::put('/employees/{employee}/next-of-kin/{nextOfKin}', [EmployeeController::class, 'updateNextOfKin'])
+        ->middleware('permission:employees.update')
+        ->name('employees.next-of-kin.update');
+    Route::delete('/employees/{employee}/next-of-kin/{nextOfKin}', [EmployeeController::class, 'destroyNextOfKin'])
+        ->middleware('permission:employees.update')
+        ->name('employees.next-of-kin.destroy');
+    Route::post('/employees/{employee}/physical-profile', [EmployeeController::class, 'storePhysicalProfile'])
+        ->middleware('permission:employees.update')
+        ->name('employees.physical-profile.store');
+    Route::post('/employees/{employee}/skills', [EmployeeController::class, 'storeSkill'])
+        ->middleware('permission:employees.update')
+        ->name('employees.skills.store');
+    Route::put('/employees/{employee}/skills/{skill}', [EmployeeController::class, 'updateSkill'])
+        ->middleware('permission:employees.update')
+        ->name('employees.skills.update');
+    Route::delete('/employees/{employee}/skills/{skill}', [EmployeeController::class, 'destroySkill'])
+        ->middleware('permission:employees.update')
+        ->name('employees.skills.destroy');
+    Route::post('/employees/{employee}/job-profile', [EmployeeController::class, 'storeJobProfile'])
+        ->middleware('permission:employees.update')
+        ->name('employees.job-profile.store');
+    Route::post('/employees/{employee}/kpis', [EmployeeController::class, 'storeKpi'])
+        ->middleware('permission:employees.update')
+        ->name('employees.kpis.store');
+    Route::put('/employees/{employee}/kpis/{kpi}', [EmployeeController::class, 'updateKpi'])
+        ->middleware('permission:employees.update')
+        ->name('employees.kpis.update');
+    Route::delete('/employees/{employee}/kpis/{kpi}', [EmployeeController::class, 'destroyKpi'])
+        ->middleware('permission:employees.update')
+        ->name('employees.kpis.destroy');
     Route::resource('employees', EmployeeController::class)
         ->middlewareFor(['index', 'show'], 'permission:employees.view')
         ->middlewareFor(['create', 'store'], 'permission:employees.create')

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
@@ -84,6 +85,31 @@ class Employee extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class, 'owner_employee_id');
+    }
+
+    public function nextOfKin(): HasMany
+    {
+        return $this->hasMany(EmployeeNextOfKin::class)->orderByDesc('is_primary')->orderBy('full_name');
+    }
+
+    public function physicalProfile(): HasOne
+    {
+        return $this->hasOne(EmployeePhysicalProfile::class);
+    }
+
+    public function skills(): HasMany
+    {
+        return $this->hasMany(EmployeeSkill::class)->orderByDesc('proficiency_percent')->orderBy('name');
+    }
+
+    public function jobProfile(): HasOne
+    {
+        return $this->hasOne(EmployeeJobProfile::class);
+    }
+
+    public function kpis(): HasMany
+    {
+        return $this->hasMany(EmployeeKpi::class)->orderByDesc('progress_percent')->orderBy('title');
     }
 
     // Helpful computed full name (optional)
