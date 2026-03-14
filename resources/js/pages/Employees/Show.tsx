@@ -203,6 +203,76 @@ type OptionsPayload = {
     kpi_statuses: string[];
 };
 
+type DocumentFormData = {
+    document_type_id: string;
+    title: string;
+    file: File | null;
+    file_uri: string;
+    issue_date: string;
+    expiry_date: string;
+    access_policy: string;
+    metadata_json: string;
+};
+
+type NextOfKinFormData = {
+    full_name: string;
+    relationship: string;
+    contact_number: string;
+    alternate_contact_number: string;
+    email: string;
+    address: string;
+    is_primary: boolean;
+    notes: string;
+};
+
+type PhysicalProfileFormData = {
+    uniform_size: string;
+    shirt_size: string;
+    trouser_size: string;
+    shoe_size: string;
+    height_cm: string;
+    weight_kg: string;
+    blood_type: string;
+    emergency_medical_notes: string;
+    ppe_notes: string;
+};
+
+type SkillFormData = {
+    name: string;
+    category: string;
+    proficiency_level: string;
+    proficiency_percent: string;
+    certification_name: string;
+    certification_issuer: string;
+    certified_at: string;
+    expires_at: string;
+    notes: string;
+};
+
+type JobProfileFormData = {
+    title: string;
+    employment_type: string;
+    reports_to: string;
+    working_hours: string;
+    location_summary: string;
+    summary: string;
+    responsibilities: string;
+    requirements: string;
+    review_date: string;
+};
+
+type KpiFormData = {
+    title: string;
+    description: string;
+    target_value: string;
+    current_value: string;
+    measurement_period: string;
+    weight: string;
+    progress_percent: string;
+    due_date: string;
+    status: string;
+};
+
 export default function EmployeeShow() {
     const { employee, options } = usePage<{
         employee: EmployeePayload;
