@@ -137,7 +137,7 @@ export default function PerformanceReviewShow() {
 
             <div className="flex min-h-[calc(100vh-64px)] w-full flex-col gap-8 bg-muted/10 p-4 md:p-8 lg:p-12">
                 {/* Header Section */}
-                <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex items-start gap-4">
                         <Button
                             variant="outline"
@@ -160,10 +160,10 @@ export default function PerformanceReviewShow() {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex shrink-0 flex-wrap items-center gap-3">
                         <Button
                             variant="outline"
-                            className="border-border bg-background font-semibold shadow-sm"
+                            className="h-11 border-border bg-background font-semibold shadow-sm"
                             asChild
                         >
                             <Link href={`${basePath}/${review.id}/edit`}>
@@ -173,7 +173,7 @@ export default function PerformanceReviewShow() {
                         </Button>
                         <Button
                             variant="outline"
-                            className="border-border bg-background font-semibold shadow-sm"
+                            className="h-11 border-border bg-background font-semibold shadow-sm"
                             onClick={handleExport}
                         >
                             <Download className="mr-2 h-4 w-4" />
@@ -187,7 +187,7 @@ export default function PerformanceReviewShow() {
                             <AlertDialogTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="border-destructive/20 bg-background font-semibold text-destructive shadow-sm hover:bg-destructive/10 hover:text-destructive"
+                                    className="h-11 border-destructive/20 bg-background font-semibold text-destructive shadow-sm hover:bg-destructive/10 hover:text-destructive"
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
@@ -201,17 +201,19 @@ export default function PerformanceReviewShow() {
                                     <AlertDialogDescription>
                                         Are you sure you want to permanently
                                         delete the performance review for{' '}
-                                        <strong>{fullName}</strong>? This action
-                                        cannot be undone.
+                                        <strong className="text-foreground">
+                                            {fullName}
+                                        </strong>
+                                        ? This action cannot be undone.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogCancel>
+                                    <AlertDialogCancel className="border-border font-bold shadow-sm">
                                         Cancel
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={handleDelete}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        className="bg-destructive font-bold text-destructive-foreground shadow-sm hover:bg-destructive/90"
                                     >
                                         Yes, Delete
                                     </AlertDialogAction>
@@ -222,7 +224,7 @@ export default function PerformanceReviewShow() {
                 </div>
 
                 {/* Main Grid */}
-                <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12 xl:gap-12">
+                <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-12 xl:gap-12">
                     {/* LEFT COLUMN: Review Content (Spans 8/12) */}
                     <div className="space-y-8 lg:col-span-8 xl:col-span-8">
                         {/* Review Overview */}
@@ -292,7 +294,7 @@ export default function PerformanceReviewShow() {
                             </CardContent>
                         </Card>
 
-                        {/* Key Achievements (Mocked visually to match user screenshot request) */}
+                        {/* Key Achievements */}
                         <Card className="border-border bg-background shadow-sm">
                             <CardHeader className="border-b border-border/50 pb-5">
                                 <CardTitle className="text-base font-bold text-foreground">
@@ -351,73 +353,6 @@ export default function PerformanceReviewShow() {
 
                     {/* RIGHT COLUMN: Side Panels (Spans 4/12) */}
                     <div className="space-y-8 lg:col-span-4 xl:col-span-4">
-                        {/* Employee Profile Card */}
-                        <Card className="overflow-hidden border-border bg-background shadow-sm">
-                            {/* Decorative Header (Monochromatic) */}
-                            <div className="h-24 w-full border-b border-border bg-muted"></div>
-
-                            <CardContent className="relative px-6 pt-0 pb-6">
-                                {/* Overlapping Avatar */}
-                                <div className="absolute -top-10 left-1/2 -translate-x-1/2">
-                                    <Avatar className="h-20 w-20 border-4 border-background bg-muted shadow-sm">
-                                        <AvatarFallback className="text-xl font-bold text-muted-foreground">
-                                            {initials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </div>
-
-                                {/* Empty space to clear the absolute avatar */}
-                                <div className="h-14 w-full"></div>
-
-                                <div className="mb-6 space-y-1 text-center">
-                                    <h2 className="text-lg font-bold text-foreground">
-                                        {fullName}
-                                    </h2>
-                                    <p className="text-sm font-medium text-primary">
-                                        Staff Number:{' '}
-                                        {emp.staff_number || 'N/A'}
-                                    </p>
-                                </div>
-
-                                <div className="mt-4 space-y-4 text-sm">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-muted-foreground">
-                                            Department
-                                        </span>
-                                        <span className="font-semibold text-foreground">
-                                            Engineering
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-muted-foreground">
-                                            Tenure
-                                        </span>
-                                        <span className="font-semibold text-foreground">
-                                            3 Years, 4 Months
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-muted-foreground">
-                                            Location
-                                        </span>
-                                        <span className="font-semibold text-foreground">
-                                            Remote (Austin, TX)
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <Button
-                                    variant="secondary"
-                                    className="mt-6 w-full border border-border font-bold shadow-none"
-                                    asChild
-                                >
-                                    <Link href={`/employees/${emp.id || '#'}`}>
-                                        View Full Profile
-                                    </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
-
                         {/* Review Timeline */}
                         <Card className="border-border bg-background shadow-sm">
                             <CardHeader className="border-b border-border/50 pb-4">
