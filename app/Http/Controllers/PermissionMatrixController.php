@@ -19,10 +19,11 @@ class PermissionMatrixController extends Controller
     public function index(Request $request)
     {
         $this->syncPermissionCatalogue();
+        $roleUserCounts = $this->effectiveRoleAssignmentCounts();
 
         $roles = Role::query()
             ->with(['permissions:id,name'])
-            ->withCount(['users', 'permissions'])
+            ->withCount(['permissions'])
             ->orderBy('name')
             ->get()
             ->map(fn (Role $role) => [
@@ -30,7 +31,7 @@ class PermissionMatrixController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users_count,
+                'users_count' => (int) ($roleUserCounts[$role->id] ?? 0),
                 'permissions_count' => $role->permissions_count,
                 'permission_ids' => $role->permissions->pluck('id')->values()->all(),
                 'permission_names' => $role->permissions->pluck('name')->values()->all(),

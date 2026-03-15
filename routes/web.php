@@ -8,11 +8,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\CurrentOrganizationController;
 use App\Http\Controllers\JobRequisitionController;
 use App\Http\Controllers\LearningCourseController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\OffboardingTaskController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OnboardingTaskController;
 use App\Http\Controllers\OrgUnitController;
 use App\Http\Controllers\PasswordResetController;
@@ -51,8 +53,29 @@ Route::get('/reset-password', [PasswordResetController::class, 'show'])->name('p
 Route::post('/reset-password', [PasswordResetController::class, 'store'])->name('password.manual.update');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('organizations/switch', [CurrentOrganizationController::class, 'store'])
+        ->name('organizations.switch');
+
     Route::get('dashboard', DashboardController::class)
         ->name('dashboard');
+
+    Route::get('organizations/{organization}/members', [OrganizationController::class, 'members'])
+        ->middleware('permission:organizations.view,organizations.manage_members')
+        ->name('organizations.members');
+    Route::post('organizations/{organization}/members', [OrganizationController::class, 'storeMember'])
+        ->middleware('permission:organizations.manage_members')
+        ->name('organizations.members.store');
+    Route::put('organizations/{organization}/members/{user}', [OrganizationController::class, 'updateMember'])
+        ->middleware('permission:organizations.manage_members')
+        ->name('organizations.members.update');
+    Route::delete('organizations/{organization}/members/{user}', [OrganizationController::class, 'destroyMember'])
+        ->middleware('permission:organizations.manage_members')
+        ->name('organizations.members.destroy');
+    Route::resource('organizations', OrganizationController::class)
+        ->middlewareFor(['index', 'show'], 'permission:organizations.view')
+        ->middlewareFor(['create', 'store'], 'permission:organizations.create')
+        ->middlewareFor(['edit', 'update'], 'permission:organizations.update')
+        ->middlewareFor(['destroy'], 'permission:organizations.delete');
 
     Route::get('control-center', [ControlCenterController::class, 'index'])
         ->middleware('permission:roles.view,permissions.view,audit.view')

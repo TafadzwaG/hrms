@@ -18,13 +18,14 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $this->syncPermissionCatalogue();
+        $roleUserCounts = $this->effectiveRoleAssignmentCounts();
 
         $filters = [
             'search' => $request->string('search')->toString(),
         ];
 
         $query = Role::query()
-            ->withCount(['users', 'permissions'])
+            ->withCount(['permissions'])
             ->orderBy('name');
 
         if (!empty($filters['search'])) {
@@ -44,12 +45,25 @@ class RoleController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users_count ?? 0,
+                'users_count' => (int) ($roleUserCounts[$role->id] ?? 0),
                 'permissions_count' => $role->permissions_count ?? 0,
                 'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
                 'created_at' => optional($role->created_at)->toDateTimeString(),
                 'updated_at' => optional($role->updated_at)->toDateTimeString(),
             ]);
+
+        $rolesWithUsage = Role::query()
+            ->orderBy('name')
+            ->get(['id', 'code', 'name'])
+            ->map(fn (Role $role) => [
+                'id' => $role->id,
+                'code' => $role->code,
+                'name' => $role->name,
+                'users_count' => (int) ($roleUserCounts[$role->id] ?? 0),
+            ])
+            ->sortByDesc('users_count')
+            ->take(6)
+            ->values();
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
@@ -57,21 +71,10 @@ class RoleController extends Controller
             'stats' => [
                 'total_roles' => Role::count(),
                 'total_permissions' => Permission::count(),
-                'users_with_roles' => DB::table('role_users')->distinct('user_id')->count('user_id'),
+                'users_with_roles' => $this->effectiveUsersWithRolesCount(),
                 'recently_updated' => Role::query()->whereDate('updated_at', '>=', now()->subDays(7))->count(),
             ],
-            'usersByRole' => Role::query()
-                ->withCount('users')
-                ->orderByDesc('users_count')
-                ->take(6)
-                ->get()
-                ->map(fn (Role $role) => [
-                    'id' => $role->id,
-                    'code' => $role->code,
-                    'name' => $role->name,
-                    'users_count' => $role->users_count,
-                ])
-                ->values(),
+            'usersByRole' => $rolesWithUsage,
         ]);
     }
 
@@ -113,8 +116,12 @@ class RoleController extends Controller
     {
         $this->syncPermissionCatalogue();
 
-        $role->load(['permissions:id,name,module,label,description', 'users:id,name,email']);
-        $role->loadCount(['users', 'permissions']);
+        $role->load(['permissions:id,name,module,label,description']);
+        $role->loadCount(['permissions']);
+        $roleUsers = $this->visibleUsersQuery()
+            ->whereIn('id', $this->effectiveRoleUserIds($role->id))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
 
         return Inertia::render('Roles/Show', [
             'role' => [
@@ -122,7 +129,7 @@ class RoleController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users_count,
+                'users_count' => $roleUsers->count(),
                 'permissions_count' => $role->permissions_count,
                 'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
                 'permission_ids' => $role->permissions->pluck('id')->values()->all(),
@@ -136,7 +143,7 @@ class RoleController extends Controller
                         'module' => $permission->module,
                     ])
                     ->values(),
-                'users' => $role->users
+                'users' => $roleUsers
                     ->sortBy('name')
                     ->map(fn ($user) => [
                         'id' => $user->id,
@@ -155,7 +162,7 @@ class RoleController extends Controller
     {
         $this->syncPermissionCatalogue();
 
-        $role->loadCount(['users', 'permissions']);
+        $role->loadCount(['permissions']);
         $role->load('permissions:id');
 
         return Inertia::render('Roles/Edit', [
@@ -164,7 +171,7 @@ class RoleController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users_count,
+                'users_count' => count($this->effectiveRoleUserIds($role->id)),
                 'permissions_count' => $role->permissions_count,
                 'permission_ids' => $role->permissions->pluck('id')->values()->all(),
                 'is_protected' => PermissionRegistry::isProtectedRoleCode($role->code),
@@ -205,7 +212,10 @@ class RoleController extends Controller
             ]);
         }
 
-        if ($role->users()->exists()) {
+        if (
+            DB::table('role_users')->where('role_id', $role->id)->exists()
+            || DB::table('organization_user_roles')->where('role_id', $role->id)->exists()
+        ) {
             return back()->withErrors([
                 'delete' => 'Cannot delete this role because it is assigned to users.',
             ]);

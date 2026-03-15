@@ -5,7 +5,9 @@ namespace App\Http\Middleware;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Rbac\PermissionRegistry;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -20,6 +22,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $tenantContext = app(TenantContext::class);
+        $activeOrganization = $tenantContext->organization();
+        $availableOrganizations = collect();
+        $organizationRoleCodes = collect();
 
         $roles = [];
         $permissions = [];
@@ -31,9 +37,12 @@ class HandleInertiaRequests extends Middleware
                 'roles:id,code,name,description',
                 'permissions:id,name,module,label,description',
                 'roles.permissions:id,name,module,label,description',
+                'currentOrganization:id,name,slug,code,status,timezone',
             ]);
 
-            $roles = $user->roles
+            $effectiveRoles = $user->effectiveRoles($activeOrganization?->id);
+
+            $roles = $effectiveRoles
                 ->map(fn (Role $role) => [
                     'id' => $role->id,
                     'code' => $role->code,
@@ -43,10 +52,22 @@ class HandleInertiaRequests extends Middleware
                 ->values()
                 ->all();
 
-            $permissions = $user->permissionNames()->values()->all();
+            $permissions = $user->permissionNames($activeOrganization?->id)->values()->all();
             $can = collect(PermissionRegistry::names())
                 ->mapWithKeys(fn (string $permission) => [$permission => $user->canAccess($permission)])
                 ->all();
+
+            $availableOrganizations = $tenantContext->availableOrganizationsFor($user);
+            $organizationRoleCodes = $availableOrganizations->isNotEmpty()
+                ? DB::table('organization_user_roles')
+                    ->join('roles', 'roles.id', '=', 'organization_user_roles.role_id')
+                    ->where('organization_user_roles.user_id', $user->id)
+                    ->whereIn('organization_user_roles.organization_id', $availableOrganizations->pluck('id'))
+                    ->select(['organization_user_roles.organization_id', 'roles.code'])
+                    ->get()
+                    ->groupBy('organization_id')
+                    ->map(fn ($rows) => $rows->pluck('code')->values()->all())
+                : collect();
 
             $userPayload = [
                 'id' => $user->id,
@@ -56,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                 'created_at' => optional($user->created_at)->toDateTimeString(),
                 'updated_at' => optional($user->updated_at)->toDateTimeString(),
                 'two_factor_enabled' => !blank($user->two_factor_secret),
+                'is_super_admin' => $user->isSuperAdmin(),
                 'roles' => $roles,
                 'permissions' => $permissions,
             ];
@@ -73,6 +95,33 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+            ],
+            'tenant' => [
+                'active_organization' => $activeOrganization ? [
+                    'id' => $activeOrganization->id,
+                    'name' => $activeOrganization->name,
+                    'slug' => $activeOrganization->slug,
+                    'code' => $activeOrganization->code,
+                    'status' => $activeOrganization->status,
+                    'timezone' => $activeOrganization->timezone,
+                ] : null,
+                'organizations' => $availableOrganizations
+                    ->map(function ($organization) use ($activeOrganization, $organizationRoleCodes) {
+                        return [
+                            'id' => $organization->id,
+                            'name' => $organization->name,
+                            'slug' => $organization->slug,
+                            'code' => $organization->code,
+                            'status' => $organization->status,
+                            'timezone' => $organization->timezone,
+                            'is_active' => $activeOrganization?->id === $organization->id,
+                            'role_codes' => $organizationRoleCodes->get($organization->id, []),
+                        ];
+                    })
+                    ->values()
+                    ->all(),
+                'can_switch' => $availableOrganizations->count() > 1,
+                'is_super_admin' => $user instanceof User ? $user->isSuperAdmin() : false,
             ],
             'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

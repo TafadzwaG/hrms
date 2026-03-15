@@ -3,6 +3,7 @@
 namespace App\Support\Audit;
 
 use App\Models\AuditLog;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model;
@@ -99,6 +100,7 @@ class AuditLogger
             'actor_type' => $actor?->getMorphClass(),
             'actor_id' => $actor?->getAuthIdentifier(),
             'actor_name' => $actorName,
+            'organization_id' => $context['organization_id'] ?? $this->resolveOrganizationId($model),
             'event' => $event,
             'module' => $module,
             'category' => $category,
@@ -360,5 +362,22 @@ class AuditLogger
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function resolveOrganizationId(?Model $model): ?int
+    {
+        if ($model && ! blank($model->getAttribute('organization_id'))) {
+            return (int) $model->getAttribute('organization_id');
+        }
+
+        if ($model && $model->relationLoaded('employee') && $model->employee && ! blank($model->employee->organization_id)) {
+            return (int) $model->employee->organization_id;
+        }
+
+        if ($model && method_exists($model, 'employee') && ! blank($model->employee?->organization_id)) {
+            return (int) $model->employee->organization_id;
+        }
+
+        return app(TenantContext::class)->id();
     }
 }

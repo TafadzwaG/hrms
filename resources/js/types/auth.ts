@@ -5,6 +5,17 @@ export type AuthRole = {
     description?: string | null;
 };
 
+export type TenantOrganization = {
+    id: number;
+    name: string;
+    slug: string;
+    code?: string | null;
+    status: string;
+    timezone?: string | null;
+    is_active?: boolean;
+    role_codes?: string[];
+};
+
 export type AuthUser = {
     id: number;
     name: string;
@@ -12,6 +23,7 @@ export type AuthUser = {
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
+    is_super_admin?: boolean;
     created_at: string | null;
     updated_at: string | null;
     roles: AuthRole[];
@@ -26,6 +38,13 @@ export type Auth = {
     roles: AuthRole[];
     permissions: string[];
     can: Record<string, boolean>;
+};
+
+export type TenantContextPayload = {
+    active_organization: TenantOrganization | null;
+    organizations: TenantOrganization[];
+    can_switch: boolean;
+    is_super_admin: boolean;
 };
 
 export type TwoFactorSetupData = {

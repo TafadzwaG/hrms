@@ -5,10 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Permission;
 use App\Models\Role;
-use App\Models\User;
 use App\Support\Rbac\PermissionCatalogueSynchronizer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ControlCenterController extends Controller
@@ -17,10 +15,18 @@ class ControlCenterController extends Controller
     {
         app(PermissionCatalogueSynchronizer::class)->sync();
 
+        $roleUserCounts = $this->effectiveRoleAssignmentCounts();
+        $visibleUsersCount = $this->visibleUsersQuery()->count();
+
         $roles = Role::query()
-            ->withCount(['users', 'permissions'])
+            ->withCount(['permissions'])
             ->orderByDesc('updated_at')
-            ->get();
+            ->get()
+            ->map(function (Role $role) use ($roleUserCounts) {
+                $role->setAttribute('users_count', (int) ($roleUserCounts[$role->id] ?? 0));
+
+                return $role;
+            });
 
         $recentRoles = $roles
             ->take(5)
@@ -49,8 +55,8 @@ class ControlCenterController extends Controller
         $summary = [
             'roles_total' => $roles->count(),
             'permissions_total' => Permission::count(),
-            'users_with_roles' => DB::table('role_users')->distinct('user_id')->count('user_id'),
-            'users_without_roles' => max(User::count() - DB::table('role_users')->distinct('user_id')->count('user_id'), 0),
+            'users_with_roles' => $this->effectiveUsersWithRolesCount(),
+            'users_without_roles' => max($visibleUsersCount - $this->effectiveUsersWithRolesCount(), 0),
             'roles_without_permissions' => $roles->where('permissions_count', 0)->count(),
             'roles_without_users' => $roles->where('users_count', 0)->count(),
         ];
@@ -83,6 +89,7 @@ class ControlCenterController extends Controller
             'recentRoles' => $recentRoles,
             'alerts' => $alerts->values(),
             'quickActions' => [
+                ['label' => 'Organizations', 'href' => '/organizations', 'description' => 'Manage tenant organizations and switch access context.'],
                 ['label' => 'Create role', 'href' => '/roles/create', 'description' => 'Define a new role and assign permissions.'],
                 ['label' => 'Permission matrix', 'href' => '/roles/matrix', 'description' => 'Review role coverage across modules.'],
                 ['label' => 'Assign user roles', 'href' => '/users', 'description' => 'Update user role assignments in the user directory.'],

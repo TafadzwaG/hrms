@@ -2,12 +2,26 @@
 
 use App\Models\AuditLog;
 use App\Models\Employee;
+use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function grantPermissions(User $user, array $permissionNames): void
+function auditTestOrganization(): Organization
+{
+    return Organization::query()->firstOrCreate(
+        ['slug' => 'audit-tenant'],
+        [
+            'name' => 'Audit Tenant',
+            'code' => 'AUDIT',
+            'status' => 'ACTIVE',
+            'timezone' => 'Africa/Johannesburg',
+        ],
+    );
+}
+
+function grantPermissions(User $user, array $permissionNames): Organization
 {
     $permissionIds = collect($permissionNames)
         ->map(function (string $name) {
@@ -31,7 +45,15 @@ function grantPermissions(User $user, array $permissionNames): void
     ]);
 
     $role->permissions()->sync($permissionIds);
-    $user->syncRoles([$role->id]);
+    $organization = auditTestOrganization();
+
+    $user->attachToOrganization($organization);
+    $user->syncRoles([$role->id], $organization->id);
+    $user->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    return $organization;
 }
 
 test('successful logins are written to the audit trail', function () {
@@ -40,13 +62,18 @@ test('successful logins are written to the audit trail', function () {
         'password' => 'Password@123',
         'email_verified_at' => now(),
     ]);
+    $organization = auditTestOrganization();
+    $user->attachToOrganization($organization);
+    $user->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
 
     $this->post('/login', [
         'email' => 'audit-login@example.com',
         'password' => 'Password@123',
     ])->assertRedirect(route('dashboard'));
 
-    expect(AuditLog::query()
+    expect(AuditLog::query()->withoutGlobalScopes()
         ->where('event', 'login')
         ->where('actor_id', $user->id)
         ->exists())->toBeTrue();
@@ -97,17 +124,18 @@ test('employee lifecycle changes are audited', function () {
     $this->delete("/employees/{$employee->id}")
         ->assertRedirect('/employees');
 
-    expect(AuditLog::query()->where('module', 'employees')->where('event', 'create')->count())->toBe(1);
-    expect(AuditLog::query()->where('module', 'employees')->where('event', 'update')->count())->toBe(1);
-    expect(AuditLog::query()->where('module', 'employees')->where('event', 'delete')->count())->toBe(1);
+    expect(AuditLog::query()->withoutGlobalScopes()->where('module', 'employees')->where('event', 'create')->count())->toBe(1);
+    expect(AuditLog::query()->withoutGlobalScopes()->where('module', 'employees')->where('event', 'update')->count())->toBe(1);
+    expect(AuditLog::query()->withoutGlobalScopes()->where('module', 'employees')->where('event', 'delete')->count())->toBe(1);
 });
 
 test('audit trail pages and export are available to authorised users', function () {
     $user = User::factory()->create();
-    grantPermissions($user, ['audit.view', 'audit.export']);
+    $organization = grantPermissions($user, ['audit.view', 'audit.export']);
     $this->actingAs($user);
 
     $log = AuditLog::query()->create([
+        'organization_id' => $organization->id,
         'event' => 'create',
         'module' => 'employees',
         'category' => 'data',

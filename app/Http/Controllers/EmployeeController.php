@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -216,7 +217,7 @@ class EmployeeController extends Controller
                     'email' => $employee->user->email,
                     'username' => Schema::hasColumn('users', 'username') ? $employee->user->username : null,
                     'role' => Schema::hasColumn('users', 'role') ? $employee->user->role : null,
-                    'roles' => $employee->user->roles->map(fn (Role $role) => [
+                    'roles' => $employee->user->effectiveRoles($employee->organization_id)->map(fn (Role $role) => [
                         'id' => $role->id,
                         'code' => $role->code,
                         'name' => $role->name,
@@ -818,11 +819,10 @@ class EmployeeController extends Controller
 
     private function validateEmployee(Request $request, ?int $ignoreEmployeeId = null): array
     {
+        $tenantId = $this->tenantId();
+
         return $request->validate([
-            'staff_number' => [
-                'required', 'string', 'max:64',
-                'unique:employees,staff_number'.($ignoreEmployeeId ? ','.$ignoreEmployeeId : ''),
-            ],
+            'staff_number' => ['required', 'string', 'max:64', $this->tenantUniqueRule('employees', 'staff_number', $ignoreEmployeeId)],
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
             'surname' => ['required', 'string', 'max:100'],
@@ -831,15 +831,17 @@ class EmployeeController extends Controller
             'contact_number' => ['nullable', 'string', 'max:64'],
             'address' => ['nullable', 'string'],
             'email' => ['nullable', 'email', 'max:255'],
-            'department_id' => ['nullable', 'integer', 'exists:org_units,id'],
-            'position_id' => ['nullable', 'integer', 'exists:positions,id'],
+            'department_id' => ['nullable', 'integer', Rule::exists('org_units', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
+            'position_id' => ['nullable', 'integer', Rule::exists('positions', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
         ]);
     }
 
     private function validateEmployeeDocument(Request $request): array
     {
+        $tenantId = $this->tenantId();
+
         $validator = validator($request->all(), [
-            'document_type_id' => ['required', 'integer', 'exists:document_types,id'],
+            'document_type_id' => ['required', 'integer', Rule::exists('document_types', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
             'title' => ['required', 'string', 'max:255'],
             'file' => ['nullable', 'file', 'max:10240'],
             'file_uri' => ['nullable', 'string', 'max:2048'],
@@ -979,15 +981,25 @@ class EmployeeController extends Controller
         if ($user) {
             $user->update($userData);
 
+            if ($this->tenantId()) {
+                $user->attachToOrganization($this->tenantId());
+            }
+
             return $user;
         }
 
-        return User::create($userData);
+        $user = User::create($userData);
+
+        if ($this->tenantId()) {
+            $user->attachToOrganization($this->tenantId());
+        }
+
+        return $user;
     }
 
     private function attachEmployeeRoleIfAvailable(User $user): void
     {
-        if (!Schema::hasTable('roles') || !Schema::hasTable('role_users')) {
+        if (!Schema::hasTable('roles') || !Schema::hasTable('organization_user_roles') || ! $this->tenantId()) {
             return;
         }
 
@@ -996,7 +1008,8 @@ class EmployeeController extends Controller
             return;
         }
 
-        $user->roles()->syncWithoutDetaching([$role->id]);
+        $currentRoleIds = $user->organizationRoles($this->tenantId())->pluck('id')->all();
+        $user->syncRoles([...$currentRoleIds, $role->id], $this->tenantId());
     }
 
     private function documentAccessPolicies(): array

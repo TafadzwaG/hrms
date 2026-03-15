@@ -101,6 +101,19 @@ return [
             ],
         ],
         [
+            'key' => 'organizations',
+            'label' => 'Organizations',
+            'description' => 'Tenant organizations, memberships, switching, and organization administration.',
+            'permissions' => [
+                ['name' => 'organizations.view', 'label' => 'View organizations', 'description' => 'Browse organizations and organization details.'],
+                ['name' => 'organizations.create', 'label' => 'Create organizations', 'description' => 'Create new tenant organizations.'],
+                ['name' => 'organizations.update', 'label' => 'Update organizations', 'description' => 'Update organization settings, branding, and status.'],
+                ['name' => 'organizations.delete', 'label' => 'Delete organizations', 'description' => 'Archive or delete organizations when safe.'],
+                ['name' => 'organizations.manage_members', 'label' => 'Manage organization members', 'description' => 'Assign users, activate memberships, and manage organization-level roles.'],
+                ['name' => 'organizations.switch', 'label' => 'Switch organizations', 'description' => 'Switch the active organization context when the user belongs to multiple organizations.'],
+            ],
+        ],
+        [
             'key' => 'workflows',
             'label' => 'Workflows',
             'description' => 'Workflow definitions and module automation.',
@@ -261,12 +274,12 @@ return [
     ],
     'default_role_permissions' => [
         'SYS_ADMIN' => ['*'],
-        'HR_ADMIN' => ['dashboard.view','employees.*','org_units.*','locations.*','positions.*','users.view','users.create','users.update','users.assign_roles','roles.*','permissions.*','audit.view','audit.export','workflows.*','leave.*','attendance.view','attendance.manage','timesheets.view','timesheets.approve','payroll.view','requisitions.*','candidates.*','onboarding.*','offboarding.*','performance.*','learning.*','documents.*','document_types.*','reports.*'],
+        'HR_ADMIN' => ['dashboard.view','employees.*','org_units.*','locations.*','positions.*','users.view','users.create','users.update','users.assign_roles','roles.*','permissions.*','audit.view','audit.export','organizations.view','organizations.update','organizations.manage_members','organizations.switch','workflows.*','leave.*','attendance.view','attendance.manage','timesheets.view','timesheets.approve','payroll.view','requisitions.*','candidates.*','onboarding.*','offboarding.*','performance.*','learning.*','documents.*','document_types.*','reports.*'],
         'PAYROLL' => ['dashboard.view','employees.view','users.view','timesheets.view','timesheets.approve','attendance.view','payroll.*','documents.view','reports.*'],
         'MANAGER' => ['dashboard.view','employees.view','leave.view','leave.create','leave.approve','attendance.view','attendance.manage','timesheets.view','timesheets.approve','requisitions.view','candidates.view','onboarding.view','offboarding.view','performance.view','performance.manage','learning.view','documents.view','reports.view'],
         'AUTHORISER' => ['dashboard.view','leave.view','leave.approve','timesheets.view','timesheets.approve','payroll.view','documents.view','reports.view'],
         'EMPLOYEE' => ['dashboard.view','employees.view','leave.view','leave.create','attendance.view','timesheets.view','timesheets.create','documents.view','learning.view','performance.view'],
-        'AUDITOR' => ['dashboard.view','audit.view','audit.export','employees.view','users.view','roles.view','permissions.view','workflows.view','leave.view','attendance.view','timesheets.view','payroll.view','requisitions.view','candidates.view','onboarding.view','offboarding.view','performance.view','learning.view','documents.view','document_types.view','reports.*'],
+        'AUDITOR' => ['dashboard.view','audit.view','audit.export','employees.view','users.view','roles.view','permissions.view','organizations.view','workflows.view','leave.view','attendance.view','timesheets.view','payroll.view','requisitions.view','candidates.view','onboarding.view','offboarding.view','performance.view','learning.view','documents.view','document_types.view','reports.*'],
     ],
     'protected_role_codes' => ['SYS_ADMIN','HR_ADMIN','PAYROLL','MANAGER','AUTHORISER','EMPLOYEE','AUDITOR'],
 ];

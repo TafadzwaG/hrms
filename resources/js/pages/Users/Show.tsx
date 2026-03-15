@@ -35,7 +35,9 @@ type RoleItem = {
     name: string;
     description: string | null;
     show_url: string;
-    remove_url: string;
+    remove_url: string | null;
+    assigned_via: string;
+    removable: boolean;
 };
 type PermissionItem = {
     id: number;
@@ -147,6 +149,8 @@ export default function UserShow() {
     const removeRole = (role: RoleItem) => {
         if (
             !canAssignRoles ||
+            !role.removable ||
+            !role.remove_url ||
             !window.confirm(`Remove ${role.name} from ${user.name}?`)
         )
             return;
@@ -499,8 +503,7 @@ export default function UserShow() {
                                                                         </div>
                                                                     </TableCell>
                                                                     <TableCell className="text-sm font-medium text-muted-foreground">
-                                                                        Direct
-                                                                        Assignment
+                                                                        {role.assigned_via}
                                                                     </TableCell>
                                                                     <TableCell>
                                                                         <Badge
@@ -511,7 +514,9 @@ export default function UserShow() {
                                                                         </Badge>
                                                                     </TableCell>
                                                                     <TableCell className="pr-6 text-right">
-                                                                        {canAssignRoles ? (
+                                                                        {canAssignRoles &&
+                                                                        role.removable &&
+                                                                        role.remove_url ? (
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="icon"

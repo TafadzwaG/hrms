@@ -31,7 +31,8 @@ const mainNavItems: SidebarNavItem[] = [
 ];
 
 const footerNavItems: SidebarNavItem[] = [
-    { title: 'Organisations', href: '/org-units', icon: Building, permissionsAny: ['org_units.view'] },
+    { title: 'Organizations', href: '/organizations', icon: Building2, permissionsAny: ['organizations.view'] },
+    { title: 'Org Units', href: '/org-units', icon: Building, permissionsAny: ['org_units.view'] },
     { title: 'Locations', href: '/locations', icon: Building2, permissionsAny: ['locations.view'] },
     { title: 'Positions', href: '/positions', icon: Proportions, permissionsAny: ['positions.view'] },
     { title: 'Workflows', href: '/workflows', icon: BookOpen, permissionsAny: ['workflows.view'] },

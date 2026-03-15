@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DocumentType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -116,8 +117,8 @@ class DocumentTypeController extends Controller
     private function rules(?int $ignoreId = null): array
     {
         return [
-            'code' => ['required', 'string', 'max:50', 'unique:document_types,code,'.$ignoreId],
-            'name' => ['required', 'string', 'max:255', 'unique:document_types,name,'.$ignoreId],
+            'code' => ['required', 'string', 'max:50', $this->tenantUniqueRule('document_types', 'code', $ignoreId)],
+            'name' => ['required', 'string', 'max:255', $this->tenantUniqueRule('document_types', 'name', $ignoreId)],
             'retention_policy' => ['nullable', 'string', 'max:255'],
             'sensitivity_level' => ['required', 'in:'.implode(',', $this->sensitivityOptions())],
         ];

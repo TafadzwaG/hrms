@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Concerns\Auditable;
+use App\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, BelongsToMany};
 
 class OrgUnit extends Model
 {
-    use Auditable;
+    use Auditable, BelongsToOrganization;
 
     protected $table = 'org_units';
 

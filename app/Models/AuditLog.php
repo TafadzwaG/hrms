@@ -2,17 +2,22 @@
 
 namespace App\Models;
 
+use App\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AuditLog extends Model
 {
+    use BelongsToOrganization;
+
     public const UPDATED_AT = null;
 
     protected $fillable = [
         'actor_type',
         'actor_id',
         'actor_name',
+        'organization_id',
         'event',
         'module',
         'category',
@@ -47,6 +52,11 @@ class AuditLog extends Model
     public function actor(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function auditable(): MorphTo

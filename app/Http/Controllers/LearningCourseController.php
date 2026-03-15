@@ -6,6 +6,7 @@ use App\Models\LearningCourse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -105,7 +106,7 @@ class LearningCourseController extends Controller
     private function rules(?LearningCourse $learningCourse = null): array
     {
         return [
-            'course_code' => ['required', 'string', 'max:100', 'unique:learning_courses,course_code,'.($learningCourse?->id ?? 'NULL').',id'],
+            'course_code' => ['required', 'string', 'max:100', $this->tenantUniqueRule('learning_courses', 'course_code', $learningCourse?->id)],
             'title' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string', 'max:255'],
             'duration_hours' => ['required', 'numeric', 'min:0'],

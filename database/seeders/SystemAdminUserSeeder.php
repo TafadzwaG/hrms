@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -57,10 +58,43 @@ class SystemAdminUserSeeder extends Seeder
 
             $user->roles()->syncWithoutDetaching([$sysAdminRole->id]);
             $user->permissions()->sync($allPermissionIds);
+
+            if (Schema::hasTable('organizations')) {
+                $organizations = Organization::query()->orderBy('name')->get(['id']);
+
+                if ($organizations->isEmpty()) {
+                    $organizations = collect([
+                        Organization::query()->create([
+                            'name' => 'Primary Organization',
+                            'slug' => 'primary-organization',
+                            'code' => 'PRIMARY',
+                            'status' => 'ACTIVE',
+                            'timezone' => config('app.timezone'),
+                            'metadata' => [
+                                'source' => 'system_admin_user_seeder',
+                            ],
+                        ]),
+                    ]);
+                }
+
+                foreach ($organizations as $organization) {
+                    $user->attachToOrganization($organization->id);
+                }
+
+                $currentOrganizationId = Organization::query()
+                    ->whereKey($user->current_organization_id)
+                    ->exists()
+                    ? $user->current_organization_id
+                    : $organizations->first()->id;
+
+                $user->forceFill([
+                    'current_organization_id' => $currentOrganizationId,
+                ])->saveQuietly();
+            }
         });
 
         $this->command?->info('System admin user seeded successfully.');
-        $this->command?->line('Email: ' . $email);
-        $this->command?->line('Password: ' . $password);
+        $this->command?->line('Email: '.$email);
+        $this->command?->line('Password: '.$password);
     }
 }

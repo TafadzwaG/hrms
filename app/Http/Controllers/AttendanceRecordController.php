@@ -186,7 +186,7 @@ class AttendanceRecordController extends Controller
 
             if (($field['unique'] ?? false) === true) {
                 $table = (new AttendanceRecord)->getTable();
-                $fieldRules[] = Rule::unique($table, $name)->ignore($record?->getKey());
+                $fieldRules[] = $this->tenantUniqueRule($table, $name, $record?->getKey());
             }
 
             $rules[$name] = $fieldRules;

@@ -192,7 +192,8 @@ class CandidateProfileController extends Controller
             $fieldRules = $field['rules'] ?? ['nullable'];
 
             if ($name === 'requisition_code') {
-                $fieldRules[] = Rule::exists((new JobRequisition)->getTable(), 'requisition_code');
+                $fieldRules[] = Rule::exists((new JobRequisition)->getTable(), 'requisition_code')
+                    ->where(fn ($query) => $query->where('organization_id', $this->tenantId()));
             }
 
             if (($field['unique'] ?? false) === true) {

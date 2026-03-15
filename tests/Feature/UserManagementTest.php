@@ -1,13 +1,27 @@
 <?php
 
 use App\Models\AuditLog;
-use App\Models\Employee;
+use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function grantUserPermissions(User $user, array $permissionNames): void
+function userManagementOrganization(): Organization
+{
+    return Organization::query()->firstOrCreate(
+        ['slug' => 'user-management-tenant'],
+        [
+            'name' => 'User Management Tenant',
+            'code' => 'USERS',
+            'status' => 'ACTIVE',
+            'timezone' => 'Africa/Johannesburg',
+        ],
+    );
+}
+
+function grantUserPermissions(User $user, array $permissionNames): Organization
 {
     $permissionIds = collect($permissionNames)
         ->map(function (string $name) {
@@ -31,12 +45,20 @@ function grantUserPermissions(User $user, array $permissionNames): void
     ]);
 
     $role->permissions()->sync($permissionIds);
-    $user->syncRoles([$role->id]);
+    $organization = userManagementOrganization();
+
+    $user->attachToOrganization($organization);
+    $user->syncRoles([$role->id], $organization->id);
+    $user->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    return $organization;
 }
 
 test('user show page returns live account and audit data', function () {
     $viewer = User::factory()->create();
-    grantUserPermissions($viewer, ['users.view', 'audit.view']);
+    $organization = grantUserPermissions($viewer, ['users.view', 'audit.view']);
     $this->actingAs($viewer);
 
     $rolePermission = Permission::query()->create([
@@ -58,17 +80,25 @@ test('user show page returns live account and audit data', function () {
         'email' => 'target@example.com',
         'email_verified_at' => now(),
     ]);
-    $target->syncRoles([$targetRole->id]);
+    $target->attachToOrganization($organization);
+    $target->syncRoles([$targetRole->id], $organization->id);
+    $target->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
 
-    Employee::query()->create([
+    DB::table('employees')->insert([
+        'organization_id' => $organization->id,
         'user_id' => $target->id,
         'staff_number' => 'EMP-TEST-001',
         'first_name' => 'Access',
         'surname' => 'Target',
         'status' => 'ACTIVE',
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     AuditLog::query()->create([
+        'organization_id' => $organization->id,
         'actor_type' => User::class,
         'actor_id' => $target->id,
         'actor_name' => $target->name,
@@ -79,6 +109,7 @@ test('user show page returns live account and audit data', function () {
     ]);
 
     AuditLog::query()->create([
+        'organization_id' => $organization->id,
         'auditable_type' => User::class,
         'auditable_id' => $target->id,
         'auditable_label' => $target->name,
@@ -102,7 +133,7 @@ test('user show page returns live account and audit data', function () {
 
 test('assigned roles can be revoked from a user', function () {
     $viewer = User::factory()->create();
-    grantUserPermissions($viewer, ['users.assign_roles']);
+    $organization = grantUserPermissions($viewer, ['users.assign_roles']);
     $this->actingAs($viewer);
 
     $role = Role::query()->create([
@@ -112,11 +143,15 @@ test('assigned roles can be revoked from a user', function () {
     ]);
 
     $target = User::factory()->create();
-    $target->syncRoles([$role->id]);
+    $target->attachToOrganization($organization);
+    $target->syncRoles([$role->id], $organization->id);
+    $target->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
 
     $this->delete("/users/{$target->id}/roles/{$role->id}")
         ->assertRedirect();
 
-    expect($target->fresh()->roles()->whereKey($role->id)->exists())->toBeFalse();
-    expect(AuditLog::query()->where('event', 'revoke_role')->exists())->toBeTrue();
+    expect($target->fresh()->organizationRoles($organization->id)->contains('id', $role->id))->toBeFalse();
+    expect(AuditLog::query()->withoutGlobalScopes()->where('event', 'revoke_role')->exists())->toBeTrue();
 });

@@ -7,6 +7,7 @@ use App\Models\Position;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -310,10 +311,12 @@ class PositionController extends Controller
 
     private function validatePosition(Request $request, ?int $ignoreId = null): array
     {
+        $tenantId = $this->tenantId();
+
         return $request->validate([
             'name' => ['required', 'string', 'max:128'],
-            'code' => ['nullable', 'string', 'max:64', 'unique:positions,code' . ($ignoreId ? ',' . $ignoreId : '')],
-            'org_unit_id' => ['nullable', 'integer', 'exists:org_units,id'],
+            'code' => ['nullable', 'string', 'max:64', $this->tenantUniqueRule('positions', 'code', $ignoreId)],
+            'org_unit_id' => ['nullable', 'integer', Rule::exists('org_units', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
         ]);

@@ -179,10 +179,10 @@ class DashboardController extends Controller
 
         $positionTotal = Position::count();
         $activePositions = Position::where('is_active', true)->count();
-        $filledPositions = DB::table('employees')->whereNotNull('position_id')->distinct('position_id')->count('position_id');
+        $filledPositions = Employee::query()->whereNotNull('position_id')->distinct()->count('position_id');
         $vacantPositions = max($activePositions - $filledPositions, 0);
 
-        $departmentHeadcountRows = DB::table('employees')
+        $departmentHeadcountRows = Employee::query()
             ->join('org_units', 'employees.org_unit_id', '=', 'org_units.id')
             ->select('org_units.name', DB::raw('count(*) as total'))
             ->groupBy('org_units.name')
@@ -190,7 +190,7 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
-        $locationCoverageRows = DB::table('employees')
+        $locationCoverageRows = Employee::query()
             ->join('locations', 'employees.location_id', '=', 'locations.id')
             ->select('locations.name', DB::raw('count(*) as total'))
             ->groupBy('locations.name')
@@ -198,8 +198,14 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
-        $topPositionRows = DB::table('positions')
-            ->leftJoin('employees', 'positions.id', '=', 'employees.position_id')
+        $topPositionRows = Position::query()
+            ->leftJoin('employees', function ($join): void {
+                $join->on('positions.id', '=', 'employees.position_id');
+
+                if ($this->tenantId()) {
+                    $join->where('employees.organization_id', $this->tenantId());
+                }
+            })
             ->select('positions.name', DB::raw('count(employees.id) as total'))
             ->groupBy('positions.id', 'positions.name')
             ->orderByDesc('total')
@@ -302,7 +308,13 @@ class DashboardController extends Controller
                     number_format($orgUnitCounts['DEPARTMENT'] ?? 0)
                 ),
                 [
-                    number_format(DB::table('org_unit_locations')->count()).' org-to-location links configured',
+                    number_format(
+                        $this->applyTenantConstraint(
+                            DB::table('org_unit_locations')
+                                ->join('org_units', 'org_units.id', '=', 'org_unit_locations.org_unit_id'),
+                            'org_units.organization_id'
+                        )->count()
+                    ).' org-to-location links configured',
                     $departmentHeadcountRows->isNotEmpty() ? $departmentHeadcountRows->first()->name.' is the largest linked department' : 'Department volumes will appear once linked employees exist',
                     number_format($orgUnitCounts['TEAM'] ?? 0).' team-level units defined',
                 ],
@@ -895,21 +907,29 @@ class DashboardController extends Controller
 
     private function buildGovernanceSection(): array
     {
-        $usersTotal = User::count();
-        $employeeLinkedUsers = Employee::whereNotNull('user_id')->count();
+        $usersTotal = $this->visibleUsersQuery()->count();
+        $employeeLinkedUsers = Employee::query()->whereNotNull('user_id')->distinct()->count('user_id');
         $standaloneUsers = max($usersTotal - $employeeLinkedUsers, 0);
-        $verifiedUsers = User::whereNotNull('email_verified_at')->count();
-        $usersWithRoles = DB::table('role_users')->distinct('user_id')->count('user_id');
-        $twoFactorUsers = Schema::hasColumn('users', 'two_factor_confirmed_at') ? User::whereNotNull('two_factor_confirmed_at')->count() : 0;
+        $verifiedUsers = $this->visibleUsersQuery()->whereNotNull('email_verified_at')->count();
+        $usersWithRoles = $this->effectiveUsersWithRolesCount();
+        $twoFactorUsers = Schema::hasColumn('users', 'two_factor_confirmed_at')
+            ? $this->visibleUsersQuery()->whereNotNull('two_factor_confirmed_at')->count()
+            : 0;
 
-        $roleAssignmentRows = DB::table('roles')
-            ->leftJoin('role_users', 'roles.id', '=', 'role_users.role_id')
-            ->select('roles.name', 'roles.code', DB::raw('count(role_users.user_id) as total'))
-            ->groupBy('roles.id', 'roles.name', 'roles.code')
-            ->orderByDesc('total')
-            ->get();
+        $roleAssignmentCounts = $this->effectiveRoleAssignmentCounts();
+        $roleAssignmentRows = Role::query()
+            ->get(['id', 'name', 'code'])
+            ->map(fn (Role $role) => (object) [
+                'id' => $role->id,
+                'name' => $role->name,
+                'code' => $role->code,
+                'total' => (int) ($roleAssignmentCounts[$role->id] ?? 0),
+            ])
+            ->filter(fn ($row) => $row->total > 0)
+            ->sortByDesc('total')
+            ->values();
 
-        $recentUsers = User::query()
+        $recentUsers = $this->visibleUsersQuery()
             ->orderByDesc('created_at')
             ->limit(5)
             ->get()
@@ -933,8 +953,14 @@ class DashboardController extends Controller
             ->all();
 
         $documentTypeSensitivity = $this->countBy(DocumentType::query()->whereNotNull('sensitivity_level')->where('sensitivity_level', '!=', ''), 'sensitivity_level');
-        $documentTypeUsageRows = DB::table('document_types')
-            ->leftJoin('documents', 'document_types.id', '=', 'documents.document_type_id')
+        $documentTypeUsageRows = DocumentType::query()
+            ->leftJoin('documents', function ($join): void {
+                $join->on('document_types.id', '=', 'documents.document_type_id');
+
+                if ($this->tenantId()) {
+                    $join->where('documents.organization_id', $this->tenantId());
+                }
+            })
             ->select('document_types.name', DB::raw('count(documents.id) as total'))
             ->groupBy('document_types.id', 'document_types.name')
             ->orderByDesc('total')

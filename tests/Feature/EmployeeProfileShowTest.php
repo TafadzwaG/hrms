@@ -8,14 +8,29 @@ use App\Models\EmployeeKpi;
 use App\Models\EmployeeNextOfKin;
 use App\Models\EmployeePhysicalProfile;
 use App\Models\EmployeeSkill;
+use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
-function grantEmployeeProfilePermissions(User $user, array $permissionNames): void
+function employeeProfileOrganization(): Organization
+{
+    return Organization::query()->firstOrCreate(
+        ['slug' => 'employee-profile-tenant'],
+        [
+            'name' => 'Employee Profile Tenant',
+            'code' => 'EPRO',
+            'status' => 'ACTIVE',
+            'timezone' => 'Africa/Johannesburg',
+        ],
+    );
+}
+
+function grantEmployeeProfilePermissions(User $user, array $permissionNames): Organization
 {
     $permissionIds = collect($permissionNames)
         ->map(function (string $name) {
@@ -39,12 +54,21 @@ function grantEmployeeProfilePermissions(User $user, array $permissionNames): vo
     ]);
 
     $role->permissions()->sync($permissionIds);
-    $user->syncRoles([$role->id]);
+    $organization = employeeProfileOrganization();
+
+    $user->attachToOrganization($organization);
+    $user->syncRoles([$role->id], $organization->id);
+    $user->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    return $organization;
 }
 
 test('employee show page returns nested live profile data', function () {
     $viewer = User::factory()->create();
-    grantEmployeeProfilePermissions($viewer, [
+    $organization = grantEmployeeProfilePermissions($viewer, [
+        'employees.create',
         'employees.view',
         'employees.update',
         'documents.view',
@@ -56,34 +80,47 @@ test('employee show page returns nested live profile data', function () {
         'name' => 'John Target',
         'email' => 'john.target@example.com',
     ]);
+    $linkedUser->attachToOrganization($organization);
+    $linkedUser->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
 
-    $employee = Employee::query()->create([
-        'user_id' => $linkedUser->id,
+    $this->post('/employees', [
         'staff_number' => 'EMP-9001',
         'first_name' => 'John',
         'surname' => 'Target',
+        'email' => $linkedUser->email,
         'contact_number' => '+263700000001',
         'address' => '123 Main Street',
-        'status' => 'ACTIVE',
-    ]);
+    ])->assertRedirect('/employees');
 
-    $documentType = DocumentType::query()->create([
+    $employee = Employee::withoutGlobalScopes()->firstOrFail();
+    $employeeId = $employee->id;
+
+    $documentTypeId = DB::table('document_types')->insertGetId([
+        'organization_id' => $organization->id,
         'code' => 'CONTRACT',
         'name' => 'Contract',
         'retention_policy' => '7 years',
         'sensitivity_level' => 'HIGH',
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
-    Document::query()->create([
-        'owner_employee_id' => $employee->id,
-        'document_type_id' => $documentType->id,
+    DB::table('documents')->insert([
+        'organization_id' => $organization->id,
+        'owner_employee_id' => $employeeId,
+        'document_type_id' => $documentTypeId,
         'title' => 'Employment Contract',
         'file_uri' => 'contracts/employment-contract.pdf',
         'access_policy' => 'internal',
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
     EmployeeNextOfKin::query()->create([
-        'employee_id' => $employee->id,
+        'organization_id' => $organization->id,
+        'employee_id' => $employeeId,
         'full_name' => 'Jane Target',
         'relationship' => 'Spouse',
         'contact_number' => '+263700000002',
@@ -92,34 +129,38 @@ test('employee show page returns nested live profile data', function () {
     ]);
 
     EmployeePhysicalProfile::query()->create([
-        'employee_id' => $employee->id,
+        'organization_id' => $organization->id,
+        'employee_id' => $employeeId,
         'uniform_size' => 'L',
         'shoe_size' => '10',
         'blood_type' => 'O+',
     ]);
 
     EmployeeSkill::query()->create([
-        'employee_id' => $employee->id,
+        'organization_id' => $organization->id,
+        'employee_id' => $employeeId,
         'name' => 'Laravel',
         'proficiency_level' => 'Expert',
         'proficiency_percent' => 92,
     ]);
 
     EmployeeJobProfile::query()->create([
-        'employee_id' => $employee->id,
+        'organization_id' => $organization->id,
+        'employee_id' => $employeeId,
         'title' => 'Senior Developer',
         'employment_type' => 'Permanent',
         'summary' => 'Owns the internal platform.',
     ]);
 
     EmployeeKpi::query()->create([
-        'employee_id' => $employee->id,
+        'organization_id' => $organization->id,
+        'employee_id' => $employeeId,
         'title' => 'Release cadence',
         'progress_percent' => 80,
         'status' => 'ON_TRACK',
     ]);
 
-    $this->get("/employees/{$employee->id}")
+    $this->get("/employees/{$employeeId}")
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Employees/Show')
@@ -136,17 +177,18 @@ test('employee show page returns nested live profile data', function () {
 
 test('employee profile tabs can create related records', function () {
     $viewer = User::factory()->create();
-    grantEmployeeProfilePermissions($viewer, ['employees.update']);
+    $organization = grantEmployeeProfilePermissions($viewer, ['employees.create', 'employees.update']);
     $this->actingAs($viewer);
 
-    $employee = Employee::query()->create([
+    $this->post('/employees', [
         'staff_number' => 'EMP-9002',
         'first_name' => 'Jane',
         'surname' => 'Tester',
-        'status' => 'ACTIVE',
-    ]);
+    ])->assertRedirect('/employees');
 
-    $this->post("/employees/{$employee->id}/next-of-kin", [
+    $employeeId = Employee::withoutGlobalScopes()->value('id');
+
+    $this->post("/employees/{$employeeId}/next-of-kin", [
         'full_name' => 'Primary Contact',
         'relationship' => 'Sibling',
         'contact_number' => '+263700000010',
@@ -154,49 +196,49 @@ test('employee profile tabs can create related records', function () {
         'is_primary' => true,
     ])->assertRedirect();
 
-    $this->post("/employees/{$employee->id}/physical-profile", [
+    $this->post("/employees/{$employeeId}/physical-profile", [
         'uniform_size' => 'M',
         'shoe_size' => '9',
         'blood_type' => 'A+',
     ])->assertRedirect();
 
-    $this->post("/employees/{$employee->id}/skills", [
+    $this->post("/employees/{$employeeId}/skills", [
         'name' => 'React',
         'proficiency_level' => 'Advanced',
         'proficiency_percent' => 88,
     ])->assertRedirect();
 
-    $this->post("/employees/{$employee->id}/job-profile", [
+    $this->post("/employees/{$employeeId}/job-profile", [
         'title' => 'HR Analyst',
         'employment_type' => 'Permanent',
         'summary' => 'Supports talent operations.',
     ])->assertRedirect();
 
-    $this->post("/employees/{$employee->id}/kpis", [
+    $this->post("/employees/{$employeeId}/kpis", [
         'title' => 'Close requisitions',
         'progress_percent' => 55,
         'status' => 'ACTIVE',
     ])->assertRedirect();
 
     $this->assertDatabaseHas('employee_next_of_kin', [
-        'employee_id' => $employee->id,
+        'employee_id' => $employeeId,
         'full_name' => 'Primary Contact',
         'address' => 'Family Home',
     ]);
     $this->assertDatabaseHas('employee_physical_profiles', [
-        'employee_id' => $employee->id,
+        'employee_id' => $employeeId,
         'uniform_size' => 'M',
     ]);
     $this->assertDatabaseHas('employee_skills', [
-        'employee_id' => $employee->id,
+        'employee_id' => $employeeId,
         'name' => 'React',
     ]);
     $this->assertDatabaseHas('employee_job_profiles', [
-        'employee_id' => $employee->id,
+        'employee_id' => $employeeId,
         'title' => 'HR Analyst',
     ]);
     $this->assertDatabaseHas('employee_kpis', [
-        'employee_id' => $employee->id,
+        'employee_id' => $employeeId,
         'title' => 'Close requisitions',
     ]);
 });
@@ -205,29 +247,34 @@ test('employee documents can be uploaded downloaded and deleted', function () {
     Storage::fake('public');
 
     $viewer = User::factory()->create();
-    grantEmployeeProfilePermissions($viewer, [
+    $organization = grantEmployeeProfilePermissions($viewer, [
+        'employees.create',
         'documents.create',
         'documents.view',
         'documents.delete',
     ]);
     $this->actingAs($viewer);
 
-    $employee = Employee::query()->create([
+    $this->post('/employees', [
         'staff_number' => 'EMP-9003',
         'first_name' => 'Document',
         'surname' => 'Owner',
-        'status' => 'ACTIVE',
-    ]);
+    ])->assertRedirect('/employees');
 
-    $documentType = DocumentType::query()->create([
+    $employeeId = Employee::withoutGlobalScopes()->value('id');
+
+    $documentTypeId = DB::table('document_types')->insertGetId([
+        'organization_id' => $organization->id,
         'code' => 'ID',
         'name' => 'Identity Document',
         'retention_policy' => 'Permanent',
         'sensitivity_level' => 'MEDIUM',
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
 
-    $this->post("/employees/{$employee->id}/documents", [
-        'document_type_id' => $documentType->id,
+    $this->post("/employees/{$employeeId}/documents", [
+        'document_type_id' => $documentTypeId,
         'title' => 'Passport Copy',
         'file' => UploadedFile::fake()->create('passport.pdf', 25, 'application/pdf'),
         'access_policy' => 'internal',
@@ -237,11 +284,11 @@ test('employee documents can be uploaded downloaded and deleted', function () {
 
     Storage::disk('public')->assertExists($document->file_uri);
 
-    $this->get("/employees/{$employee->id}/documents/{$document->id}/download")
+    $this->get("/employees/{$employeeId}/documents/{$document->id}/download")
         ->assertOk()
         ->assertDownload('passport.pdf');
 
-    $this->delete("/employees/{$employee->id}/documents/{$document->id}")
+    $this->delete("/employees/{$employeeId}/documents/{$document->id}")
         ->assertRedirect();
 
     $this->assertSoftDeleted('documents', [

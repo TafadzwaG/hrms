@@ -21,7 +21,7 @@ class EmployeesSeeder extends Seeder
         $faker = fake();
 
         $companies = OrgUnit::query()
-            ->select(['id', 'name', 'type', 'parent_id'])
+            ->select(['id', 'name', 'type', 'parent_id', 'organization_id'])
             ->where('type', 'COMPANY')
             ->orderBy('name')
             ->get();
@@ -32,7 +32,7 @@ class EmployeesSeeder extends Seeder
         }
 
         $allOrgUnits = OrgUnit::query()
-            ->select(['id', 'name', 'type', 'parent_id'])
+            ->select(['id', 'name', 'type', 'parent_id', 'organization_id'])
             ->get();
 
         // Build children map for fast descendant lookup
@@ -44,15 +44,21 @@ class EmployeesSeeder extends Seeder
 
         $allLocationIds = Location::query()->pluck('id')->all();
         $allPositionIds = Position::query()->pluck('id')->all();
+        $defaultOrganizationId = Schema::hasTable('organizations')
+            ? DB::table('organizations')->orderBy('id')->value('id')
+            : null;
 
         DB::transaction(function () use (
             $faker,
             $companies,
             $childrenMap,
             $allLocationIds,
-            $allPositionIds
+            $allPositionIds,
+            $defaultOrganizationId
         ) {
             foreach ($companies as $company) {
+                $organizationId = $company->organization_id ?: $defaultOrganizationId;
+
                 // Find descendant departments/teams under this company
                 $deptOrTeamIds = $this->descendantIdsOfTypes($company->id, $childrenMap, ['DEPARTMENT', 'TEAM']);
                 if (empty($deptOrTeamIds)) {
@@ -127,11 +133,27 @@ class EmployeesSeeder extends Seeder
                         $userData
                     );
 
+                    if ($organizationId) {
+                        $user->attachToOrganization((int) $organizationId);
+
+                        if (!$user->current_organization_id) {
+                            $user->forceFill([
+                                'current_organization_id' => (int) $organizationId,
+                            ])->saveQuietly();
+                        }
+                    }
+
                     // Create/Update employee
+                    $lookup = ['staff_number' => $staffNumber];
+                    if ($organizationId) {
+                        $lookup['organization_id'] = (int) $organizationId;
+                    }
+
                     $employee = Employee::query()->updateOrCreate(
-                        ['staff_number' => $staffNumber],
+                        $lookup,
                         [
                             'user_id' => $user->id,
+                            'organization_id' => $organizationId,
                             'first_name' => $firstName,
                             'middle_name' => $middleName,
                             'surname' => $surname,
@@ -152,7 +174,7 @@ class EmployeesSeeder extends Seeder
                     $companyEmployeeIds[] = $employee->id;
 
                     // Attach EMPLOYEE role if RBAC tables exist
-                    $this->attachEmployeeRoleIfAvailable($user);
+                    $this->attachEmployeeRoleIfAvailable($user, $organizationId ? (int) $organizationId : null);
                 }
 
                 // Make the first employee the manager for the rest
@@ -229,16 +251,33 @@ class EmployeesSeeder extends Seeder
         return !empty($linked) ? $linked : $allLocationIds;
     }
 
-    private function attachEmployeeRoleIfAvailable(User $user): void
+    private function attachEmployeeRoleIfAvailable(User $user, ?int $organizationId = null): void
     {
-        if (!Schema::hasTable('roles') || !Schema::hasTable('role_users')) {
+        if (!Schema::hasTable('roles')) {
             return;
         }
 
         $employeeRole = Role::query()->where('code', 'EMPLOYEE')->first();
         if (!$employeeRole) return;
 
-        // attach without removing existing roles
-        $user->roles()->syncWithoutDetaching([$employeeRole->id]);
+        if ($organizationId && Schema::hasTable('organization_user_roles')) {
+            DB::table('organization_user_roles')->updateOrInsert(
+                [
+                    'organization_id' => $organizationId,
+                    'user_id' => $user->id,
+                    'role_id' => $employeeRole->id,
+                ],
+                [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            );
+
+            return;
+        }
+
+        if (Schema::hasTable('role_users')) {
+            $user->roles()->syncWithoutDetaching([$employeeRole->id]);
+        }
     }
 }

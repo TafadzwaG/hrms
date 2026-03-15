@@ -26,9 +26,8 @@ class UserController extends Controller
             'role_id' => $request->string('role_id')->toString(),
         ];
 
-        $query = User::query()
+        $query = $this->visibleUsersQuery()
             ->with(['roles:id,code,name,description', 'employee:id,user_id,staff_number,first_name,surname'])
-            ->withCount('roles')
             ->orderBy('name');
 
         if (!empty($filters['search'])) {
@@ -45,7 +44,7 @@ class UserController extends Controller
 
         if (!empty($filters['role_id'])) {
             $roleId = (int) $filters['role_id'];
-            $query->whereHas('roles', fn ($roleQuery) => $roleQuery->where('roles.id', $roleId));
+            $query->whereIn('users.id', $this->effectiveRoleUserIds($roleId));
         }
 
         $users = $query
@@ -102,7 +101,9 @@ class UserController extends Controller
         $roleIds = $data['role_ids'] ?? [];
         $roleIds = $request->user()?->canAccess('users.assign_roles') ? $roleIds : [];
 
-        $user = DB::transaction(function () use ($data, $supportsUsername, $supportsRoleColumn, $supportsEmailVerification, $plainPassword, $sendPasswordEmail, $roleIds): User {
+        $tenantId = $this->tenantId();
+
+        $user = DB::transaction(function () use ($data, $supportsUsername, $supportsRoleColumn, $supportsEmailVerification, $plainPassword, $sendPasswordEmail, $roleIds, $tenantId): User {
             $userPayload = [
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -122,7 +123,10 @@ class UserController extends Controller
             }
 
             $user = User::query()->create($userPayload);
-            $user->syncRoles($roleIds);
+            if ($tenantId) {
+                $user->attachToOrganization($tenantId);
+                $user->syncRoles($roleIds, $tenantId);
+            }
             $user->load('roles:id,code,name');
 
             if ($sendPasswordEmail && !empty($user->email)) {
@@ -157,6 +161,8 @@ class UserController extends Controller
 
     public function show(Request $request, User $user)
     {
+        $this->ensureUserBelongsToCurrentOrganization($user);
+
         $canViewAudit = (bool) $request->user()?->canAccess('audit.view');
 
         $user->load([
@@ -169,7 +175,7 @@ class UserController extends Controller
             'employee.position:id,name',
         ]);
 
-        $allPermissions = $user->allPermissions()
+        $allPermissions = $user->allPermissions($this->tenantId())
             ->sortBy([
                 ['module', 'asc'],
                 ['label', 'asc'],
@@ -199,6 +205,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $this->ensureUserBelongsToCurrentOrganization($user);
+
         $user->load('roles:id');
 
         return Inertia::render('Users/Edit', [
@@ -220,6 +228,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $this->ensureUserBelongsToCurrentOrganization($user);
+
         $supportsUsername = Schema::hasColumn('users', 'username');
         $supportsRoleColumn = Schema::hasColumn('users', 'role');
         $supportsEmailVerification = Schema::hasColumn('users', 'email_verified_at');
@@ -250,10 +260,14 @@ class UserController extends Controller
         $plainPassword = !empty($data['password']) ? $data['password'] : null;
         $sendPasswordEmail = (bool) ($data['send_password_email'] ?? false);
         $roleIds = $data['role_ids'] ?? [];
-        $roleIds = $request->user()?->canAccess('users.assign_roles') ? $roleIds : $user->roles()->pluck('roles.id')->all();
+        $roleIds = $request->user()?->canAccess('users.assign_roles')
+            ? $roleIds
+            : $user->organizationRoles($this->tenantId())->pluck('id')->all();
         $beforeUser = $this->auditPayload($user->load('roles:id,code,name'));
 
-        $user = DB::transaction(function () use ($user, $data, $supportsUsername, $supportsRoleColumn, $supportsEmailVerification, $plainPassword, $sendPasswordEmail, $roleIds): User {
+        $tenantId = $this->tenantId();
+
+        $user = DB::transaction(function () use ($user, $data, $supportsUsername, $supportsRoleColumn, $supportsEmailVerification, $plainPassword, $sendPasswordEmail, $roleIds, $tenantId): User {
             $user->name = $data['name'];
             $user->email = $data['email'];
 
@@ -278,7 +292,10 @@ class UserController extends Controller
             }
 
             $user->save();
-            $user->syncRoles($roleIds);
+            if ($tenantId) {
+                $user->attachToOrganization($tenantId);
+                $user->syncRoles($roleIds, $tenantId);
+            }
             $user->load('roles:id,code,name');
 
             if ($plainPassword && $sendPasswordEmail && !empty($user->email)) {
@@ -335,7 +352,9 @@ class UserController extends Controller
 
     public function destroyRole(User $user, Role $role)
     {
-        if (!$user->roles()->whereKey($role->id)->exists()) {
+        $this->ensureUserBelongsToCurrentOrganization($user);
+
+        if (!$user->organizationRoles($this->tenantId())->contains('id', $role->id)) {
             return back()->withErrors([
                 'roles' => 'This role is not assigned to the selected user.',
             ]);
@@ -344,10 +363,14 @@ class UserController extends Controller
         $beforeUser = $this->auditPayload($user->load('roles:id,code,name'));
 
         DB::transaction(function () use ($user, $role): void {
-            $user->roles()->detach($role->id);
+            $remainingRoleIds = $user->organizationRoles($this->tenantId())
+                ->pluck('id')
+                ->reject(fn ($id) => (int) $id === (int) $role->id)
+                ->all();
+
+            $user->syncRoles($remainingRoleIds, $this->tenantId());
 
             if (Schema::hasColumn('users', 'role')) {
-                $remainingRoleIds = $user->roles()->pluck('roles.id')->all();
                 $user->role = $this->legacyRoleValue(null, $remainingRoleIds);
                 $user->save();
             }
@@ -383,6 +406,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->ensureUserBelongsToCurrentOrganization($user);
+
         if ($user->employee()->exists()) {
             return back()->withErrors([
                 'delete' => 'Cannot delete this user because it is linked to an employee record.',
@@ -391,18 +416,47 @@ class UserController extends Controller
 
         $beforeUser = $this->auditPayload($user->load('roles:id,code,name'));
 
-        DB::transaction(function () use ($user): void {
+        $tenantId = $this->tenantId();
+
+        $removedFromOrganizationOnly = DB::transaction(function () use ($user, $tenantId): bool {
+            if ($tenantId) {
+                DB::table('organization_user_roles')
+                    ->where('organization_id', $tenantId)
+                    ->where('user_id', $user->id)
+                    ->delete();
+
+                DB::table('organization_user')
+                    ->where('organization_id', $tenantId)
+                    ->where('user_id', $user->id)
+                    ->delete();
+            }
+
+            $hasRemainingMemberships = DB::table('organization_user')
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if ($hasRemainingMemberships) {
+                return true;
+            }
+
             $user->roles()->detach();
             $user->permissions()->detach();
             $user->delete();
+
+            return false;
         });
 
-        app(AuditLogger::class)->logDelete($user, $beforeUser, [
+        app(AuditLogger::class)->logCustom($removedFromOrganizationOnly ? 'remove_membership' : 'delete', $user, [
             'module' => 'users',
-            'description' => 'Deleted user account.',
+            'description' => $removedFromOrganizationOnly
+                ? 'Removed user from the active organization.'
+                : 'Deleted user account.',
+            'old_values' => $beforeUser,
         ]);
 
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        return redirect()
+            ->route('users.index')
+            ->with('success', $removedFromOrganizationOnly ? 'User removed from the current organization.' : 'User deleted successfully.');
     }
 
     private function userLinks(User $user): array
@@ -590,9 +644,7 @@ class UserController extends Controller
 
     private function auditPayload(User $user): array
     {
-        $roles = $user->relationLoaded('roles')
-            ? $user->roles
-            : $user->roles()->get(['roles.id', 'roles.code', 'roles.name']);
+        $roles = $user->effectiveRoles($this->tenantId());
 
         return [
             'id' => $user->id,
@@ -611,8 +663,10 @@ class UserController extends Controller
 
     private function availableRoles()
     {
+        $userCounts = $this->effectiveRoleAssignmentCounts();
+
         return Role::query()
-            ->withCount(['users', 'permissions'])
+            ->withCount(['permissions'])
             ->orderBy('name')
             ->get(['id', 'code', 'name', 'description'])
             ->map(fn (Role $role) => [
@@ -620,7 +674,7 @@ class UserController extends Controller
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
-                'users_count' => $role->users_count ?? 0,
+                'users_count' => (int) ($userCounts[$role->id] ?? 0),
                 'permissions_count' => $role->permissions_count ?? 0,
             ])
             ->values();
@@ -639,6 +693,9 @@ class UserController extends Controller
 
     private function userPayload(User $user, bool $compact = false): array
     {
+        $effectiveRoles = $user->effectiveRoles($this->tenantId());
+        $organizationRoleIds = $user->organizationRoles($this->tenantId())->pluck('id')->map(fn ($id) => (int) $id)->all();
+
         $payload = [
             'id' => $user->id,
             'name' => $user->name,
@@ -648,14 +705,18 @@ class UserController extends Controller
             'email_verified_at' => Schema::hasColumn('users', 'email_verified_at')
                 ? optional($user->email_verified_at)->toDateTimeString()
                 : null,
-            'roles_count' => $user->roles_count ?? $user->roles->count(),
-            'roles' => $user->roles->map(fn (Role $role) => [
+            'roles_count' => $effectiveRoles->count(),
+            'roles' => $effectiveRoles->map(fn (Role $role) => [
                 'id' => $role->id,
                 'code' => $role->code,
                 'name' => $role->name,
                 'description' => $role->description,
+                'assigned_via' => in_array($role->id, $organizationRoleIds, true) ? 'Organization' : 'Global',
+                'removable' => in_array($role->id, $organizationRoleIds, true),
                 'show_url' => route('roles.show', $role, false),
-                'remove_url' => route('users.roles.destroy', ['user' => $user, 'role' => $role], false),
+                'remove_url' => in_array($role->id, $organizationRoleIds, true)
+                    ? route('users.roles.destroy', ['user' => $user, 'role' => $role], false)
+                    : null,
             ])->values()->all(),
             'employee' => $user->employee ? [
                 'id' => $user->employee->id,
@@ -675,7 +736,7 @@ class UserController extends Controller
         }
 
         return $payload + [
-            'permission_names' => $user->permissionNames()->values()->all(),
+            'permission_names' => $user->permissionNames($this->tenantId())->values()->all(),
         ];
     }
 

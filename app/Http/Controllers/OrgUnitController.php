@@ -351,7 +351,7 @@ class OrgUnitController extends Controller
                 'nullable',
                 'string',
                 'max:64',
-                Rule::unique('org_units', 'code')->ignore($ignoreId),
+                $this->tenantUniqueRule('org_units', 'code', $ignoreId),
             ],
             'cost_center' => ['nullable', 'string', 'max:255'],
             'effective_from' => ['nullable', 'date'],
