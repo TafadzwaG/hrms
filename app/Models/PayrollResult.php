@@ -85,4 +85,9 @@ class PayrollResult extends Model
     {
         return $this->hasMany(PayrollResultSettlement::class)->orderBy('sort_order')->orderBy('currency');
     }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(PayslipDelivery::class)->orderByDesc('created_at')->orderByDesc('id');
+    }
 }

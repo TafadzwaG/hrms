@@ -209,6 +209,121 @@ test('payslip page renders for a processed payroll result', function () {
         );
 });
 
+test('payroll results index renders and remains tenant scoped', function () {
+    $organizationA = payrollOrganization('Results Tenant A', 'RTA');
+    $organizationB = payrollOrganization('Results Tenant B', 'RTB');
+    $user = payrollUserWithPermissions($organizationA, ['payroll.view']);
+
+    $periodA = PayrollPeriod::query()->create([
+        'organization_id' => $organizationA->id,
+        'code' => 'PAY-RTA-01',
+        'name' => 'Results Tenant A Payroll',
+        'frequency' => 'MONTHLY',
+        'period_start' => now()->startOfMonth()->toDateString(),
+        'period_end' => now()->endOfMonth()->toDateString(),
+        'pay_date' => now()->endOfMonth()->toDateString(),
+        'currency' => 'USD',
+        'status' => 'PROCESSED',
+    ]);
+
+    $periodB = PayrollPeriod::query()->create([
+        'organization_id' => $organizationB->id,
+        'code' => 'PAY-RTB-01',
+        'name' => 'Results Tenant B Payroll',
+        'frequency' => 'MONTHLY',
+        'period_start' => now()->startOfMonth()->toDateString(),
+        'period_end' => now()->endOfMonth()->toDateString(),
+        'pay_date' => now()->endOfMonth()->toDateString(),
+        'currency' => 'USD',
+        'status' => 'PROCESSED',
+    ]);
+
+    $employeeA = payrollEmployee($organizationA, 'RTA-001', 'Nyasha');
+    $employeeB = payrollEmployee($organizationB, 'RTB-001', 'Farai');
+
+    $runA = \App\Models\PayrollRun::query()->create([
+        'organization_id' => $organizationA->id,
+        'payroll_period_id' => $periodA->id,
+        'run_number' => 1,
+        'status' => 'PROCESSED',
+        'employee_count' => 1,
+        'gross_total' => 1450,
+        'taxable_total' => 1450,
+        'deduction_total' => 250,
+        'net_total' => 1200,
+    ]);
+
+    $runB = \App\Models\PayrollRun::query()->create([
+        'organization_id' => $organizationB->id,
+        'payroll_period_id' => $periodB->id,
+        'run_number' => 1,
+        'status' => 'PROCESSED',
+        'employee_count' => 1,
+        'gross_total' => 1800,
+        'taxable_total' => 1800,
+        'deduction_total' => 300,
+        'net_total' => 1500,
+    ]);
+
+    PayrollResult::query()->create([
+        'organization_id' => $organizationA->id,
+        'payroll_run_id' => $runA->id,
+        'payroll_period_id' => $periodA->id,
+        'employee_id' => $employeeA->id,
+        'staff_number_snapshot' => $employeeA->staff_number,
+        'employee_name_snapshot' => 'Nyasha Employee',
+        'department_snapshot' => 'Finance',
+        'position_snapshot' => 'Analyst',
+        'pay_point_snapshot' => 'Head Office',
+        'currency_snapshot' => 'USD',
+        'basic_salary_snapshot' => 1200,
+        'gross_pay' => 1450,
+        'pre_tax_deductions' => 0,
+        'taxable_income' => 1450,
+        'tax_amount' => 100,
+        'statutory_deductions' => 50,
+        'voluntary_deductions' => 100,
+        'total_deductions' => 250,
+        'net_pay' => 1200,
+        'status' => 'PROCESSED',
+        'snapshot' => [],
+    ]);
+
+    PayrollResult::query()->create([
+        'organization_id' => $organizationB->id,
+        'payroll_run_id' => $runB->id,
+        'payroll_period_id' => $periodB->id,
+        'employee_id' => $employeeB->id,
+        'staff_number_snapshot' => $employeeB->staff_number,
+        'employee_name_snapshot' => 'Farai Employee',
+        'department_snapshot' => 'Operations',
+        'position_snapshot' => 'Supervisor',
+        'pay_point_snapshot' => 'Head Office',
+        'currency_snapshot' => 'USD',
+        'basic_salary_snapshot' => 1500,
+        'gross_pay' => 1800,
+        'pre_tax_deductions' => 0,
+        'taxable_income' => 1800,
+        'tax_amount' => 120,
+        'statutory_deductions' => 80,
+        'voluntary_deductions' => 100,
+        'total_deductions' => 300,
+        'net_pay' => 1500,
+        'status' => 'PROCESSED',
+        'snapshot' => [],
+    ]);
+
+    $this->actingAs($user);
+
+    $this->get('/payroll/results')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Payroll/Results/Index')
+            ->where('stats.results_total', 1)
+            ->where('results.data.0.employee.staff_number', 'RTA-001')
+        );
+});
+
 test('payroll processing supports usd fixed settlement with zig remainder', function () {
     $organization = payrollOrganization('Settlement Tenant', 'SET');
     $user = payrollUserWithPermissions($organization, [

@@ -1,0 +1,32 @@
+import ReportCenterController from './ReportCenterController'
+import EmployeeReportController from './EmployeeReportController'
+import WorkflowDefinitionReportController from './WorkflowDefinitionReportController'
+import LeaveRequestReportController from './LeaveRequestReportController'
+import AttendanceRecordReportController from './AttendanceRecordReportController'
+import TimesheetReportController from './TimesheetReportController'
+import PayrollExportReportController from './PayrollExportReportController'
+import JobRequisitionReportController from './JobRequisitionReportController'
+import CandidateProfileReportController from './CandidateProfileReportController'
+import OnboardingTaskReportController from './OnboardingTaskReportController'
+import OffboardingTaskReportController from './OffboardingTaskReportController'
+import PerformanceReviewReportController from './PerformanceReviewReportController'
+import LearningCourseReportController from './LearningCourseReportController'
+import DocumentReportController from './DocumentReportController'
+const Reports = {
+    ReportCenterController: Object.assign(ReportCenterController, ReportCenterController),
+EmployeeReportController: Object.assign(EmployeeReportController, EmployeeReportController),
+WorkflowDefinitionReportController: Object.assign(WorkflowDefinitionReportController, WorkflowDefinitionReportController),
+LeaveRequestReportController: Object.assign(LeaveRequestReportController, LeaveRequestReportController),
+AttendanceRecordReportController: Object.assign(AttendanceRecordReportController, AttendanceRecordReportController),
+TimesheetReportController: Object.assign(TimesheetReportController, TimesheetReportController),
+PayrollExportReportController: Object.assign(PayrollExportReportController, PayrollExportReportController),
+JobRequisitionReportController: Object.assign(JobRequisitionReportController, JobRequisitionReportController),
+CandidateProfileReportController: Object.assign(CandidateProfileReportController, CandidateProfileReportController),
+OnboardingTaskReportController: Object.assign(OnboardingTaskReportController, OnboardingTaskReportController),
+OffboardingTaskReportController: Object.assign(OffboardingTaskReportController, OffboardingTaskReportController),
+PerformanceReviewReportController: Object.assign(PerformanceReviewReportController, PerformanceReviewReportController),
+LearningCourseReportController: Object.assign(LearningCourseReportController, LearningCourseReportController),
+DocumentReportController: Object.assign(DocumentReportController, DocumentReportController),
+}
+
+export default Reports

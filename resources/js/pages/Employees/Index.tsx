@@ -57,9 +57,17 @@ type EmployeeRow = {
     surname: string;
     full_name: string;
     date_of_birth: string | null;
+    email: string | null;
+    national_id: string | null;
+    gender: string | null;
+    occupation: string | null;
     pay_point: string | null;
     contact_number: string | null;
+    alt_phone_number: string | null;
     address: string | null;
+    marital_status: string | null;
+    nationality: string | null;
+    educational_level: string | null;
     avatar_url?: string | null;
     user: { id: number; name: string; email: string } | null;
     department: { id: number; name: string; type: string } | null;
@@ -200,7 +208,7 @@ export default function EmployeeIndex() {
                                     onChange={(event) =>
                                         setSearch(event.target.value)
                                     }
-                                    placeholder="Search records..."
+                                    placeholder="Search name, staff number, national ID, email..."
                                     className="h-10 w-full border-border/50 bg-background pl-9 text-sm shadow-sm"
                                 />
                             </div>
@@ -269,21 +277,25 @@ export default function EmployeeIndex() {
                                                             )}
                                                         </AvatarFallback>
                                                     </Avatar>
-                                                    <div className="space-y-1">
-                                                        <Link
-                                                            href={`/employees/${employee.id}`}
-                                                            className="text-sm font-bold text-foreground hover:underline"
-                                                        >
-                                                            {employee.full_name}
-                                                        </Link>
-                                                        <div className="font-mono text-xs text-muted-foreground">
-                                                            STF-
-                                                            {
-                                                                employee.staff_number
-                                                            }
+                                                        <div className="space-y-1">
+                                                            <Link
+                                                                href={`/employees/${employee.id}`}
+                                                                className="text-sm font-bold text-foreground hover:underline"
+                                                            >
+                                                                {employee.full_name}
+                                                            </Link>
+                                                            <div className="font-mono text-xs text-muted-foreground">
+                                                                STF-
+                                                                {
+                                                                    employee.staff_number
+                                                                }
+                                                            </div>
+                                                            <div className="text-xs font-medium text-muted-foreground">
+                                                                {employee.national_id ||
+                                                                    'No national ID'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="space-y-1">
@@ -297,23 +309,47 @@ export default function EmployeeIndex() {
                                                             ?.name ||
                                                             'No Position'}
                                                     </div>
+                                                    <div className="text-xs font-medium text-muted-foreground">
+                                                        {employee.occupation ||
+                                                            'No occupation'}
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-sm font-medium text-muted-foreground">
-                                                    {employee.user?.email ||
-                                                        employee.contact_number ||
-                                                        'No contact info'}
+                                                <div className="space-y-1 text-sm font-medium text-muted-foreground">
+                                                    <div>
+                                                        {employee.email ||
+                                                            employee.user
+                                                                ?.email ||
+                                                            'No email linked'}
+                                                    </div>
+                                                    <div>
+                                                        {employee.contact_number ||
+                                                            employee.alt_phone_number ||
+                                                            'No phone number'}
+                                                    </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="secondary"
-                                                    className="border-transparent bg-muted px-2.5 py-0.5 text-xs font-bold text-foreground shadow-none"
-                                                >
-                                                    {employee.pay_point ||
-                                                        'Not Set'}
-                                                </Badge>
+                                                <div className="space-y-2">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="border-transparent bg-muted px-2.5 py-0.5 text-xs font-bold text-foreground shadow-none"
+                                                    >
+                                                        {employee.pay_point ||
+                                                            'Not Set'}
+                                                    </Badge>
+                                                    <div className="text-xs font-medium text-muted-foreground">
+                                                        {[
+                                                            employee.gender,
+                                                            employee.marital_status,
+                                                            employee.nationality,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(' • ') ||
+                                                            'No profile details'}
+                                                    </div>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="pr-6 text-right">
                                                 <div className="flex items-center justify-end gap-1">

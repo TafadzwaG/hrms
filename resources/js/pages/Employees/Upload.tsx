@@ -94,7 +94,9 @@ export default function EmployeesUpload() {
         <Card>
           <CardHeader>
             <CardTitle>CSV Upload</CardTitle>
-            <CardDescription>Columns: staff_number, first_name, surname, email, department_id, position_id…</CardDescription>
+            <CardDescription>
+              Columns: staff_number, first_name, surname, national_id, gender, marital_status, email, nationality, educational_level, occupation, alt_phone_number, department_id, position_id…
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">

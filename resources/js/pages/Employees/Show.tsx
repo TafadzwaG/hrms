@@ -165,9 +165,17 @@ type EmployeePayload = {
     full_name: string;
     status: string | null;
     date_of_birth: string | null;
+    email: string | null;
+    national_id: string | null;
+    gender: string | null;
+    occupation: string | null;
     pay_point: string | null;
     contact_number: string | null;
+    alt_phone_number: string | null;
     address: string | null;
+    marital_status: string | null;
+    nationality: string | null;
+    educational_level: string | null;
     department: { id: number; name: string } | null;
     position: { id: number; name: string } | null;
     manager: { id: number; staff_number: string; full_name: string } | null;
@@ -691,6 +699,59 @@ export default function EmployeeShow() {
                                             'Not provided'
                                         }
                                     />
+                                    <DetailItem
+                                        icon={<Phone className="h-3 w-3" />}
+                                        label="Alternate Phone"
+                                        value={
+                                            employee.alt_phone_number ||
+                                            'Not provided'
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<CreditCard className="h-3 w-3" />}
+                                        label="National ID"
+                                        value={
+                                            employee.national_id ||
+                                            'Not provided'
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<Users className="h-3 w-3" />}
+                                        label="Gender"
+                                        value={employee.gender || 'Not provided'}
+                                    />
+                                    <DetailItem
+                                        icon={<Users className="h-3 w-3" />}
+                                        label="Marital Status"
+                                        value={
+                                            employee.marital_status ||
+                                            'Not provided'
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<MapPin className="h-3 w-3" />}
+                                        label="Nationality"
+                                        value={
+                                            employee.nationality ||
+                                            'Not provided'
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<Award className="h-3 w-3" />}
+                                        label="Educational Level"
+                                        value={
+                                            employee.educational_level ||
+                                            'Not provided'
+                                        }
+                                    />
+                                    <DetailItem
+                                        icon={<Briefcase className="h-3 w-3" />}
+                                        label="Occupation"
+                                        value={
+                                            employee.occupation ||
+                                            'Not provided'
+                                        }
+                                    />
                                     <div className="space-y-1 md:col-span-2">
                                         <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                                             <MapPin className="h-3 w-3" />
@@ -745,6 +806,7 @@ export default function EmployeeShow() {
                                         icon={<Mail className="h-3 w-3" />}
                                         label="Work Email"
                                         value={
+                                            employee.email ||
                                             employee.user?.email ||
                                             'No email linked'
                                         }

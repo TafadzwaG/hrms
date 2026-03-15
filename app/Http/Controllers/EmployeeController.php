@@ -54,7 +54,15 @@ class EmployeeController extends Controller
                     ->orWhere('first_name', 'like', "%{$s}%")
                     ->orWhere('middle_name', 'like', "%{$s}%")
                     ->orWhere('surname', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%")
+                    ->orWhere('national_id', 'like', "%{$s}%")
+                    ->orWhere('gender', 'like', "%{$s}%")
+                    ->orWhere('occupation', 'like', "%{$s}%")
                     ->orWhere('contact_number', 'like', "%{$s}%")
+                    ->orWhere('alt_phone_number', 'like', "%{$s}%")
+                    ->orWhere('marital_status', 'like', "%{$s}%")
+                    ->orWhere('nationality', 'like', "%{$s}%")
+                    ->orWhere('educational_level', 'like', "%{$s}%")
                     ->orWhere('pay_point', 'like', "%{$s}%")
                     ->orWhereHas('user', function ($uq) use ($s) {
                         $uq->where('email', 'like', "%{$s}%")
@@ -76,9 +84,17 @@ class EmployeeController extends Controller
                 'surname' => $employee->surname,
                 'full_name' => trim($employee->first_name.' '.($employee->middle_name ? $employee->middle_name.' ' : '').$employee->surname),
                 'date_of_birth' => optional($employee->date_of_birth)->toDateString(),
+                'email' => $this->resolveEmployeeEmail($employee),
+                'national_id' => $employee->national_id,
+                'gender' => $employee->gender,
+                'occupation' => $employee->occupation,
                 'pay_point' => $employee->pay_point,
                 'contact_number' => $employee->contact_number,
+                'alt_phone_number' => $employee->alt_phone_number,
                 'address' => $employee->address,
+                'marital_status' => $employee->marital_status,
+                'nationality' => $employee->nationality,
+                'educational_level' => $employee->educational_level,
                 'user' => $employee->user ? [
                     'id' => $employee->user->id,
                     'name' => $employee->user->name,
@@ -132,6 +148,7 @@ class EmployeeController extends Controller
         return Inertia::render('Employees/Create', [
             'departments' => $departments,
             'positions' => $positions,
+            'options' => $this->employeeFormOptions(),
         ]);
     }
 
@@ -148,20 +165,7 @@ class EmployeeController extends Controller
                 $this->attachEmployeeRoleIfAvailable($user);
             }
 
-            Employee::create([
-                'user_id' => $user?->id,
-                'staff_number' => $data['staff_number'],
-                'first_name' => $data['first_name'],
-                'middle_name' => $data['middle_name'] ?? null,
-                'surname' => $data['surname'],
-                'date_of_birth' => $data['date_of_birth'] ?? null,
-                'pay_point' => $data['pay_point'] ?? null,
-                'contact_number' => $data['contact_number'] ?? null,
-                'address' => $data['address'] ?? null,
-                'org_unit_id' => $data['department_id'] ?? null,
-                'position_id' => $data['position_id'] ?? null,
-                'status' => 'ACTIVE',
-            ]);
+            Employee::create($this->employeeUpsertPayload($data, $user));
         });
 
         return redirect()
@@ -195,9 +199,17 @@ class EmployeeController extends Controller
                 'full_name' => $employee->full_name,
                 'status' => $employee->status,
                 'date_of_birth' => optional($employee->date_of_birth)->toDateString(),
+                'email' => $this->resolveEmployeeEmail($employee),
+                'national_id' => $employee->national_id,
+                'gender' => $employee->gender,
+                'occupation' => $employee->occupation,
                 'pay_point' => $employee->pay_point,
                 'contact_number' => $employee->contact_number,
+                'alt_phone_number' => $employee->alt_phone_number,
                 'address' => $employee->address,
+                'marital_status' => $employee->marital_status,
+                'nationality' => $employee->nationality,
+                'educational_level' => $employee->educational_level,
                 'department' => $employee->orgUnit ? [
                     'id' => $employee->orgUnit->id,
                     'name' => $employee->orgUnit->name,
@@ -298,41 +310,40 @@ class EmployeeController extends Controller
                 'middle_name' => $employee->middle_name,
                 'surname' => $employee->surname,
                 'date_of_birth' => optional($employee->date_of_birth)->toDateString(),
+                'email' => $this->resolveEmployeeEmail($employee),
+                'national_id' => $employee->national_id,
+                'gender' => $employee->gender,
+                'occupation' => $employee->occupation,
                 'pay_point' => $employee->pay_point,
                 'contact_number' => $employee->contact_number,
+                'alt_phone_number' => $employee->alt_phone_number,
                 'address' => $employee->address,
-                'email' => $employee->user?->email,
+                'marital_status' => $employee->marital_status,
+                'nationality' => $employee->nationality,
+                'educational_level' => $employee->educational_level,
                 'department_id' => $employee->org_unit_id,
                 'position_id' => $employee->position_id,
             ],
             'departments' => $departments,
             'positions' => $positions,
+            'options' => $this->employeeFormOptions(),
         ]);
     }
 
     public function update(Request $request, Employee $employee)
     {
-        $data = $this->validateEmployee($request, $employee->id);
+        $data = $this->validateEmployee($request, $employee);
 
         DB::transaction(function () use ($employee, $data) {
+            $user = $employee->user;
+
             if (!empty($data['email'])) {
                 $user = $this->createOrUpdateUserForEmployee($data, $employee->user_id);
                 $employee->user_id = $user->id;
                 $this->attachEmployeeRoleIfAvailable($user);
             }
 
-            $employee->update([
-                'staff_number' => $data['staff_number'],
-                'first_name' => $data['first_name'],
-                'middle_name' => $data['middle_name'] ?? null,
-                'surname' => $data['surname'],
-                'date_of_birth' => $data['date_of_birth'] ?? null,
-                'pay_point' => $data['pay_point'] ?? null,
-                'contact_number' => $data['contact_number'] ?? null,
-                'address' => $data['address'] ?? null,
-                'org_unit_id' => $data['department_id'] ?? null,
-                'position_id' => $data['position_id'] ?? null,
-            ]);
+            $employee->update($this->employeeUpsertPayload($data, $user, $employee->status));
         });
 
         return redirect()
@@ -564,8 +575,15 @@ class EmployeeController extends Controller
                 'middle_name',
                 'surname',
                 'date_of_birth',
+                'national_id',
+                'gender',
+                'marital_status',
+                'nationality',
+                'educational_level',
+                'occupation',
                 'pay_point',
                 'contact_number',
+                'alt_phone_number',
                 'address',
                 'email',
                 'department_id',
@@ -578,8 +596,15 @@ class EmployeeController extends Controller
                 '',
                 'Doe',
                 '1995-01-10',
+                '12-345678-X-90',
+                'Male',
+                'Single',
+                'Zimbabwean',
+                'Degree',
+                'Systems Analyst',
                 'Head Office',
                 '+263771234567',
+                '+263772345678',
                 'Harare, Zimbabwe',
                 'john.doe@example.com',
                 '',
@@ -619,7 +644,7 @@ class EmployeeController extends Controller
                 $header = array_map(fn ($heading) => Str::of($heading)->trim()->lower()->toString(), $header);
                 $idx = array_flip($header);
 
-                foreach (['staff_number', 'first_name', 'surname'] as $column) {
+                foreach (['staff_number', 'first_name', 'surname', 'national_id', 'gender', 'marital_status'] as $column) {
                     if (!array_key_exists($column, $idx)) {
                         fclose($handle);
                         throw new \RuntimeException("Missing required column: {$column}");
@@ -627,11 +652,18 @@ class EmployeeController extends Controller
                 }
 
                 while (($row = fgetcsv($handle)) !== false) {
-                    $staffNumber = trim($row[$idx['staff_number']] ?? '');
-                    $firstName = trim($row[$idx['first_name']] ?? '');
-                    $surname = trim($row[$idx['surname']] ?? '');
+                    $staffNumber = $this->csvColumnValue($row, $idx, 'staff_number');
+                    $firstName = $this->csvColumnValue($row, $idx, 'first_name');
+                    $surname = $this->csvColumnValue($row, $idx, 'surname');
 
-                    if ($staffNumber === '' || $firstName === '' || $surname === '') {
+                    if (
+                        $staffNumber === null
+                        || $firstName === null
+                        || $surname === null
+                        || $this->csvColumnValue($row, $idx, 'national_id') === null
+                        || $this->csvColumnValue($row, $idx, 'gender') === null
+                        || $this->csvColumnValue($row, $idx, 'marital_status') === null
+                    ) {
                         $skipped++;
                         continue;
                     }
@@ -639,15 +671,22 @@ class EmployeeController extends Controller
                     $payload = [
                         'staff_number' => $staffNumber,
                         'first_name' => $firstName,
-                        'middle_name' => trim($row[$idx['middle_name']] ?? '') ?: null,
+                        'middle_name' => $this->csvColumnValue($row, $idx, 'middle_name'),
                         'surname' => $surname,
-                        'date_of_birth' => trim($row[$idx['date_of_birth']] ?? '') ?: null,
-                        'pay_point' => trim($row[$idx['pay_point']] ?? '') ?: null,
-                        'contact_number' => trim($row[$idx['contact_number']] ?? '') ?: null,
-                        'address' => trim($row[$idx['address']] ?? '') ?: null,
-                        'email' => trim($row[$idx['email']] ?? '') ?: null,
-                        'department_id' => trim($row[$idx['department_id']] ?? '') ?: null,
-                        'position_id' => trim($row[$idx['position_id']] ?? '') ?: null,
+                        'date_of_birth' => $this->csvColumnValue($row, $idx, 'date_of_birth'),
+                        'national_id' => $this->csvColumnValue($row, $idx, 'national_id'),
+                        'gender' => $this->csvColumnValue($row, $idx, 'gender'),
+                        'occupation' => $this->csvColumnValue($row, $idx, 'occupation'),
+                        'pay_point' => $this->csvColumnValue($row, $idx, 'pay_point'),
+                        'contact_number' => $this->csvColumnValue($row, $idx, 'contact_number'),
+                        'alt_phone_number' => $this->csvColumnValue($row, $idx, 'alt_phone_number'),
+                        'address' => $this->csvColumnValue($row, $idx, 'address'),
+                        'email' => $this->csvColumnValue($row, $idx, 'email'),
+                        'marital_status' => $this->csvColumnValue($row, $idx, 'marital_status'),
+                        'nationality' => $this->csvColumnValue($row, $idx, 'nationality'),
+                        'educational_level' => $this->csvColumnValue($row, $idx, 'educational_level'),
+                        'department_id' => $this->csvColumnValue($row, $idx, 'department_id'),
+                        'position_id' => $this->csvColumnValue($row, $idx, 'position_id'),
                     ];
 
                     $existing = Employee::where('staff_number', $staffNumber)->first();
@@ -659,20 +698,7 @@ class EmployeeController extends Controller
                         $userId = $user->id;
                     }
 
-                    $saveData = [
-                        'user_id' => $userId,
-                        'staff_number' => $payload['staff_number'],
-                        'first_name' => $payload['first_name'],
-                        'middle_name' => $payload['middle_name'],
-                        'surname' => $payload['surname'],
-                        'date_of_birth' => $payload['date_of_birth'],
-                        'pay_point' => $payload['pay_point'],
-                        'contact_number' => $payload['contact_number'],
-                        'address' => $payload['address'],
-                        'org_unit_id' => $payload['department_id'] ? (int) $payload['department_id'] : null,
-                        'position_id' => $payload['position_id'] ? (int) $payload['position_id'] : null,
-                        'status' => 'ACTIVE',
-                    ];
+                    $saveData = $this->employeeUpsertPayload($payload, $userId ? User::find($userId) : null);
 
                     if ($existing) {
                         $existing->update($saveData);
@@ -817,20 +843,56 @@ class EmployeeController extends Controller
         ];
     }
 
-    private function validateEmployee(Request $request, ?int $ignoreEmployeeId = null): array
+    private function validateEmployee(Request $request, ?Employee $employee = null): array
     {
         $tenantId = $this->tenantId();
+        $currentUserId = $employee?->user_id;
+        $genderOptions = $this->employeeGenders();
+        $maritalStatusOptions = $this->employeeMaritalStatuses();
+        $educationOptions = $this->employeeEducationalLevels();
 
         return $request->validate([
-            'staff_number' => ['required', 'string', 'max:64', $this->tenantUniqueRule('employees', 'staff_number', $ignoreEmployeeId)],
+            'staff_number' => ['required', 'string', 'max:64', $this->tenantUniqueRule('employees', 'staff_number', $employee?->id)],
             'first_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],
             'surname' => ['required', 'string', 'max:100'],
             'date_of_birth' => ['nullable', 'date'],
+            'national_id' => ['required', 'string', 'max:100', $this->tenantUniqueRule('employees', 'national_id', $employee?->id)],
+            'gender' => ['required', 'string', Rule::in($genderOptions)],
+            'occupation' => ['nullable', 'string', 'max:150'],
             'pay_point' => ['nullable', 'string', 'max:64'],
             'contact_number' => ['nullable', 'string', 'max:64'],
+            'alt_phone_number' => ['nullable', 'string', 'max:64'],
             'address' => ['nullable', 'string'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => [
+                Rule::requiredIf($currentUserId !== null),
+                'nullable',
+                'email',
+                'max:255',
+                $this->tenantUniqueRule('employees', 'email', $employee?->id),
+                function (string $attribute, mixed $value, \Closure $fail) use ($employee): void {
+                    if (blank($value)) {
+                        return;
+                    }
+
+                    $existingUser = User::query()->where('email', $value)->first();
+
+                    if (! $existingUser || $existingUser->id === $employee?->user_id) {
+                        return;
+                    }
+
+                    $linkedEmployee = $existingUser->employee()
+                        ->when($employee, fn ($query) => $query->whereKeyNot($employee->id))
+                        ->first();
+
+                    if ($linkedEmployee) {
+                        $fail('The selected email is already linked to another employee account.');
+                    }
+                },
+            ],
+            'marital_status' => ['required', 'string', Rule::in($maritalStatusOptions)],
+            'nationality' => ['nullable', 'string', 'max:120'],
+            'educational_level' => ['nullable', 'string', Rule::in($educationOptions)],
             'department_id' => ['nullable', 'integer', Rule::exists('org_units', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
             'position_id' => ['nullable', 'integer', Rule::exists('positions', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId))],
         ]);
@@ -936,7 +998,7 @@ class EmployeeController extends Controller
 
     private function createOrUpdateUserForEmployee(array $data, ?int $existingUserId = null): User
     {
-        $email = $data['email'];
+        $email = trim((string) ($data['email'] ?? ''));
         $first = $data['first_name'] ?? 'user';
         $last = $data['surname'] ?? 'employee';
 
@@ -995,6 +1057,72 @@ class EmployeeController extends Controller
         }
 
         return $user;
+    }
+
+    private function employeeUpsertPayload(array $data, ?User $user = null, ?string $status = 'ACTIVE'): array
+    {
+        return [
+            'user_id' => $user?->id,
+            'staff_number' => $data['staff_number'],
+            'first_name' => $data['first_name'],
+            'middle_name' => $data['middle_name'] ?? null,
+            'surname' => $data['surname'],
+            'date_of_birth' => $data['date_of_birth'] ?? null,
+            'email' => $user?->email ?? ($data['email'] ?? null),
+            'national_id' => $data['national_id'],
+            'gender' => $data['gender'],
+            'occupation' => $data['occupation'] ?? null,
+            'pay_point' => $data['pay_point'] ?? null,
+            'contact_number' => $data['contact_number'] ?? null,
+            'alt_phone_number' => $data['alt_phone_number'] ?? null,
+            'address' => $data['address'] ?? null,
+            'marital_status' => $data['marital_status'],
+            'nationality' => $data['nationality'] ?? null,
+            'educational_level' => $data['educational_level'] ?? null,
+            'org_unit_id' => ! empty($data['department_id']) ? (int) $data['department_id'] : null,
+            'position_id' => ! empty($data['position_id']) ? (int) $data['position_id'] : null,
+            'status' => $status ?? 'ACTIVE',
+        ];
+    }
+
+    private function resolveEmployeeEmail(Employee $employee): ?string
+    {
+        return $employee->user?->email ?: $employee->email;
+    }
+
+    private function csvColumnValue(array $row, array $indexes, string $column): ?string
+    {
+        if (! array_key_exists($column, $indexes)) {
+            return null;
+        }
+
+        $value = trim((string) ($row[$indexes[$column]] ?? ''));
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function employeeFormOptions(): array
+    {
+        return [
+            'genders' => $this->employeeGenders(),
+            'marital_statuses' => $this->employeeMaritalStatuses(),
+            'educational_levels' => $this->employeeEducationalLevels(),
+        ];
+    }
+
+    private function employeeGenders(): array
+    {
+        return ['Male', 'Female', 'Other'];
+    }
+
+    private function employeeMaritalStatuses(): array
+    {
+        return ['Single', 'Married', 'Divorced', 'Widowed', 'Separated'];
+    }
+
+    private function employeeEducationalLevels(): array
+    {
+        return ['Primary', 'Secondary', 'Certificate', 'Diploma', 'Degree', 'Masters', 'Doctorate', 'Other'];
     }
 
     private function attachEmployeeRoleIfAvailable(User $user): void

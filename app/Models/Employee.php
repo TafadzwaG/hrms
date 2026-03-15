@@ -6,8 +6,8 @@ use App\Concerns\Auditable;
 use App\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
@@ -21,9 +21,17 @@ class Employee extends Model
         'middle_name',
         'surname',
         'date_of_birth',
+        'email',
+        'national_id',
+        'gender',
         'pay_point',
+        'occupation',
         'contact_number',
+        'alt_phone_number',
         'address',
+        'marital_status',
+        'nationality',
+        'educational_level',
         'org_unit_id',
         'location_id',
         'position_id',

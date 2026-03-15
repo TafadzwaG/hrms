@@ -90,6 +90,9 @@ test('employee show page returns nested live profile data', function () {
         'first_name' => 'John',
         'surname' => 'Target',
         'email' => $linkedUser->email,
+        'national_id' => '12-345678-A-10',
+        'gender' => 'Male',
+        'marital_status' => 'Single',
         'contact_number' => '+263700000001',
         'address' => '123 Main Street',
     ])->assertRedirect('/employees');
@@ -184,6 +187,9 @@ test('employee profile tabs can create related records', function () {
         'staff_number' => 'EMP-9002',
         'first_name' => 'Jane',
         'surname' => 'Tester',
+        'national_id' => '12-345678-B-10',
+        'gender' => 'Female',
+        'marital_status' => 'Married',
     ])->assertRedirect('/employees');
 
     $employeeId = Employee::withoutGlobalScopes()->value('id');
@@ -259,6 +265,9 @@ test('employee documents can be uploaded downloaded and deleted', function () {
         'staff_number' => 'EMP-9003',
         'first_name' => 'Document',
         'surname' => 'Owner',
+        'national_id' => '12-345678-C-10',
+        'gender' => 'Other',
+        'marital_status' => 'Single',
     ])->assertRedirect('/employees');
 
     $employeeId = Employee::withoutGlobalScopes()->value('id');

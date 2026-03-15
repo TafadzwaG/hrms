@@ -32,6 +32,12 @@ interface Step {
     icon: React.FC<{ className?: string }>;
 }
 
+type EmployeeFormOptions = {
+    genders: string[];
+    marital_statuses: string[];
+    educational_levels: string[];
+};
+
 const STEPS: Step[] = [
     {
         id: 1,
@@ -120,7 +126,33 @@ function InstructionItem({
 
 /* ─── main component ─────────────────────────────────────────── */
 export default function EmployeeEdit() {
-    const { employee, departments, positions } = usePage().props as any;
+    const { employee, departments, positions, options } = usePage().props as {
+        employee: Record<string, unknown> & {
+            id: number;
+            staff_number?: string | null;
+            first_name?: string | null;
+            middle_name?: string | null;
+            surname?: string | null;
+            date_of_birth?: string | null;
+            email?: string | null;
+            national_id?: string | null;
+            gender?: string | null;
+            occupation?: string | null;
+            contact_number?: string | null;
+            alt_phone_number?: string | null;
+            address?: string | null;
+            pay_point?: string | null;
+            marital_status?: string | null;
+            nationality?: string | null;
+            educational_level?: string | null;
+            department_id?: number | null;
+            position_id?: number | null;
+            user?: { email?: string | null } | null;
+        };
+        departments: Array<{ id: number; name: string }>;
+        positions: Array<{ id: number; name: string }>;
+        options: EmployeeFormOptions;
+    };
 
     const PATHS = {
         index: `${API}/employees`,
@@ -135,9 +167,16 @@ export default function EmployeeEdit() {
         surname: employee.surname ?? '',
         date_of_birth: employee.date_of_birth ?? '',
         email: employee.email ?? employee.user?.email ?? '',
+        national_id: employee.national_id ?? '',
+        gender: employee.gender ?? '',
+        occupation: employee.occupation ?? '',
         contact_number: employee.contact_number ?? '',
+        alt_phone_number: employee.alt_phone_number ?? '',
         address: employee.address ?? '',
         pay_point: employee.pay_point ?? '',
+        marital_status: employee.marital_status ?? '',
+        nationality: employee.nationality ?? '',
+        educational_level: employee.educational_level ?? '',
         department_id: employee.department_id
             ? String(employee.department_id)
             : '',
@@ -388,6 +427,102 @@ export default function EmployeeEdit() {
                                                     }
                                                 />
                                             </div>
+                                            <div>
+                                                <FieldLabel required>
+                                                    National ID
+                                                </FieldLabel>
+                                                <Input
+                                                    placeholder="e.g. 12-345678-X-90"
+                                                    value={data.national_id}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'national_id',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldError
+                                                    message={
+                                                        errors.national_id
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <FieldLabel required>
+                                                    Gender
+                                                </FieldLabel>
+                                                <Select
+                                                    value={data.gender}
+                                                    onValueChange={(value) =>
+                                                        setData(
+                                                            'gender',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select gender" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {options.genders.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option
+                                                                    }
+                                                                    value={
+                                                                        option
+                                                                    }
+                                                                >
+                                                                    {option}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FieldError
+                                                    message={errors.gender}
+                                                />
+                                            </div>
+                                            <div>
+                                                <FieldLabel required>
+                                                    Marital Status
+                                                </FieldLabel>
+                                                <Select
+                                                    value={data.marital_status}
+                                                    onValueChange={(value) =>
+                                                        setData(
+                                                            'marital_status',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select marital status" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {options.marital_statuses.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option
+                                                                    }
+                                                                    value={
+                                                                        option
+                                                                    }
+                                                                >
+                                                                    {option}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FieldError
+                                                    message={
+                                                        errors.marital_status
+                                                    }
+                                                />
+                                            </div>
                                             <div className="sm:col-span-2">
                                                 <FieldLabel>
                                                     Email Address
@@ -439,6 +574,67 @@ export default function EmployeeEdit() {
                                                 <FieldError
                                                     message={
                                                         errors.staff_number
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <FieldLabel>
+                                                    Occupation
+                                                </FieldLabel>
+                                                <Input
+                                                    placeholder="e.g. Systems Analyst"
+                                                    value={data.occupation}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'occupation',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldError
+                                                    message={
+                                                        errors.occupation
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <FieldLabel>
+                                                    Educational Level
+                                                </FieldLabel>
+                                                <Select
+                                                    value={
+                                                        data.educational_level
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        setData(
+                                                            'educational_level',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select educational level" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {options.educational_levels.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option
+                                                                    }
+                                                                    value={
+                                                                        option
+                                                                    }
+                                                                >
+                                                                    {option}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FieldError
+                                                    message={
+                                                        errors.educational_level
                                                     }
                                                 />
                                             </div>
@@ -570,6 +766,48 @@ export default function EmployeeEdit() {
                                                     }
                                                 />
                                             </div>
+                                            <div>
+                                                <FieldLabel>
+                                                    Alternate Phone Number
+                                                </FieldLabel>
+                                                <Input
+                                                    placeholder="+263 (0) 77 000 0001"
+                                                    value={
+                                                        data.alt_phone_number
+                                                    }
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'alt_phone_number',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldError
+                                                    message={
+                                                        errors.alt_phone_number
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <FieldLabel>
+                                                    Nationality
+                                                </FieldLabel>
+                                                <Input
+                                                    placeholder="e.g. Zimbabwean"
+                                                    value={data.nationality}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'nationality',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <FieldError
+                                                    message={
+                                                        errors.nationality
+                                                    }
+                                                />
+                                            </div>
                                             <div className="sm:col-span-2">
                                                 <FieldLabel>
                                                     Home Address
@@ -653,6 +891,47 @@ export default function EmployeeEdit() {
                                                         value:
                                                             data.address || '—',
                                                     },
+                                                    {
+                                                        label: 'National ID',
+                                                        value:
+                                                            data.national_id ||
+                                                            '-',
+                                                    },
+                                                    {
+                                                        label: 'Gender',
+                                                        value:
+                                                            data.gender || '-',
+                                                    },
+                                                    {
+                                                        label: 'Marital Status',
+                                                        value:
+                                                            data.marital_status ||
+                                                            '-',
+                                                    },
+                                                    {
+                                                        label: 'Occupation',
+                                                        value:
+                                                            data.occupation ||
+                                                            '-',
+                                                    },
+                                                    {
+                                                        label: 'Educational Level',
+                                                        value:
+                                                            data.educational_level ||
+                                                            '-',
+                                                    },
+                                                    {
+                                                        label: 'Alternate Phone',
+                                                        value:
+                                                            data.alt_phone_number ||
+                                                            '-',
+                                                    },
+                                                    {
+                                                        label: 'Nationality',
+                                                        value:
+                                                            data.nationality ||
+                                                            '-',
+                                                    },
                                                 ].map(({ label, value }) => (
                                                     <div key={label}>
                                                         <p className="mb-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -690,11 +969,11 @@ export default function EmployeeEdit() {
                                     </h3>
                                     <p className="text-sm leading-relaxed text-muted-foreground">
                                         {step === 1 &&
-                                            "Update the employee's personal identity information. First name and surname are required."}
+                                            "Update the employee's identity information. National ID, gender, and marital status stay aligned with the employee master record."}
                                         {step === 2 &&
-                                            "Modify the employee's role in the organisation. Changes to department or position affect reporting and approvals."}
+                                            "Modify the employee's role in the organisation. Staff number, occupation, education, and reporting structures affect payroll and approvals."}
                                         {step === 3 &&
-                                            "Update the employee's contact details used for HR communication and emergency purposes."}
+                                            "Update the employee's contact details used for HR communication, emergency notifications, and profile records."}
                                         {step === 4 &&
                                             'Review all changes carefully before saving. You can click any step to go back and revise.'}
                                     </p>
@@ -719,6 +998,15 @@ export default function EmployeeEdit() {
                                                 <InstructionItem required>
                                                     Surname
                                                 </InstructionItem>
+                                                <InstructionItem required>
+                                                    National ID
+                                                </InstructionItem>
+                                                <InstructionItem required>
+                                                    Gender
+                                                </InstructionItem>
+                                                <InstructionItem required>
+                                                    Marital Status
+                                                </InstructionItem>
                                                 <InstructionItem>
                                                     Date of Birth
                                                 </InstructionItem>
@@ -731,6 +1019,12 @@ export default function EmployeeEdit() {
                                             <>
                                                 <InstructionItem required>
                                                     Staff Number
+                                                </InstructionItem>
+                                                <InstructionItem>
+                                                    Occupation
+                                                </InstructionItem>
+                                                <InstructionItem>
+                                                    Educational Level
                                                 </InstructionItem>
                                                 <InstructionItem>
                                                     Pay Point
@@ -747,6 +1041,12 @@ export default function EmployeeEdit() {
                                             <>
                                                 <InstructionItem>
                                                     Contact Number
+                                                </InstructionItem>
+                                                <InstructionItem>
+                                                    Alternate Phone
+                                                </InstructionItem>
+                                                <InstructionItem>
+                                                    Nationality
                                                 </InstructionItem>
                                                 <InstructionItem>
                                                     Home Address
@@ -780,11 +1080,11 @@ export default function EmployeeEdit() {
                                     </p>
                                     <p className="text-sm leading-relaxed text-muted-foreground">
                                         {step === 1 &&
-                                            "The email address is also the employee's login username. Changing it will update their system access."}
+                                            "Employee email stays synchronized with the linked user account, so changes here also affect login access when an account exists."}
                                         {step === 2 &&
-                                            'Department and position changes affect how this employee appears in reports and approval workflows.'}
+                                            'Department, position, occupation, and education changes affect how this employee appears in workforce reporting and approvals.'}
                                         {step === 3 &&
-                                            'Contact details are used for leave notifications and emergency contact lookups.'}
+                                            'Contact details are used for leave notifications, emergency contact lookups, and employee profile verification.'}
                                         {step === 4 &&
                                             'You can save partial updates anytime using the Save Changes button in the top-right corner.'}
                                     </p>

@@ -489,19 +489,31 @@ export default function PayrollPeriodShow() {
                                         />
                                     </div>
                                     <Button
+                                        asChild
                                         variant="outline"
                                         size="icon"
                                         className="h-9 w-9 shrink-0 border-border/50 text-muted-foreground shadow-sm hover:text-foreground"
                                     >
-                                        <Filter className="h-4 w-4" />
+                                        <Link
+                                            href={`/payroll/results?payroll_period_id=${period.id}`}
+                                        >
+                                            <Filter className="h-4 w-4" />
+                                        </Link>
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="h-9 w-9 shrink-0 border-border/50 text-muted-foreground shadow-sm hover:text-foreground"
-                                    >
-                                        <Download className="h-4 w-4" />
-                                    </Button>
+                                    {period.latest_run && can('payroll.export') && (
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-9 w-9 shrink-0 border-border/50 text-muted-foreground shadow-sm hover:text-foreground"
+                                        >
+                                            <a
+                                                href={`/payroll/reports/runs/${period.latest_run.id}/register`}
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </a>
+                                        </Button>
+                                    )}
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -653,10 +665,17 @@ export default function PayrollPeriodShow() {
                                                         </TableCell>
                                                         <TableCell className="pr-6 text-right">
                                                             <Button
+                                                                asChild
                                                                 variant="link"
                                                                 className="h-auto p-0 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary"
                                                             >
-                                                                View
+                                                                <Link
+                                                                    href={
+                                                                        result.payslip_url
+                                                                    }
+                                                                >
+                                                                    View
+                                                                </Link>
                                                             </Button>
                                                         </TableCell>
                                                     </TableRow>

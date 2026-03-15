@@ -51,9 +51,11 @@ class PayrollDashboardController extends Controller
             'recentPeriods' => $periods->map(fn (PayrollPeriod $period) => $this->mapPeriod($period))->values(),
             'quickActions' => [
                 ['label' => 'Open payroll period', 'href' => '/payroll/periods'],
+                ['label' => 'Payroll results', 'href' => '/payroll/results'],
                 ['label' => 'Manage pay codes', 'href' => '/payroll/pay-codes'],
                 ['label' => 'Manage profiles', 'href' => '/payroll/profiles'],
                 ['label' => 'Capture inputs', 'href' => '/payroll/inputs'],
+                ['label' => 'Payslip distribution', 'href' => '/payroll/payslips'],
                 ['label' => 'Payroll reports', 'href' => '/payroll/reports'],
             ],
         ]);

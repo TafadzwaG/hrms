@@ -19,6 +19,7 @@ use App\Http\Controllers\OnboardingTaskController;
 use App\Http\Controllers\OrgUnitController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\PayslipDeliveryController;
 use App\Http\Controllers\PayrollExportController;
 use App\Http\Controllers\PayrollDashboardController;
 use App\Http\Controllers\PayrollInputController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\PermissionMatrixController;
 use App\Http\Controllers\PayrollPayCodeController;
 use App\Http\Controllers\PayrollPeriodController;
+use App\Http\Controllers\PayrollResultController;
 use App\Http\Controllers\PayrollReportController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\Reports\AttendanceRecordReportController;
@@ -425,12 +427,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('permission:payroll.export')
             ->name('reports.journal');
 
-        Route::get('payslips/{result}', [PayslipController::class, 'show'])
+        Route::get('results', [PayrollResultController::class, 'index'])
             ->middleware('permission:payroll.view')
+            ->name('results.index');
+
+        Route::get('payslips', [PayslipController::class, 'index'])
+            ->middleware('permission:payslips.view,payroll.view')
+            ->name('payslips.index');
+        Route::post('payslips/email', [PayslipDeliveryController::class, 'bulkEmail'])
+            ->middleware('permission:payslips.bulk_email,payroll.export')
+            ->name('payslips.email.bulk');
+        Route::post('payslips/sms', [PayslipDeliveryController::class, 'bulkSms'])
+            ->middleware('permission:payslips.bulk_sms,payroll.export')
+            ->name('payslips.sms.bulk');
+        Route::get('payslips/{result}', [PayslipController::class, 'show'])
+            ->middleware('permission:payslips.view,payroll.view')
             ->name('payslips.show');
         Route::get('payslips/{result}/download', [PayslipController::class, 'download'])
-            ->middleware('permission:payroll.export')
+            ->middleware('permission:payslips.download,payroll.export')
             ->name('payslips.download');
+        Route::post('payslips/{result}/email', [PayslipDeliveryController::class, 'email'])
+            ->middleware('permission:payslips.email,payroll.export')
+            ->name('payslips.email');
+        Route::post('payslips/{result}/sms', [PayslipDeliveryController::class, 'sms'])
+            ->middleware('permission:payslips.sms,payroll.export')
+            ->name('payslips.sms');
     });
 
     Route::prefix('payroll-exports')->group(function () {
