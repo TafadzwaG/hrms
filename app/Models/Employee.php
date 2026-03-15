@@ -14,6 +14,7 @@ class Employee extends Model
     use Auditable, BelongsToOrganization;
 
     protected $fillable = [
+        'organization_id',
         'user_id',
         'staff_number',
         'first_name',
@@ -111,6 +112,26 @@ class Employee extends Model
     public function kpis(): HasMany
     {
         return $this->hasMany(EmployeeKpi::class)->orderByDesc('progress_percent')->orderBy('title');
+    }
+
+    public function payrollProfiles(): HasMany
+    {
+        return $this->hasMany(EmployeePayrollProfile::class)->orderByDesc('effective_from');
+    }
+
+    public function recurringPayItems(): HasMany
+    {
+        return $this->hasMany(EmployeeRecurringPayItem::class)->orderByDesc('effective_from');
+    }
+
+    public function payrollInputs(): HasMany
+    {
+        return $this->hasMany(PayrollInput::class);
+    }
+
+    public function payrollResults(): HasMany
+    {
+        return $this->hasMany(PayrollResult::class);
     }
 
     // Helpful computed full name (optional)

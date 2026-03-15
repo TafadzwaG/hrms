@@ -19,6 +19,10 @@ export default defineConfig({
         tailwindcss(),
         wayfinder({
             formVariants: true,
+            command:
+                process.platform === 'win32'
+                    ? 'powershell -NoProfile -Command php artisan wayfinder:generate'
+                    : 'php artisan wayfinder:generate',
         }),
     ],
     esbuild: {

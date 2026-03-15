@@ -62,4 +62,49 @@ class Organization extends Model
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    public function payCodes(): HasMany
+    {
+        return $this->hasMany(PayCode::class);
+    }
+
+    public function payrollPeriods(): HasMany
+    {
+        return $this->hasMany(PayrollPeriod::class);
+    }
+
+    public function payrollProfiles(): HasMany
+    {
+        return $this->hasMany(EmployeePayrollProfile::class);
+    }
+
+    public function payrollInputs(): HasMany
+    {
+        return $this->hasMany(PayrollInput::class);
+    }
+
+    public function payrollRuns(): HasMany
+    {
+        return $this->hasMany(PayrollRun::class);
+    }
+
+    public function payrollResults(): HasMany
+    {
+        return $this->hasMany(PayrollResult::class);
+    }
+
+    public function payrollExchangeRates(): HasMany
+    {
+        return $this->hasMany(PayrollPeriodExchangeRate::class);
+    }
+
+    public function payrollSettlementRules(): HasMany
+    {
+        return $this->hasMany(EmployeePayrollSettlementRule::class);
+    }
+
+    public function payrollResultSettlements(): HasMany
+    {
+        return $this->hasMany(PayrollResultSettlement::class);
+    }
 }

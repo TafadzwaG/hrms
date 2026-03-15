@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -151,5 +152,27 @@ abstract class Controller
         if (! $actor instanceof User || ! $actor->canAccessOrganization($organization)) {
             abort(404);
         }
+    }
+
+    /**
+     * Resolve a tenant-scoped model without depending on implicit route binding.
+     *
+     * @param  class-string<Model>  $modelClass
+     */
+    protected function findTenantModelOrFail(string $modelClass, int|string $id, array $with = []): Model
+    {
+        /** @var Model $model */
+        $model = new $modelClass;
+        $query = $modelClass::query();
+
+        if ($with !== []) {
+            $query->with($with);
+        }
+
+        if (method_exists($model, 'scopeForOrganization') && $this->tenantId()) {
+            $query->forOrganization($this->tenantId());
+        }
+
+        return $query->findOrFail($id);
     }
 }

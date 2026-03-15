@@ -26,7 +26,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Leave Requests', href: '/leave-requests', icon: BookOpen, permissionsAny: ['leave.view'] },
     { title: 'Attendance', href: '/attendance-records', icon: User, permissionsAny: ['attendance.view'] },
     { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
-    { title: 'Payroll Exports', href: '/payroll-exports', icon: Folder, permissionsAny: ['payroll.view'] },
+    { title: 'Payroll', href: '/payroll', icon: Folder, permissionsAny: ['payroll.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
 

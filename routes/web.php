@@ -18,9 +18,15 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OnboardingTaskController;
 use App\Http\Controllers\OrgUnitController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\PayrollExportController;
+use App\Http\Controllers\PayrollDashboardController;
+use App\Http\Controllers\PayrollInputController;
 use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\PermissionMatrixController;
+use App\Http\Controllers\PayrollPayCodeController;
+use App\Http\Controllers\PayrollPeriodController;
+use App\Http\Controllers\PayrollReportController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\Reports\AttendanceRecordReportController;
 use App\Http\Controllers\Reports\CandidateProfileReportController;
@@ -40,6 +46,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowDefinitionController;
+use App\Http\Controllers\EmployeePayrollProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -290,6 +297,141 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'permission:timesheets.create')
         ->middlewareFor(['edit', 'update'], 'permission:timesheets.update')
         ->middlewareFor(['destroy'], 'permission:timesheets.delete');
+
+    Route::prefix('payroll')->name('payroll.')->group(function () {
+        Route::get('/', PayrollDashboardController::class)
+            ->middleware('permission:payroll.view')
+            ->name('index');
+
+        Route::get('periods', [PayrollPeriodController::class, 'index'])
+            ->middleware('permission:payroll.view')
+            ->name('periods.index');
+        Route::post('periods', [PayrollPeriodController::class, 'store'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.store');
+        Route::get('periods/{period}', [PayrollPeriodController::class, 'show'])
+            ->middleware('permission:payroll.view')
+            ->name('periods.show');
+        Route::put('periods/{period}', [PayrollPeriodController::class, 'update'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.update');
+        Route::delete('periods/{period}', [PayrollPeriodController::class, 'destroy'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.destroy');
+        Route::post('periods/{period}/process', [PayrollPeriodController::class, 'process'])
+            ->middleware('permission:payroll.process')
+            ->name('periods.process');
+        Route::post('periods/{period}/approve', [PayrollPeriodController::class, 'approve'])
+            ->middleware('permission:payroll.approve')
+            ->name('periods.approve');
+        Route::post('periods/{period}/close', [PayrollPeriodController::class, 'close'])
+            ->middleware('permission:payroll.close')
+            ->name('periods.close');
+        Route::post('periods/{period}/reopen', [PayrollPeriodController::class, 'reopen'])
+            ->middleware('permission:payroll.close')
+            ->name('periods.reopen');
+        Route::post('periods/{period}/exchange-rates', [PayrollPeriodController::class, 'storeExchangeRate'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.exchange-rates.store');
+        Route::put('periods/{period}/exchange-rates/{exchangeRate}', [PayrollPeriodController::class, 'updateExchangeRate'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.exchange-rates.update');
+        Route::delete('periods/{period}/exchange-rates/{exchangeRate}', [PayrollPeriodController::class, 'destroyExchangeRate'])
+            ->middleware('permission:payroll.manage')
+            ->name('periods.exchange-rates.destroy');
+
+        Route::get('pay-codes', [PayrollPayCodeController::class, 'index'])
+            ->middleware('permission:payroll.view')
+            ->name('pay-codes.index');
+        Route::post('pay-codes', [PayrollPayCodeController::class, 'store'])
+            ->middleware('permission:payroll.paycodes.manage')
+            ->name('pay-codes.store');
+        Route::put('pay-codes/{payCode}', [PayrollPayCodeController::class, 'update'])
+            ->middleware('permission:payroll.paycodes.manage')
+            ->name('pay-codes.update');
+        Route::delete('pay-codes/{payCode}', [PayrollPayCodeController::class, 'destroy'])
+            ->middleware('permission:payroll.paycodes.manage')
+            ->name('pay-codes.destroy');
+
+        Route::get('profiles', [EmployeePayrollProfileController::class, 'index'])
+            ->middleware('permission:payroll.view')
+            ->name('profiles.index');
+        Route::post('profiles', [EmployeePayrollProfileController::class, 'store'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.store');
+        Route::put('profiles/{profile}', [EmployeePayrollProfileController::class, 'update'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.update');
+        Route::delete('profiles/{profile}', [EmployeePayrollProfileController::class, 'destroy'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.destroy');
+        Route::post('profiles/{profile}/items', [EmployeePayrollProfileController::class, 'storeRecurringItem'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.items.store');
+        Route::put('profiles/{profile}/items/{item}', [EmployeePayrollProfileController::class, 'updateRecurringItem'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.items.update');
+        Route::delete('profiles/{profile}/items/{item}', [EmployeePayrollProfileController::class, 'destroyRecurringItem'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.items.destroy');
+        Route::post('profiles/{profile}/settlements', [EmployeePayrollProfileController::class, 'storeSettlementRule'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.settlements.store');
+        Route::put('profiles/{profile}/settlements/{settlement}', [EmployeePayrollProfileController::class, 'updateSettlementRule'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.settlements.update');
+        Route::delete('profiles/{profile}/settlements/{settlement}', [EmployeePayrollProfileController::class, 'destroySettlementRule'])
+            ->middleware('permission:payroll.profile.manage')
+            ->name('profiles.settlements.destroy');
+
+        Route::get('inputs', [PayrollInputController::class, 'index'])
+            ->middleware('permission:payroll.view')
+            ->name('inputs.index');
+        Route::post('inputs', [PayrollInputController::class, 'store'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.store');
+        Route::put('inputs/{input}', [PayrollInputController::class, 'update'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.update');
+        Route::delete('inputs/{input}', [PayrollInputController::class, 'destroy'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.destroy');
+        Route::get('inputs/template', [PayrollInputController::class, 'template'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.template');
+        Route::post('inputs/import', [PayrollInputController::class, 'import'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.import');
+
+        Route::get('reports', [PayrollReportController::class, 'index'])
+            ->middleware('permission:payroll.reports.view')
+            ->name('reports.index');
+        Route::get('reports/runs/{run}/register', [PayrollReportController::class, 'register'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.register');
+        Route::get('reports/runs/{run}/earnings', [PayrollReportController::class, 'earnings'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.earnings');
+        Route::get('reports/runs/{run}/deductions', [PayrollReportController::class, 'deductions'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.deductions');
+        Route::get('reports/runs/{run}/statutory', [PayrollReportController::class, 'statutory'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.statutory');
+        Route::get('reports/runs/{run}/bank', [PayrollReportController::class, 'bank'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.bank');
+        Route::get('reports/runs/{run}/journal', [PayrollReportController::class, 'journal'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.journal');
+
+        Route::get('payslips/{result}', [PayslipController::class, 'show'])
+            ->middleware('permission:payroll.view')
+            ->name('payslips.show');
+        Route::get('payslips/{result}/download', [PayslipController::class, 'download'])
+            ->middleware('permission:payroll.export')
+            ->name('payslips.download');
+    });
 
     Route::prefix('payroll-exports')->group(function () {
         Route::get('/template/download', [PayrollExportController::class, 'downloadTemplate'])
