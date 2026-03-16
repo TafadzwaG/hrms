@@ -212,12 +212,27 @@ type EmployeePayload = {
         is_current: boolean;
         show_url: string;
     }[];
+    asset_assignments: {
+        id: number;
+        asset: {
+            id: number;
+            asset_tag: string;
+            name: string;
+            status: string;
+        };
+        assigned_at: string | null;
+        expected_return_date: string | null;
+        returned_at: string | null;
+        status: string;
+        show_url: string;
+    }[];
     stats: {
         documents_count: number;
         next_of_kin_count: number;
         skills_count: number;
         kpis_count: number;
         contracts_count: number;
+        asset_assignments_count: number;
     };
     links: {
         document_store: string;
@@ -885,6 +900,12 @@ export default function EmployeeShow() {
                                     >
                                         Contracts
                                     </TabsTrigger>
+                                    <TabsTrigger
+                                        value="assets"
+                                        className={tabClass}
+                                    >
+                                        Assets
+                                    </TabsTrigger>
                                 </TabsList>
                             </div>
                             <TabsContent
@@ -975,6 +996,12 @@ export default function EmployeeShow() {
                                 className="mt-8 space-y-6 focus-visible:ring-0"
                             >
                                 <ContractsTab employee={employee} />
+                            </TabsContent>
+                            <TabsContent
+                                value="assets"
+                                className="mt-8 space-y-6 focus-visible:ring-0"
+                            >
+                                <AssetsTab employee={employee} />
                             </TabsContent>
                         </Tabs>
                     </div>
@@ -3245,6 +3272,125 @@ function ContractsTab({ employee }: { employee: EmployeePayload }) {
                     )}
                 </CardContent>
             </Card>
+        </div>
+    );
+}
+
+/* ─── assets tab ───────────────────────────────────────── */
+
+function assetAssignmentStatusBadge(status: string) {
+    switch (status) {
+        case 'active':
+            return <Badge variant="outline" className="border-transparent bg-emerald-50 text-emerald-600 shadow-none">Active</Badge>;
+        case 'returned':
+            return <Badge variant="outline" className="border-transparent bg-gray-50 text-gray-600 shadow-none">Returned</Badge>;
+        case 'overdue':
+            return <Badge variant="outline" className="border-transparent bg-red-50 text-red-600 shadow-none">Overdue</Badge>;
+        default:
+            return <Badge variant="secondary">{status}</Badge>;
+    }
+}
+
+function AssetsTab({ employee }: { employee: EmployeePayload }) {
+    const { can } = useAuthorization();
+    const canViewAssets = can('assets.view');
+
+    const activeAssignments = employee.asset_assignments?.filter((a) => a.status === 'active') || [];
+    const pastAssignments = employee.asset_assignments?.filter((a) => a.status !== 'active') || [];
+
+    return (
+        <div className="space-y-6">
+            {/* Currently Assigned Assets */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Briefcase className="h-5 w-5 text-primary" />
+                        Currently Assigned ({activeAssignments.length})
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {activeAssignments.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <Briefcase className="mb-4 h-10 w-10 text-muted-foreground/50" />
+                            <p className="text-sm text-muted-foreground">No assets currently assigned.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-left text-muted-foreground">
+                                        <th className="pb-2 font-medium">Asset Tag</th>
+                                        <th className="pb-2 font-medium">Name</th>
+                                        <th className="pb-2 font-medium">Assigned</th>
+                                        <th className="pb-2 font-medium">Expected Return</th>
+                                        <th className="pb-2 text-right font-medium">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activeAssignments.map((a) => (
+                                        <tr key={a.id} className="border-b last:border-0">
+                                            <td className="py-2.5 font-medium">{a.asset.asset_tag}</td>
+                                            <td className="py-2.5">{a.asset.name}</td>
+                                            <td className="py-2.5">{a.assigned_at || '—'}</td>
+                                            <td className="py-2.5">{a.expected_return_date || '—'}</td>
+                                            <td className="py-2.5 text-right">
+                                                {canViewAssets && (
+                                                    <Link href={a.show_url}>
+                                                        <Button variant="ghost" size="sm">View Asset</Button>
+                                                    </Link>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Assignment History */}
+            {pastAssignments.length > 0 && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">Assignment History</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-left text-muted-foreground">
+                                        <th className="pb-2 font-medium">Asset Tag</th>
+                                        <th className="pb-2 font-medium">Name</th>
+                                        <th className="pb-2 font-medium">Assigned</th>
+                                        <th className="pb-2 font-medium">Returned</th>
+                                        <th className="pb-2 font-medium">Status</th>
+                                        <th className="pb-2 text-right font-medium">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pastAssignments.map((a) => (
+                                        <tr key={a.id} className="border-b last:border-0">
+                                            <td className="py-2.5 font-medium">{a.asset.asset_tag}</td>
+                                            <td className="py-2.5">{a.asset.name}</td>
+                                            <td className="py-2.5">{a.assigned_at || '—'}</td>
+                                            <td className="py-2.5">{a.returned_at || '—'}</td>
+                                            <td className="py-2.5">{assetAssignmentStatusBadge(a.status)}</td>
+                                            <td className="py-2.5 text-right">
+                                                {canViewAssets && (
+                                                    <Link href={a.show_url}>
+                                                        <Button variant="ghost" size="sm">View Asset</Button>
+                                                    </Link>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

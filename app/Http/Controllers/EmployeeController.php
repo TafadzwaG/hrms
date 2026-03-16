@@ -191,6 +191,7 @@ class EmployeeController extends Controller
             'currentContract.position:id,name',
             'contracts.department:id,name',
             'contracts.position:id,name',
+            'assetAssignments.asset:id,asset_tag,name,status',
         ]);
 
         return Inertia::render('Employees/Show', [
@@ -277,12 +278,27 @@ class EmployeeController extends Controller
                     'is_current' => $c->is_current,
                     'show_url' => "/employees/{$employee->id}/contracts/{$c->id}",
                 ])->values()->all(),
+                'asset_assignments' => $employee->assetAssignments->map(fn (\App\Models\AssetAssignment $a) => [
+                    'id' => $a->id,
+                    'asset' => $a->asset ? [
+                        'id' => $a->asset->id,
+                        'asset_tag' => $a->asset->asset_tag,
+                        'name' => $a->asset->name,
+                        'status' => $a->asset->status,
+                    ] : null,
+                    'assigned_at' => optional($a->assigned_at)->toDateTimeString(),
+                    'expected_return_date' => optional($a->expected_return_date)->toDateString(),
+                    'returned_at' => optional($a->returned_at)->toDateTimeString(),
+                    'status' => $a->status,
+                    'show_url' => "/assets/{$a->asset_id}",
+                ])->values()->all(),
                 'stats' => [
                     'documents_count' => $employee->documents->count(),
                     'next_of_kin_count' => $employee->nextOfKin->count(),
                     'skills_count' => $employee->skills->count(),
                     'kpis_count' => $employee->kpis->count(),
                     'contracts_count' => $employee->contracts->count(),
+                    'asset_assignments_count' => $employee->assetAssignments->count(),
                 ],
                 'links' => [
                     'document_store' => "/employees/{$employee->id}/documents",

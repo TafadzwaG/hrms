@@ -14,6 +14,7 @@ use App\Models\OnboardingTask;
 use App\Models\PayrollExport;
 use App\Models\PerformanceReview;
 use App\Models\Timesheet;
+use App\Models\Asset;
 use App\Models\WorkflowDefinition;
 use Inertia\Inertia;
 
@@ -36,6 +37,7 @@ class ReportCenterController extends BaseReportController
                 'performance_reviews' => PerformanceReview::count(),
                 'learning_courses' => LearningCourse::count(),
                 'documents' => Document::count(),
+                'assets' => Asset::count(),
             ],
         ]);
     }

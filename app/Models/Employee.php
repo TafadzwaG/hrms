@@ -152,6 +152,16 @@ class Employee extends Model
         return $this->hasOne(EmployeeContract::class)->where('is_current', true);
     }
 
+    public function assetAssignments(): HasMany
+    {
+        return $this->hasMany(AssetAssignment::class)->orderByDesc('assigned_at');
+    }
+
+    public function currentAssetAssignments(): HasMany
+    {
+        return $this->hasMany(AssetAssignment::class)->where('status', 'active');
+    }
+
     // Helpful computed full name (optional)
     public function getFullNameAttribute(): string
     {

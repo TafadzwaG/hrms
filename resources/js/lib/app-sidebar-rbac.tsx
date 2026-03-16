@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Proportions, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Package, Proportions, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -27,6 +27,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Attendance', href: '/attendance-records', icon: User, permissionsAny: ['attendance.view'] },
     { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
     { title: 'Payroll', href: '/payroll', icon: Folder, permissionsAny: ['payroll.view'] },
+    { title: 'Assets', href: '/assets', icon: Package, permissionsAny: ['assets.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
 
@@ -44,6 +45,9 @@ const footerNavItems: SidebarNavItem[] = [
     { title: 'Learning', href: '/learning-courses', icon: BookOpen, permissionsAny: ['learning.view'] },
     { title: 'Documents', href: '/documents', icon: Folder, permissionsAny: ['documents.view'] },
     { title: 'Document Types', href: '/document-types', icon: Folder, permissionsAny: ['document_types.view'] },
+    { title: 'Asset Categories', href: '/asset-categories', icon: Package, permissionsAny: ['assets.categories.view'] },
+    { title: 'Asset Vendors', href: '/asset-vendors', icon: Package, permissionsAny: ['assets.vendors.view'] },
+    { title: 'Asset Locations', href: '/asset-locations', icon: Package, permissionsAny: ['assets.locations.view'] },
     { title: 'User Management', href: '/users', icon: Users, permissionsAny: ['users.view'] },
     { title: 'Audit Trail', href: '/audit-trail', icon: History, permissionsAny: ['audit.view'] },
     { title: 'Control Center', href: '/control-center', icon: ShieldCheck, permissionsAny: ['roles.view', 'permissions.view', 'audit.view'] },
