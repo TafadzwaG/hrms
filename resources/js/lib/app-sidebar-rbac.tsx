@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Proportions, Settings, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -33,6 +33,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Attendance', href: '/attendance-records', icon: User, permissionsAny: ['attendance.view'] },
     { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
     { title: 'Payroll', href: '/payroll', icon: Folder, permissionsAny: ['payroll.view'] },
+    { title: 'Assets', href: '/assets', icon: Package, permissionsAny: ['assets.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
 
@@ -64,6 +65,15 @@ const footerNavGroups: SidebarNavGroup[] = [
             { title: 'Candidates', href: '/candidates', icon: User, permissionsAny: ['candidates.view'] },
             { title: 'Performance', href: '/performance-reviews', icon: UserRoundCheckIcon, permissionsAny: ['performance.view'] },
             { title: 'Learning', href: '/learning-courses', icon: BookOpen, permissionsAny: ['learning.view'] },
+        ],
+    },
+    {
+        title: 'Asset Management',
+        icon: Package,
+        items: [
+            { title: 'Asset Categories', href: '/asset-categories', icon: Package, permissionsAny: ['assets.categories.view'] },
+            { title: 'Asset Vendors', href: '/asset-vendors', icon: Package, permissionsAny: ['assets.vendors.view'] },
+            { title: 'Asset Locations', href: '/asset-locations', icon: Package, permissionsAny: ['assets.locations.view'] },
         ],
     },
     {

@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\AssetCategoryController;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\AssetLocationController;
+use App\Http\Controllers\AssetMaintenanceController;
+use App\Http\Controllers\AssetVendorController;
 use App\Http\Controllers\AttendanceRecordController;
 use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\CandidateProfileController;
@@ -31,6 +36,7 @@ use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\PayrollResultController;
 use App\Http\Controllers\PayrollReportController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\Reports\AssetReportController;
 use App\Http\Controllers\Reports\AttendanceRecordReportController;
 use App\Http\Controllers\Reports\CandidateProfileReportController;
 use App\Http\Controllers\Reports\DocumentReportController;
@@ -305,6 +311,152 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{contract}/documents/{document}', [EmployeeContractController::class, 'destroyDocument'])
                 ->middleware('permission:contracts.documents.manage')
                 ->name('documents.destroy');
+        });
+
+    // ── Asset Management ──────────────────────────────────
+    Route::prefix('assets')
+        ->name('assets.')
+        ->group(function () {
+            Route::get('/', [AssetController::class, 'index'])
+                ->middleware('permission:assets.view')
+                ->name('index');
+            Route::get('/create', [AssetController::class, 'create'])
+                ->middleware('permission:assets.create')
+                ->name('create');
+            Route::post('/', [AssetController::class, 'store'])
+                ->middleware('permission:assets.create')
+                ->name('store');
+            Route::get('/{asset}', [AssetController::class, 'show'])
+                ->middleware('permission:assets.view')
+                ->name('show');
+            Route::get('/{asset}/edit', [AssetController::class, 'edit'])
+                ->middleware('permission:assets.update')
+                ->name('edit');
+            Route::put('/{asset}', [AssetController::class, 'update'])
+                ->middleware('permission:assets.update')
+                ->name('update');
+            Route::delete('/{asset}', [AssetController::class, 'destroy'])
+                ->middleware('permission:assets.delete')
+                ->name('destroy');
+
+            // Actions
+            Route::post('/{asset}/assign', [AssetController::class, 'assign'])
+                ->middleware('permission:assets.assign')
+                ->name('assign');
+            Route::post('/{asset}/return', [AssetController::class, 'returnAsset'])
+                ->middleware('permission:assets.assign')
+                ->name('return');
+            Route::post('/{asset}/dispose', [AssetController::class, 'dispose'])
+                ->middleware('permission:assets.dispose')
+                ->name('dispose');
+
+            // Documents
+            Route::post('/{asset}/documents', [AssetController::class, 'storeDocument'])
+                ->middleware('permission:assets.documents.manage')
+                ->name('documents.store');
+            Route::get('/{asset}/documents/{document}/download', [AssetController::class, 'downloadDocument'])
+                ->middleware('permission:assets.documents.manage')
+                ->name('documents.download');
+            Route::delete('/{asset}/documents/{document}', [AssetController::class, 'destroyDocument'])
+                ->middleware('permission:assets.documents.manage')
+                ->name('documents.destroy');
+
+            // Maintenance (nested)
+            Route::prefix('/{asset}/maintenance')
+                ->name('maintenance.')
+                ->group(function () {
+                    Route::get('/', [AssetMaintenanceController::class, 'index'])
+                        ->middleware('permission:assets.maintenance.view')
+                        ->name('index');
+                    Route::get('/create', [AssetMaintenanceController::class, 'create'])
+                        ->middleware('permission:assets.maintenance.manage')
+                        ->name('create');
+                    Route::post('/', [AssetMaintenanceController::class, 'store'])
+                        ->middleware('permission:assets.maintenance.manage')
+                        ->name('store');
+                    Route::get('/{maintenance}', [AssetMaintenanceController::class, 'show'])
+                        ->middleware('permission:assets.maintenance.view')
+                        ->name('show');
+                    Route::get('/{maintenance}/edit', [AssetMaintenanceController::class, 'edit'])
+                        ->middleware('permission:assets.maintenance.manage')
+                        ->name('edit');
+                    Route::put('/{maintenance}', [AssetMaintenanceController::class, 'update'])
+                        ->middleware('permission:assets.maintenance.manage')
+                        ->name('update');
+                    Route::delete('/{maintenance}', [AssetMaintenanceController::class, 'destroy'])
+                        ->middleware('permission:assets.maintenance.manage')
+                        ->name('destroy');
+                });
+        });
+
+    // Asset Settings
+    Route::prefix('asset-categories')
+        ->name('asset-categories.')
+        ->group(function () {
+            Route::get('/', [AssetCategoryController::class, 'index'])
+                ->middleware('permission:assets.categories.view')
+                ->name('index');
+            Route::get('/create', [AssetCategoryController::class, 'create'])
+                ->middleware('permission:assets.categories.manage')
+                ->name('create');
+            Route::post('/', [AssetCategoryController::class, 'store'])
+                ->middleware('permission:assets.categories.manage')
+                ->name('store');
+            Route::get('/{assetCategory}/edit', [AssetCategoryController::class, 'edit'])
+                ->middleware('permission:assets.categories.manage')
+                ->name('edit');
+            Route::put('/{assetCategory}', [AssetCategoryController::class, 'update'])
+                ->middleware('permission:assets.categories.manage')
+                ->name('update');
+            Route::delete('/{assetCategory}', [AssetCategoryController::class, 'destroy'])
+                ->middleware('permission:assets.categories.manage')
+                ->name('destroy');
+        });
+
+    Route::prefix('asset-vendors')
+        ->name('asset-vendors.')
+        ->group(function () {
+            Route::get('/', [AssetVendorController::class, 'index'])
+                ->middleware('permission:assets.vendors.view')
+                ->name('index');
+            Route::get('/create', [AssetVendorController::class, 'create'])
+                ->middleware('permission:assets.vendors.manage')
+                ->name('create');
+            Route::post('/', [AssetVendorController::class, 'store'])
+                ->middleware('permission:assets.vendors.manage')
+                ->name('store');
+            Route::get('/{assetVendor}/edit', [AssetVendorController::class, 'edit'])
+                ->middleware('permission:assets.vendors.manage')
+                ->name('edit');
+            Route::put('/{assetVendor}', [AssetVendorController::class, 'update'])
+                ->middleware('permission:assets.vendors.manage')
+                ->name('update');
+            Route::delete('/{assetVendor}', [AssetVendorController::class, 'destroy'])
+                ->middleware('permission:assets.vendors.manage')
+                ->name('destroy');
+        });
+
+    Route::prefix('asset-locations')
+        ->name('asset-locations.')
+        ->group(function () {
+            Route::get('/', [AssetLocationController::class, 'index'])
+                ->middleware('permission:assets.locations.view')
+                ->name('index');
+            Route::get('/create', [AssetLocationController::class, 'create'])
+                ->middleware('permission:assets.locations.manage')
+                ->name('create');
+            Route::post('/', [AssetLocationController::class, 'store'])
+                ->middleware('permission:assets.locations.manage')
+                ->name('store');
+            Route::get('/{assetLocation}/edit', [AssetLocationController::class, 'edit'])
+                ->middleware('permission:assets.locations.manage')
+                ->name('edit');
+            Route::put('/{assetLocation}', [AssetLocationController::class, 'update'])
+                ->middleware('permission:assets.locations.manage')
+                ->name('update');
+            Route::delete('/{assetLocation}', [AssetLocationController::class, 'destroy'])
+                ->middleware('permission:assets.locations.manage')
+                ->name('destroy');
         });
 
     Route::post('/users/{user}/send-password-reset-link', [PasswordResetController::class, 'sendResetLink'])
@@ -734,6 +886,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('mandatory', [LearningCourseReportController::class, 'mandatory'])->name('mandatory');
                 Route::get('expiring', [LearningCourseReportController::class, 'expiring'])->name('expiring');
                 Route::get('expired', [LearningCourseReportController::class, 'expired'])->name('expired');
+            });
+
+            Route::prefix('assets')->name('assets.')->group(function () {
+                Route::get('register', [AssetReportController::class, 'register'])->name('register');
+                Route::get('by-category', [AssetReportController::class, 'byCategory'])->name('by-category');
+                Route::get('by-status', [AssetReportController::class, 'byStatus'])->name('by-status');
+                Route::get('by-location', [AssetReportController::class, 'byLocation'])->name('by-location');
+                Route::get('by-condition', [AssetReportController::class, 'byCondition'])->name('by-condition');
+                Route::get('warranty-expiring', [AssetReportController::class, 'warrantyExpiring'])->name('warranty-expiring');
+                Route::get('assignments', [AssetReportController::class, 'assignments'])->name('assignments');
+                Route::get('maintenance', [AssetReportController::class, 'maintenance'])->name('maintenance');
+                Route::get('depreciation', [AssetReportController::class, 'depreciation'])->name('depreciation');
             });
 
             Route::prefix('documents')->name('documents.')->group(function () {
