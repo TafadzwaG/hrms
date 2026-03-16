@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Employee;
+use App\Models\EmployeeContract;
 use App\Models\EmployeeJobProfile;
 use App\Models\EmployeeKpi;
 use App\Models\EmployeeNextOfKin;
@@ -186,6 +187,10 @@ class EmployeeController extends Controller
             'skills',
             'jobProfile',
             'kpis',
+            'currentContract.department:id,name',
+            'currentContract.position:id,name',
+            'contracts.department:id,name',
+            'contracts.position:id,name',
         ]);
 
         return Inertia::render('Employees/Show', [
@@ -248,11 +253,36 @@ class EmployeeController extends Controller
                 'skills' => $employee->skills->map(fn (EmployeeSkill $skill) => $this->mapSkill($employee, $skill))->values()->all(),
                 'job_profile' => $employee->jobProfile ? $this->mapJobProfile($employee->jobProfile) : null,
                 'kpis' => $employee->kpis->map(fn (EmployeeKpi $kpi) => $this->mapKpi($employee, $kpi))->values()->all(),
+                'current_contract' => $employee->currentContract ? [
+                    'id' => $employee->currentContract->id,
+                    'contract_number' => $employee->currentContract->contract_number,
+                    'contract_type' => $employee->currentContract->contract_type,
+                    'status' => $employee->currentContract->status,
+                    'start_date' => optional($employee->currentContract->start_date)->toDateString(),
+                    'end_date' => optional($employee->currentContract->end_date)->toDateString(),
+                    'basic_salary' => $employee->currentContract->basic_salary,
+                    'currency' => $employee->currentContract->currency,
+                    'job_title' => $employee->currentContract->job_title,
+                    'department' => $employee->currentContract->department ? ['id' => $employee->currentContract->department->id, 'name' => $employee->currentContract->department->name] : null,
+                    'position' => $employee->currentContract->position ? ['id' => $employee->currentContract->position->id, 'name' => $employee->currentContract->position->name] : null,
+                    'show_url' => "/employees/{$employee->id}/contracts/{$employee->currentContract->id}",
+                ] : null,
+                'contracts' => $employee->contracts->map(fn (EmployeeContract $c) => [
+                    'id' => $c->id,
+                    'contract_number' => $c->contract_number,
+                    'contract_type' => $c->contract_type,
+                    'status' => $c->status,
+                    'start_date' => optional($c->start_date)->toDateString(),
+                    'end_date' => optional($c->end_date)->toDateString(),
+                    'is_current' => $c->is_current,
+                    'show_url' => "/employees/{$employee->id}/contracts/{$c->id}",
+                ])->values()->all(),
                 'stats' => [
                     'documents_count' => $employee->documents->count(),
                     'next_of_kin_count' => $employee->nextOfKin->count(),
                     'skills_count' => $employee->skills->count(),
                     'kpis_count' => $employee->kpis->count(),
+                    'contracts_count' => $employee->contracts->count(),
                 ],
                 'links' => [
                     'document_store' => "/employees/{$employee->id}/documents",
@@ -261,6 +291,8 @@ class EmployeeController extends Controller
                     'skill_store' => "/employees/{$employee->id}/skills",
                     'job_profile_store' => "/employees/{$employee->id}/job-profile",
                     'kpi_store' => "/employees/{$employee->id}/kpis",
+                    'contracts_index' => "/employees/{$employee->id}/contracts",
+                    'contracts_create' => "/employees/{$employee->id}/contracts/create",
                 ],
                 'created_at' => optional($employee->created_at)->toDateTimeString(),
                 'updated_at' => optional($employee->updated_at)->toDateTimeString(),

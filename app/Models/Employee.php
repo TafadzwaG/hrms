@@ -142,6 +142,16 @@ class Employee extends Model
         return $this->hasMany(PayrollResult::class);
     }
 
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(EmployeeContract::class)->orderByDesc('start_date');
+    }
+
+    public function currentContract(): HasOne
+    {
+        return $this->hasOne(EmployeeContract::class)->where('is_current', true);
+    }
+
     // Helpful computed full name (optional)
     public function getFullNameAttribute(): string
     {

@@ -188,11 +188,36 @@ type EmployeePayload = {
     skills: SkillItem[];
     job_profile: JobProfileItem | null;
     kpis: KpiItem[];
+    current_contract: {
+        id: number;
+        contract_number: string;
+        contract_type: string;
+        status: string;
+        start_date: string | null;
+        end_date: string | null;
+        basic_salary: string | null;
+        currency: string | null;
+        job_title: string | null;
+        department: { id: number; name: string } | null;
+        position: { id: number; name: string } | null;
+        show_url: string;
+    } | null;
+    contracts: {
+        id: number;
+        contract_number: string;
+        contract_type: string;
+        status: string;
+        start_date: string | null;
+        end_date: string | null;
+        is_current: boolean;
+        show_url: string;
+    }[];
     stats: {
         documents_count: number;
         next_of_kin_count: number;
         skills_count: number;
         kpis_count: number;
+        contracts_count: number;
     };
     links: {
         document_store: string;
@@ -201,6 +226,8 @@ type EmployeePayload = {
         skill_store: string;
         job_profile_store: string;
         kpi_store: string;
+        contracts_index: string;
+        contracts_create: string;
     };
 };
 type OptionsPayload = {
@@ -852,6 +879,12 @@ export default function EmployeeShow() {
                                     >
                                         Job Description & KPIs
                                     </TabsTrigger>
+                                    <TabsTrigger
+                                        value="contracts"
+                                        className={tabClass}
+                                    >
+                                        Contracts
+                                    </TabsTrigger>
                                 </TabsList>
                             </div>
                             <TabsContent
@@ -936,6 +969,12 @@ export default function EmployeeShow() {
                                     onEditKpi={startKpiEdit}
                                     onResetKpi={resetKpiForm}
                                 />
+                            </TabsContent>
+                            <TabsContent
+                                value="contracts"
+                                className="mt-8 space-y-6 focus-visible:ring-0"
+                            >
+                                <ContractsTab employee={employee} />
                             </TabsContent>
                         </Tabs>
                     </div>
@@ -3021,6 +3060,193 @@ function formatDate(value: string | null) {
 
 function formatDateTime(value: string | null) {
     return value ? new Date(value).toLocaleString() : 'Unknown';
+}
+
+/* ─── contracts tab ───────────────────────────────────────── */
+
+const CONTRACT_TYPE_LABELS: Record<string, string> = {
+    permanent: 'Permanent',
+    fixed_term: 'Fixed Term',
+    temporary: 'Temporary',
+    internship: 'Internship',
+    consultancy: 'Consultancy',
+    probation: 'Probation',
+};
+
+function contractStatusVariant(status: string) {
+    switch (status) {
+        case 'active':
+            return 'default' as const;
+        case 'draft':
+            return 'secondary' as const;
+        case 'expired':
+        case 'terminated':
+            return 'destructive' as const;
+        default:
+            return 'secondary' as const;
+    }
+}
+
+function ContractsTab({ employee }: { employee: EmployeePayload }) {
+    const { can } = useAuthorization();
+    const canViewContracts = can('contracts.view');
+    const canCreateContracts = can('contracts.create');
+
+    return (
+        <div className="space-y-6">
+            {/* Current Contract Summary */}
+            {employee.current_contract && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-primary" />
+                                Current Contract
+                            </CardTitle>
+                            {canViewContracts && (
+                                <Link href={employee.current_contract.show_url}>
+                                    <Button variant="outline" size="sm">
+                                        View Details
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div>
+                                <p className="text-xs text-muted-foreground">Contract Number</p>
+                                <p className="text-sm font-medium">{employee.current_contract.contract_number}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Type</p>
+                                <p className="text-sm font-medium">{CONTRACT_TYPE_LABELS[employee.current_contract.contract_type] || employee.current_contract.contract_type}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Start Date</p>
+                                <p className="text-sm font-medium">{employee.current_contract.start_date || '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">End Date</p>
+                                <p className="text-sm font-medium">{employee.current_contract.end_date || 'Open-ended'}</p>
+                            </div>
+                            {employee.current_contract.basic_salary && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Salary</p>
+                                    <p className="text-sm font-medium">
+                                        {employee.current_contract.currency || ''} {Number(employee.current_contract.basic_salary).toLocaleString()}
+                                    </p>
+                                </div>
+                            )}
+                            {employee.current_contract.department && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Department</p>
+                                    <p className="text-sm font-medium">{employee.current_contract.department.name}</p>
+                                </div>
+                            )}
+                            {employee.current_contract.position && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Position</p>
+                                    <p className="text-sm font-medium">{employee.current_contract.position.name}</p>
+                                </div>
+                            )}
+                            {employee.current_contract.job_title && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Job Title</p>
+                                    <p className="text-sm font-medium">{employee.current_contract.job_title}</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Contract History */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">Contract History ({employee.stats.contracts_count})</CardTitle>
+                        <div className="flex gap-2">
+                            {canViewContracts && (
+                                <Link href={employee.links.contracts_index}>
+                                    <Button variant="outline" size="sm">
+                                        View All
+                                    </Button>
+                                </Link>
+                            )}
+                            {canCreateContracts && (
+                                <Link href={employee.links.contracts_create}>
+                                    <Button size="sm">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        New Contract
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {employee.contracts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
+                            <h3 className="mb-1 text-lg font-semibold">No contracts yet</h3>
+                            <p className="mb-4 text-sm text-muted-foreground">Create the first contract for this employee.</p>
+                            {canCreateContracts && (
+                                <Link href={employee.links.contracts_create}>
+                                    <Button variant="outline">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Create Contract
+                                    </Button>
+                                </Link>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-left text-muted-foreground">
+                                        <th className="pb-2 font-medium">Contract #</th>
+                                        <th className="pb-2 font-medium">Type</th>
+                                        <th className="pb-2 font-medium">Status</th>
+                                        <th className="pb-2 font-medium">Start</th>
+                                        <th className="pb-2 font-medium">End</th>
+                                        <th className="pb-2 text-right font-medium">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {employee.contracts.map((c) => (
+                                        <tr key={c.id} className="border-b last:border-0">
+                                            <td className="py-2.5 font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    {c.contract_number}
+                                                    {c.is_current && <Badge variant="default" className="text-xs">Current</Badge>}
+                                                </div>
+                                            </td>
+                                            <td className="py-2.5">{CONTRACT_TYPE_LABELS[c.contract_type] || c.contract_type}</td>
+                                            <td className="py-2.5">
+                                                <Badge variant={contractStatusVariant(c.status)}>
+                                                    {c.status.replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase())}
+                                                </Badge>
+                                            </td>
+                                            <td className="py-2.5">{c.start_date || '—'}</td>
+                                            <td className="py-2.5">{c.end_date || '—'}</td>
+                                            <td className="py-2.5 text-right">
+                                                {canViewContracts && (
+                                                    <Link href={c.show_url}>
+                                                        <Button variant="ghost" size="sm">View</Button>
+                                                    </Link>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 function stringifyNullable(value: string | number | null | undefined) {

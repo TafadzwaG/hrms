@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeContractController;
 use App\Http\Controllers\CurrentOrganizationController;
 use App\Http\Controllers\JobRequisitionController;
 use App\Http\Controllers\LearningCourseController;
@@ -223,6 +224,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'permission:employees.create')
         ->middlewareFor(['edit', 'update'], 'permission:employees.update')
         ->middlewareFor(['destroy'], 'permission:employees.delete');
+
+    Route::prefix('employees/{employee}/contracts')
+        ->name('employees.contracts.')
+        ->group(function () {
+            Route::get('/', [EmployeeContractController::class, 'index'])
+                ->middleware('permission:contracts.view')
+                ->name('index');
+            Route::get('/create', [EmployeeContractController::class, 'create'])
+                ->middleware('permission:contracts.create')
+                ->name('create');
+            Route::post('/', [EmployeeContractController::class, 'store'])
+                ->middleware('permission:contracts.create')
+                ->name('store');
+            Route::get('/{contract}', [EmployeeContractController::class, 'show'])
+                ->middleware('permission:contracts.view')
+                ->name('show');
+            Route::get('/{contract}/edit', [EmployeeContractController::class, 'edit'])
+                ->middleware('permission:contracts.update')
+                ->name('edit');
+            Route::put('/{contract}', [EmployeeContractController::class, 'update'])
+                ->middleware('permission:contracts.update')
+                ->name('update');
+            Route::delete('/{contract}', [EmployeeContractController::class, 'destroy'])
+                ->middleware('permission:contracts.delete')
+                ->name('destroy');
+            Route::post('/{contract}/activate', [EmployeeContractController::class, 'activate'])
+                ->middleware('permission:contracts.activate')
+                ->name('activate');
+            Route::post('/{contract}/terminate', [EmployeeContractController::class, 'terminate'])
+                ->middleware('permission:contracts.terminate')
+                ->name('terminate');
+            Route::post('/{contract}/documents', [EmployeeContractController::class, 'storeDocument'])
+                ->middleware('permission:contracts.documents.manage')
+                ->name('documents.store');
+            Route::get('/{contract}/documents/{document}/download', [EmployeeContractController::class, 'downloadDocument'])
+                ->middleware('permission:contracts.documents.manage')
+                ->name('documents.download');
+            Route::delete('/{contract}/documents/{document}', [EmployeeContractController::class, 'destroyDocument'])
+                ->middleware('permission:contracts.documents.manage')
+                ->name('documents.destroy');
+        });
 
     Route::post('/users/{user}/send-password-reset-link', [PasswordResetController::class, 'sendResetLink'])
         ->middleware('permission:users.update')
