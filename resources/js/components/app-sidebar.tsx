@@ -1,5 +1,16 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, Folder, LayoutGrid, Proportions, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import {
+    BookOpen,
+    Building,
+    Building2,
+    Folder,
+    LayoutGrid,
+    Proportions,
+    ShieldCheck,
+    User,
+    UserRoundCheckIcon,
+    Users,
+} from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -15,6 +26,12 @@ import {
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { dashboard } from '@/routes';
+
+type FooterNavGroup = {
+    title: string;
+    icon?: NavItem['icon'];
+    items: NavItem[];
+};
 
 const mainNavItems: NavItem[] = [
     {
@@ -54,77 +71,106 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
+const footerNavGroups: FooterNavGroup[] = [
     {
-        title: 'Organisations',
-        href: '/org-units',
-        icon: Building,
-    },
-    {
-        title: 'Locations',
-        href: '/locations',
+        title: 'Organization Setup',
         icon: Building2,
+        items: [
+            {
+                title: 'Organisations',
+                href: '/org-units',
+                icon: Building,
+            },
+            {
+                title: 'Locations',
+                href: '/locations',
+                icon: Building2,
+            },
+            {
+                title: 'Positions',
+                href: '/positions',
+                icon: Proportions,
+            },
+        ],
     },
     {
-        title: 'Positions',
-        href: '/positions',
-        icon: Proportions,
+        title: 'People Operations',
+        icon: BookOpen,
+        items: [
+            {
+                title: 'Workflows',
+                href: '/workflows',
+                icon: BookOpen,
+            },
+            {
+                title: 'Onboarding',
+                href: '/onboarding-tasks',
+                icon: BookOpen,
+            },
+            {
+                title: 'Offboarding',
+                href: '/offboarding-tasks',
+                icon: BookOpen,
+            },
+        ],
     },
     {
-        title: 'Roles',
-        href: '/roles',
+        title: 'Talent & Growth',
         icon: UserRoundCheckIcon,
+        items: [
+            {
+                title: 'Requisitions',
+                href: '/job-requisitions',
+                icon: Folder,
+            },
+            {
+                title: 'Candidates',
+                href: '/candidates',
+                icon: User,
+            },
+            {
+                title: 'Performance',
+                href: '/performance-reviews',
+                icon: UserRoundCheckIcon,
+            },
+            {
+                title: 'Learning',
+                href: '/learning-courses',
+                icon: BookOpen,
+            },
+        ],
     },
     {
-        title: 'Workflows',
-        href: '/workflows',
-        icon: BookOpen,
-    },
-    {
-        title: 'Requisitions',
-        href: '/job-requisitions',
+        title: 'Repository',
         icon: Folder,
+        items: [
+            {
+                title: 'Document Types',
+                href: '/document-types',
+                icon: Folder,
+            },
+            {
+                title: 'Documents',
+                href: '/documents',
+                icon: Folder,
+            },
+        ],
     },
     {
-        title: 'Candidates',
-        href: '/candidates',
-        icon: User,
-    },
-    {
-        title: 'Onboarding',
-        href: '/onboarding-tasks',
-        icon: BookOpen,
-    },
-    {
-        title: 'Offboarding',
-        href: '/offboarding-tasks',
-        icon: BookOpen,
-    },
-    {
-        title: 'Performance',
-        href: '/performance-reviews',
-        icon: UserRoundCheckIcon,
-    },
-    {
-        title: 'Learning',
-        href: '/learning-courses',
-        icon: BookOpen,
-    },
-    {
-        title: 'Documents',
-        href: '/documents',
-        icon: Folder,
-    },
-    {
-
-        title: 'Document Types',
-        href: '/document-types',
-        icon: Folder,
-    },
-    {
-        title: 'User Management',
-        href: '/users',
-        icon: Users,
+        title: 'Administration',
+        icon: ShieldCheck,
+        items: [
+            {
+                title: 'Roles',
+                href: '/roles',
+                icon: UserRoundCheckIcon,
+            },
+            {
+                title: 'User Management',
+                href: '/users',
+                icon: Users,
+            },
+        ],
     },
 ];
 
@@ -148,7 +194,7 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavFooter groups={footerNavGroups} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
