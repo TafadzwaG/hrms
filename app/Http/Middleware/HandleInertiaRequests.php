@@ -5,9 +5,11 @@ namespace App\Http\Middleware;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Rbac\PermissionRegistry;
+use App\Support\Settings\SystemSettingsService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -83,14 +85,41 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
+        $settings = app(SystemSettingsService::class);
+        $systemOrgId = $settings->systemOrganizationId();
+        $systemName = $settings->getString('general', 'system_name', config('app.name'), $systemOrgId) ?? config('app.name');
+        $systemShortName = $settings->getString('general', 'system_short_name', null, $systemOrgId);
+        $systemLogoPath = $settings->getString('branding', 'system_logo_path', null, $systemOrgId);
+        $systemLogoUrl = $systemLogoPath ? Storage::disk('public')->url($systemLogoPath) : null;
+
+        $orgId = $activeOrganization?->id;
+        $branding = $orgId ? [
+            'primary_color' => $settings->getString('branding', 'primary_color', null, $orgId),
+            'secondary_color' => $settings->getString('branding', 'secondary_color', null, $orgId),
+            'accent_color' => $settings->getString('branding', 'accent_color', null, $orgId),
+        ] : [
+            'primary_color' => null,
+            'secondary_color' => null,
+            'accent_color' => null,
+        ];
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $systemName,
             'auth' => [
                 'user' => $userPayload,
                 'roles' => $roles,
                 'permissions' => $permissions,
                 'can' => $can,
+            ],
+            'system_settings' => [
+                'system' => [
+                    'system_name' => $systemName,
+                    'system_short_name' => $systemShortName,
+                    'system_logo_url' => $systemLogoUrl,
+                    'system_logo_path' => $systemLogoPath,
+                ],
+                'branding' => $branding,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

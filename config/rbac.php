@@ -128,6 +128,19 @@ return [
             ],
         ],
         [
+            'key' => 'settings',
+            'label' => 'System Settings',
+            'description' => 'Company-wide settings, branding, backups, and operational preferences.',
+            'permissions' => [
+                ['name' => 'settings.view', 'label' => 'View system settings', 'description' => 'Open the system/company settings console.'],
+                ['name' => 'settings.manage', 'label' => 'Manage system settings', 'description' => 'Update company settings and system preferences.'],
+                ['name' => 'branding.manage', 'label' => 'Manage branding', 'description' => 'Upload logos, update color scheme, and maintain branding.'],
+                ['name' => 'backups.manage', 'label' => 'Manage backups', 'description' => 'Configure database backup scheduling and retention.'],
+                ['name' => 'backups.run', 'label' => 'Run backups', 'description' => 'Trigger manual database backups.'],
+                ['name' => 'backups.email', 'label' => 'Email backups', 'description' => 'Send backup files or backup notifications via email.'],
+            ],
+        ],
+        [
             'key' => 'workflows',
             'label' => 'Workflows',
             'description' => 'Workflow definitions and module automation.',
@@ -309,7 +322,7 @@ return [
     ],
     'default_role_permissions' => [
         'SYS_ADMIN' => ['*'],
-        'HR_ADMIN' => ['dashboard.view','employees.*','contracts.*','org_units.*','locations.*','positions.*','users.view','users.create','users.update','users.assign_roles','roles.*','permissions.*','audit.view','audit.export','organizations.view','organizations.update','organizations.manage_members','organizations.switch','workflows.*','leave.*','attendance.view','attendance.manage','timesheets.view','timesheets.approve','payroll.view','payroll.manage','payroll.process','payroll.approve','payroll.close','payroll.export','payroll.profile.manage','payroll.paycodes.manage','payroll.inputs.manage','payroll.reports.view','payslips.*','requisitions.*','candidates.*','onboarding.*','offboarding.*','performance.*','learning.*','documents.*','document_types.*','reports.*'],
+        'HR_ADMIN' => ['dashboard.view','employees.*','contracts.*','org_units.*','locations.*','positions.*','users.view','users.create','users.update','users.assign_roles','roles.*','permissions.*','audit.view','audit.export','organizations.view','organizations.update','organizations.manage_members','organizations.switch','settings.view','settings.manage','branding.manage','workflows.*','leave.*','attendance.view','attendance.manage','timesheets.view','timesheets.approve','payroll.view','payroll.manage','payroll.process','payroll.approve','payroll.close','payroll.export','payroll.profile.manage','payroll.paycodes.manage','payroll.inputs.manage','payroll.reports.view','payslips.*','requisitions.*','candidates.*','onboarding.*','offboarding.*','performance.*','learning.*','documents.*','document_types.*','reports.*'],
         'PAYROLL' => ['dashboard.view','employees.view','users.view','timesheets.view','timesheets.approve','attendance.view','payroll.*','payslips.*','documents.view','reports.*'],
         'MANAGER' => ['dashboard.view','employees.view','contracts.view','leave.view','leave.create','leave.approve','attendance.view','attendance.manage','timesheets.view','timesheets.approve','requisitions.view','candidates.view','onboarding.view','offboarding.view','performance.view','performance.manage','learning.view','documents.view','reports.view'],
         'AUTHORISER' => ['dashboard.view','leave.view','leave.approve','timesheets.view','timesheets.approve','payroll.view','payroll.approve','payroll.close','payroll.reports.view','payslips.view','payslips.download','documents.view','reports.view'],

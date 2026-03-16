@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Proportions, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Proportions, Settings, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -46,6 +46,7 @@ const footerNavItems: SidebarNavItem[] = [
     { title: 'Document Types', href: '/document-types', icon: Folder, permissionsAny: ['document_types.view'] },
     { title: 'User Management', href: '/users', icon: Users, permissionsAny: ['users.view'] },
     { title: 'Audit Trail', href: '/audit-trail', icon: History, permissionsAny: ['audit.view'] },
+    { title: 'System Settings', href: '/system-settings', icon: Settings, permissionsAny: ['settings.view'] },
     { title: 'Control Center', href: '/control-center', icon: ShieldCheck, permissionsAny: ['roles.view', 'permissions.view', 'audit.view'] },
 ];
 

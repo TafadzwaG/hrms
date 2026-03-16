@@ -3,6 +3,7 @@ import CurrentOrganizationController from './CurrentOrganizationController'
 import DashboardController from './DashboardController'
 import OrganizationController from './OrganizationController'
 import ControlCenterController from './ControlCenterController'
+import SystemSettingsController from './SystemSettingsController'
 import AuditTrailController from './AuditTrailController'
 import OrgUnitController from './OrgUnitController'
 import LocationController from './LocationController'
@@ -10,6 +11,7 @@ import PermissionMatrixController from './PermissionMatrixController'
 import RoleController from './RoleController'
 import PositionController from './PositionController'
 import EmployeeController from './EmployeeController'
+import EmployeeContractController from './EmployeeContractController'
 import UserController from './UserController'
 import WorkflowDefinitionController from './WorkflowDefinitionController'
 import LeaveRequestController from './LeaveRequestController'
@@ -41,6 +43,7 @@ CurrentOrganizationController: Object.assign(CurrentOrganizationController, Curr
 DashboardController: Object.assign(DashboardController, DashboardController),
 OrganizationController: Object.assign(OrganizationController, OrganizationController),
 ControlCenterController: Object.assign(ControlCenterController, ControlCenterController),
+SystemSettingsController: Object.assign(SystemSettingsController, SystemSettingsController),
 AuditTrailController: Object.assign(AuditTrailController, AuditTrailController),
 OrgUnitController: Object.assign(OrgUnitController, OrgUnitController),
 LocationController: Object.assign(LocationController, LocationController),
@@ -48,6 +51,7 @@ PermissionMatrixController: Object.assign(PermissionMatrixController, Permission
 RoleController: Object.assign(RoleController, RoleController),
 PositionController: Object.assign(PositionController, PositionController),
 EmployeeController: Object.assign(EmployeeController, EmployeeController),
+EmployeeContractController: Object.assign(EmployeeContractController, EmployeeContractController),
 UserController: Object.assign(UserController, UserController),
 WorkflowDefinitionController: Object.assign(WorkflowDefinitionController, WorkflowDefinitionController),
 LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),

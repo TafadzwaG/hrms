@@ -46,6 +46,7 @@ use App\Http\Controllers\Reports\ReportCenterController;
 use App\Http\Controllers\Reports\TimesheetReportController;
 use App\Http\Controllers\Reports\WorkflowDefinitionReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowDefinitionController;
@@ -90,6 +91,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('control-center', [ControlCenterController::class, 'index'])
         ->middleware('permission:roles.view,permissions.view,audit.view')
         ->name('control-center.index');
+
+    Route::prefix('system-settings')
+        ->name('system-settings.')
+        ->group(function () {
+            Route::get('/', [SystemSettingsController::class, 'index'])
+                ->middleware('permission:settings.view')
+                ->name('index');
+
+            Route::put('/general', [SystemSettingsController::class, 'updateGeneral'])
+                ->middleware('permission:settings.manage')
+                ->name('general.update');
+
+            Route::post('/branding/system-logo', [SystemSettingsController::class, 'uploadSystemLogo'])
+                ->middleware('permission:branding.manage')
+                ->name('branding.system-logo');
+
+            Route::post('/branding/company-logo', [SystemSettingsController::class, 'uploadCompanyLogo'])
+                ->middleware('permission:branding.manage')
+                ->name('branding.company-logo');
+
+            Route::put('/branding/theme', [SystemSettingsController::class, 'updateTheme'])
+                ->middleware('permission:branding.manage')
+                ->name('branding.theme.update');
+
+            Route::put('/preferences', [SystemSettingsController::class, 'updatePreferences'])
+                ->middleware('permission:settings.manage')
+                ->name('preferences.update');
+
+            Route::put('/backups', [SystemSettingsController::class, 'updateBackups'])
+                ->middleware('permission:backups.manage')
+                ->name('backups.update');
+
+            Route::post('/backups/run', [SystemSettingsController::class, 'runBackup'])
+                ->middleware('permission:backups.run')
+                ->name('backups.run');
+
+            Route::get('/backups/download/{file}', [SystemSettingsController::class, 'downloadBackup'])
+                ->middleware('permission:backups.manage')
+                ->name('backups.download');
+        });
 
     Route::prefix('audit-trail')
         ->name('audit-trail.')

@@ -4,6 +4,8 @@ use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveCurrentOrganization;
+use App\Support\Backups\ScheduledBackupDispatcher;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,6 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->call(function (): void {
+            app(ScheduledBackupDispatcher::class)->dispatchIfDue();
+        })
+            ->everyMinute()
+            ->name('system-settings:scheduled-backups')
+            ->withoutOverlapping(10);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
