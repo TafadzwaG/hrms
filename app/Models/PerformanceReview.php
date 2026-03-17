@@ -14,7 +14,10 @@ class PerformanceReview extends Model
     protected string $auditModule = 'performance';
 
     protected $fillable = [
+        'organization_id',
         'employee_id',
+        'performance_cycle_id',
+        'employee_scorecard_id',
         'cycle_name',
         'reviewer_name',
         'rating',
@@ -31,5 +34,15 @@ class PerformanceReview extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function cycle(): BelongsTo
+    {
+        return $this->belongsTo(PerformanceCycle::class, 'performance_cycle_id');
+    }
+
+    public function scorecard(): BelongsTo
+    {
+        return $this->belongsTo(EmployeeScorecard::class, 'employee_scorecard_id');
     }
 }

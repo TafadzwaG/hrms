@@ -29,8 +29,14 @@ use App\Http\Controllers\PayslipDeliveryController;
 use App\Http\Controllers\PayrollExportController;
 use App\Http\Controllers\PayrollDashboardController;
 use App\Http\Controllers\PayrollInputController;
+use App\Http\Controllers\PerformanceCycleController;
+use App\Http\Controllers\PerformanceDashboardController;
+use App\Http\Controllers\PerformanceImprovementPlanController;
 use App\Http\Controllers\PerformanceReviewController;
 use App\Http\Controllers\PermissionMatrixController;
+use App\Http\Controllers\KpiLibraryController;
+use App\Http\Controllers\ScorecardTemplateController;
+use App\Http\Controllers\EmployeeScorecardController;
 use App\Http\Controllers\PayrollPayCodeController;
 use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\PayrollResultController;
@@ -48,6 +54,7 @@ use App\Http\Controllers\Reports\OffboardingTaskReportController;
 use App\Http\Controllers\Reports\OnboardingTaskReportController;
 use App\Http\Controllers\Reports\PayrollExportReportController;
 use App\Http\Controllers\Reports\PerformanceReviewReportController;
+use App\Http\Controllers\Reports\PerformanceScorecardReportController;
 use App\Http\Controllers\Reports\ReportCenterController;
 use App\Http\Controllers\Reports\TimesheetReportController;
 use App\Http\Controllers\Reports\WorkflowDefinitionReportController;
@@ -744,6 +751,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'permission:performance.create')
         ->middlewareFor(['edit', 'update'], 'permission:performance.manage')
         ->middlewareFor(['destroy'], 'permission:performance.delete');
+
+    // ── Balanced Scorecard Performance Management ──────────────────────
+    Route::get('performance', PerformanceDashboardController::class)
+        ->middleware('permission:performance.view,performance.dashboard.view')
+        ->name('performance.dashboard');
+
+    Route::resource('performance-cycles', PerformanceCycleController::class)
+        ->middlewareFor(['index', 'show'], 'permission:performance.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:performance.cycles.manage');
+
+    Route::resource('kpi-library', KpiLibraryController::class)
+        ->middlewareFor(['index', 'show'], 'permission:performance.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:performance.kpis.manage');
+
+    Route::resource('scorecard-templates', ScorecardTemplateController::class)
+        ->middlewareFor(['index', 'show'], 'permission:performance.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:performance.templates.manage');
+
+    Route::resource('employee-scorecards', EmployeeScorecardController::class)
+        ->middlewareFor(['index', 'show'], 'permission:performance.scorecards.view')
+        ->middlewareFor(['create', 'store'], 'permission:performance.scorecards.manage')
+        ->middlewareFor(['edit', 'update'], 'permission:performance.scorecards.manage')
+        ->middlewareFor(['destroy'], 'permission:performance.scorecards.manage');
+
+    Route::post('employee-scorecards/{employee_scorecard}/self-assessment', [EmployeeScorecardController::class, 'submitSelfAssessment'])
+        ->middleware('permission:performance.self_assess')
+        ->name('employee-scorecards.self-assessment');
+    Route::post('employee-scorecards/{employee_scorecard}/manager-review', [EmployeeScorecardController::class, 'submitManagerReview'])
+        ->middleware('permission:performance.review')
+        ->name('employee-scorecards.manager-review');
+    Route::post('employee-scorecards/{employee_scorecard}/finalize', [EmployeeScorecardController::class, 'finalize'])
+        ->middleware('permission:performance.finalize')
+        ->name('employee-scorecards.finalize');
+    Route::post('employee-scorecards/{employee_scorecard}/comments', [EmployeeScorecardController::class, 'storeComment'])
+        ->middleware('permission:performance.view')
+        ->name('employee-scorecards.comments.store');
+    Route::post('employee-scorecards/{employee_scorecard}/evidence', [EmployeeScorecardController::class, 'storeEvidence'])
+        ->middleware('permission:performance.scorecards.view')
+        ->name('employee-scorecards.evidence.store');
+    Route::get('employee-scorecards/{employee_scorecard}/evidence/{evidence}/download', [EmployeeScorecardController::class, 'downloadEvidence'])
+        ->middleware('permission:performance.scorecards.view')
+        ->name('employee-scorecards.evidence.download');
+    Route::delete('employee-scorecards/{employee_scorecard}/evidence/{evidence}', [EmployeeScorecardController::class, 'destroyEvidence'])
+        ->middleware('permission:performance.scorecards.manage')
+        ->name('employee-scorecards.evidence.destroy');
+
+    Route::resource('improvement-plans', PerformanceImprovementPlanController::class)
+        ->middlewareFor(['index', 'show'], 'permission:performance.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:performance.improvement_plans.manage');
+
     Route::resource('learning-courses', LearningCourseController::class)
         ->middlewareFor(['index', 'show'], 'permission:learning.view')
         ->middlewareFor(['create', 'store'], 'permission:learning.create')
@@ -877,6 +934,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('by-reviewer', [PerformanceReviewReportController::class, 'byReviewer'])->name('by-reviewer');
                 Route::get('by-rating', [PerformanceReviewReportController::class, 'byRating'])->name('by-rating');
                 Route::get('overdue', [PerformanceReviewReportController::class, 'overdue'])->name('overdue');
+            });
+
+            Route::prefix('performance-scorecards')->name('performance-scorecards.')->group(function () {
+                Route::get('register', [PerformanceScorecardReportController::class, 'scorecardRegister'])->name('register');
+                Route::get('by-perspective', [PerformanceScorecardReportController::class, 'byPerspective'])->name('by-perspective');
+                Route::get('by-cycle', [PerformanceScorecardReportController::class, 'byCycle'])->name('by-cycle');
+                Route::get('by-rating', [PerformanceScorecardReportController::class, 'byRating'])->name('by-rating');
+                Route::get('pending-reviews', [PerformanceScorecardReportController::class, 'pendingReviews'])->name('pending-reviews');
+                Route::get('top-performers', [PerformanceScorecardReportController::class, 'topPerformers'])->name('top-performers');
+                Route::get('improvement-plans', [PerformanceScorecardReportController::class, 'improvementPlans'])->name('improvement-plans');
             });
 
             Route::prefix('learning-courses')->name('learning-courses.')->group(function () {

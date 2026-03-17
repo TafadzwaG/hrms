@@ -12,6 +12,11 @@ import RoleController from './RoleController'
 import PositionController from './PositionController'
 import EmployeeController from './EmployeeController'
 import EmployeeContractController from './EmployeeContractController'
+import AssetController from './AssetController'
+import AssetMaintenanceController from './AssetMaintenanceController'
+import AssetCategoryController from './AssetCategoryController'
+import AssetVendorController from './AssetVendorController'
+import AssetLocationController from './AssetLocationController'
 import UserController from './UserController'
 import WorkflowDefinitionController from './WorkflowDefinitionController'
 import LeaveRequestController from './LeaveRequestController'
@@ -32,6 +37,12 @@ import CandidateProfileController from './CandidateProfileController'
 import OnboardingTaskController from './OnboardingTaskController'
 import OffboardingTaskController from './OffboardingTaskController'
 import PerformanceReviewController from './PerformanceReviewController'
+import PerformanceDashboardController from './PerformanceDashboardController'
+import PerformanceCycleController from './PerformanceCycleController'
+import KpiLibraryController from './KpiLibraryController'
+import ScorecardTemplateController from './ScorecardTemplateController'
+import EmployeeScorecardController from './EmployeeScorecardController'
+import PerformanceImprovementPlanController from './PerformanceImprovementPlanController'
 import LearningCourseController from './LearningCourseController'
 import DocumentTypeController from './DocumentTypeController'
 import DocumentController from './DocumentController'
@@ -52,6 +63,11 @@ RoleController: Object.assign(RoleController, RoleController),
 PositionController: Object.assign(PositionController, PositionController),
 EmployeeController: Object.assign(EmployeeController, EmployeeController),
 EmployeeContractController: Object.assign(EmployeeContractController, EmployeeContractController),
+AssetController: Object.assign(AssetController, AssetController),
+AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaintenanceController),
+AssetCategoryController: Object.assign(AssetCategoryController, AssetCategoryController),
+AssetVendorController: Object.assign(AssetVendorController, AssetVendorController),
+AssetLocationController: Object.assign(AssetLocationController, AssetLocationController),
 UserController: Object.assign(UserController, UserController),
 WorkflowDefinitionController: Object.assign(WorkflowDefinitionController, WorkflowDefinitionController),
 LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),
@@ -72,6 +88,12 @@ CandidateProfileController: Object.assign(CandidateProfileController, CandidateP
 OnboardingTaskController: Object.assign(OnboardingTaskController, OnboardingTaskController),
 OffboardingTaskController: Object.assign(OffboardingTaskController, OffboardingTaskController),
 PerformanceReviewController: Object.assign(PerformanceReviewController, PerformanceReviewController),
+PerformanceDashboardController: Object.assign(PerformanceDashboardController, PerformanceDashboardController),
+PerformanceCycleController: Object.assign(PerformanceCycleController, PerformanceCycleController),
+KpiLibraryController: Object.assign(KpiLibraryController, KpiLibraryController),
+ScorecardTemplateController: Object.assign(ScorecardTemplateController, ScorecardTemplateController),
+EmployeeScorecardController: Object.assign(EmployeeScorecardController, EmployeeScorecardController),
+PerformanceImprovementPlanController: Object.assign(PerformanceImprovementPlanController, PerformanceImprovementPlanController),
 LearningCourseController: Object.assign(LearningCourseController, LearningCourseController),
 DocumentTypeController: Object.assign(DocumentTypeController, DocumentTypeController),
 DocumentController: Object.assign(DocumentController, DocumentController),

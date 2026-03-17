@@ -226,6 +226,15 @@ type EmployeePayload = {
         status: string;
         show_url: string;
     }[];
+    scorecards: {
+        id: number;
+        cycle: { id: number; title: string } | null;
+        status: string;
+        overall_score: string | null;
+        overall_rating: string | null;
+        finalized_at: string | null;
+        created_at: string | null;
+    }[];
     stats: {
         documents_count: number;
         next_of_kin_count: number;
@@ -233,6 +242,7 @@ type EmployeePayload = {
         kpis_count: number;
         contracts_count: number;
         asset_assignments_count: number;
+        scorecards_count: number;
     };
     links: {
         document_store: string;
@@ -906,6 +916,12 @@ export default function EmployeeShow() {
                                     >
                                         Assets
                                     </TabsTrigger>
+                                    <TabsTrigger
+                                        value="performance"
+                                        className={tabClass}
+                                    >
+                                        Performance
+                                    </TabsTrigger>
                                 </TabsList>
                             </div>
                             <TabsContent
@@ -1002,6 +1018,12 @@ export default function EmployeeShow() {
                                 className="mt-8 space-y-6 focus-visible:ring-0"
                             >
                                 <AssetsTab employee={employee} />
+                            </TabsContent>
+                            <TabsContent
+                                value="performance"
+                                className="mt-8 space-y-6 focus-visible:ring-0"
+                            >
+                                <PerformanceTab employee={employee} />
                             </TabsContent>
                         </Tabs>
                     </div>
@@ -3391,6 +3413,141 @@ function AssetsTab({ employee }: { employee: EmployeePayload }) {
                     </CardContent>
                 </Card>
             )}
+        </div>
+    );
+}
+
+function PerformanceTab({ employee }: { employee: EmployeePayload }) {
+    const scorecards = employee.scorecards || [];
+    const latestScorecard = scorecards.length > 0 ? scorecards[0] : null;
+
+    function scorecardStatusBadge(status: string) {
+        const s = status.toLowerCase();
+        if (s === 'finalized') return 'border-transparent bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-emerald-700 uppercase shadow-none';
+        if (s === 'manager_reviewed') return 'border-transparent bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-indigo-700 uppercase shadow-none';
+        if (s.includes('pending') || s === 'draft') return 'border-transparent bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-amber-700 uppercase shadow-none';
+        return 'border-transparent bg-muted px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-foreground uppercase shadow-none';
+    }
+
+    function ratingBadge(rating: string | null) {
+        if (!rating) return null;
+        const r = rating.toLowerCase();
+        if (r === 'outstanding') return 'border-transparent bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-emerald-700 uppercase shadow-none';
+        if (r === 'very good') return 'border-transparent bg-blue-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-blue-700 uppercase shadow-none';
+        if (r === 'good') return 'border-transparent bg-teal-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-teal-700 uppercase shadow-none';
+        if (r === 'needs improvement') return 'border-transparent bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-amber-700 uppercase shadow-none';
+        return 'border-transparent bg-red-100 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-red-700 uppercase shadow-none';
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Current Performance Summary */}
+            {latestScorecard && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Target className="h-5 w-5 text-primary" />
+                            Current Performance Summary
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4 sm:grid-cols-4">
+                            <div>
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Cycle</p>
+                                <p className="mt-1 text-sm font-semibold">{latestScorecard.cycle?.title ?? '—'}</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Status</p>
+                                <Badge className={scorecardStatusBadge(latestScorecard.status)}>
+                                    {latestScorecard.status.replace(/_/g, ' ')}
+                                </Badge>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Overall Score</p>
+                                <p className="mt-1 text-sm font-semibold">
+                                    {latestScorecard.overall_score ? `${Number(latestScorecard.overall_score).toFixed(1)}%` : '—'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Rating</p>
+                                {latestScorecard.overall_rating ? (
+                                    <Badge className={ratingBadge(latestScorecard.overall_rating) ?? ''}>
+                                        {latestScorecard.overall_rating}
+                                    </Badge>
+                                ) : (
+                                    <p className="mt-1 text-sm text-muted-foreground">—</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="mt-4">
+                            <Link href={`/employee-scorecards/${latestScorecard.id}`}>
+                                <Button variant="outline" size="sm">View Scorecard</Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Scorecard History */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        Performance History ({scorecards.length})
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {scorecards.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <Target className="mb-4 h-10 w-10 text-muted-foreground/50" />
+                            <p className="text-sm text-muted-foreground">No performance scorecards found.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b text-left text-muted-foreground">
+                                        <th className="pb-2 font-medium">Cycle</th>
+                                        <th className="pb-2 font-medium">Status</th>
+                                        <th className="pb-2 font-medium">Score</th>
+                                        <th className="pb-2 font-medium">Rating</th>
+                                        <th className="pb-2 font-medium">Finalized</th>
+                                        <th className="pb-2 text-right font-medium">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {scorecards.map((sc) => (
+                                        <tr key={sc.id} className="border-b last:border-0">
+                                            <td className="py-2.5 font-medium">{sc.cycle?.title ?? '—'}</td>
+                                            <td className="py-2.5">
+                                                <Badge className={scorecardStatusBadge(sc.status)}>
+                                                    {sc.status.replace(/_/g, ' ')}
+                                                </Badge>
+                                            </td>
+                                            <td className="py-2.5">
+                                                {sc.overall_score ? `${Number(sc.overall_score).toFixed(1)}%` : '—'}
+                                            </td>
+                                            <td className="py-2.5">
+                                                {sc.overall_rating ? (
+                                                    <Badge className={ratingBadge(sc.overall_rating) ?? ''}>
+                                                        {sc.overall_rating}
+                                                    </Badge>
+                                                ) : '—'}
+                                            </td>
+                                            <td className="py-2.5">{sc.finalized_at ?? '—'}</td>
+                                            <td className="py-2.5 text-right">
+                                                <Link href={`/employee-scorecards/${sc.id}`}>
+                                                    <Button variant="ghost" size="sm">View</Button>
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

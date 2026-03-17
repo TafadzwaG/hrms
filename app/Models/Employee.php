@@ -162,6 +162,21 @@ class Employee extends Model
         return $this->hasMany(AssetAssignment::class)->where('status', 'active');
     }
 
+    public function scorecards(): HasMany
+    {
+        return $this->hasMany(EmployeeScorecard::class)->orderByDesc('created_at');
+    }
+
+    public function currentScorecard(): HasOne
+    {
+        return $this->hasOne(EmployeeScorecard::class)->latestOfMany();
+    }
+
+    public function improvementPlans(): HasMany
+    {
+        return $this->hasMany(PerformanceImprovementPlan::class);
+    }
+
     // Helpful computed full name (optional)
     public function getFullNameAttribute(): string
     {

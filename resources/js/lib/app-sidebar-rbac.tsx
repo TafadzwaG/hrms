@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -34,6 +34,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
     { title: 'Payroll', href: '/payroll', icon: Folder, permissionsAny: ['payroll.view'] },
     { title: 'Assets', href: '/assets', icon: Package, permissionsAny: ['assets.view'] },
+    { title: 'Performance', href: '/performance', icon: Target, permissionsAny: ['performance.view', 'performance.dashboard.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
 
@@ -63,7 +64,12 @@ const footerNavGroups: SidebarNavGroup[] = [
         items: [
             { title: 'Requisitions', href: '/job-requisitions', icon: Folder, permissionsAny: ['requisitions.view'] },
             { title: 'Candidates', href: '/candidates', icon: User, permissionsAny: ['candidates.view'] },
-            { title: 'Performance', href: '/performance-reviews', icon: UserRoundCheckIcon, permissionsAny: ['performance.view'] },
+            { title: 'Performance Reviews', href: '/performance-reviews', icon: UserRoundCheckIcon, permissionsAny: ['performance.view'] },
+            { title: 'Review Cycles', href: '/performance-cycles', icon: Target, permissionsAny: ['performance.cycles.manage'] },
+            { title: 'KPI Library', href: '/kpi-library', icon: Target, permissionsAny: ['performance.kpis.manage'] },
+            { title: 'Scorecard Templates', href: '/scorecard-templates', icon: Target, permissionsAny: ['performance.templates.manage'] },
+            { title: 'Employee Scorecards', href: '/employee-scorecards', icon: Target, permissionsAny: ['performance.scorecards.view'] },
+            { title: 'Improvement Plans', href: '/improvement-plans', icon: Target, permissionsAny: ['performance.improvement_plans.manage'] },
             { title: 'Learning', href: '/learning-courses', icon: BookOpen, permissionsAny: ['learning.view'] },
         ],
     },
@@ -77,7 +83,7 @@ const footerNavGroups: SidebarNavGroup[] = [
         ],
     },
     {
-        title: 'Document Management',
+        title: 'Repository',
         icon: FileText,
         items: [
             { title: 'Document Types', href: '/document-types', icon: Folder, permissionsAny: ['document_types.view'] },

@@ -192,6 +192,7 @@ class EmployeeController extends Controller
             'contracts.department:id,name',
             'contracts.position:id,name',
             'assetAssignments.asset:id,asset_tag,name,status',
+            'scorecards.cycle:id,title',
         ]);
 
         return Inertia::render('Employees/Show', [
@@ -292,6 +293,15 @@ class EmployeeController extends Controller
                     'status' => $a->status,
                     'show_url' => "/assets/{$a->asset_id}",
                 ])->values()->all(),
+                'scorecards' => $employee->scorecards->map(fn (\App\Models\EmployeeScorecard $sc) => [
+                    'id' => $sc->id,
+                    'cycle' => $sc->cycle ? ['id' => $sc->cycle->id, 'title' => $sc->cycle->title] : null,
+                    'status' => $sc->status,
+                    'overall_score' => $sc->overall_score,
+                    'overall_rating' => $sc->overall_rating,
+                    'finalized_at' => optional($sc->finalized_at)?->toDateString(),
+                    'created_at' => optional($sc->created_at)?->toDateString(),
+                ])->values()->all(),
                 'stats' => [
                     'documents_count' => $employee->documents->count(),
                     'next_of_kin_count' => $employee->nextOfKin->count(),
@@ -299,6 +309,7 @@ class EmployeeController extends Controller
                     'kpis_count' => $employee->kpis->count(),
                     'contracts_count' => $employee->contracts->count(),
                     'asset_assignments_count' => $employee->assetAssignments->count(),
+                    'scorecards_count' => $employee->scorecards->count(),
                 ],
                 'links' => [
                     'document_store' => "/employees/{$employee->id}/documents",

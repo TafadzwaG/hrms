@@ -12,6 +12,8 @@ use App\Models\LeaveRequest;
 use App\Models\OffboardingTask;
 use App\Models\OnboardingTask;
 use App\Models\PayrollExport;
+use App\Models\EmployeeScorecard;
+use App\Models\PerformanceCycle;
 use App\Models\PerformanceReview;
 use App\Models\Timesheet;
 use App\Models\Asset;
@@ -35,6 +37,8 @@ class ReportCenterController extends BaseReportController
                 'onboarding_tasks' => OnboardingTask::count(),
                 'offboarding_tasks' => OffboardingTask::count(),
                 'performance_reviews' => PerformanceReview::count(),
+                'performance_cycles' => PerformanceCycle::count(),
+                'employee_scorecards' => EmployeeScorecard::count(),
                 'learning_courses' => LearningCourse::count(),
                 'documents' => Document::count(),
                 'assets' => Asset::count(),

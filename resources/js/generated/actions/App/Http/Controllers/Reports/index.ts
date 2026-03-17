@@ -10,7 +10,9 @@ import CandidateProfileReportController from './CandidateProfileReportController
 import OnboardingTaskReportController from './OnboardingTaskReportController'
 import OffboardingTaskReportController from './OffboardingTaskReportController'
 import PerformanceReviewReportController from './PerformanceReviewReportController'
+import PerformanceScorecardReportController from './PerformanceScorecardReportController'
 import LearningCourseReportController from './LearningCourseReportController'
+import AssetReportController from './AssetReportController'
 import DocumentReportController from './DocumentReportController'
 const Reports = {
     ReportCenterController: Object.assign(ReportCenterController, ReportCenterController),
@@ -25,7 +27,9 @@ CandidateProfileReportController: Object.assign(CandidateProfileReportController
 OnboardingTaskReportController: Object.assign(OnboardingTaskReportController, OnboardingTaskReportController),
 OffboardingTaskReportController: Object.assign(OffboardingTaskReportController, OffboardingTaskReportController),
 PerformanceReviewReportController: Object.assign(PerformanceReviewReportController, PerformanceReviewReportController),
+PerformanceScorecardReportController: Object.assign(PerformanceScorecardReportController, PerformanceScorecardReportController),
 LearningCourseReportController: Object.assign(LearningCourseReportController, LearningCourseReportController),
+AssetReportController: Object.assign(AssetReportController, AssetReportController),
 DocumentReportController: Object.assign(DocumentReportController, DocumentReportController),
 }
 
