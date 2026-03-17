@@ -94,7 +94,7 @@ return new class extends Migration
         Schema::create('employee_benefit_dependants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('employee_benefit_enrollment_id')->constrained('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->unsignedBigInteger('employee_benefit_enrollment_id');
             $table->string('full_name');
             $table->string('relationship', 50);
             $table->date('date_of_birth')->nullable();
@@ -106,7 +106,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index('employee_benefit_enrollment_id');
+            $table->foreign('employee_benefit_enrollment_id', 'emp_benefit_dep_enrollment_fk')
+                ->references('id')->on('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->index('employee_benefit_enrollment_id', 'emp_benefit_dep_enrollment_idx');
             $table->index('organization_id');
         });
 
@@ -138,7 +140,7 @@ return new class extends Migration
         Schema::create('benefit_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('employee_benefit_enrollment_id')->constrained('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->unsignedBigInteger('employee_benefit_enrollment_id');
             $table->string('file_name');
             $table->string('file_path');
             $table->string('mime_type')->nullable();
@@ -147,7 +149,9 @@ return new class extends Migration
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index('employee_benefit_enrollment_id');
+            $table->foreign('employee_benefit_enrollment_id', 'benefit_docs_enrollment_fk')
+                ->references('id')->on('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->index('employee_benefit_enrollment_id', 'benefit_docs_enrollment_idx');
             $table->index('organization_id');
         });
 
@@ -155,7 +159,7 @@ return new class extends Migration
         Schema::create('benefit_change_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('employee_benefit_enrollment_id')->constrained('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->unsignedBigInteger('employee_benefit_enrollment_id');
             $table->string('event', 50);
             $table->string('from_status', 50)->nullable();
             $table->string('to_status', 50)->nullable();
@@ -165,7 +169,9 @@ return new class extends Migration
             $table->foreignId('changed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index('employee_benefit_enrollment_id');
+            $table->foreign('employee_benefit_enrollment_id', 'benefit_logs_enrollment_fk')
+                ->references('id')->on('employee_benefit_enrollments')->cascadeOnDelete();
+            $table->index('employee_benefit_enrollment_id', 'benefit_logs_enrollment_idx');
             $table->index('organization_id');
             $table->index('event');
         });
