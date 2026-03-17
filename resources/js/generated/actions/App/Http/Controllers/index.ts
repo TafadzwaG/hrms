@@ -43,6 +43,12 @@ import KpiLibraryController from './KpiLibraryController'
 import ScorecardTemplateController from './ScorecardTemplateController'
 import EmployeeScorecardController from './EmployeeScorecardController'
 import PerformanceImprovementPlanController from './PerformanceImprovementPlanController'
+import BenefitsDashboardController from './BenefitsDashboardController'
+import BenefitController from './BenefitController'
+import BenefitPlanController from './BenefitPlanController'
+import BenefitContributionRuleController from './BenefitContributionRuleController'
+import EmployeeBenefitEnrollmentController from './EmployeeBenefitEnrollmentController'
+import EmployeeBenefitDependantController from './EmployeeBenefitDependantController'
 import LearningCourseController from './LearningCourseController'
 import DocumentTypeController from './DocumentTypeController'
 import DocumentController from './DocumentController'
@@ -94,6 +100,12 @@ KpiLibraryController: Object.assign(KpiLibraryController, KpiLibraryController),
 ScorecardTemplateController: Object.assign(ScorecardTemplateController, ScorecardTemplateController),
 EmployeeScorecardController: Object.assign(EmployeeScorecardController, EmployeeScorecardController),
 PerformanceImprovementPlanController: Object.assign(PerformanceImprovementPlanController, PerformanceImprovementPlanController),
+BenefitsDashboardController: Object.assign(BenefitsDashboardController, BenefitsDashboardController),
+BenefitController: Object.assign(BenefitController, BenefitController),
+BenefitPlanController: Object.assign(BenefitPlanController, BenefitPlanController),
+BenefitContributionRuleController: Object.assign(BenefitContributionRuleController, BenefitContributionRuleController),
+EmployeeBenefitEnrollmentController: Object.assign(EmployeeBenefitEnrollmentController, EmployeeBenefitEnrollmentController),
+EmployeeBenefitDependantController: Object.assign(EmployeeBenefitDependantController, EmployeeBenefitDependantController),
 LearningCourseController: Object.assign(LearningCourseController, LearningCourseController),
 DocumentTypeController: Object.assign(DocumentTypeController, DocumentTypeController),
 DocumentController: Object.assign(DocumentController, DocumentController),

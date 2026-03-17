@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Building, Building2, FileText, Folder, Heart, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -34,6 +34,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
     { title: 'Payroll', href: '/payroll', icon: Folder, permissionsAny: ['payroll.view'] },
     { title: 'Assets', href: '/assets', icon: Package, permissionsAny: ['assets.view'] },
+    { title: 'Benefits', href: '/benefits/dashboard', icon: Heart, permissionsAny: ['benefits.view'] },
     { title: 'Performance', href: '/performance', icon: Target, permissionsAny: ['performance.view', 'performance.dashboard.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
@@ -71,6 +72,15 @@ const footerNavGroups: SidebarNavGroup[] = [
             { title: 'Employee Scorecards', href: '/employee-scorecards', icon: Target, permissionsAny: ['performance.scorecards.view'] },
             { title: 'Improvement Plans', href: '/improvement-plans', icon: Target, permissionsAny: ['performance.improvement_plans.manage'] },
             { title: 'Learning', href: '/learning-courses', icon: BookOpen, permissionsAny: ['learning.view'] },
+        ],
+    },
+    {
+        title: 'Benefits Admin',
+        icon: Heart,
+        items: [
+            { title: 'Benefits Catalog', href: '/benefits', icon: Heart, permissionsAny: ['benefits.view'] },
+            { title: 'Enrollments', href: '/benefit-enrollments', icon: Heart, permissionsAny: ['benefits.enrollments.manage'] },
+            { title: 'Benefit Reports', href: '/benefits/dashboard', icon: Heart, permissionsAny: ['benefits.reports.view'] },
         ],
     },
     {

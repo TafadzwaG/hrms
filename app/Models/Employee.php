@@ -177,6 +177,16 @@ class Employee extends Model
         return $this->hasMany(PerformanceImprovementPlan::class);
     }
 
+    public function benefitEnrollments(): HasMany
+    {
+        return $this->hasMany(EmployeeBenefitEnrollment::class)->orderByDesc('effective_date');
+    }
+
+    public function activeBenefitEnrollments(): HasMany
+    {
+        return $this->hasMany(EmployeeBenefitEnrollment::class)->where('status', 'active');
+    }
+
     // Helpful computed full name (optional)
     public function getFullNameAttribute(): string
     {

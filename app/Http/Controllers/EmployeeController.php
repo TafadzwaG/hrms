@@ -193,6 +193,8 @@ class EmployeeController extends Controller
             'contracts.position:id,name',
             'assetAssignments.asset:id,asset_tag,name,status',
             'scorecards.cycle:id,title',
+            'benefitEnrollments.benefit:id,name,category',
+            'benefitEnrollments.plan:id,name',
         ]);
 
         return Inertia::render('Employees/Show', [
@@ -302,6 +304,17 @@ class EmployeeController extends Controller
                     'finalized_at' => optional($sc->finalized_at)?->toDateString(),
                     'created_at' => optional($sc->created_at)?->toDateString(),
                 ])->values()->all(),
+                'benefit_enrollments' => $employee->benefitEnrollments->map(fn (\App\Models\EmployeeBenefitEnrollment $e) => [
+                    'id' => $e->id,
+                    'benefit' => $e->benefit ? ['id' => $e->benefit->id, 'name' => $e->benefit->name, 'category' => $e->benefit->category] : null,
+                    'plan' => $e->plan ? ['id' => $e->plan->id, 'name' => $e->plan->name] : null,
+                    'status' => $e->status,
+                    'effective_date' => optional($e->effective_date)?->toDateString(),
+                    'end_date' => optional($e->end_date)?->toDateString(),
+                    'employee_contribution' => $e->employee_contribution,
+                    'employer_contribution' => $e->employer_contribution,
+                    'show_url' => "/benefit-enrollments/{$e->id}",
+                ])->values()->all(),
                 'stats' => [
                     'documents_count' => $employee->documents->count(),
                     'next_of_kin_count' => $employee->nextOfKin->count(),
@@ -310,6 +323,7 @@ class EmployeeController extends Controller
                     'contracts_count' => $employee->contracts->count(),
                     'asset_assignments_count' => $employee->assetAssignments->count(),
                     'scorecards_count' => $employee->scorecards->count(),
+                    'benefit_enrollments_count' => $employee->benefitEnrollments->count(),
                 ],
                 'links' => [
                     'document_store' => "/employees/{$employee->id}/documents",

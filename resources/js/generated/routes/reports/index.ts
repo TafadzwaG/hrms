@@ -13,10 +13,11 @@ import performanceReviews from './performance-reviews'
 import performanceScorecards from './performance-scorecards'
 import learningCourses from './learning-courses'
 import assets from './assets'
+import benefits from './benefits'
 import documents from './documents'
 /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +32,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -40,7 +41,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,7 +50,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -59,7 +60,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -69,7 +70,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -78,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
- * @see app/Http/Controllers/Reports/ReportCenterController.php:25
+ * @see app/Http/Controllers/Reports/ReportCenterController.php:27
  * @route '/reports'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -108,6 +109,7 @@ performanceReviews: Object.assign(performanceReviews, performanceReviews),
 performanceScorecards: Object.assign(performanceScorecards, performanceScorecards),
 learningCourses: Object.assign(learningCourses, learningCourses),
 assets: Object.assign(assets, assets),
+benefits: Object.assign(benefits, benefits),
 documents: Object.assign(documents, documents),
 }
 

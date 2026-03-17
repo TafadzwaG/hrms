@@ -17,6 +17,8 @@ use App\Models\PerformanceCycle;
 use App\Models\PerformanceReview;
 use App\Models\Timesheet;
 use App\Models\Asset;
+use App\Models\Benefit;
+use App\Models\EmployeeBenefitEnrollment;
 use App\Models\WorkflowDefinition;
 use Inertia\Inertia;
 
@@ -42,6 +44,8 @@ class ReportCenterController extends BaseReportController
                 'learning_courses' => LearningCourse::count(),
                 'documents' => Document::count(),
                 'assets' => Asset::count(),
+                'benefits' => Benefit::count(),
+                'benefit_enrollments' => EmployeeBenefitEnrollment::count(),
             ],
         ]);
     }

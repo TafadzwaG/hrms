@@ -64,6 +64,13 @@ use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkflowDefinitionController;
 use App\Http\Controllers\EmployeePayrollProfileController;
+use App\Http\Controllers\BenefitController;
+use App\Http\Controllers\BenefitPlanController;
+use App\Http\Controllers\EmployeeBenefitEnrollmentController;
+use App\Http\Controllers\EmployeeBenefitDependantController;
+use App\Http\Controllers\BenefitContributionRuleController;
+use App\Http\Controllers\BenefitsDashboardController;
+use App\Http\Controllers\Reports\BenefitReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -801,6 +808,65 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['index', 'show'], 'permission:performance.view')
         ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:performance.improvement_plans.manage');
 
+    // ── Benefits Management ──────────────────────────────────
+    Route::get('benefits/dashboard', BenefitsDashboardController::class)
+        ->middleware('permission:benefits.view')
+        ->name('benefits.dashboard');
+
+    Route::resource('benefits', BenefitController::class)
+        ->middlewareFor(['index', 'show'], 'permission:benefits.view')
+        ->middlewareFor(['create', 'store'], 'permission:benefits.create')
+        ->middlewareFor(['edit', 'update'], 'permission:benefits.update')
+        ->middlewareFor(['destroy'], 'permission:benefits.delete');
+
+    Route::resource('benefits.plans', BenefitPlanController::class)
+        ->middlewareFor(['index', 'show'], 'permission:benefits.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:benefits.plans.manage');
+
+    Route::post('benefits/{benefit}/contribution-rules', [BenefitContributionRuleController::class, 'store'])
+        ->middleware('permission:benefits.update')
+        ->name('benefits.contribution-rules.store');
+    Route::put('benefits/{benefit}/contribution-rules/{rule}', [BenefitContributionRuleController::class, 'update'])
+        ->middleware('permission:benefits.update')
+        ->name('benefits.contribution-rules.update');
+    Route::delete('benefits/{benefit}/contribution-rules/{rule}', [BenefitContributionRuleController::class, 'destroy'])
+        ->middleware('permission:benefits.update')
+        ->name('benefits.contribution-rules.destroy');
+
+    Route::resource('benefit-enrollments', EmployeeBenefitEnrollmentController::class)
+        ->middlewareFor(['index', 'show'], 'permission:benefits.view')
+        ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'permission:benefits.enrollments.manage');
+
+    Route::post('benefit-enrollments/{enrollment}/suspend', [EmployeeBenefitEnrollmentController::class, 'suspend'])
+        ->middleware('permission:benefits.enrollments.manage')
+        ->name('benefit-enrollments.suspend');
+    Route::post('benefit-enrollments/{enrollment}/terminate', [EmployeeBenefitEnrollmentController::class, 'terminate'])
+        ->middleware('permission:benefits.enrollments.manage')
+        ->name('benefit-enrollments.terminate');
+    Route::post('benefit-enrollments/{enrollment}/reinstate', [EmployeeBenefitEnrollmentController::class, 'reinstate'])
+        ->middleware('permission:benefits.enrollments.manage')
+        ->name('benefit-enrollments.reinstate');
+
+    Route::post('benefit-enrollments/{enrollment}/documents', [EmployeeBenefitEnrollmentController::class, 'storeDocument'])
+        ->middleware('permission:benefits.documents.manage')
+        ->name('benefit-enrollments.documents.store');
+    Route::get('benefit-enrollments/{enrollment}/documents/{document}/download', [EmployeeBenefitEnrollmentController::class, 'downloadDocument'])
+        ->middleware('permission:benefits.view')
+        ->name('benefit-enrollments.documents.download');
+    Route::delete('benefit-enrollments/{enrollment}/documents/{document}', [EmployeeBenefitEnrollmentController::class, 'destroyDocument'])
+        ->middleware('permission:benefits.documents.manage')
+        ->name('benefit-enrollments.documents.destroy');
+
+    Route::post('benefit-enrollments/{enrollment}/dependants', [EmployeeBenefitDependantController::class, 'store'])
+        ->middleware('permission:benefits.dependants.manage')
+        ->name('benefit-enrollments.dependants.store');
+    Route::put('benefit-enrollments/{enrollment}/dependants/{dependant}', [EmployeeBenefitDependantController::class, 'update'])
+        ->middleware('permission:benefits.dependants.manage')
+        ->name('benefit-enrollments.dependants.update');
+    Route::delete('benefit-enrollments/{enrollment}/dependants/{dependant}', [EmployeeBenefitDependantController::class, 'destroy'])
+        ->middleware('permission:benefits.dependants.manage')
+        ->name('benefit-enrollments.dependants.destroy');
+
     Route::resource('learning-courses', LearningCourseController::class)
         ->middlewareFor(['index', 'show'], 'permission:learning.view')
         ->middlewareFor(['create', 'store'], 'permission:learning.create')
@@ -965,6 +1031,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('assignments', [AssetReportController::class, 'assignments'])->name('assignments');
                 Route::get('maintenance', [AssetReportController::class, 'maintenance'])->name('maintenance');
                 Route::get('depreciation', [AssetReportController::class, 'depreciation'])->name('depreciation');
+            });
+
+            Route::prefix('benefits')->name('benefits.')->group(function () {
+                Route::get('register', [BenefitReportController::class, 'register'])->name('register');
+                Route::get('active-enrollments', [BenefitReportController::class, 'activeEnrollments'])->name('active-enrollments');
+                Route::get('by-department', [BenefitReportController::class, 'byDepartment'])->name('by-department');
+                Route::get('employer-contributions', [BenefitReportController::class, 'employerContributions'])->name('employer-contributions');
+                Route::get('employee-contributions', [BenefitReportController::class, 'employeeContributions'])->name('employee-contributions');
+                Route::get('dependants', [BenefitReportController::class, 'dependants'])->name('dependants');
+                Route::get('by-cost', [BenefitReportController::class, 'byCost'])->name('by-cost');
+                Route::get('expired-suspended', [BenefitReportController::class, 'expiredSuspended'])->name('expired-suspended');
             });
 
             Route::prefix('documents')->name('documents.')->group(function () {
