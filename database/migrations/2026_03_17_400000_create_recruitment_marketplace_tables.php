@@ -9,9 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Alter candidate_profiles to add marketplace fields
+        // Note: organization_id already added by 2026_03_15_120100, user_id already added by 2026_03_15_200000
         Schema::table('candidate_profiles', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('organization_id')->nullable()->constrained()->nullOnDelete();
             $table->string('alt_phone')->nullable();
             $table->string('national_id')->nullable();
             $table->string('gender', 20)->nullable();
@@ -32,8 +31,6 @@ return new class extends Migration
             $table->timestamp('listing_expires_at')->nullable();
             $table->json('metadata')->nullable();
 
-            $table->index('user_id');
-            $table->index('organization_id');
             $table->index('profile_visibility_status');
             $table->index('is_public');
         });
@@ -230,11 +227,7 @@ return new class extends Migration
         Schema::dropIfExists('candidate_resumes');
 
         Schema::table('candidate_profiles', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['organization_id']);
             $table->dropColumn([
-                'user_id',
-                'organization_id',
                 'alt_phone',
                 'national_id',
                 'gender',
