@@ -80,17 +80,44 @@ use App\Http\Controllers\VacancyApplicationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\RecruitmentDashboardController;
 use App\Http\Controllers\Reports\RecruitmentReportController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\CandidateAuthController;
+use App\Http\Controllers\CandidateHubDashboardController;
+use App\Http\Controllers\EmployerAuthController;
+use App\Http\Controllers\EmployerHubDashboardController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return Auth::check()
         ? redirect()->route('dashboard')
-        : redirect()->route('login');
+        : app(LandingPageController::class)();
 })->name('home');
 
 Route::get('/reset-password', [PasswordResetController::class, 'show'])->name('password.manual.reset');
 Route::post('/reset-password', [PasswordResetController::class, 'store'])->name('password.manual.update');
+
+// ── Candidate Hub Auth ────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/candidate/login', [CandidateAuthController::class, 'showLogin'])->name('candidate.login');
+    Route::post('/candidate/login', [CandidateAuthController::class, 'login']);
+    Route::get('/candidate/register', [CandidateAuthController::class, 'showRegister'])->name('candidate.register');
+    Route::post('/candidate/register', [CandidateAuthController::class, 'register']);
+});
+
+// ── Employer Hub Auth ─────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/employer/login', [EmployerAuthController::class, 'showLogin'])->name('employer.login');
+    Route::post('/employer/login', [EmployerAuthController::class, 'login']);
+    Route::get('/employer/register', [EmployerAuthController::class, 'showRegister'])->name('employer.register');
+    Route::post('/employer/register', [EmployerAuthController::class, 'register']);
+});
+
+// ── Candidate & Employer Hub Dashboards ──────────
+Route::middleware('auth')->group(function () {
+    Route::get('/candidate/dashboard', CandidateHubDashboardController::class)->name('candidate.dashboard');
+    Route::get('/employer/dashboard', EmployerHubDashboardController::class)->name('employer.dashboard');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('organizations/switch', [CurrentOrganizationController::class, 'store'])

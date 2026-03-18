@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             // BenefitsManagementSeeder::class,
             // PayrollPayCodeSeeder::class,
+            // RecruitmentSeeder::class,
         ]);
     }
 }
