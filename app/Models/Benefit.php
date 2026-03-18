@@ -13,12 +13,34 @@ class Benefit extends Model
 {
     use Auditable, BelongsToOrganization, SoftDeletes;
 
-    public const CATEGORIES = ['health', 'retirement', 'allowance', 'insurance', 'wellness', 'education', 'loan', 'other'];
+    protected string $auditModule = 'benefits';
 
-    public const TYPES = ['employer_paid', 'employee_paid', 'shared', 'reimbursement', 'non_cash'];
+    public const CATEGORIES = [
+        'health',
+        'retirement',
+        'allowance',
+        'insurance',
+        'wellness',
+        'education',
+        'loan',
+        'other',
+    ];
 
-    public const CONTRIBUTION_TYPES = ['fixed', 'percentage'];
+    public const TYPES = [
+        'employer_paid',
+        'employee_paid',
+        'shared',
+        'reimbursement',
+        'non_cash',
+    ];
 
+
+     public const CONTRIBUTION_TYPES = [
+        'fixed',
+        'percentage',
+    ];
+
+    
     protected $fillable = [
         'organization_id',
         'code',
@@ -57,13 +79,6 @@ class Benefit extends Model
         'metadata' => 'array',
     ];
 
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->name ?: 'Benefit #'.$this->getKey();
-    }
-
     public function plans(): HasMany
     {
         return $this->hasMany(BenefitPlan::class);
@@ -97,10 +112,5 @@ class Benefit extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
-    }
-
-    public function scopeByType($query, string $type)
-    {
-        return $query->where('benefit_type', $type);
     }
 }

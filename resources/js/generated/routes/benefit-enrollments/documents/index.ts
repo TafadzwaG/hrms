@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
-export const store = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const store = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -19,11 +19,14 @@ store.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
-store.url = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions) => {
+store.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { enrollment: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { enrollment: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -34,7 +37,9 @@ store.url = (args: { enrollment: string | number } | [enrollment: string | numbe
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
                 }
 
     return store.definition.url
@@ -47,7 +52,7 @@ store.url = (args: { enrollment: string | number } | [enrollment: string | numbe
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
-store.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+store.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -57,7 +62,7 @@ store.post = (args: { enrollment: string | number } | [enrollment: string | numb
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
-    const storeForm = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const storeForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(args, options),
         method: 'post',
     })
@@ -67,7 +72,7 @@ store.post = (args: { enrollment: string | number } | [enrollment: string | numb
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
-        storeForm.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        storeForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(args, options),
             method: 'post',
         })
@@ -78,7 +83,7 @@ store.post = (args: { enrollment: string | number } | [enrollment: string | numb
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-export const download = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const download = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: download.url(args, options),
     method: 'get',
 })
@@ -93,7 +98,7 @@ download.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-download.url = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions) => {
+download.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     enrollment: args[0],
@@ -104,8 +109,12 @@ download.url = (args: { enrollment: string | number, document: string | number }
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
-                                document: args.document,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
+                                document: typeof args.document === 'object'
+                ? args.document.id
+                : args.document,
                 }
 
     return download.definition.url
@@ -119,7 +128,7 @@ download.url = (args: { enrollment: string | number, document: string | number }
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-download.get = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+download.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: download.url(args, options),
     method: 'get',
 })
@@ -128,7 +137,7 @@ download.get = (args: { enrollment: string | number, document: string | number }
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-download.head = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+download.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: download.url(args, options),
     method: 'head',
 })
@@ -138,7 +147,7 @@ download.head = (args: { enrollment: string | number, document: string | number 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-    const downloadForm = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const downloadForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: download.url(args, options),
         method: 'get',
     })
@@ -148,7 +157,7 @@ download.head = (args: { enrollment: string | number, document: string | number 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-        downloadForm.get = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        downloadForm.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: download.url(args, options),
             method: 'get',
         })
@@ -157,7 +166,7 @@ download.head = (args: { enrollment: string | number, document: string | number 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
-        downloadForm.head = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        downloadForm.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: download.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -173,7 +182,7 @@ download.head = (args: { enrollment: string | number, document: string | number 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
-export const destroy = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -188,7 +197,7 @@ destroy.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
-destroy.url = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions) => {
+destroy.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     enrollment: args[0],
@@ -199,8 +208,12 @@ destroy.url = (args: { enrollment: string | number, document: string | number } 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
-                                document: args.document,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
+                                document: typeof args.document === 'object'
+                ? args.document.id
+                : args.document,
                 }
 
     return destroy.definition.url
@@ -214,7 +227,7 @@ destroy.url = (args: { enrollment: string | number, document: string | number } 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
-destroy.delete = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -224,7 +237,7 @@ destroy.delete = (args: { enrollment: string | number, document: string | number
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
-    const destroyForm = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -239,7 +252,7 @@ destroy.delete = (args: { enrollment: string | number, document: string | number
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
-        destroyForm.delete = (args: { enrollment: string | number, document: string | number } | [enrollment: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

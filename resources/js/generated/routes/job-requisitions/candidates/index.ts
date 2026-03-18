@@ -1,10 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-export const create = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const create = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(args, options),
     method: 'get',
 })
@@ -16,17 +16,14 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-create.url = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+create.url = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { jobRequisition: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { jobRequisition: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
@@ -37,9 +34,7 @@ create.url = (args: { jobRequisition: number | { id: number } } | [jobRequisitio
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        jobRequisition: typeof args.jobRequisition === 'object'
-                ? args.jobRequisition.id
-                : args.jobRequisition,
+                        jobRequisition: args.jobRequisition,
                 }
 
     return create.definition.url
@@ -49,48 +44,48 @@ create.url = (args: { jobRequisition: number | { id: number } } | [jobRequisitio
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-create.get = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+create.get = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-create.head = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+create.head = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(args, options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-    const createForm = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const createForm = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: create.url(args, options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-        createForm.get = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        createForm.get = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CandidateProfileController::create
- * @see app/Http/Controllers/CandidateProfileController.php:75
+ * @see app/Http/Controllers/CandidateProfileController.php:0
  * @route '/job-requisitions/{jobRequisition}/candidates/create'
  */
-        createForm.head = (args: { jobRequisition: number | { id: number } } | [jobRequisition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        createForm.head = (args: { jobRequisition: string | number } | [jobRequisition: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',

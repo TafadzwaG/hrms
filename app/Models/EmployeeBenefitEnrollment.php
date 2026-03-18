@@ -12,7 +12,16 @@ class EmployeeBenefitEnrollment extends Model
 {
     use Auditable, BelongsToOrganization;
 
-    public const STATUSES = ['draft', 'active', 'suspended', 'terminated', 'expired', 'cancelled'];
+    protected string $auditModule = 'benefits';
+
+    public const STATUSES = [
+        'draft',
+        'active',
+        'suspended',
+        'terminated',
+        'expired',
+        'cancelled',
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -40,13 +49,6 @@ class EmployeeBenefitEnrollment extends Model
         'metadata' => 'array',
     ];
 
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->enrollment_reference ?: 'Enrollment #'.$this->getKey();
-    }
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -57,9 +59,9 @@ class EmployeeBenefitEnrollment extends Model
         return $this->belongsTo(Benefit::class);
     }
 
-    public function plan(): BelongsTo
+    public function benefitPlan(): BelongsTo
     {
-        return $this->belongsTo(BenefitPlan::class, 'benefit_plan_id');
+        return $this->belongsTo(BenefitPlan::class);
     }
 
     public function dependants(): HasMany
@@ -87,13 +89,13 @@ class EmployeeBenefitEnrollment extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function scopeByStatus($query, string $status)
-    {
-        return $query->where('status', $status);
-    }
-
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    public function scopeByStatus($query, string $status)
+    {
+        return $query->where('status', $status);
     }
 }

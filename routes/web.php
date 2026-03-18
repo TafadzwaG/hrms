@@ -71,6 +71,15 @@ use App\Http\Controllers\EmployeeBenefitDependantController;
 use App\Http\Controllers\BenefitContributionRuleController;
 use App\Http\Controllers\BenefitsDashboardController;
 use App\Http\Controllers\Reports\BenefitReportController;
+use App\Http\Controllers\CandidateResumeController;
+use App\Http\Controllers\CandidateCheckoutController;
+use App\Http\Controllers\CandidateDirectoryController;
+use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\VacancyController;
+use App\Http\Controllers\VacancyApplicationController;
+use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\RecruitmentDashboardController;
+use App\Http\Controllers\Reports\RecruitmentReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -1054,5 +1063,114 @@ Route::middleware(['auth', 'verified'])->group(function () {
             });
         });
 });
+
+// ── Recruitment / Job Marketplace ─────────────────────────────────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Dashboard
+    Route::get('/recruitment', RecruitmentDashboardController::class)
+        ->middleware('permission:recruitment.view')
+        ->name('recruitment.dashboard');
+
+    // ── Candidate Profiles ──────────────────────────────────────
+    Route::resource('candidate-profiles', CandidateProfileController::class)
+        ->middlewareFor(['index', 'show'], 'permission:recruitment.candidates.manage')
+        ->middlewareFor(['create', 'store'], 'permission:recruitment.candidates.manage')
+        ->middlewareFor(['edit', 'update'], 'permission:recruitment.candidates.manage')
+        ->middlewareFor(['destroy'], 'permission:recruitment.candidates.manage');
+
+    // Candidate Resumes
+    Route::post('/candidate-profiles/{candidate}/resumes', [CandidateResumeController::class, 'store'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-resumes.store');
+    Route::get('/candidate-profiles/{candidate}/resumes/{resume}/download', [CandidateResumeController::class, 'download'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-resumes.download');
+    Route::delete('/candidate-profiles/{candidate}/resumes/{resume}', [CandidateResumeController::class, 'destroy'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-resumes.destroy');
+    Route::put('/candidate-profiles/{candidate}/resumes/{resume}/set-primary', [CandidateResumeController::class, 'setPrimary'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-resumes.set-primary');
+
+    // Candidate Education, Experience, Skills (nested)
+    Route::post('/candidate-profiles/{candidate}/educations', [CandidateProfileController::class, 'storeEducation'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-educations.store');
+    Route::put('/candidate-profiles/{candidate}/educations/{education}', [CandidateProfileController::class, 'updateEducation'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-educations.update');
+    Route::delete('/candidate-profiles/{candidate}/educations/{education}', [CandidateProfileController::class, 'destroyEducation'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-educations.destroy');
+
+    Route::post('/candidate-profiles/{candidate}/experiences', [CandidateProfileController::class, 'storeExperience'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-experiences.store');
+    Route::put('/candidate-profiles/{candidate}/experiences/{experience}', [CandidateProfileController::class, 'updateExperience'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-experiences.update');
+    Route::delete('/candidate-profiles/{candidate}/experiences/{experience}', [CandidateProfileController::class, 'destroyExperience'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-experiences.destroy');
+
+    Route::post('/candidate-profiles/{candidate}/skills', [CandidateProfileController::class, 'storeSkill'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-skills.store');
+    Route::delete('/candidate-profiles/{candidate}/skills/{skill}', [CandidateProfileController::class, 'destroySkill'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-skills.destroy');
+
+    // Candidate Checkout / Payment
+    Route::get('/candidate-profiles/{candidate}/checkout', [CandidateCheckoutController::class, 'show'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-checkout.show');
+    Route::post('/candidate-profiles/{candidate}/checkout/initiate', [CandidateCheckoutController::class, 'initiatePayment'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-checkout.initiate');
+    Route::get('/candidate-profiles/{candidate}/checkout/return', [CandidateCheckoutController::class, 'handleReturn'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-checkout.return');
+    Route::get('/candidate-profiles/{candidate}/checkout/status', [CandidateCheckoutController::class, 'checkStatus'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-checkout.status');
+    Route::get('/candidate-profiles/{candidate}/listing-status', [CandidateCheckoutController::class, 'listingStatus'])
+        ->middleware('permission:recruitment.candidates.manage')->name('candidate-listing.status');
+
+    // ── Company Profiles ────────────────────────────────────────
+    Route::resource('company-profiles', CompanyProfileController::class)
+        ->middlewareFor(['index', 'show'], 'permission:recruitment.companies.manage')
+        ->middlewareFor(['create', 'store'], 'permission:recruitment.companies.manage')
+        ->middlewareFor(['edit', 'update'], 'permission:recruitment.companies.manage')
+        ->middlewareFor(['destroy'], 'permission:recruitment.companies.manage');
+    Route::put('/company-profiles/{company}/approve', [CompanyProfileController::class, 'approve'])
+        ->middleware('permission:recruitment.companies.manage')->name('company-profiles.approve');
+    Route::put('/company-profiles/{company}/suspend', [CompanyProfileController::class, 'suspend'])
+        ->middleware('permission:recruitment.companies.manage')->name('company-profiles.suspend');
+
+    // ── Vacancies ───────────────────────────────────────────────
+    Route::resource('vacancies', VacancyController::class)
+        ->middlewareFor(['index', 'show'], 'permission:recruitment.vacancies.manage')
+        ->middlewareFor(['create', 'store'], 'permission:recruitment.vacancies.manage')
+        ->middlewareFor(['edit', 'update'], 'permission:recruitment.vacancies.manage')
+        ->middlewareFor(['destroy'], 'permission:recruitment.vacancies.manage');
+    Route::put('/vacancies/{vacancy}/publish', [VacancyController::class, 'publish'])
+        ->middleware('permission:recruitment.vacancies.manage')->name('vacancies.publish');
+    Route::put('/vacancies/{vacancy}/close', [VacancyController::class, 'close'])
+        ->middleware('permission:recruitment.vacancies.manage')->name('vacancies.close');
+
+    // ── Vacancy Applications ────────────────────────────────────
+    Route::resource('vacancy-applications', VacancyApplicationController::class)
+        ->middlewareFor(['index', 'show'], 'permission:recruitment.applications.manage')
+        ->middlewareFor(['store'], 'permission:recruitment.applications.manage')
+        ->middlewareFor(['destroy'], 'permission:recruitment.applications.manage');
+    Route::put('/vacancy-applications/{application}/status', [VacancyApplicationController::class, 'updateStatus'])
+        ->middleware('permission:recruitment.applications.manage')->name('vacancy-applications.update-status');
+
+    // ── Candidate Directory ─────────────────────────────────────
+    Route::get('/candidate-directory', [CandidateDirectoryController::class, 'index'])
+        ->middleware('permission:recruitment.directory.view')->name('candidate-directory.index');
+    Route::get('/candidate-directory/{candidate}', [CandidateDirectoryController::class, 'show'])
+        ->middleware('permission:recruitment.directory.view')->name('candidate-directory.show');
+
+    // ── Recruitment Reports ─────────────────────────────────────
+    Route::prefix('reports/recruitment')->name('reports.recruitment.')->middleware('permission:recruitment.reports.view')->group(function () {
+        Route::get('candidate-listings', [RecruitmentReportController::class, 'candidateListings'])->name('candidate-listings');
+        Route::get('vacancies-by-company', [RecruitmentReportController::class, 'vacanciesByCompany'])->name('vacancies-by-company');
+        Route::get('applications-by-vacancy', [RecruitmentReportController::class, 'applicationsByVacancy'])->name('applications-by-vacancy');
+        Route::get('payment-summary', [RecruitmentReportController::class, 'paymentSummary'])->name('payment-summary');
+        Route::get('listing-revenue', [RecruitmentReportController::class, 'listingRevenue'])->name('listing-revenue');
+        Route::get('employer-activity', [RecruitmentReportController::class, 'employerActivity'])->name('employer-activity');
+        Route::get('candidates-by-profession', [RecruitmentReportController::class, 'candidatesByProfession'])->name('candidates-by-profession');
+        Route::get('pending-listings', [RecruitmentReportController::class, 'pendingListings'])->name('pending-listings');
+    });
+});
+
+// ── Payment Webhooks (no auth — server-to-server) ───────────────────
+Route::post('/webhooks/paynow', [PaymentWebhookController::class, 'handlePaynow'])->name('webhooks.paynow');
 
 require __DIR__.'/settings.php';

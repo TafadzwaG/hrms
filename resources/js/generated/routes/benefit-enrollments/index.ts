@@ -602,7 +602,7 @@ destroy.delete = (args: { benefit_enrollment: string | number } | [benefit_enrol
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:173
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
-export const suspend = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const suspend = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: suspend.url(args, options),
     method: 'post',
 })
@@ -617,11 +617,14 @@ suspend.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:173
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
-suspend.url = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions) => {
+suspend.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { enrollment: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { enrollment: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -632,7 +635,9 @@ suspend.url = (args: { enrollment: string | number } | [enrollment: string | num
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
                 }
 
     return suspend.definition.url
@@ -645,7 +650,7 @@ suspend.url = (args: { enrollment: string | number } | [enrollment: string | num
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:173
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
-suspend.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+suspend.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: suspend.url(args, options),
     method: 'post',
 })
@@ -655,7 +660,7 @@ suspend.post = (args: { enrollment: string | number } | [enrollment: string | nu
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:173
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
-    const suspendForm = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const suspendForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: suspend.url(args, options),
         method: 'post',
     })
@@ -665,7 +670,7 @@ suspend.post = (args: { enrollment: string | number } | [enrollment: string | nu
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:173
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
-        suspendForm.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        suspendForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: suspend.url(args, options),
             method: 'post',
         })
@@ -676,7 +681,7 @@ suspend.post = (args: { enrollment: string | number } | [enrollment: string | nu
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:201
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
-export const terminate = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const terminate = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: terminate.url(args, options),
     method: 'post',
 })
@@ -691,11 +696,14 @@ terminate.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:201
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
-terminate.url = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions) => {
+terminate.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { enrollment: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { enrollment: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -706,7 +714,9 @@ terminate.url = (args: { enrollment: string | number } | [enrollment: string | n
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
                 }
 
     return terminate.definition.url
@@ -719,7 +729,7 @@ terminate.url = (args: { enrollment: string | number } | [enrollment: string | n
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:201
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
-terminate.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+terminate.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: terminate.url(args, options),
     method: 'post',
 })
@@ -729,7 +739,7 @@ terminate.post = (args: { enrollment: string | number } | [enrollment: string | 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:201
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
-    const terminateForm = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const terminateForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: terminate.url(args, options),
         method: 'post',
     })
@@ -739,7 +749,7 @@ terminate.post = (args: { enrollment: string | number } | [enrollment: string | 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:201
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
-        terminateForm.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        terminateForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: terminate.url(args, options),
             method: 'post',
         })
@@ -750,7 +760,7 @@ terminate.post = (args: { enrollment: string | number } | [enrollment: string | 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:230
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
-export const reinstate = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const reinstate = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reinstate.url(args, options),
     method: 'post',
 })
@@ -765,11 +775,14 @@ reinstate.definition = {
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:230
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
-reinstate.url = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions) => {
+reinstate.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { enrollment: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { enrollment: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -780,7 +793,9 @@ reinstate.url = (args: { enrollment: string | number } | [enrollment: string | n
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        enrollment: args.enrollment,
+                        enrollment: typeof args.enrollment === 'object'
+                ? args.enrollment.id
+                : args.enrollment,
                 }
 
     return reinstate.definition.url
@@ -793,7 +808,7 @@ reinstate.url = (args: { enrollment: string | number } | [enrollment: string | n
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:230
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
-reinstate.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+reinstate.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: reinstate.url(args, options),
     method: 'post',
 })
@@ -803,7 +818,7 @@ reinstate.post = (args: { enrollment: string | number } | [enrollment: string | 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:230
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
-    const reinstateForm = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const reinstateForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: reinstate.url(args, options),
         method: 'post',
     })
@@ -813,7 +828,7 @@ reinstate.post = (args: { enrollment: string | number } | [enrollment: string | 
  * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:230
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
-        reinstateForm.post = (args: { enrollment: string | number } | [enrollment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        reinstateForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: reinstate.url(args, options),
             method: 'post',
         })

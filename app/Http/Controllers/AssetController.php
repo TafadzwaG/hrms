@@ -28,7 +28,7 @@ class AssetController extends Controller
         $categoryId = $request->input('category_id');
         $locationId = $request->input('location_id');
 
-        $assets = Asset::query()
+        $baseQuery = Asset::query()
             ->with([
                 'category:id,name',
                 'location:id,name',
@@ -41,11 +41,22 @@ class AssetController extends Controller
             }))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($categoryId, fn ($q) => $q->where('asset_category_id', $categoryId))
-            ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId))
+            ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId));
+
+        $assets = (clone $baseQuery)
             ->orderByDesc('updated_at')
             ->paginate(25)
             ->through(fn (Asset $asset) => $this->mapAsset($asset))
             ->withQueryString();
+
+        $statsBaseQuery = Asset::query()
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('asset_tag', 'like', "%{$search}%")
+                    ->orWhere('serial_number', 'like', "%{$search}%");
+            }))
+            ->when($categoryId, fn ($q) => $q->where('asset_category_id', $categoryId))
+            ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId));
 
         $categories = AssetCategory::query()
             ->select(['id', 'name'])
@@ -69,6 +80,14 @@ class AssetController extends Controller
             'statuses' => Asset::STATUSES,
             'categories' => $categories,
             'locations' => $locations,
+            'stats' => [
+                'total' => (clone $statsBaseQuery)->count(),
+                'assigned' => (clone $statsBaseQuery)->where('status', 'assigned')->count(),
+                'available' => (clone $statsBaseQuery)->where('status', 'available')->count(),
+                'maintenance' => (clone $statsBaseQuery)
+                    ->whereIn('status', ['maintenance', 'in_maintenance'])
+                    ->count(),
+            ],
         ]);
     }
 
@@ -239,7 +258,7 @@ class AssetController extends Controller
         ]);
 
         $activeAssignment = $asset->currentAssignment;
-        if (!$activeAssignment) {
+        if (! $activeAssignment) {
             return back()->with('error', 'This asset has no active assignment.');
         }
 

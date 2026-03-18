@@ -1,5 +1,5 @@
 ﻿import { Link } from '@inertiajs/react';
-import { BookOpen, Building, Building2, FileText, Folder, Heart, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
+import { BookOpen, Briefcase, Building, Building2, FileText, Folder, Heart, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -36,6 +36,7 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Assets', href: '/assets', icon: Package, permissionsAny: ['assets.view'] },
     { title: 'Benefits', href: '/benefits/dashboard', icon: Heart, permissionsAny: ['benefits.view'] },
     { title: 'Performance', href: '/performance', icon: Target, permissionsAny: ['performance.view', 'performance.dashboard.view'] },
+    { title: 'Recruitment', href: '/recruitment', icon: Briefcase, permissionsAny: ['recruitment.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
 ];
 
@@ -90,6 +91,18 @@ const footerNavGroups: SidebarNavGroup[] = [
             { title: 'Asset Categories', href: '/asset-categories', icon: Package, permissionsAny: ['assets.categories.view'] },
             { title: 'Asset Vendors', href: '/asset-vendors', icon: Package, permissionsAny: ['assets.vendors.view'] },
             { title: 'Asset Locations', href: '/asset-locations', icon: Package, permissionsAny: ['assets.locations.view'] },
+        ],
+    },
+    {
+        title: 'Recruitment Admin',
+        icon: Briefcase,
+        items: [
+            { title: 'Candidates', href: '/candidate-profiles', icon: Users, permissionsAny: ['recruitment.candidates.manage'] },
+            { title: 'Companies', href: '/company-profiles', icon: Building2, permissionsAny: ['recruitment.companies.manage'] },
+            { title: 'Vacancies', href: '/vacancies', icon: Briefcase, permissionsAny: ['recruitment.vacancies.manage'] },
+            { title: 'Applications', href: '/vacancy-applications', icon: FileText, permissionsAny: ['recruitment.applications.manage'] },
+            { title: 'Candidate Directory', href: '/candidate-directory', icon: Users, permissionsAny: ['recruitment.directory.view'] },
+            { title: 'Payments', href: '/recruitment', icon: Folder, permissionsAny: ['recruitment.payments.manage'] },
         ],
     },
     {

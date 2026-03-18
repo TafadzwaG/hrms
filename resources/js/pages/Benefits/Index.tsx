@@ -123,7 +123,7 @@ export default function BenefitIndex() {
         benefit_types = [],
     } = usePage<BenefitsPageProps>().props;
 
-    const [view, setView] = useState<'grid' | 'table'>('grid');
+    const [view, setView] = useState<'grid' | 'table'>('table');
     const [search, setSearch] = useState(filters.search ?? '');
     const [category, setCategory] = useState(filters.category ?? 'all');
     const [benefitType, setBenefitType] = useState(filters.benefit_type ?? 'all');
@@ -208,7 +208,7 @@ export default function BenefitIndex() {
         benefits.to ?? Math.min(benefits.current_page * perPage, benefits.total);
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Benefits' }]}>
+        <AppLayout breadcrumbs={[{ title: 'Benefits', href: '/benefits' }]}>
             <Head title="Benefits" />
 
             <div className="w-full space-y-8 bg-white p-6 lg:p-10">

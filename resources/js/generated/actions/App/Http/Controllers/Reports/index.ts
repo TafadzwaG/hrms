@@ -15,6 +15,7 @@ import LearningCourseReportController from './LearningCourseReportController'
 import AssetReportController from './AssetReportController'
 import BenefitReportController from './BenefitReportController'
 import DocumentReportController from './DocumentReportController'
+import RecruitmentReportController from './RecruitmentReportController'
 const Reports = {
     ReportCenterController: Object.assign(ReportCenterController, ReportCenterController),
 EmployeeReportController: Object.assign(EmployeeReportController, EmployeeReportController),
@@ -33,6 +34,7 @@ LearningCourseReportController: Object.assign(LearningCourseReportController, Le
 AssetReportController: Object.assign(AssetReportController, AssetReportController),
 BenefitReportController: Object.assign(BenefitReportController, BenefitReportController),
 DocumentReportController: Object.assign(DocumentReportController, DocumentReportController),
+RecruitmentReportController: Object.assign(RecruitmentReportController, RecruitmentReportController),
 }
 
 export default Reports

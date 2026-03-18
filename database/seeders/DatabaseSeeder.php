@@ -10,7 +10,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // CoreFunctionalitySeeder::class,
-            PermissionSeeder::class,
+            // PermissionSeeder::class,
+            BenefitsManagementSeeder::class,
             // PayrollPayCodeSeeder::class,
         ]);
     }

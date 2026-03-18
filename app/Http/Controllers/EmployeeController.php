@@ -194,7 +194,7 @@ class EmployeeController extends Controller
             'assetAssignments.asset:id,asset_tag,name,status',
             'scorecards.cycle:id,title',
             'benefitEnrollments.benefit:id,name,category',
-            'benefitEnrollments.plan:id,name',
+            'benefitEnrollments.benefitPlan:id,name',
         ]);
 
         return Inertia::render('Employees/Show', [
@@ -307,7 +307,7 @@ class EmployeeController extends Controller
                 'benefit_enrollments' => $employee->benefitEnrollments->map(fn (\App\Models\EmployeeBenefitEnrollment $e) => [
                     'id' => $e->id,
                     'benefit' => $e->benefit ? ['id' => $e->benefit->id, 'name' => $e->benefit->name, 'category' => $e->benefit->category] : null,
-                    'plan' => $e->plan ? ['id' => $e->plan->id, 'name' => $e->plan->name] : null,
+                    'plan' => $e->benefitPlan ? ['id' => $e->benefitPlan->id, 'name' => $e->benefitPlan->name] : null,
                     'status' => $e->status,
                     'effective_date' => optional($e->effective_date)?->toDateString(),
                     'end_date' => optional($e->end_date)?->toDateString(),

@@ -11,9 +11,20 @@ class BenefitContributionRule extends Model
 {
     use Auditable, BelongsToOrganization;
 
-    public const CONTRIBUTION_BASIS = ['fixed', 'percentage_of_basic', 'percentage_of_gross'];
+    protected string $auditModule = 'benefits';
 
-    public const CONTRIBUTION_TYPES = ['fixed', 'percentage'];
+    public const CONTRIBUTION_TYPES = [
+        'fixed',
+        'percentage_of_basic',
+        'percentage_of_gross',
+        'percentage_of_net',
+    ];
+
+    public const CONTRIBUTION_BASIS = [
+        'salary',
+        'fixed',
+        'sliding_scale',
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -42,21 +53,14 @@ class BenefitContributionRule extends Model
         'active' => 'boolean',
     ];
 
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->rule_name ?: 'Rule #'.$this->getKey();
-    }
-
     public function benefit(): BelongsTo
     {
         return $this->belongsTo(Benefit::class);
     }
 
-    public function plan(): BelongsTo
+    public function benefitPlan(): BelongsTo
     {
-        return $this->belongsTo(BenefitPlan::class, 'benefit_plan_id');
+        return $this->belongsTo(BenefitPlan::class);
     }
 
     public function scopeActive($query)

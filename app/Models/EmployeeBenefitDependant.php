@@ -11,9 +11,16 @@ class EmployeeBenefitDependant extends Model
 {
     use Auditable, BelongsToOrganization;
 
-    public const RELATIONSHIPS = ['spouse', 'child', 'parent', 'sibling', 'other'];
+    protected string $auditModule = 'benefits';
 
-    public const STATUSES = ['active', 'inactive', 'removed'];
+    public const RELATIONSHIPS = [
+        'spouse',
+        'child',
+        'parent',
+        'sibling',
+        'guardian',
+        'other',
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -34,13 +41,6 @@ class EmployeeBenefitDependant extends Model
         'effective_date' => 'date',
         'end_date' => 'date',
     ];
-
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->full_name ?: 'Dependant #'.$this->getKey();
-    }
 
     public function enrollment(): BelongsTo
     {

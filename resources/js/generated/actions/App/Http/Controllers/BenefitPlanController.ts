@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-export const index = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const index = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
     method: 'get',
 })
@@ -19,11 +19,14 @@ index.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-index.url = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions) => {
+index.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { benefit: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { benefit: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -34,7 +37,9 @@ index.url = (args: { benefit: string | number } | [benefit: string | number ] | 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
                 }
 
     return index.definition.url
@@ -47,7 +52,7 @@ index.url = (args: { benefit: string | number } | [benefit: string | number ] | 
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-index.get = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+index.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(args, options),
     method: 'get',
 })
@@ -56,7 +61,7 @@ index.get = (args: { benefit: string | number } | [benefit: string | number ] | 
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-index.head = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+index.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(args, options),
     method: 'head',
 })
@@ -66,7 +71,7 @@ index.head = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-    const indexForm = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const indexForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: index.url(args, options),
         method: 'get',
     })
@@ -76,7 +81,7 @@ index.head = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-        indexForm.get = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        indexForm.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(args, options),
             method: 'get',
         })
@@ -85,7 +90,7 @@ index.head = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:14
  * @route '/benefits/{benefit}/plans'
  */
-        indexForm.head = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        indexForm.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: index.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -101,7 +106,7 @@ index.head = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-export const create = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const create = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(args, options),
     method: 'get',
 })
@@ -116,11 +121,14 @@ create.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-create.url = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions) => {
+create.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { benefit: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { benefit: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -131,7 +139,9 @@ create.url = (args: { benefit: string | number } | [benefit: string | number ] |
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
                 }
 
     return create.definition.url
@@ -144,7 +154,7 @@ create.url = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-create.get = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+create.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: create.url(args, options),
     method: 'get',
 })
@@ -153,7 +163,7 @@ create.get = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-create.head = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+create.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: create.url(args, options),
     method: 'head',
 })
@@ -163,7 +173,7 @@ create.head = (args: { benefit: string | number } | [benefit: string | number ] 
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-    const createForm = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const createForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: create.url(args, options),
         method: 'get',
     })
@@ -173,7 +183,7 @@ create.head = (args: { benefit: string | number } | [benefit: string | number ] 
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-        createForm.get = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        createForm.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(args, options),
             method: 'get',
         })
@@ -182,7 +192,7 @@ create.head = (args: { benefit: string | number } | [benefit: string | number ] 
  * @see app/Http/Controllers/BenefitPlanController.php:41
  * @route '/benefits/{benefit}/plans/create'
  */
-        createForm.head = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        createForm.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: create.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -198,7 +208,7 @@ create.head = (args: { benefit: string | number } | [benefit: string | number ] 
  * @see app/Http/Controllers/BenefitPlanController.php:49
  * @route '/benefits/{benefit}/plans'
  */
-export const store = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const store = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -213,11 +223,14 @@ store.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:49
  * @route '/benefits/{benefit}/plans'
  */
-store.url = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions) => {
+store.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { benefit: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { benefit: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -228,7 +241,9 @@ store.url = (args: { benefit: string | number } | [benefit: string | number ] | 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
                 }
 
     return store.definition.url
@@ -241,7 +256,7 @@ store.url = (args: { benefit: string | number } | [benefit: string | number ] | 
  * @see app/Http/Controllers/BenefitPlanController.php:49
  * @route '/benefits/{benefit}/plans'
  */
-store.post = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+store.post = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -251,7 +266,7 @@ store.post = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:49
  * @route '/benefits/{benefit}/plans'
  */
-    const storeForm = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const storeForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(args, options),
         method: 'post',
     })
@@ -261,7 +276,7 @@ store.post = (args: { benefit: string | number } | [benefit: string | number ] |
  * @see app/Http/Controllers/BenefitPlanController.php:49
  * @route '/benefits/{benefit}/plans'
  */
-        storeForm.post = (args: { benefit: string | number } | [benefit: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        storeForm.post = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(args, options),
             method: 'post',
         })
@@ -367,7 +382,7 @@ show.head = (args: { benefit: string | number, plan: string | number } | [benefi
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-export const edit = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -382,7 +397,7 @@ edit.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-edit.url = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions) => {
+edit.url = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     benefit: args[0],
@@ -393,8 +408,12 @@ edit.url = (args: { benefit: string | number, plan: string | number } | [benefit
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
-                                plan: args.plan,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
+                                plan: typeof args.plan === 'object'
+                ? args.plan.id
+                : args.plan,
                 }
 
     return edit.definition.url
@@ -408,7 +427,7 @@ edit.url = (args: { benefit: string | number, plan: string | number } | [benefit
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-edit.get = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -417,7 +436,7 @@ edit.get = (args: { benefit: string | number, plan: string | number } | [benefit
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-edit.head = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -427,7 +446,7 @@ edit.head = (args: { benefit: string | number, plan: string | number } | [benefi
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-    const editForm = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
@@ -437,7 +456,7 @@ edit.head = (args: { benefit: string | number, plan: string | number } | [benefi
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-        editForm.get = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
@@ -446,7 +465,7 @@ edit.head = (args: { benefit: string | number, plan: string | number } | [benefi
  * @see app/Http/Controllers/BenefitPlanController.php:59
  * @route '/benefits/{benefit}/plans/{plan}/edit'
  */
-        editForm.head = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -462,7 +481,7 @@ edit.head = (args: { benefit: string | number, plan: string | number } | [benefi
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-export const update = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -477,7 +496,7 @@ update.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-update.url = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions) => {
+update.url = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     benefit: args[0],
@@ -488,8 +507,12 @@ update.url = (args: { benefit: string | number, plan: string | number } | [benef
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
-                                plan: args.plan,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
+                                plan: typeof args.plan === 'object'
+                ? args.plan.id
+                : args.plan,
                 }
 
     return update.definition.url
@@ -503,7 +526,7 @@ update.url = (args: { benefit: string | number, plan: string | number } | [benef
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-update.put = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -512,7 +535,7 @@ update.put = (args: { benefit: string | number, plan: string | number } | [benef
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-update.patch = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -522,7 +545,7 @@ update.patch = (args: { benefit: string | number, plan: string | number } | [ben
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-    const updateForm = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -537,7 +560,7 @@ update.patch = (args: { benefit: string | number, plan: string | number } | [ben
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-        updateForm.put = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -551,7 +574,7 @@ update.patch = (args: { benefit: string | number, plan: string | number } | [ben
  * @see app/Http/Controllers/BenefitPlanController.php:68
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-        updateForm.patch = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.patch = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PATCH',
@@ -567,7 +590,7 @@ update.patch = (args: { benefit: string | number, plan: string | number } | [ben
  * @see app/Http/Controllers/BenefitPlanController.php:78
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-export const destroy = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -582,7 +605,7 @@ destroy.definition = {
  * @see app/Http/Controllers/BenefitPlanController.php:78
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-destroy.url = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions) => {
+destroy.url = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     benefit: args[0],
@@ -593,8 +616,12 @@ destroy.url = (args: { benefit: string | number, plan: string | number } | [bene
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        benefit: args.benefit,
-                                plan: args.plan,
+                        benefit: typeof args.benefit === 'object'
+                ? args.benefit.id
+                : args.benefit,
+                                plan: typeof args.plan === 'object'
+                ? args.plan.id
+                : args.plan,
                 }
 
     return destroy.definition.url
@@ -608,7 +635,7 @@ destroy.url = (args: { benefit: string | number, plan: string | number } | [bene
  * @see app/Http/Controllers/BenefitPlanController.php:78
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-destroy.delete = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -618,7 +645,7 @@ destroy.delete = (args: { benefit: string | number, plan: string | number } | [b
  * @see app/Http/Controllers/BenefitPlanController.php:78
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-    const destroyForm = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -633,7 +660,7 @@ destroy.delete = (args: { benefit: string | number, plan: string | number } | [b
  * @see app/Http/Controllers/BenefitPlanController.php:78
  * @route '/benefits/{benefit}/plans/{plan}'
  */
-        destroyForm.delete = (args: { benefit: string | number, plan: string | number } | [benefit: string | number, plan: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { benefit: number | { id: number }, plan: number | { id: number } } | [benefit: number | { id: number }, plan: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

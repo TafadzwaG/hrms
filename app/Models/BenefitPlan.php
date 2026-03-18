@@ -12,7 +12,7 @@ class BenefitPlan extends Model
 {
     use Auditable, BelongsToOrganization;
 
-    public const CONTRIBUTION_TYPES = ['fixed', 'percentage'];
+    protected string $auditModule = 'benefits';
 
     protected $fillable = [
         'organization_id',
@@ -37,13 +37,6 @@ class BenefitPlan extends Model
         'metadata' => 'array',
     ];
 
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->name ?: 'Plan #'.$this->getKey();
-    }
-
     public function benefit(): BelongsTo
     {
         return $this->belongsTo(Benefit::class);
@@ -52,11 +45,6 @@ class BenefitPlan extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(EmployeeBenefitEnrollment::class);
-    }
-
-    public function contributionRules(): HasMany
-    {
-        return $this->hasMany(BenefitContributionRule::class);
     }
 
     public function scopeActive($query)

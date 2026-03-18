@@ -15,6 +15,7 @@ import learningCourses from './learning-courses'
 import assets from './assets'
 import benefits from './benefits'
 import documents from './documents'
+import recruitment from './recruitment'
 /**
 * @see \App\Http\Controllers\Reports\ReportCenterController::index
  * @see app/Http/Controllers/Reports/ReportCenterController.php:27
@@ -111,6 +112,7 @@ learningCourses: Object.assign(learningCourses, learningCourses),
 assets: Object.assign(assets, assets),
 benefits: Object.assign(benefits, benefits),
 documents: Object.assign(documents, documents),
+recruitment: Object.assign(recruitment, recruitment),
 }
 
 export default reports

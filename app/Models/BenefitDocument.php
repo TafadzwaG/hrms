@@ -11,7 +11,16 @@ class BenefitDocument extends Model
 {
     use Auditable, BelongsToOrganization;
 
-    public const DOCUMENT_TYPES = ['policy', 'membership_form', 'approval_letter', 'dependant_document', 'enrollment_form', 'other'];
+    protected string $auditModule = 'benefits';
+
+    public const DOCUMENT_TYPES = [
+        'policy_document',
+        'membership_form',
+        'approval_letter',
+        'dependant_document',
+        'enrollment_form',
+        'other',
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -24,12 +33,9 @@ class BenefitDocument extends Model
         'uploaded_by',
     ];
 
-    protected string $auditModule = 'benefits';
-
-    public function auditLabel(): string
-    {
-        return $this->file_name ?: 'Document #'.$this->getKey();
-    }
+    protected $casts = [
+        'size' => 'integer',
+    ];
 
     public function enrollment(): BelongsTo
     {

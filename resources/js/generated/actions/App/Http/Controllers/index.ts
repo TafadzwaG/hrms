@@ -53,6 +53,14 @@ import LearningCourseController from './LearningCourseController'
 import DocumentTypeController from './DocumentTypeController'
 import DocumentController from './DocumentController'
 import Reports from './Reports'
+import RecruitmentDashboardController from './RecruitmentDashboardController'
+import CandidateResumeController from './CandidateResumeController'
+import CandidateCheckoutController from './CandidateCheckoutController'
+import CompanyProfileController from './CompanyProfileController'
+import VacancyController from './VacancyController'
+import VacancyApplicationController from './VacancyApplicationController'
+import CandidateDirectoryController from './CandidateDirectoryController'
+import PaymentWebhookController from './PaymentWebhookController'
 import Settings from './Settings'
 const Controllers = {
     PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
@@ -110,6 +118,14 @@ LearningCourseController: Object.assign(LearningCourseController, LearningCourse
 DocumentTypeController: Object.assign(DocumentTypeController, DocumentTypeController),
 DocumentController: Object.assign(DocumentController, DocumentController),
 Reports: Object.assign(Reports, Reports),
+RecruitmentDashboardController: Object.assign(RecruitmentDashboardController, RecruitmentDashboardController),
+CandidateResumeController: Object.assign(CandidateResumeController, CandidateResumeController),
+CandidateCheckoutController: Object.assign(CandidateCheckoutController, CandidateCheckoutController),
+CompanyProfileController: Object.assign(CompanyProfileController, CompanyProfileController),
+VacancyController: Object.assign(VacancyController, VacancyController),
+VacancyApplicationController: Object.assign(VacancyApplicationController, VacancyApplicationController),
+CandidateDirectoryController: Object.assign(CandidateDirectoryController, CandidateDirectoryController),
+PaymentWebhookController: Object.assign(PaymentWebhookController, PaymentWebhookController),
 Settings: Object.assign(Settings, Settings),
 }
 
