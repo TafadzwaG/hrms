@@ -10,6 +10,7 @@ use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -42,7 +43,8 @@ class HandleInertiaRequests extends Middleware
                 'currentOrganization:id,name,slug,code,status,timezone',
             ]);
 
-            $effectiveRoles = $user->effectiveRoles($activeOrganization?->id);
+            $orgId = $activeOrganization?->id;
+            $effectiveRoles = $user->effectiveRoles($orgId);
 
             $roles = $effectiveRoles
                 ->map(fn (Role $role) => [
@@ -54,9 +56,21 @@ class HandleInertiaRequests extends Middleware
                 ->values()
                 ->all();
 
-            $permissions = $user->permissionNames($activeOrganization?->id)->values()->all();
+            // Compute permission names once and reuse for the `can` map.
+            $permissionNamesList = $user->permissionNames($orgId);
+            $permissions = $permissionNamesList->values()->all();
+
+            // Build the `can` map by matching each registry permission against
+            // the already-computed permission names — avoids re-querying the DB
+            // for every single permission in the registry.
             $can = collect(PermissionRegistry::names())
-                ->mapWithKeys(fn (string $permission) => [$permission => $user->canAccess($permission)])
+                ->mapWithKeys(function (string $ability) use ($permissionNamesList) {
+                    $granted = $permissionNamesList->contains(function (string $owned) use ($ability) {
+                        return Str::is($owned, $ability) || Str::is($ability, $owned);
+                    });
+
+                    return [$ability => $granted];
+                })
                 ->all();
 
             $availableOrganizations = $tenantContext->availableOrganizationsFor($user);
@@ -92,11 +106,11 @@ class HandleInertiaRequests extends Middleware
         $systemLogoPath = $settings->getString('branding', 'system_logo_path', null, $systemOrgId);
         $systemLogoUrl = $systemLogoPath ? Storage::disk('public')->url($systemLogoPath) : null;
 
-        $orgId = $activeOrganization?->id;
-        $branding = $orgId ? [
-            'primary_color' => $settings->getString('branding', 'primary_color', null, $orgId),
-            'secondary_color' => $settings->getString('branding', 'secondary_color', null, $orgId),
-            'accent_color' => $settings->getString('branding', 'accent_color', null, $orgId),
+        $brandingOrgId = $activeOrganization?->id;
+        $branding = $brandingOrgId ? [
+            'primary_color' => $settings->getString('branding', 'primary_color', null, $brandingOrgId),
+            'secondary_color' => $settings->getString('branding', 'secondary_color', null, $brandingOrgId),
+            'accent_color' => $settings->getString('branding', 'accent_color', null, $brandingOrgId),
         ] : [
             'primary_color' => null,
             'secondary_color' => null,

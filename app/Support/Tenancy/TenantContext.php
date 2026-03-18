@@ -15,6 +15,11 @@ class TenantContext
 
     private int $disabled = 0;
 
+    /**
+     * Request-level cache for available organizations per user.
+     */
+    private array $availableOrganizationsCache = [];
+
     public function initializeForRequest(Request $request): void
     {
         $user = $request->user();
@@ -73,16 +78,26 @@ class TenantContext
 
     public function availableOrganizationsFor(User $user): Collection
     {
-        if ($user->isSuperAdmin()) {
-            return Organization::query()
-                ->orderBy('name')
-                ->get(['id', 'name', 'slug', 'code', 'status', 'timezone']);
+        $cacheKey = $user->id;
+
+        if (isset($this->availableOrganizationsCache[$cacheKey])) {
+            return $this->availableOrganizationsCache[$cacheKey];
         }
 
-        return $user->organizations()
-            ->wherePivot('is_active', true)
-            ->orderBy('organizations.name')
-            ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.code', 'organizations.status', 'organizations.timezone']);
+        if ($user->isSuperAdmin()) {
+            $result = Organization::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug', 'code', 'status', 'timezone']);
+        } else {
+            $result = $user->organizations()
+                ->wherePivot('is_active', true)
+                ->orderBy('organizations.name')
+                ->get(['organizations.id', 'organizations.name', 'organizations.slug', 'organizations.code', 'organizations.status', 'organizations.timezone']);
+        }
+
+        $this->availableOrganizationsCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     public function switchTo(Organization $organization, User $user, Request $request): void
@@ -135,5 +150,6 @@ class TenantContext
     {
         $this->organizationId = null;
         $this->organization = null;
+        $this->availableOrganizationsCache = [];
     }
 }

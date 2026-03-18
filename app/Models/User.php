@@ -19,6 +19,12 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
+    /**
+     * Request-level cache for computed role/permission data.
+     * Cleared automatically when roles or permissions are synced.
+     */
+    protected array $rbacCache = [];
+
     protected $fillable = [
         'name',
         'email',
@@ -134,14 +140,25 @@ class User extends Authenticatable
 
     public function effectiveRoles(int|Organization|null $organization = null): Collection
     {
+        $organizationId = $organization instanceof Organization ? $organization->id : $organization;
+        $cacheKey = 'effective_roles:' . ($organizationId ?? 'global');
+
+        if (isset($this->rbacCache[$cacheKey])) {
+            return $this->rbacCache[$cacheKey];
+        }
+
         $globalRoles = $this->relationLoaded('roles')
             ? $this->roles
             : $this->roles()->get(['roles.id', 'roles.code', 'roles.name', 'roles.description']);
 
-        return $globalRoles
-            ->concat($this->organizationRoles($organization))
+        $result = $globalRoles
+            ->concat($this->organizationRoles($organizationId))
             ->unique('id')
             ->values();
+
+        $this->rbacCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     public function hasRole(string|array $roles): bool
@@ -166,6 +183,13 @@ class User extends Authenticatable
 
     public function allPermissions(int|Organization|null $organization = null): Collection
     {
+        $organizationId = $organization instanceof Organization ? $organization->id : $organization;
+        $cacheKey = 'all_permissions:' . ($organizationId ?? 'global');
+
+        if (isset($this->rbacCache[$cacheKey])) {
+            return $this->rbacCache[$cacheKey];
+        }
+
         $directPermissions = $this->relationLoaded('permissions')
             ? $this->permissions
             : $this->permissions()->get(['permissions.id', 'permissions.name', 'permissions.module', 'permissions.label']);
@@ -177,15 +201,30 @@ class User extends Authenticatable
             : $role->permissions()->get(['permissions.id', 'permissions.name', 'permissions.module', 'permissions.label'])
         );
 
-        return $directPermissions
+        $result = $directPermissions
             ->concat($rolePermissions)
             ->unique('name')
             ->values();
+
+        $this->rbacCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     public function permissionNames(int|Organization|null $organization = null): Collection
     {
-        return $this->allPermissions($organization)->pluck('name')->unique()->values();
+        $organizationId = $organization instanceof Organization ? $organization->id : $organization;
+        $cacheKey = 'permission_names:' . ($organizationId ?? 'global');
+
+        if (isset($this->rbacCache[$cacheKey])) {
+            return $this->rbacCache[$cacheKey];
+        }
+
+        $result = $this->allPermissions($organization)->pluck('name')->unique()->values();
+
+        $this->rbacCache[$cacheKey] = $result;
+
+        return $result;
     }
 
     public function hasPermission(string|array $permissions): bool
@@ -210,8 +249,20 @@ class User extends Authenticatable
         return $this->hasPermission($permissions);
     }
 
+    /**
+     * Clear the request-level RBAC cache.
+     */
+    public function clearRbacCache(): static
+    {
+        $this->rbacCache = [];
+
+        return $this;
+    }
+
     public function syncRoles(array $roleIds, int|Organization|null $organization = null): static
     {
+        $this->clearRbacCache();
+
         $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
 
         if ($organization === null) {
@@ -252,6 +303,7 @@ class User extends Authenticatable
 
     public function syncPermissions(array $permissionIds): static
     {
+        $this->clearRbacCache();
         $this->permissions()->sync(array_values(array_unique($permissionIds)));
 
         return $this;

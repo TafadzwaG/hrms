@@ -600,7 +600,7 @@ destroy.delete = (args: { vacancy_application: string | number } | [vacancy_appl
  * @see app/Http/Controllers/VacancyApplicationController.php:100
  * @route '/vacancy-applications/{application}/status'
  */
-export const updateStatus = (args: { application: string | number | { id: string | number } } | [application: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const updateStatus = (args: { application: number | { id: number } } | [application: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updateStatus.url(args, options),
     method: 'put',
 })
@@ -615,7 +615,7 @@ updateStatus.definition = {
  * @see app/Http/Controllers/VacancyApplicationController.php:100
  * @route '/vacancy-applications/{application}/status'
  */
-updateStatus.url = (args: { application: string | number | { id: string | number } } | [application: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+updateStatus.url = (args: { application: number | { id: number } } | [application: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { application: args }
     }
@@ -648,7 +648,7 @@ updateStatus.url = (args: { application: string | number | { id: string | number
  * @see app/Http/Controllers/VacancyApplicationController.php:100
  * @route '/vacancy-applications/{application}/status'
  */
-updateStatus.put = (args: { application: string | number | { id: string | number } } | [application: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+updateStatus.put = (args: { application: number | { id: number } } | [application: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: updateStatus.url(args, options),
     method: 'put',
 })
@@ -658,7 +658,7 @@ updateStatus.put = (args: { application: string | number | { id: string | number
  * @see app/Http/Controllers/VacancyApplicationController.php:100
  * @route '/vacancy-applications/{application}/status'
  */
-    const updateStatusForm = (args: { application: string | number | { id: string | number } } | [application: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateStatusForm = (args: { application: number | { id: number } } | [application: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: updateStatus.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -673,7 +673,7 @@ updateStatus.put = (args: { application: string | number | { id: string | number
  * @see app/Http/Controllers/VacancyApplicationController.php:100
  * @route '/vacancy-applications/{application}/status'
  */
-        updateStatusForm.put = (args: { application: string | number | { id: string | number } } | [application: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateStatusForm.put = (args: { application: number | { id: number } } | [application: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: updateStatus.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',

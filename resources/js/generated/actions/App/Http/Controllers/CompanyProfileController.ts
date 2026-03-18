@@ -600,7 +600,7 @@ destroy.delete = (args: { company_profile: string | number } | [company_profile:
  * @see app/Http/Controllers/CompanyProfileController.php:137
  * @route '/company-profiles/{company}/approve'
  */
-export const approve = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const approve = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: approve.url(args, options),
     method: 'put',
 })
@@ -615,7 +615,7 @@ approve.definition = {
  * @see app/Http/Controllers/CompanyProfileController.php:137
  * @route '/company-profiles/{company}/approve'
  */
-approve.url = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+approve.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { company: args }
     }
@@ -648,7 +648,7 @@ approve.url = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:137
  * @route '/company-profiles/{company}/approve'
  */
-approve.put = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+approve.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: approve.url(args, options),
     method: 'put',
 })
@@ -658,7 +658,7 @@ approve.put = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:137
  * @route '/company-profiles/{company}/approve'
  */
-    const approveForm = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const approveForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: approve.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -673,7 +673,7 @@ approve.put = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:137
  * @route '/company-profiles/{company}/approve'
  */
-        approveForm.put = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        approveForm.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: approve.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -689,7 +689,7 @@ approve.put = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:150
  * @route '/company-profiles/{company}/suspend'
  */
-export const suspend = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const suspend = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: suspend.url(args, options),
     method: 'put',
 })
@@ -704,7 +704,7 @@ suspend.definition = {
  * @see app/Http/Controllers/CompanyProfileController.php:150
  * @route '/company-profiles/{company}/suspend'
  */
-suspend.url = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+suspend.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { company: args }
     }
@@ -737,7 +737,7 @@ suspend.url = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:150
  * @route '/company-profiles/{company}/suspend'
  */
-suspend.put = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+suspend.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: suspend.url(args, options),
     method: 'put',
 })
@@ -747,7 +747,7 @@ suspend.put = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:150
  * @route '/company-profiles/{company}/suspend'
  */
-    const suspendForm = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const suspendForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: suspend.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -762,7 +762,7 @@ suspend.put = (args: { company: string | number | { id: string | number } } | [c
  * @see app/Http/Controllers/CompanyProfileController.php:150
  * @route '/company-profiles/{company}/suspend'
  */
-        suspendForm.put = (args: { company: string | number | { id: string | number } } | [company: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        suspendForm.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: suspend.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',

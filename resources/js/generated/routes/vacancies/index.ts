@@ -215,7 +215,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-export const show = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -230,7 +230,7 @@ show.definition = {
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-show.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -263,7 +263,7 @@ show.url = (args: { vacancy: string | number | { id: string | number } } | [vaca
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-show.get = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -272,7 +272,7 @@ show.get = (args: { vacancy: string | number | { id: string | number } } | [vaca
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-show.head = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -282,7 +282,7 @@ show.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-    const showForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
@@ -292,7 +292,7 @@ show.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-        showForm.get = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
@@ -301,7 +301,7 @@ show.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:100
  * @route '/vacancies/{vacancy}'
  */
-        showForm.head = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -317,7 +317,7 @@ show.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-export const edit = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -332,7 +332,7 @@ edit.definition = {
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-edit.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+edit.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -365,7 +365,7 @@ edit.url = (args: { vacancy: string | number | { id: string | number } } | [vaca
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-edit.get = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -374,7 +374,7 @@ edit.get = (args: { vacancy: string | number | { id: string | number } } | [vaca
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-edit.head = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -384,7 +384,7 @@ edit.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-    const editForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
@@ -394,7 +394,7 @@ edit.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-        editForm.get = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
@@ -403,7 +403,7 @@ edit.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:114
  * @route '/vacancies/{vacancy}/edit'
  */
-        editForm.head = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -419,7 +419,7 @@ edit.head = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-export const update = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -434,7 +434,7 @@ update.definition = {
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-update.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -467,7 +467,7 @@ update.url = (args: { vacancy: string | number | { id: string | number } } | [va
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-update.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -476,7 +476,7 @@ update.put = (args: { vacancy: string | number | { id: string | number } } | [va
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-update.patch = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -486,7 +486,7 @@ update.patch = (args: { vacancy: string | number | { id: string | number } } | [
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-    const updateForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -501,7 +501,7 @@ update.patch = (args: { vacancy: string | number | { id: string | number } } | [
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-        updateForm.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -515,7 +515,7 @@ update.patch = (args: { vacancy: string | number | { id: string | number } } | [
  * @see app/Http/Controllers/VacancyController.php:122
  * @route '/vacancies/{vacancy}'
  */
-        updateForm.patch = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.patch = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PATCH',
@@ -531,7 +531,7 @@ update.patch = (args: { vacancy: string | number | { id: string | number } } | [
  * @see app/Http/Controllers/VacancyController.php:137
  * @route '/vacancies/{vacancy}'
  */
-export const destroy = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -546,7 +546,7 @@ destroy.definition = {
  * @see app/Http/Controllers/VacancyController.php:137
  * @route '/vacancies/{vacancy}'
  */
-destroy.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -579,7 +579,7 @@ destroy.url = (args: { vacancy: string | number | { id: string | number } } | [v
  * @see app/Http/Controllers/VacancyController.php:137
  * @route '/vacancies/{vacancy}'
  */
-destroy.delete = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -589,7 +589,7 @@ destroy.delete = (args: { vacancy: string | number | { id: string | number } } |
  * @see app/Http/Controllers/VacancyController.php:137
  * @route '/vacancies/{vacancy}'
  */
-    const destroyForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -604,7 +604,7 @@ destroy.delete = (args: { vacancy: string | number | { id: string | number } } |
  * @see app/Http/Controllers/VacancyController.php:137
  * @route '/vacancies/{vacancy}'
  */
-        destroyForm.delete = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',
@@ -620,7 +620,7 @@ destroy.delete = (args: { vacancy: string | number | { id: string | number } } |
  * @see app/Http/Controllers/VacancyController.php:151
  * @route '/vacancies/{vacancy}/publish'
  */
-export const publish = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const publish = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: publish.url(args, options),
     method: 'put',
 })
@@ -635,7 +635,7 @@ publish.definition = {
  * @see app/Http/Controllers/VacancyController.php:151
  * @route '/vacancies/{vacancy}/publish'
  */
-publish.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+publish.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -668,7 +668,7 @@ publish.url = (args: { vacancy: string | number | { id: string | number } } | [v
  * @see app/Http/Controllers/VacancyController.php:151
  * @route '/vacancies/{vacancy}/publish'
  */
-publish.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+publish.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: publish.url(args, options),
     method: 'put',
 })
@@ -678,7 +678,7 @@ publish.put = (args: { vacancy: string | number | { id: string | number } } | [v
  * @see app/Http/Controllers/VacancyController.php:151
  * @route '/vacancies/{vacancy}/publish'
  */
-    const publishForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const publishForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: publish.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -693,7 +693,7 @@ publish.put = (args: { vacancy: string | number | { id: string | number } } | [v
  * @see app/Http/Controllers/VacancyController.php:151
  * @route '/vacancies/{vacancy}/publish'
  */
-        publishForm.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        publishForm.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: publish.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -709,7 +709,7 @@ publish.put = (args: { vacancy: string | number | { id: string | number } } | [v
  * @see app/Http/Controllers/VacancyController.php:164
  * @route '/vacancies/{vacancy}/close'
  */
-export const close = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const close = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: close.url(args, options),
     method: 'put',
 })
@@ -724,7 +724,7 @@ close.definition = {
  * @see app/Http/Controllers/VacancyController.php:164
  * @route '/vacancies/{vacancy}/close'
  */
-close.url = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+close.url = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { vacancy: args }
     }
@@ -757,7 +757,7 @@ close.url = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:164
  * @route '/vacancies/{vacancy}/close'
  */
-close.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+close.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: close.url(args, options),
     method: 'put',
 })
@@ -767,7 +767,7 @@ close.put = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:164
  * @route '/vacancies/{vacancy}/close'
  */
-    const closeForm = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const closeForm = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: close.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -782,7 +782,7 @@ close.put = (args: { vacancy: string | number | { id: string | number } } | [vac
  * @see app/Http/Controllers/VacancyController.php:164
  * @route '/vacancies/{vacancy}/close'
  */
-        closeForm.put = (args: { vacancy: string | number | { id: string | number } } | [vacancy: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        closeForm.put = (args: { vacancy: number | { id: number } } | [vacancy: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: close.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',

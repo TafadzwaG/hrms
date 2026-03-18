@@ -83,7 +83,7 @@ store.post = (args: { candidate: number | { id: number } } | [candidate: number 
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-export const download = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const download = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: download.url(args, options),
     method: 'get',
 })
@@ -98,7 +98,7 @@ download.definition = {
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-download.url = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
+download.url = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     candidate: args[0],
@@ -128,7 +128,7 @@ download.url = (args: { candidate: number | { id: number }, resume: string | num
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-download.get = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+download.get = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: download.url(args, options),
     method: 'get',
 })
@@ -137,7 +137,7 @@ download.get = (args: { candidate: number | { id: number }, resume: string | num
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-download.head = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+download.head = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: download.url(args, options),
     method: 'head',
 })
@@ -147,7 +147,7 @@ download.head = (args: { candidate: number | { id: number }, resume: string | nu
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-    const downloadForm = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const downloadForm = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: download.url(args, options),
         method: 'get',
     })
@@ -157,7 +157,7 @@ download.head = (args: { candidate: number | { id: number }, resume: string | nu
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-        downloadForm.get = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        downloadForm.get = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: download.url(args, options),
             method: 'get',
         })
@@ -166,7 +166,7 @@ download.head = (args: { candidate: number | { id: number }, resume: string | nu
  * @see app/Http/Controllers/CandidateResumeController.php:36
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/download'
  */
-        downloadForm.head = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        downloadForm.head = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: download.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -182,7 +182,7 @@ download.head = (args: { candidate: number | { id: number }, resume: string | nu
  * @see app/Http/Controllers/CandidateResumeController.php:48
  * @route '/candidate-profiles/{candidate}/resumes/{resume}'
  */
-export const destroy = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -197,7 +197,7 @@ destroy.definition = {
  * @see app/Http/Controllers/CandidateResumeController.php:48
  * @route '/candidate-profiles/{candidate}/resumes/{resume}'
  */
-destroy.url = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
+destroy.url = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     candidate: args[0],
@@ -227,7 +227,7 @@ destroy.url = (args: { candidate: number | { id: number }, resume: string | numb
  * @see app/Http/Controllers/CandidateResumeController.php:48
  * @route '/candidate-profiles/{candidate}/resumes/{resume}'
  */
-destroy.delete = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -237,7 +237,7 @@ destroy.delete = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:48
  * @route '/candidate-profiles/{candidate}/resumes/{resume}'
  */
-    const destroyForm = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -252,7 +252,7 @@ destroy.delete = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:48
  * @route '/candidate-profiles/{candidate}/resumes/{resume}'
  */
-        destroyForm.delete = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',
@@ -268,7 +268,7 @@ destroy.delete = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:58
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/set-primary'
  */
-export const setPrimary = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const setPrimary = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: setPrimary.url(args, options),
     method: 'put',
 })
@@ -283,7 +283,7 @@ setPrimary.definition = {
  * @see app/Http/Controllers/CandidateResumeController.php:58
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/set-primary'
  */
-setPrimary.url = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions) => {
+setPrimary.url = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     candidate: args[0],
@@ -313,7 +313,7 @@ setPrimary.url = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:58
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/set-primary'
  */
-setPrimary.put = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+setPrimary.put = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: setPrimary.url(args, options),
     method: 'put',
 })
@@ -323,7 +323,7 @@ setPrimary.put = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:58
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/set-primary'
  */
-    const setPrimaryForm = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const setPrimaryForm = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: setPrimary.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -338,7 +338,7 @@ setPrimary.put = (args: { candidate: number | { id: number }, resume: string | n
  * @see app/Http/Controllers/CandidateResumeController.php:58
  * @route '/candidate-profiles/{candidate}/resumes/{resume}/set-primary'
  */
-        setPrimaryForm.put = (args: { candidate: number | { id: number }, resume: string | number | { id: string | number } } | [candidate: number | { id: number }, resume: string | number | { id: string | number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        setPrimaryForm.put = (args: { candidate: number | { id: number }, resume: number | { id: number } } | [candidate: number | { id: number }, resume: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: setPrimary.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
