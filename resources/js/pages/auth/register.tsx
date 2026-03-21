@@ -8,18 +8,18 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { 
-    HoverCard, 
-    HoverCardContent, 
-    HoverCardTrigger 
-} from '@/components/ui/hover-card'; // Assuming shadcn component path
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger
+} from '@/components/ui/hover-card';
 import { Info } from 'lucide-react';
 
 export default function Register() {
     return (
         <AuthLayout
             title={
-                <span className="bg-gradient-to-r from-indigo-600 to-teal-500 bg-clip-text text-transparent font-bold">
+                <span className="font-bold text-slate-900">
                     Join the Talent Pool
                 </span>
             }
@@ -46,7 +46,7 @@ export default function Register() {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    className="border-slate-200 focus:ring-indigo-500"
+                                    className="border-slate-200 focus:ring-slate-500"
                                     placeholder="e.g. Jane Doe"
                                 />
                                 <InputError message={errors.name} />
@@ -62,7 +62,7 @@ export default function Register() {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    className="border-slate-200 focus:ring-indigo-500"
+                                    className="border-slate-200 focus:ring-slate-500"
                                     placeholder="j.doe@company.com"
                                 />
                                 <InputError message={errors.email} />
@@ -76,11 +76,11 @@ export default function Register() {
                                         <HoverCardTrigger asChild>
                                             <Info className="size-4 text-slate-400 cursor-help" />
                                         </HoverCardTrigger>
-                                        <HoverCardContent className="w-80 border-indigo-100 bg-white">
+                                        <HoverCardContent className="w-80 border-slate-200 bg-white">
                                             <div className="space-y-2">
-                                                <h4 className="text-sm font-semibold text-indigo-900">Corporate Security Policy</h4>
+                                                <h4 className="text-sm font-semibold text-slate-900">Corporate Security Policy</h4>
                                                 <p className="text-xs text-slate-500 leading-relaxed">
-                                                    Our HRMS requires a strong password to protect your sensitive personal and payroll data. 
+                                                    Our HRMS requires a strong password to protect your sensitive personal and payroll data.
                                                     Use 8+ characters with a mix of letters, numbers, and symbols.
                                                 </p>
                                             </div>
@@ -94,7 +94,7 @@ export default function Register() {
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    className="border-slate-200 focus:ring-indigo-500"
+                                    className="border-slate-200 focus:ring-slate-500"
                                     placeholder="Create a strong password"
                                 />
                                 <InputError message={errors.password} />
@@ -110,7 +110,7 @@ export default function Register() {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    className="border-slate-200 focus:ring-indigo-500"
+                                    className="border-slate-200 focus:ring-slate-500"
                                     placeholder="Repeat password"
                                 />
                                 <InputError message={errors.password_confirmation} />
@@ -118,7 +118,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-teal-500 text-white font-semibold py-6 shadow-lg shadow-indigo-100 transition-all duration-300 border-none"
+                                className="mt-2 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-6 shadow-sm transition-all duration-300 border-none"
                                 tabIndex={5}
                                 disabled={processing}
                             >
@@ -129,9 +129,9 @@ export default function Register() {
 
                         <div className="text-center text-sm text-slate-500">
                             Already part of the team?{' '}
-                            <TextLink 
-                                href={login()} 
-                                className="font-bold text-indigo-600 hover:text-teal-500 underline-offset-4"
+                            <TextLink
+                                href={login()}
+                                className="font-bold text-slate-900 hover:text-slate-700 underline-offset-4"
                                 tabIndex={6}
                             >
                                 Sign in here

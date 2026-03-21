@@ -1,381 +1,848 @@
-import { Head, Link } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Search, MapPin, Briefcase, Users, ShieldCheck, 
-    LayoutDashboard, UserRound, ArrowRight, Globe, 
-    Lock, CheckCircle2, Menu, X, Upload, Github, 
-    Twitter, Linkedin, Building2, Star
+import { Head, Link, router } from '@inertiajs/react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
+import heroImage from '@/assets/hero-team.jpg';
+import {
+  Search,
+  MapPin,
+  Briefcase,
+  Users,
+  ShieldCheck,
+  LayoutDashboard,
+  UserRound,
+  ArrowRight,
+  Globe,
+  CheckCircle2,
+  Menu,
+  X,
+  Upload,
+  Zap,
+  TrendingUp,
+  Github,
+  Twitter,
+  Linkedin,
+  Building2,
+  Star,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 
-// --- Animation Variants ---
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.1, delayChildren: 0.3 }
-    }
+type Stats = {
+  candidates: number;
+  companies: number;
+  vacancies: number;
 };
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-};
-
-const hoverCard = {
-    initial: { scale: 1, y: 0 },
-    hover: { 
-        y: -12, 
-        scale: 1.02,
-        transition: { type: "spring", stiffness: 400, damping: 10 } 
-    }
+type Vacancy = {
+  id: number | string;
+  title: string;
+  company_name: string;
+  location?: string | null;
+  work_mode?: string | null;
 };
 
 type Props = {
-    stats: { candidates: number; companies: number; vacancies: number };
-    featuredVacancies: Array<any>;
-    auth: { user: any };
+  auth?: { user?: unknown | null };
+  stats?: Stats;
+  featuredVacancies?: Vacancy[];
 };
 
-export default function Landing({ stats, featuredVacancies, auth }: Props) {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const isAuthenticated = !!auth?.user;
-    const currentYear = new Date().getFullYear();
+const routes = {
+  home: '/',
+  browseJobs: '/candidate/register',
+  talentPool: '/candidate/register',
+  forCompanies: '/employer/register',
+  pricing: '#pricing',
+  login: '/login',
+  dashboard: '/dashboard',
+  candidateLogin: '/candidate/login',
+  employerLogin: '/employer/login',
+};
 
-    useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+const defaultStats: Stats = {
+  candidates: 12847,
+  companies: 340,
+  vacancies: 1923,
+};
 
-    return (
-        <>
-            <Head title="HRX — Human Resources Exchange" />
+const defaultFeaturedVacancies: Vacancy[] = [
+  { id: 1, title: 'Senior Product Engineer', company_name: 'Meridian Labs', location: 'Berlin', work_mode: 'Hybrid' },
+  { id: 2, title: 'Growth Marketing Lead', company_name: 'Canopy Health', location: 'London', work_mode: 'Remote' },
+  { id: 3, title: 'DevOps Architect', company_name: 'Stratos Inc', location: 'Singapore', work_mode: 'On-Site' },
+  { id: 4, title: 'UX Research Director', company_name: 'Prism Digital', location: 'New York', work_mode: 'Remote' },
+];
 
-            <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-slate-900 selection:text-white">
-                
-                {/* ===== NAVIGATION (Animated) ===== */}
-                <motion.nav 
-                    initial={{ y: -100 }}
-                    animate={{ y: 0 }}
-                    className={`fixed top-0 w-full z-50 transition-all duration-500 border-b ${
-                        scrolled ? 'bg-white/90 backdrop-blur-md py-3 shadow-sm border-slate-200' : 'bg-transparent py-5 border-transparent'
-                    }`}
-                >
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between items-center">
-                            <Link href="/" className="flex items-center gap-2 group">
-                                <motion.div 
-                                    whileHover={{ rotate: 180 }}
-                                    className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center transition-transform"
-                                >
-                                    <ShieldCheck className="text-white h-5 w-5" />
-                                </motion.div>
-                                <span className="font-black text-xl tracking-tighter text-slate-900 uppercase">
-                                    HRX <span className="text-slate-400 font-medium italic">Exchange</span>
-                                </span>
-                            </Link>
+const navLinks = [
+  { label: 'Browse Jobs', href: routes.browseJobs, isAnchor: false },
+  { label: 'Talent Pool', href: routes.talentPool, isAnchor: false },
+  { label: 'For Companies', href: routes.forCompanies, isAnchor: false },
+  { label: 'Pricing', href: routes.pricing, isAnchor: true },
+];
 
-                            <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-slate-500 uppercase tracking-tight">
-                                {[
-                                    { label: 'Browse Jobs', href: '/candidate/register' },
-                                    { label: 'Talent Pool', href: '/candidate/register' },
-                                    { label: 'For Companies', href: '/employer/register' },
-                                    { label: 'Pricing', href: '#pricing' },
-                                ].map((l) => (
-                                    <Link key={l.label} href={l.href} className="hover:text-slate-900 transition-colors relative group">
-                                        {l.label}
-                                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-slate-900 transition-all group-hover:w-full" />
-                                    </Link>
-                                ))}
-                            </div>
+// --- Animated counter ---
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.floor(v).toLocaleString());
+  const [display, setDisplay] = useState('0');
 
-                            <div className="hidden md:flex items-center space-x-4">
-                                <Link href={isAuthenticated ? '/dashboard' : '/login'} className="text-sm font-bold text-slate-500 hover:text-slate-900 uppercase">
-                                    {isAuthenticated ? 'Dashboard' : 'Portal Login'}
-                                </Link>
-                                <Button asChild variant="outline" className="rounded-xl border-slate-200 font-bold hover:bg-slate-100 transition-all active:scale-95">
-                                    <Link href="/candidate/register">
-                                        <Upload className="mr-2 h-4 w-4" /> Upload CV
-                                    </Link>
-                                </Button>
-                                <Button asChild className="bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 shadow-lg active:scale-95 transition-transform">
-                                    <Link href="/employer/register">Post a Job</Link>
-                                </Button>
-                            </div>
+  useEffect(() => {
+    if (!isInView) return;
 
-                            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2">
-                                {mobileMenuOpen ? <X /> : <Menu />}
-                            </button>
-                        </div>
-                    </div>
+    const controls = animate(count, target, {
+      duration: 2,
+      ease: [0.16, 1, 0.3, 1],
+    });
 
-                    {/* Mobile Menu */}
-                    <AnimatePresence>
-                        {mobileMenuOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="md:hidden bg-white border-t border-slate-200 overflow-hidden"
-                            >
-                                <div className="px-4 py-6 space-y-2">
-                                    <Link href="/candidate/register" className="block rounded-xl px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 uppercase tracking-tight">Browse Jobs</Link>
-                                    <Link href="/candidate/register" className="block rounded-xl px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 uppercase tracking-tight">Talent Pool</Link>
-                                    <Link href="/employer/register" className="block rounded-xl px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 uppercase tracking-tight">For Companies</Link>
-                                    <Link href={isAuthenticated ? '/dashboard' : '/login'} className="block rounded-xl px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 uppercase tracking-tight">
-                                        {isAuthenticated ? 'Dashboard' : 'Portal Login'}
-                                    </Link>
-                                    <div className="pt-4 space-y-3">
-                                        <Button asChild variant="outline" className="w-full rounded-xl font-bold">
-                                            <Link href="/candidate/register"><Upload className="mr-2 h-4 w-4" /> Upload CV</Link>
-                                        </Button>
-                                        <Button asChild className="w-full rounded-xl bg-slate-900 text-white font-bold">
-                                            <Link href="/employer/register">Post a Job</Link>
-                                        </Button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.nav>
+    const unsub = rounded.on('change', (v) => setDisplay(v));
 
-                {/* ===== HERO SECTION ===== */}
-                <main className="relative pt-48 pb-32 overflow-hidden">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                        <motion.div 
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="text-center max-w-4xl mx-auto"
-                        >
-                            <motion.div variants={itemVariants} className="flex justify-center gap-3 mb-12">
-                                <Badge variant="outline" className="bg-white border-slate-200 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-slate-600 shadow-sm">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse" />
-                                    {stats.vacancies.toLocaleString()}+ Live Exchanges
-                                </Badge>
-                                <Badge variant="outline" className="bg-white border-slate-200 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-slate-600 shadow-sm">
-                                    {stats.companies.toLocaleString()}+ Partners
-                                </Badge>
-                            </motion.div>
+    return () => {
+      controls.stop();
+      unsub();
+    };
+  }, [isInView, target, count, rounded]);
 
-                            <motion.h1 variants={itemVariants} className="text-7xl md:text-9xl font-black tracking-tighter text-slate-900 mb-8 leading-[0.85]">
-                                Find Talent. <br />
-                                <span className="text-slate-300">Find Opportunity.</span>
-                            </motion.h1>
+  return (
+    <span ref={ref}>
+      {display}
+      {suffix}
+    </span>
+  );
+}
 
-                            <motion.p variants={itemVariants} className="text-xl text-slate-500 mb-16 max-w-2xl mx-auto leading-relaxed font-medium">
-                                The high-frequency marketplace for the global workforce. Verified, secure, and integrated into the <span className="text-slate-900 font-bold underline decoration-slate-300">HRX ecosystem</span>.
-                            </motion.p>
+// --- Scroll reveal wrapper ---
+function Reveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
 
-                            {/* Search Bar with Floating Animation */}
-                            <motion.div 
-                                variants={itemVariants}
-                                whileHover={{ y: -5 }}
-                                className="p-2 bg-white rounded-[2rem] border border-slate-200 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] max-w-3xl mx-auto flex flex-col md:flex-row gap-2"
-                            >
-                                <div className="flex-1 flex items-center px-6 py-4">
-                                    <Search className="text-slate-400 mr-3 h-5 w-5" />
-                                    <Input className="border-none focus-visible:ring-0 p-0 text-slate-900 placeholder:text-slate-400 font-bold text-lg" placeholder="Job title or keywords" />
-                                </div>
-                                <div className="w-px bg-slate-100 hidden md:block h-10 my-auto" />
-                                <div className="flex-1 flex items-center px-6 py-4">
-                                    <MapPin className="text-slate-400 mr-3 h-5 w-5" />
-                                    <Input className="border-none focus-visible:ring-0 p-0 text-slate-900 placeholder:text-slate-400 font-bold text-lg" placeholder="Location" />
-                                </div>
-                                <Button size="lg" className="bg-slate-900 text-white px-12 py-8 rounded-2xl font-black hover:bg-slate-800 transition-all text-lg uppercase tracking-widest active:scale-95">
-                                    Search
-                                </Button>
-                            </motion.div>
-                        </motion.div>
-                    </div>
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
+      animate={isInView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
-                    {/* Background Decorative Element */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-slate-100/50 to-transparent -z-0 pointer-events-none" />
-                </main>
+// --- Scrolling logo ticker ---
+const partnerLogos = [
+  'Meridian Labs',
+  'Canopy Health',
+  'Stratos Inc',
+  'Prism Digital',
+  'Vortex AI',
+  'Northwave',
+  'Petal Finance',
+  'Lumen Studio',
+  'Relay Logistics',
+  'Cortex Labs',
+  'Nimbus Tech',
+  'Ascend Capital',
+];
 
-                {/* ===== HUB CARDS (Icon Fix Applied) ===== */}
-                <section className="py-24 bg-white relative">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                            {[
-                                { title: 'Candidate Hub', desc: 'Secure your professional identity, trade skills for global roles with one-click settle.', icon: <UserRound />, btn: 'Start My Journey', href: '/candidate/register' },
-                                { title: 'Employer Hub', desc: 'Deploy roles across the exchange and leverage AI-powered liquidity for hiring.', icon: <Briefcase />, btn: 'Hire Talent', href: '/employer/register' },
-                                { title: 'System Portal', desc: 'Administrative governance and multi-tenant nodes for enterprise core operations.', icon: <LayoutDashboard />, btn: 'Go to Portal', href: '/login' },
-                            ].map((hub, i) => (
-                                <motion.div
-                                    key={i}
-                                    variants={hoverCard}
-                                    initial="initial"
-                                    whileHover="hover"
-                                    className="group p-12 bg-slate-50 rounded-[3rem] border border-slate-100 flex flex-col justify-between transition-colors hover:bg-slate-950 duration-500"
-                                >
-                                    <div>
-                                        {/* ICON FIX: Ensure stroke color transitions to white on parent hover */}
-                                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-sm border border-slate-100 group-hover:bg-slate-800 transition-colors duration-500">
-                                            <div className="text-slate-950 group-hover:text-white transition-colors duration-500">
-                                                {hub.icon}
-                                            </div>
-                                        </div>
-                                        <h3 className="text-3xl font-black text-slate-900 group-hover:text-white mb-6 tracking-tighter transition-colors duration-500">{hub.title}</h3>
-                                        <p className="text-slate-500 group-hover:text-slate-400 mb-12 leading-relaxed font-medium text-lg transition-colors duration-500">{hub.desc}</p>
-                                    </div>
-                                    <Button asChild variant="outline" className="w-full py-7 border-slate-200 rounded-2xl font-black text-slate-900 group-hover:bg-white group-hover:text-slate-950 group-hover:border-white transition-all duration-500 uppercase tracking-widest">
-                                        <Link href={hub.href}>{hub.btn}</Link>
-                                    </Button>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+function LogoTicker() {
+  return (
+    <section className="py-12 border-t border-border overflow-hidden">
+      <div className="container mx-auto px-6 mb-6">
+        <Reveal>
+          <p className="text-center text-xs font-mono tracking-widest uppercase text-muted-foreground">
+            Trusted by leading organizations worldwide
+          </p>
+        </Reveal>
+      </div>
 
-                {/* ===== TRENDING SECTION ===== */}
-                <section className="py-32">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-6">
-                            <motion.div 
-                                initial={{ opacity: 0, x: -50 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                            >
-                                <h2 className="text-5xl font-black text-slate-900 mb-4 tracking-tighter uppercase">Live Opportunities</h2>
-                                <p className="text-slate-500 font-bold text-lg">Synced in real-time with the global HRX network.</p>
-                            </motion.div>
-                            <Link className="text-sm font-black text-slate-900 flex items-center gap-2 hover:gap-4 transition-all uppercase tracking-widest" href="/candidate/register">
-                                View All Jobs <ArrowRight className="h-5 w-5" />
-                            </Link>
-                        </div>
+      <div className="relative">
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {featuredVacancies.slice(0, 4).map((job, i) => (
-                                <Link key={i} href="/candidate/register">
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: i * 0.1 }}
-                                        whileHover={{ y: -5, scale: 1.02 }}
-                                        className="p-10 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all cursor-pointer group"
-                                    >
-                                        <div className="flex justify-between items-start mb-8">
-                                            <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center font-black text-white text-xs group-hover:scale-110 transition-transform">
-                                                {job.company_name.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <Badge className="bg-slate-100 text-slate-900 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Active</Badge>
-                                        </div>
-                                        <h4 className="font-black text-slate-900 text-xl mb-2 group-hover:underline underline-offset-4 tracking-tight">{job.title}</h4>
-                                        <p className="text-sm font-bold text-slate-400 mb-8 uppercase tracking-tight">{job.company_name} • {job.location || 'Remote'}</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            <Badge variant="outline" className="px-4 py-1 text-[10px] font-black text-slate-500 rounded-full border-slate-100 uppercase bg-slate-50">{job.work_mode || 'Remote'}</Badge>
-                                        </div>
-                                    </motion.div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+        <motion.div
+          className="flex gap-12 items-center whitespace-nowrap"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        >
+          {[...partnerLogos, ...partnerLogos].map((name, i) => (
+            <span
+              key={i}
+              className="text-sm font-semibold text-muted-foreground/40 tracking-wide uppercase select-none"
+            >
+              {name}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
-                {/* ===== HOW IT WORKS (Simplified Dark Section) ===== */}
-                <section className="py-32 bg-slate-950 text-white">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                className="relative"
-                            >
-                                <div className="absolute -top-20 -left-20 w-64 h-64 bg-slate-800/20 rounded-full blur-[100px]" />
-                                <h2 className="text-7xl md:text-8xl font-black mb-8 tracking-tighter uppercase leading-none">The <br /> Protocol.</h2>
-                                <p className="text-slate-400 text-xl font-medium leading-relaxed">
-                                    HRX operates on a high-velocity exchange protocol. We automate the friction between talent and opportunity.
-                                </p>
-                            </motion.div>
-                            <div className="space-y-12">
-                                {[
-                                    { t: 'Synthesize', d: 'Create your digital twin profile once.' },
-                                    { t: 'Exchange', d: 'Secure placement through automated nodes.' },
-                                    { t: 'Settle', d: 'Transparent onboarding into HRX core.' }
-                                ].map((step, idx) => (
-                                    <motion.div 
-                                        key={idx} 
-                                        initial={{ x: 50, opacity: 0 }}
-                                        whileInView={{ x: 0, opacity: 1 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: idx * 0.2 }}
-                                        className="flex gap-8 group"
-                                    >
-                                        <div className="text-4xl font-black text-slate-800 group-hover:text-white transition-colors italic">0{idx + 1}</div>
-                                        <div>
-                                            <h4 className="text-2xl font-black uppercase tracking-tight mb-2">{step.t}</h4>
-                                            <p className="text-slate-400 font-medium">{step.d}</p>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+// --- Navigation ---
+function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-                {/* ===== FOOTER ===== */}
-                <footer className="bg-white pt-32 pb-12 border-t border-slate-200">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-16 mb-24">
-                            <div className="col-span-2">
-                                <Link href="/" className="flex items-center gap-2 mb-8">
-                                    <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                                        <ShieldCheck className="h-5 w-5 text-white" />
-                                    </div>
-                                    <span className="font-black text-2xl tracking-tighter text-slate-900 uppercase">HRX EXCHANGE</span>
-                                </Link>
-                                <p className="text-slate-400 font-bold max-w-xs leading-relaxed uppercase text-xs tracking-widest">
-                                    Engineering the future of recruitment and talent management for a global scale.
-                                </p>
-                            </div>
-                            <div>
-                                <h5 className="font-black text-slate-900 mb-8 text-[10px] uppercase tracking-[0.3em]">Platform</h5>
-                                <ul className="space-y-4 text-sm text-slate-500 font-black">
-                                    <li><Link href="/candidate/register" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Browse Jobs</Link></li>
-                                    <li><Link href="/candidate/register" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Talent Pool</Link></li>
-                                    <li><Link href="/employer/register" className="hover:text-slate-950 transition-colors uppercase tracking-tight">For Companies</Link></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h5 className="font-black text-slate-900 mb-8 text-[10px] uppercase tracking-[0.3em]">Company</h5>
-                                <ul className="space-y-4 text-sm text-slate-500 font-black">
-                                    <li><Link href="/candidate/login" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Candidate Login</Link></li>
-                                    <li><Link href="/employer/login" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Employer Login</Link></li>
-                                    <li><Link href="/login" className="hover:text-slate-950 transition-colors uppercase tracking-tight">System Portal</Link></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h5 className="font-black text-slate-900 mb-8 text-[10px] uppercase tracking-[0.3em]">Support</h5>
-                                <ul className="space-y-4 text-sm text-slate-500 font-black">
-                                    <li><Link href="/candidate/register" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Get Started</Link></li>
-                                    <li><Link href="/employer/register" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Post a Job</Link></li>
-                                    <li><Link href="/login" className="hover:text-slate-950 transition-colors uppercase tracking-tight">Contact Us</Link></li>
-                                </ul>
-                            </div>
-                        </div>
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
-                        <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-8">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                © {currentYear} HRX HUMAN RESOURCES EXCHANGE. ALL RIGHTS RESERVED.
-                            </p>
-                            <div className="flex gap-8 items-center text-slate-400">
-                                <Twitter className="h-5 w-5 hover:text-slate-900 cursor-pointer" />
-                                <Linkedin className="h-5 w-5 hover:text-slate-900 cursor-pointer" />
-                                <Github className="h-5 w-5 hover:text-slate-900 cursor-pointer" />
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+  const portalHref = isAuthenticated ? routes.dashboard : routes.login;
+  const portalLabel = isAuthenticated ? 'Dashboard' : 'Portal Login';
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-background/80 backdrop-blur-xl border-b border-border shadow-sm' : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto flex items-center justify-between h-16 px-6">
+        <Link href={routes.home} className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+            <ShieldCheck className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="font-semibold text-foreground tracking-tight">HRX Exchange</span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map((l) =>
+            l.isAnchor ? (
+              <a key={l.label} href={l.href} className="nav-link">
+                {l.label}
+              </a>
+            ) : (
+              <Link key={l.label} href={l.href} className="nav-link">
+                {l.label}
+              </Link>
+            ),
+          )}
+        </div>
+
+        <div className="hidden md:flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm">
+            <Link href={portalHref}>{portalLabel}</Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm">
+            <Link href={routes.browseJobs}>
+              <Upload className="h-3.5 w-3.5" />
+              Upload CV
+            </Link>
+          </Button>
+
+          <Button asChild size="sm">
+            <Link href={routes.forCompanies}>Post a Job</Link>
+          </Button>
+        </div>
+
+        <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-foreground" type="button">
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl"
+        >
+          <div className="px-6 py-4 space-y-3">
+            {navLinks.map((l) =>
+              l.isAnchor ? (
+                <a key={l.label} href={l.href} className="block py-2 nav-link">
+                  {l.label}
+                </a>
+              ) : (
+                <Link key={l.label} href={l.href} className="block py-2 nav-link">
+                  {l.label}
+                </Link>
+              ),
+            )}
+
+            <Link href={portalHref} className="block py-2 nav-link">
+              {portalLabel}
+            </Link>
+
+            <div className="pt-3 border-t border-border flex flex-col gap-2">
+              <Button asChild variant="outline" size="sm" className="w-full">
+                <Link href={routes.browseJobs}>
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload CV
+                </Link>
+              </Button>
+
+              <Button asChild size="sm" className="w-full">
+                <Link href={routes.forCompanies}>Post a Job</Link>
+              </Button>
             </div>
-        </>
-    );
+          </div>
+        </motion.div>
+      )}
+    </nav>
+  );
+}
+
+// --- Hero Section ---
+function HeroSection({ stats }: { stats: Stats }) {
+  const [query, setQuery] = useState('');
+  const [location, setLocation] = useState('');
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (location) params.set('location', location);
+    router.visit(`/search?${params.toString()}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  return (
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+      <div className="absolute inset-0">
+        <img src={heroImage} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-background/85 backdrop-blur-[2px]" />
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10 py-28">
+        <div className="max-w-3xl mx-auto text-center">
+          <Reveal>
+            <div className="flex items-center justify-center gap-6 mb-8">
+              <span className="flex items-center gap-2">
+                <span className="ticker-pulse" />
+                <span className="stat-number">{stats.vacancies.toLocaleString()}+ Live Exchanges</span>
+              </span>
+              <span className="hidden sm:inline-block w-px h-4 bg-border" />
+              <span className="hidden sm:flex items-center gap-2">
+                <span className="stat-number">{stats.companies.toLocaleString()}+ Partners</span>
+              </span>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-[0.95] mb-6 text-foreground">
+              Find Talent. <span className="text-primary">Find Opportunity.</span>
+            </h1>
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <p className="text-lg sm:text-xl max-w-xl mx-auto mb-10 text-muted-foreground">
+              The high-frequency marketplace for the global workforce. Verified, secure, and integrated into the HRX ecosystem.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.3}>
+            <div className="flex flex-col sm:flex-row items-stretch gap-3 max-w-2xl mx-auto bg-background/90 backdrop-blur-md border border-border rounded-xl p-2 shadow-lg">
+              <div className="flex items-center gap-2 flex-1 px-3">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Job title, skill, or keyword…"
+                  className="bg-transparent outline-none text-sm w-full text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 flex-1 px-3 border-l border-border">
+                <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Location or Remote"
+                  className="bg-transparent outline-none text-sm w-full text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <Button className="sm:px-8" onClick={handleSearch}>
+                Search
+              </Button>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.4}>
+            <div className="flex items-center justify-center flex-wrap gap-2 mt-6">
+              <span className="text-xs text-muted-foreground">Popular:</span>
+              {['React', 'Remote', 'DevOps', 'Marketing', 'Design'].map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => {
+                    setQuery(term);
+                    router.visit(`/search?q=${term}`);
+                  }}
+                  className="px-3 py-1 rounded-full text-xs bg-background/60 border border-border text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors active:scale-95"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Big Stats ---
+function StatsSection({ stats }: { stats: Stats }) {
+  const bigStats = [
+    { value: stats.candidates, suffix: '+', label: 'Active Candidates', icon: Users },
+    { value: stats.companies, suffix: '+', label: 'Partner Companies', icon: Building2 },
+    { value: stats.vacancies, suffix: '+', label: 'Live Job Listings', icon: Briefcase },
+    { value: 96, suffix: '%', label: 'Placement Rate', icon: TrendingUp },
+  ];
+
+  return (
+    <section className="py-16 border-t border-border">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {bigStats.map((stat, i) => (
+            <Reveal key={stat.label} delay={i * 0.08}>
+              <div className="text-center group">
+                <div className="h-10 w-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                  <stat.icon className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-1">
+                  <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                </p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Hub Cards ---
+const hubs = [
+  {
+    title: 'Candidate Hub',
+    desc: 'Secure your professional identity, trade skills for global roles with one-click settle.',
+    icon: UserRound,
+    btn: 'Start My Journey',
+    href: routes.browseJobs,
+  },
+  {
+    title: 'Employer Hub',
+    desc: 'Deploy roles across the exchange and leverage AI-powered liquidity for hiring.',
+    icon: Building2,
+    btn: 'Hire Talent',
+    href: routes.forCompanies,
+  },
+  {
+    title: 'System Portal',
+    desc: 'Administrative governance and multi-tenant nodes for enterprise core operations.',
+    icon: LayoutDashboard,
+    btn: 'Go to Portal',
+    href: routes.login,
+  },
+];
+
+function HubCards() {
+  return (
+    <section id="hubs" className="py-24 relative">
+      <div className="container mx-auto px-6">
+        <Reveal>
+          <div className="text-center mb-14">
+            <p className="font-mono text-xs tracking-widest uppercase text-primary mb-3">// Choose Your Path</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">One Platform, Three Gateways</h2>
+          </div>
+        </Reveal>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {hubs.map((hub, i) => (
+            <Reveal key={hub.title} delay={i * 0.08}>
+              <motion.div
+                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+                className="group surface-elevated gradient-border rounded-xl p-8 flex flex-col h-full"
+              >
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                  <hub.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                </div>
+
+                <h3 className="text-lg font-semibold text-foreground mb-2">{hub.title}</h3>
+                <p className="text-sm leading-relaxed flex-1 mb-6 text-muted-foreground">{hub.desc}</p>
+
+                <Button asChild variant="outline" size="sm" className="w-fit">
+                  <Link href={hub.href}>
+                    {hub.btn} <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </motion.div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Live Opportunities ---
+function JobsSection({ featuredVacancies }: { featuredVacancies: Vacancy[] }) {
+  return (
+    <section id="jobs" className="py-24 border-t border-border">
+      <div className="container mx-auto px-6">
+        <Reveal>
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-2">Live Opportunities</h2>
+              <p className="text-muted-foreground">Synced in real-time with the global HRX network.</p>
+            </div>
+
+            <Link href={routes.browseJobs}>
+              <Button variant="ghost" className="hidden sm:inline-flex text-primary">
+                View All Jobs <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </Reveal>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {featuredVacancies.slice(0, 4).map((job, i) => (
+            <Reveal key={job.id} delay={i * 0.07}>
+              <Link href={routes.browseJobs}>
+                <motion.div
+                  whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+                  className="surface-elevated rounded-xl p-5 cursor-pointer group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center font-mono text-xs font-semibold text-primary">
+                      {job.company_name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                      Active
+                    </Badge>
+                  </div>
+
+                  <h3 className="font-semibold text-foreground text-sm mb-1 group-hover:text-primary transition-colors">
+                    {job.title}
+                  </h3>
+
+                  <p className="text-xs mb-3 text-muted-foreground">
+                    {job.company_name} · {job.location || 'Remote'}
+                  </p>
+
+                  <Badge variant="secondary" className="text-[10px]">
+                    {job.work_mode || 'Remote'}
+                  </Badge>
+                </motion.div>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Testimonials ---
+const testimonials = [
+  {
+    name: 'Sarah Okonkwo',
+    role: 'Product Designer at Lumen Studio',
+    quote: 'HRX matched me with my dream role in 72 hours. The process was seamless — from profile to offer letter.',
+    rating: 5,
+  },
+  {
+    name: 'Marcus Chen',
+    role: 'CTO at Vortex AI',
+    quote: 'We filled three senior engineering positions in under two weeks. The talent quality on HRX is unmatched.',
+    rating: 5,
+  },
+  {
+    name: 'Elena Vasquez',
+    role: 'HR Director at Relay Logistics',
+    quote: 'The exchange protocol completely transformed our hiring pipeline. Our time-to-hire dropped by 60%.',
+    rating: 5,
+  },
+];
+
+function TestimonialsSection() {
+  return (
+    <section className="py-24 border-t border-border">
+      <div className="container mx-auto px-6">
+        <Reveal>
+          <div className="text-center mb-14">
+            <p className="font-mono text-xs tracking-widest uppercase text-primary mb-3">// Success Stories</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">What People Are Saying</h2>
+          </div>
+        </Reveal>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((t, i) => (
+            <Reveal key={t.name} delay={i * 0.1}>
+              <motion.div
+                whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+                className="border border-border bg-card rounded-xl p-7 flex flex-col h-full"
+              >
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: t.rating }).map((_, j) => (
+                    <Star key={j} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
+                </div>
+
+                <p className="text-sm text-foreground leading-relaxed flex-1 mb-6">"{t.quote}"</p>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-sm text-primary">
+                    {t.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- Protocol Section ---
+const steps = [
+  {
+    t: 'Synthesize',
+    d: 'Create your verified digital twin profile once. AI scans your resume and builds a rich, searchable candidate profile.',
+    icon: Zap,
+  },
+  {
+    t: 'Exchange',
+    d: 'Get matched through automated placement nodes. Our algorithm connects you with opportunities that fit your exact skill graph.',
+    icon: Globe,
+  },
+  {
+    t: 'Settle',
+    d: 'Transparent onboarding into HRX core systems. From offer to day one, every step is tracked and streamlined.',
+    icon: CheckCircle2,
+  },
+];
+
+function ProtocolSection() {
+  return (
+    <section id="protocol" className="py-24 bg-secondary border-t border-b border-border relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="lg:sticky lg:top-28">
+            <Reveal>
+              <p className="font-mono text-xs tracking-widest uppercase text-primary mb-4">// How It Works</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-tight mb-6">
+                The <span className="text-primary">Exchange</span> Protocol.
+              </h2>
+              <p className="text-muted-foreground leading-relaxed max-w-md mb-8">
+                HRX operates on a high-velocity exchange protocol. We automate the friction between talent and opportunity.
+              </p>
+
+              <Link href={routes.browseJobs}>
+                <Button>
+                  Explore Jobs <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </Reveal>
+          </div>
+
+          <div className="space-y-6">
+            {steps.map((step, idx) => (
+              <Reveal key={step.t} delay={idx * 0.12}>
+                <motion.div
+                  whileHover={{ x: 6, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+                  className="flex items-start gap-5 group bg-background/60 backdrop-blur-sm border border-border rounded-xl p-6"
+                >
+                  <div className="h-12 w-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
+                    <step.icon className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="font-mono text-xs text-primary/50">0{idx + 1}</span>
+                      <h3 className="font-semibold text-foreground">{step.t}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.d}</p>
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// --- CTA Banner ---
+function CTASection() {
+  return (
+    <section id="pricing" className="py-24">
+      <div className="container mx-auto px-6">
+        <Reveal>
+          <div className="relative bg-primary rounded-2xl px-8 py-16 sm:px-16 text-center overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-primary-foreground/10" />
+            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-primary-foreground/5" />
+
+            <div className="relative z-10">
+              <h2 className="text-3xl sm:text-4xl font-bold text-primary-foreground tracking-tight mb-4">
+                Ready to join the exchange?
+              </h2>
+
+              <p className="text-primary-foreground/80 max-w-md mx-auto mb-8">
+                Whether you're hiring or looking, HRX connects you to the right match faster than any traditional platform.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button asChild size="lg" variant="secondary" className="active:scale-[0.97]">
+                  <Link href={routes.browseJobs}>
+                    <Upload className="h-4 w-4" />
+                    Upload Your CV
+                  </Link>
+                </Button>
+
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 active:scale-[0.97]"
+                >
+                  <Link href={routes.forCompanies}>
+                    Post a Job <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// --- Footer ---
+const footerLinks = [
+  {
+    heading: 'Platform',
+    links: [
+      { label: 'Browse Jobs', href: routes.browseJobs },
+      { label: 'Talent Pool', href: routes.talentPool },
+      { label: 'For Companies', href: routes.forCompanies },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { label: 'Candidate Login', href: routes.candidateLogin },
+      { label: 'Employer Login', href: routes.employerLogin },
+      { label: 'System Portal', href: routes.login },
+    ],
+  },
+  {
+    heading: 'Support',
+    links: [
+      { label: 'Get Started', href: routes.browseJobs },
+      { label: 'Post a Job', href: routes.forCompanies },
+      { label: 'Contact Us', href: routes.login },
+    ],
+  },
+];
+
+function Footer() {
+  return (
+    <footer className="pt-16 pb-8 border-t border-border">
+      <div className="container mx-auto px-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+          <div className="lg:col-span-2">
+            <Link href={routes.home} className="flex items-center gap-2.5 mb-4">
+              <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground text-sm tracking-wide uppercase">HRX Exchange</span>
+            </Link>
+
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+              Engineering the future of recruitment and talent management at global scale.
+            </p>
+          </div>
+
+          {footerLinks.map((col) => (
+            <div key={col.heading}>
+              <h4 className="font-mono text-xs tracking-widest uppercase text-muted-foreground mb-4">{col.heading}</h4>
+              <ul className="space-y-2.5">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-border gap-4">
+          <p className="font-mono text-xs text-muted-foreground tracking-wide">
+            © {new Date().getFullYear()} HRX HUMAN RESOURCES EXCHANGE. ALL RIGHTS RESERVED.
+          </p>
+
+          <div className="flex items-center gap-4">
+            {[Github, Twitter, Linkedin].map((Icon, i) => (
+              <a key={i} href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                <Icon className="h-4 w-4" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// --- Main Page ---
+export default function Landing({ auth, stats, featuredVacancies }: Props) {
+  const resolvedStats = stats ?? defaultStats;
+  const resolvedFeaturedVacancies =
+    featuredVacancies && featuredVacancies.length > 0 ? featuredVacancies : defaultFeaturedVacancies;
+  const isAuthenticated = !!auth?.user;
+
+  return (
+    <>
+      <Head title="HRX — Human Resources Exchange" />
+
+      <div className="min-h-screen bg-background">
+        <Navigation isAuthenticated={isAuthenticated} />
+        <HeroSection stats={resolvedStats} />
+        <LogoTicker />
+        <StatsSection stats={resolvedStats} />
+        <HubCards />
+        <JobsSection featuredVacancies={resolvedFeaturedVacancies} />
+        <TestimonialsSection />
+        <ProtocolSection />
+        <CTASection />
+        <Footer />
+      </div>
+    </>
+  );
 }

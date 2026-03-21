@@ -97,6 +97,10 @@ class EmployerHubDashboardController extends Controller
                 'email' => $company->email,
                 'approved_at' => $company->approved_at?->toDateString(),
             ] : null,
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'metrics' => $metrics,
             'applicationsByStatus' => $applicationsByStatus,
             'vacancies' => $vacancies,

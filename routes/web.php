@@ -89,9 +89,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return Auth::check()
-        ? redirect()->route('dashboard')
-        : app(LandingPageController::class)();
+    if (!Auth::check()) {
+        return app(LandingPageController::class)();
+    }
+
+    $user = Auth::user();
+
+    // Redirect candidates to their dashboard
+    if (\App\Models\CandidateProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+        ->where('user_id', $user->id)->exists()) {
+        return redirect()->route('candidate.dashboard');
+    }
+
+    // Redirect employers to their dashboard
+    if (\App\Models\CompanyProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+        ->where('owner_user_id', $user->id)->exists()) {
+        return redirect()->route('employer.dashboard');
+    }
+
+    return redirect()->route('dashboard');
 })->name('home');
 
 Route::get('/reset-password', [PasswordResetController::class, 'show'])->name('password.manual.reset');

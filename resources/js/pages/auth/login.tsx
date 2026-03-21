@@ -24,9 +24,8 @@ export default function Login({
 }: Props) {
     return (
         <AuthLayout
-            /* Updated title with a hint of color */
             title={
-                <span className="bg-gradient-to-r from-indigo-600 to-teal-500 bg-clip-text text-transparent font-bold">
+                <span className="font-bold text-slate-900">
                     Employee Portal Login
                 </span>
             }
@@ -52,7 +51,7 @@ export default function Login({
                                     name="email"
                                     required
                                     autoFocus
-                                    className="border-slate-200 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                    className="border-slate-200 focus:ring-slate-500 focus:border-slate-500 transition-all"
                                     placeholder="name@company.com"
                                 />
                                 <InputError message={errors.email} />
@@ -66,7 +65,7 @@ export default function Login({
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-xs font-semibold text-indigo-600 hover:text-indigo-500"
+                                            className="ml-auto text-xs font-semibold text-slate-500 hover:text-slate-900"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -78,7 +77,7 @@ export default function Login({
                                     type="password"
                                     name="password"
                                     required
-                                    className="border-slate-200 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                    className="border-slate-200 focus:ring-slate-500 focus:border-slate-500 transition-all"
                                     placeholder="••••••••"
                                 />
                                 <InputError message={errors.password} />
@@ -88,17 +87,16 @@ export default function Login({
                                 <Checkbox
                                     id="remember"
                                     name="remember"
-                                    className="border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    className="border-slate-300 text-slate-900 focus:ring-slate-500"
                                 />
                                 <Label htmlFor="remember" className="text-sm font-medium text-slate-600 dark:text-slate-400">
                                     Keep me signed in
                                 </Label>
                             </div>
 
-                            {/* Premium Gradient Button */}
                             <Button
                                 type="submit"
-                                className="mt-4 w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-teal-500 text-white font-semibold py-6 shadow-lg shadow-indigo-200 dark:shadow-none transition-all duration-300 border-none"
+                                className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-6 shadow-sm transition-all duration-300 border-none"
                                 tabIndex={4}
                                 disabled={processing}
                             >
@@ -110,9 +108,9 @@ export default function Login({
                         {canRegister && (
                             <div className="text-center text-sm text-slate-500">
                                 New hire?{' '}
-                                <TextLink 
-                                    href={register()} 
-                                    className="font-bold text-teal-600 hover:text-teal-500 underline-offset-4"
+                                <TextLink
+                                    href={register()}
+                                    className="font-bold text-slate-900 hover:text-slate-700 underline-offset-4"
                                     tabIndex={5}
                                 >
                                     Initialize account

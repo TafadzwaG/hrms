@@ -27,7 +27,7 @@ export default function CandidateLogin({ status, canResetPassword }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-slate-50 font-sans flex flex-col items-center justify-center px-4 py-12">
             <Head title="Candidate Login" />
 
             {/* Logo & Branding */}

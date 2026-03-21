@@ -57,6 +57,7 @@ type Metrics = {
 
 type Props = {
     company: Company | null;
+    user: { name: string; email: string } | null;
     metrics: Metrics;
     applicationsByStatus: Record<string, number>;
     vacancies: Vacancy[];
@@ -65,6 +66,7 @@ type Props = {
 
 export default function EmployerDashboard({
     company,
+    user,
     metrics,
     vacancies,
     recentApplications,
@@ -89,14 +91,18 @@ export default function EmployerDashboard({
 
                 <nav className="flex-1 space-y-1 overflow-y-auto p-4">
                     <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Main Menu</p>
-                    <SidebarLink href="#" icon={<LayoutDashboard size={20} />} label="Dashboard" active />
-                    <SidebarLink href="#" icon={<Briefcase size={20} />} label="Vacancies" />
-                    <SidebarLink href="#" icon={<Users size={20} />} label="Candidates" />
+                    <SidebarLink href="/employer/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" active />
+                    <SidebarLink href="/employer/dashboard" icon={<Briefcase size={20} />} label="Vacancies" />
+                    <SidebarLink href="/employer/dashboard" icon={<Users size={20} />} label="Candidates" />
 
                     <p className="mb-2 mt-8 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Organization</p>
-                    <SidebarLink href="#" icon={<FileText size={20} />} label="Reports" />
-                    <SidebarLink href="#" icon={<Building2 size={20} />} label="Company Profile" />
-                    <SidebarLink href="#" icon={<Settings size={20} />} label="Billing" />
+                    <SidebarLink href="/employer/dashboard" icon={<FileText size={20} />} label="Reports" />
+                    <SidebarLink href="/employer/dashboard" icon={<Building2 size={20} />} label="Company Profile" />
+                    <SidebarLink href="/employer/dashboard" icon={<Settings size={20} />} label="Billing" />
+
+                    <div className="mt-8">
+                        <SidebarLink href="/" icon={<ChevronRight size={20} className="rotate-180" />} label="Back to Home" />
+                    </div>
                 </nav>
 
                 {/* User Profile Section at bottom */}
@@ -104,12 +110,12 @@ export default function EmployerDashboard({
                     <div className="flex items-center px-2 py-3">
                         <div className="flex-shrink-0">
                             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600 text-xs">
-                                JD
+                                {user?.name?.split(' ').map(n => n[0]).join('').substring(0, 2) || 'U'}
                             </div>
                         </div>
                         <div className="ml-3 overflow-hidden">
-                            <p className="truncate text-xs font-semibold text-slate-900">John Doe</p>
-                            <p className="truncate text-[10px] text-slate-500 uppercase font-bold">Hiring Manager</p>
+                            <p className="truncate text-xs font-semibold text-slate-900">{user?.name || 'User'}</p>
+                            <p className="truncate text-[10px] text-slate-500 font-medium">{user?.email}</p>
                         </div>
                     </div>
                     <button 

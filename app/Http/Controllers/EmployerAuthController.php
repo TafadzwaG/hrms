@@ -48,16 +48,22 @@ class EmployerAuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        // Convert empty strings to null for optional fields
+        $request->merge(array_map(
+            fn ($v) => $v === '' ? null : $v,
+            $request->only(['industry', 'registration_number', 'company_email', 'company_phone', 'website'])
+        ));
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
             'company_name' => ['required', 'string', 'max:255'],
-            'industry' => ['nullable', 'string', Rule::in(\App\Models\CompanyProfile::INDUSTRIES)],
+            'industry' => ['required', 'string', Rule::in(\App\Models\CompanyProfile::INDUSTRIES)],
             'registration_number' => ['nullable', 'string', 'max:100'],
             'company_email' => ['nullable', 'string', 'email', 'max:255'],
             'company_phone' => ['nullable', 'string', 'max:50'],
-            'website' => ['nullable', 'string', 'url', 'max:500'],
+            'website' => ['nullable', 'string', 'url:http,https', 'max:500'],
         ]);
 
         $user = DB::transaction(function () use ($data) {

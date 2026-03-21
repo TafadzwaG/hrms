@@ -202,7 +202,7 @@ export default function Dashboard({
     const handleLogout = () => router.post('/logout');
 
     return (
-        <div className="flex min-h-screen bg-slate-50 text-slate-950">
+        <div className="flex min-h-screen bg-slate-50 font-sans text-slate-950">
             <Head title="Candidate Dashboard - Providence HRMS" />
 
             {/* ===== SIDEBAR ===== */}
@@ -224,14 +224,18 @@ export default function Dashboard({
                             Candidate Hub
                         </p>
                         <SidebarLink href="/candidate/dashboard" icon={<LayoutDashboard size={18} />} label="Dashboard" active />
-                        <SidebarLink href="#" icon={<Briefcase size={18} />} label="My Applications" />
-                        <SidebarLink href="#" icon={<Search size={18} />} label="Browse Jobs" />
-                        <SidebarLink href="#" icon={<User size={18} />} label="My Profile" />
-                        <SidebarLink href="#" icon={<FileText size={18} />} label="Documents" />
-                        <SidebarLink href="#" icon={<GraduationCap size={18} />} label="Education" />
-                        <SidebarLink href="#" icon={<Wrench size={18} />} label="Skills" />
-                        <SidebarLink href="#" icon={<Settings size={18} />} label="Settings" />
+                        <SidebarLink href="/candidate/dashboard" icon={<Briefcase size={18} />} label="My Applications" />
+                        <SidebarLink href="/" icon={<Search size={18} />} label="Browse Jobs" />
+                        <SidebarLink href="/candidate/dashboard" icon={<User size={18} />} label="My Profile" />
+                        <SidebarLink href="/candidate/dashboard" icon={<FileText size={18} />} label="Documents" />
+                        <SidebarLink href="/candidate/dashboard" icon={<GraduationCap size={18} />} label="Education" />
+                        <SidebarLink href="/candidate/dashboard" icon={<Wrench size={18} />} label="Skills" />
+                        <SidebarLink href="/candidate/dashboard" icon={<Settings size={18} />} label="Settings" />
                     </nav>
+
+                    <div className="mt-6">
+                        <SidebarLink href="/" icon={<ArrowRight size={18} className="rotate-180" />} label="Back to Home" />
+                    </div>
 
                     {/* Bottom User Profile */}
                     <div className="mt-auto border-t border-slate-100 pt-6">
@@ -428,7 +432,7 @@ export default function Dashboard({
                                 icon={<Briefcase size={16} />}
                                 action={
                                     recentApplications.length > 0 ? (
-                                        <Link href="#" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900">
+                                        <Link href="/candidate/dashboard" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900">
                                             View All
                                         </Link>
                                     ) : undefined
@@ -597,7 +601,7 @@ export default function Dashboard({
                         <section className="mt-10">
                             <div className="mb-6 flex items-center justify-between">
                                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-900">Recommended Opportunities</h2>
-                                <Link href="#" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900">
+                                <Link href="/candidate/dashboard" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-900">
                                     View All <ArrowRight size={12} className="ml-1 inline" />
                                 </Link>
                             </div>
