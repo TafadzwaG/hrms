@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Employer;
 
+use App\Support\RichText;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,5 +30,14 @@ class UpsertEmployerVacancyRequest extends FormRequest
             'currency' => ['nullable', 'string', 'size:3'],
             'application_deadline' => ['nullable', 'date'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'description' => RichText::sanitize($this->input('description')),
+            'requirements' => RichText::sanitize($this->input('requirements')),
+            'responsibilities' => RichText::sanitize($this->input('responsibilities')),
+        ]);
     }
 }

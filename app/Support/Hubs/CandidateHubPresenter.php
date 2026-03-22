@@ -10,6 +10,7 @@ use App\Models\CandidateResume;
 use App\Models\CandidateSkill;
 use App\Models\Vacancy;
 use App\Models\VacancyApplication;
+use App\Support\RichText;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -185,9 +186,9 @@ class CandidateHubPresenter
             'currency' => $vacancy->currency,
             'department' => $vacancy->department,
             'category' => $vacancy->category,
-            'description' => $vacancy->description,
-            'requirements' => $vacancy->requirements,
-            'responsibilities' => $vacancy->responsibilities,
+            'description' => RichText::sanitize($vacancy->description),
+            'requirements' => RichText::sanitize($vacancy->requirements),
+            'responsibilities' => RichText::sanitize($vacancy->responsibilities),
             'application_deadline' => $vacancy->application_deadline?->toDateString(),
             'status' => $vacancy->status,
             'published_at' => $vacancy->published_at?->toDateString(),

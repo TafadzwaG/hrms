@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
+import { richTextToPlainText } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -172,7 +173,7 @@ export default function BrowseJobsPage() {
                                     </div>
                                     
                                     <p className="text-xs leading-relaxed text-zinc-600 line-clamp-3">
-                                        {vacancy.description}
+                                        {richTextToPlainText(vacancy.description)}
                                     </p>
 
                                     {vacancy.match ? (

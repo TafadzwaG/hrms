@@ -1,8 +1,26 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Briefcase, Filter, MapPin, Users, Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    Archive,
+    Briefcase,
+    CalendarDays,
+    DollarSign,
+    Eye,
+    FileText,
+    Globe,
+    Layers3,
+    MapPin,
+    PauseCircle,
+    Pencil,
+    Plus,
+    Search,
+    Send,
+    Trash2,
+    Users,
+    XCircle,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { richTextToPlainText } from '@/components/rich-text';
 import {
     EmployerEmptyState,
     EmployerHubLayout,
@@ -16,18 +34,13 @@ type PageProps = {
         data: Vacancy[];
         links: Array<{ url: string | null; label: string; active: boolean }>;
     };
-    filters: {
-        search: string;
-        status: string;
-    };
-    options: {
-        statuses: string[];
-    };
+    filters: { search: string; status: string };
+    options: { statuses: string[] };
 };
 
 export default function EmployerVacanciesPage() {
     const { company, vacancies, filters, options } = usePage<PageProps>().props;
-    const user = usePage<{ user?: User }>().props.user ?? { name: 'Employer User', email: company.email ?? '' };
+    const user = usePage<{ user?: User }>().props.user ?? { name: 'employer user', email: company.email ?? '' };
 
     const updateStatus = (vacancyId: number, status: string) => {
         router.patch(`/employer/vacancies/${vacancyId}/status`, { status }, { preserveScroll: true });
@@ -35,160 +48,196 @@ export default function EmployerVacanciesPage() {
 
     return (
         <EmployerHubLayout
-            title="Vacancies"
-            subtitle="Manage vacancy creation, publishing, and closing."
+            title="vacancies"
+            subtitle="manage creation, publishing, and lifecycle."
             active="vacancies"
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-10">
-                {/* Compact Header */}
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+            <div className="w-full px-4 md:px-6">
+                {/* compact header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
                     <div>
-                        <h2 className="text-4xl font-black tracking-tighter text-black mb-1">Vacancies</h2>
-                        <p className="text-zinc-500 text-sm font-medium tracking-tight">
-                            Manage vacancy creation, publishing, and closing.
-                        </p>
+                        <h2 className="text-4xl font-black tracking-tighter text-black uppercase leading-none">vacancies.</h2>
+                        <p className="mt-2 text-zinc-500 font-medium tracking-tight text-xs">manage creation, publishing, and lifecycle.</p>
                     </div>
                     <Link href="/employer/vacancies/create">
-                        <Button className="bg-black text-white px-5 py-5 h-auto rounded-md font-bold text-xs flex items-center gap-2 hover:bg-zinc-800 active:scale-95 transition-all">
-                            <Plus className="h-3.5 w-3.5" />
-                            Post a New Job
-                        </Button>
+                        <button className="bg-black text-white px-5 py-2.5 rounded-sm font-bold text-[10px] tracking-widest uppercase flex items-center gap-2 hover:bg-zinc-800 transition-all active:scale-[0.98]">
+                            <Plus className="h-3.5 w-3.5" /> post a new job
+                        </button>
                     </Link>
-                </header>
+                </div>
 
-                {/* Compact Filter Card */}
-                <section className="bg-zinc-50 p-6 rounded-lg mb-10 border border-zinc-200 shadow-sm">
-                    <form method="get" action="/employer/vacancies" className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        <div className="md:col-span-6">
-                            <label className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Search vacancies</label>
-                            <div className="relative group">
-                                <Search className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                                <input 
-                                    name="search" 
-                                    defaultValue={filters.search} 
-                                    className={underlinedInput} 
-                                    placeholder="Job title, department..." 
-                                />
-                            </div>
+                {/* filter section */}
+                <section className="bg-zinc-50 border border-zinc-200 rounded-sm p-4 mb-6 flex flex-wrap items-end gap-3 shadow-sm">
+                    <div className="flex-1 min-w-[200px] space-y-1.5">
+                        <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">search</label>
+                        <div className="relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                            <input 
+                                name="search"
+                                defaultValue={filters.search}
+                                className="w-full bg-white border border-zinc-200 rounded-sm pl-9 pr-3 py-2 text-xs focus:border-black focus:ring-0 transition-colors placeholder:text-zinc-300" 
+                                placeholder="title, keywords..." 
+                                type="text"
+                            />
                         </div>
-                        <div className="md:col-span-4">
-                            <label className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Status</label>
-                            <select name="status" defaultValue={filters.status} className={underlinedInput}>
-                                <option value="">All statuses</option>
-                                {options.statuses.map((status) => (
-                                    <option key={status} value={status}>
-                                        {status.replace(/_/g, ' ')}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="md:col-span-2">
-                            <Button type="submit" className="w-full bg-zinc-200 text-black py-5 h-auto rounded-md font-bold text-[10px] uppercase tracking-widest hover:bg-zinc-300 transition-colors">
-                                Apply
-                            </Button>
-                        </div>
-                    </form>
+                    </div>
+                    <div className="w-40 space-y-1.5">
+                        <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">status</label>
+                        <select name="status" defaultValue={filters.status} className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-xs focus:border-black focus:ring-0 appearance-none font-medium">
+                            <option value="">all statuses</option>
+                            {options.statuses.map((status) => (
+                                <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <button className="bg-zinc-900 text-white px-6 py-2 rounded-sm font-black text-[9px] uppercase tracking-widest h-[34px] hover:bg-black transition-colors">
+                        apply
+                    </button>
                 </section>
 
-                {/* Compact Vacancy List */}
-                <section className="grid grid-cols-1 gap-4">
+                {/* vacancy list */}
+                <div className="space-y-4">
                     {vacancies.data.length > 0 ? (
-                        <>
-                            {vacancies.data.map((vacancy) => (
-                                <article 
-                                    key={vacancy.id} 
-                                    className="group bg-white border border-zinc-200 p-6 rounded-lg transition-all duration-300 hover:border-black hover:shadow-sm"
-                                >
-                                    <div className="flex flex-col md:flex-row justify-between gap-6">
-                                        <div className="flex-grow">
-                                            <div className="flex items-center gap-2.5 mb-3">
-                                                <h3 className="text-lg font-bold tracking-tight text-black">{vacancy.title}</h3>
-                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-sm border ${
-                                                    vacancy.status_code === 'published' 
-                                                    ? 'bg-black text-white border-black' 
-                                                    : 'bg-zinc-100 text-zinc-500 border-zinc-200'
-                                                }`}>
-                                                    {vacancy.status}
-                                                </span>
+                        vacancies.data.map((vacancy) => (
+                            <article 
+                                key={vacancy.id} 
+                                className={`group bg-white border border-zinc-200 rounded-sm p-6 hover:shadow-lg hover:shadow-zinc-900/5 transition-all duration-300 ${vacancy.status_code !== 'published' ? 'opacity-85' : ''}`}
+                            >
+                                <div className="flex flex-col gap-6">
+                                    <div className="flex-1 space-y-5">
+                                        <div className="flex items-start justify-between">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2.5">
+                                                    <h3 className="text-xl font-black tracking-tighter text-black uppercase">{vacancy.title}</h3>
+                                                    <span className={`px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-sm border ${getStatusStyles(vacancy.status_code ?? 'draft')}`}>
+                                                        {vacancy.status}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                                    <Badge label={vacancy.department || 'general'} />
+                                                    <Badge label={vacancy.work_mode || 'remote'} />
+                                                    <Badge label={vacancy.employment_type || 'full-time'} />
+                                                    <Badge label={vacancy.location || 'not set'} />
+                                                </div>
                                             </div>
-                                            
-                                            <div className="flex flex-wrap gap-2 mb-4 text-zinc-500">
-                                                <Badge icon={<Briefcase size={12} />} label={vacancy.department || 'General'} />
-                                                <Badge icon={<MapPin size={12} />} label={vacancy.location || 'Remote'} />
-                                            </div>
-
-                                            <div className="inline-flex items-center gap-2 px-2.5 py-1.5 bg-zinc-50 rounded border border-zinc-100">
-                                                <Users size={14} className="text-zinc-400 fill-zinc-400" />
-                                                <span className="text-xs font-bold text-black">{vacancy.applications_count} applications</span>
+                                            <div className="flex gap-0.5">
+                                                <ActionIconLink href={`/employer/vacancies/${vacancy.id}`} icon={<Eye size={16} />} title="view" />
+                                                <ActionIconLink href={`/employer/vacancies/${vacancy.id}/edit`} icon={<Pencil size={16} />} title="edit" />
+                                                {vacancy.status_code === 'published' ? (
+                                                    <ActionIconButton onClick={() => updateStatus(vacancy.id, 'draft')} icon={<PauseCircle size={16} />} title="unpublish" />
+                                                ) : (
+                                                    <ActionIconButton onClick={() => updateStatus(vacancy.id, 'published')} icon={<Send size={16} />} title="publish" />
+                                                )}
+                                                <ActionIconButton 
+                                                    onClick={() => window.confirm('delete?') && router.delete(`/employer/vacancies/${vacancy.id}`)} 
+                                                    icon={<Trash2 size={16} />} 
+                                                    title="delete" 
+                                                    variant="danger" 
+                                                />
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap md:flex-row items-center gap-1.5 self-start">
-                                            <Link href={`/employer/vacancies/${vacancy.id}`}>
-                                                <button className={actionBtnClass}>View</button>
-                                            </Link>
-                                            <Link href={`/employer/vacancies/${vacancy.id}/edit`}>
-                                                <button className={actionBtnClass}>Edit</button>
-                                            </Link>
-                                            
-                                            {vacancy.status_code !== 'published' ? (
-                                                <button onClick={() => updateStatus(vacancy.id, 'published')} className="px-3 py-2 bg-black text-white text-[10px] font-bold uppercase rounded-md hover:bg-zinc-800 transition-colors">
-                                                    Publish
-                                                </button>
-                                            ) : (
-                                                <button onClick={() => updateStatus(vacancy.id, 'draft')} className={actionBtnClass}>Unpublish</button>
-                                            )}
-                                            
-                                            <button onClick={() => updateStatus(vacancy.id, 'closed')} className={actionBtnClass}>Close</button>
-                                            <button 
-                                                onClick={() => window.confirm('Delete this vacancy?') && router.delete(`/employer/vacancies/${vacancy.id}`)}
-                                                className="px-3 py-2 border border-red-100 text-red-500 text-[10px] font-bold uppercase rounded-md hover:bg-red-50 transition-colors"
-                                            >
-                                                Delete
-                                            </button>
+                                        {/* metrics grid */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-y border-zinc-100 py-3">
+                                            <Metric label="applications" value={vacancy.applications_count} />
+                                            <Metric label="compensation" value={formatSalary(vacancy)} />
+                                            <Metric label="deadline" value={vacancy.application_deadline ?? 'none'} />
+                                            <Metric label={vacancy.status_code === 'published' ? 'published' : 'modified'} value={vacancy.published_at ?? 'draft'} />
+                                        </div>
+
+                                        {/* detail panels */}
+                                        <div className="grid md:grid-cols-3 gap-6">
+                                            <Panel label="description" content={vacancy.description} />
+                                            <Panel label="requirements" content={vacancy.requirements} />
+                                            <Panel label="responsibilities" content={vacancy.responsibilities} />
                                         </div>
                                     </div>
-                                </article>
-                            ))}
-
-                            {/* Pagination matches the compact table footer style */}
-                            <footer className="mt-10 flex flex-col items-center justify-between gap-4 pt-10 border-t border-zinc-100 md:flex-row">
-                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                                    Showing {vacancies.data.length} vacancies
-                                </p>
-                                <div className="flex items-center gap-1">
-                                    {vacancies.links.map((link, index) => (
-                                        <a
-                                            key={index}
-                                            href={link.url ?? '#'}
-                                            className={`h-8 px-3 flex items-center justify-center rounded-md text-[11px] font-bold transition-all ${
-                                                link.active 
-                                                ? 'bg-black text-white' 
-                                                : 'border border-zinc-200 text-black hover:bg-zinc-50'
-                                            } ${!link.url && 'opacity-30 cursor-not-allowed'}`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
                                 </div>
-                            </footer>
-                        </>
+                            </article>
+                        ))
                     ) : (
-                        <EmployerEmptyState message="No vacancies match the current filters." />
+                        <EmployerEmptyState message="no vacancies found." />
                     )}
-                </section>
+                </div>
+
+                {/* pagination */}
+                <div className="mt-10 flex items-center justify-between border-t border-zinc-100 pt-6 mb-10">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                        showing {vacancies.data.length} vacancies
+                    </p>
+                    <div className="flex items-center gap-1">
+                        {vacancies.links.map((link, index) => (
+                            <Link
+                                key={index}
+                                href={link.url ?? '#'}
+                                className={`w-8 h-8 flex items-center justify-center rounded-sm border text-[10px] font-bold transition-all ${
+                                    link.active 
+                                    ? 'bg-black text-white border-black' 
+                                    : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'
+                                } ${!link.url && 'opacity-20 pointer-events-none'}`}
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
         </EmployerHubLayout>
     );
 }
 
-const Badge = ({ icon, label }: { icon: any, label: string }) => (
-    <span className="bg-zinc-100 px-2 py-0.5 rounded-sm text-[10px] font-bold text-zinc-600 flex items-center gap-1.5 uppercase tracking-wide">
-        {icon} {label}
+/* --- helpers --- */
+
+const Badge = ({ label }: { label: string }) => (
+    <span className="px-1.5 py-0.5 bg-zinc-100 text-zinc-500 text-[8px] font-black uppercase tracking-widest rounded-sm border border-zinc-200/50">
+        {label.replace(/_/g, ' ')}
     </span>
 );
 
-const actionBtnClass = "px-3 py-2 border border-zinc-200 text-black text-[10px] font-bold uppercase rounded-md hover:bg-zinc-50 hover:border-black transition-all";
+const Metric = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="space-y-0.5 min-w-0">
+        <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{label}</p>
+        <p className="text-sm font-bold text-black truncate">{value}</p>
+    </div>
+);
 
-const underlinedInput = "w-full pl-7 pr-3 py-2 bg-transparent border-0 border-b border-zinc-200/60 focus:ring-0 focus:border-black transition-all text-sm placeholder:text-zinc-300 font-medium outline-none appearance-none";
+const Panel = ({ label, content }: { label: string; content?: string | null }) => (
+    <div className="space-y-1.5">
+        <h4 className="text-[9px] font-black uppercase tracking-widest text-black flex items-center gap-1.5">
+            <div className="w-1 h-1 bg-zinc-300 rounded-full"></div> {label}
+        </h4>
+        <p className="text-[11px] text-zinc-500 leading-relaxed line-clamp-2 italic">
+            {richTextToPlainText(content)?.trim() || `none.`}
+        </p>
+    </div>
+);
+
+const ActionIconLink = ({ href, icon, title }: { href: string; icon: ReactNode; title: string }) => (
+    <Link href={href} className="p-1.5 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-sm transition-colors" title={title}>
+        {icon}
+    </Link>
+);
+
+const ActionIconButton = ({ onClick, icon, title, variant = 'default' }: { onClick: () => void; icon: ReactNode; title: string; variant?: 'default' | 'danger' }) => (
+    <button 
+        onClick={onClick} 
+        className={`p-1.5 rounded-sm transition-colors ${variant === 'danger' ? 'text-zinc-300 hover:text-red-600 hover:bg-red-50' : 'text-zinc-400 hover:text-black hover:bg-zinc-100'}`} 
+        title={title}
+    >
+        {icon}
+    </button>
+);
+
+function getStatusStyles(code: string): string {
+    switch (code) {
+        case 'published': return 'bg-black text-white border-black';
+        case 'closed': return 'bg-red-50 text-red-600 border-red-200';
+        default: return 'bg-zinc-100 text-zinc-600 border-zinc-200';
+    }
+}
+
+function formatSalary(vacancy: Vacancy): string {
+    if (!vacancy.salary_min && !vacancy.salary_max) return 'competitive';
+    return `${vacancy.currency ?? '$'}${vacancy.salary_min ?? '0'}+`;
+}

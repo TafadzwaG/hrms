@@ -2,6 +2,7 @@
 import { AlertCircle, Bookmark, Briefcase, CheckCircle2, Clock, DollarSign, Globe, MapPin, Share2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { RichTextContent } from '@/components/rich-text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MarketplaceHeader, Reveal } from '@/pages/Public/components/marketplace';
@@ -23,6 +24,7 @@ type Job = {
     title: string;
     company_name: string;
     description: string;
+    description_html?: string | null;
     location: string;
     salary: string;
     work_mode: string;
@@ -30,7 +32,9 @@ type Job = {
     posted: string;
     tags: string[];
     responsibilities: string[];
+    responsibilities_html?: string | null;
     requirements: string[];
+    requirements_html?: string | null;
     match?: {
         score: number;
         label: string;
@@ -257,27 +261,44 @@ export default function JobDetail({ job, relatedJobs, applyAction }: Props) {
                             <Reveal delay={0.1}>
                                 <div className="rounded-xl border border-border bg-card p-8">
                                     <h2 className="mb-4 text-lg font-semibold text-foreground">About the Role</h2>
-                                    <p className="mb-6 leading-relaxed text-muted-foreground">{job.description}</p>
+                                    <RichTextContent
+                                        html={job.description_html ?? job.description}
+                                        className="mb-6 leading-relaxed text-muted-foreground [&_a]:text-primary"
+                                    />
 
                                     <h3 className="mb-3 font-semibold text-foreground">Key Responsibilities</h3>
-                                    <ul className="mb-6 space-y-2">
-                                        {job.responsibilities.map((item) => (
-                                            <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    {job.responsibilities_html ? (
+                                        <RichTextContent
+                                            html={job.responsibilities_html}
+                                            className="mb-6 text-muted-foreground [&_a]:text-primary"
+                                        />
+                                    ) : (
+                                        <ul className="mb-6 space-y-2">
+                                            {job.responsibilities.map((item) => (
+                                                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
 
                                     <h3 className="mb-3 font-semibold text-foreground">Requirements</h3>
-                                    <ul className="space-y-2">
-                                        {job.requirements.map((item) => (
-                                            <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                                                {item}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    {job.requirements_html ? (
+                                        <RichTextContent
+                                            html={job.requirements_html}
+                                            className="text-muted-foreground [&_a]:text-primary"
+                                        />
+                                    ) : (
+                                        <ul className="space-y-2">
+                                            {job.requirements.map((item) => (
+                                                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </Reveal>
 

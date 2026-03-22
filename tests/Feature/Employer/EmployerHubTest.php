@@ -260,9 +260,9 @@ test('employer can create update change status and delete vacancies', function (
             'employment_type' => 'full_time',
             'work_mode' => 'remote',
             'location' => 'Remote',
-            'description' => 'Lead design systems delivery.',
-            'requirements' => 'Design systems and React experience.',
-            'responsibilities' => 'Own UX engineering standards.',
+            'description' => '<p>Lead <strong>design systems</strong> delivery.</p><script>alert(1)</script>',
+            'requirements' => '<ul><li>Design systems</li><li>React experience</li></ul>',
+            'responsibilities' => '<p>Own <em>UX engineering</em> standards.</p>',
             'salary_min' => 2800,
             'salary_max' => 4200,
             'currency' => 'USD',
@@ -271,6 +271,9 @@ test('employer can create update change status and delete vacancies', function (
         ->assertRedirect();
 
     $vacancy = Vacancy::query()->withoutGlobalScopes()->latest('id')->firstOrFail();
+    expect($vacancy->description)->toContain('<strong>design systems</strong>')
+        ->and($vacancy->description)->not->toContain('<script>')
+        ->and($vacancy->requirements)->toContain('<li>Design systems</li>');
 
     $this->actingAs($owner)
         ->get(route('employer.vacancies.show', $vacancy->id))
@@ -289,9 +292,9 @@ test('employer can create update change status and delete vacancies', function (
             'employment_type' => 'contract',
             'work_mode' => 'hybrid',
             'location' => 'Harare',
-            'description' => 'Lead platform delivery.',
-            'requirements' => 'Laravel and React leadership.',
-            'responsibilities' => 'Mentor engineers and ship product.',
+            'description' => '<p>Lead <strong>platform</strong> delivery.</p>',
+            'requirements' => '<ol><li>Laravel leadership</li><li>React leadership</li></ol>',
+            'responsibilities' => '<blockquote>Mentor engineers and ship product.</blockquote>',
             'salary_min' => 3200,
             'salary_max' => 5200,
             'currency' => 'USD',
@@ -301,7 +304,10 @@ test('employer can create update change status and delete vacancies', function (
 
     $vacancy = Vacancy::query()->withoutGlobalScopes()->findOrFail($vacancy->id);
     expect($vacancy->title)->toBe('Lead Product Engineer')
-        ->and($vacancy->employment_type)->toBe('contract');
+        ->and($vacancy->employment_type)->toBe('contract')
+        ->and($vacancy->description)->toContain('<strong>platform</strong>')
+        ->and($vacancy->requirements)->toContain('<ol>')
+        ->and($vacancy->responsibilities)->toContain('<blockquote>');
 
     $this->actingAs($owner)
         ->from(route('employer.vacancies.show', $vacancy->id))

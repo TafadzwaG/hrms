@@ -2,8 +2,8 @@ import { useForm } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
+import { RichTextEditor } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import type { Vacancy } from '../dummyData';
 
 type VacancyFormProps = {
@@ -152,31 +152,25 @@ export function VacancyForm({ vacancy, options, action, method, submitLabel }: V
                 </div>
 
                 <FormField label="Job Description" error={form.errors.description} className="md:col-span-2">
-                    <Textarea
-                        rows={5}
+                    <RichTextEditor
                         value={form.data.description}
-                        onChange={(event) => form.setData('description', event.target.value)}
-                        className="w-full bg-transparent border border-zinc-200 focus:ring-0 focus:border-black p-3 transition-all text-black rounded-sm min-h-[120px] text-sm"
+                        onChange={(value) => form.setData('description', value)}
                         placeholder="Describe the role..."
                     />
                 </FormField>
 
                 <FormField label="Requirements" error={form.errors.requirements} className="md:col-span-2">
-                    <Textarea
-                        rows={4}
+                    <RichTextEditor
                         value={form.data.requirements}
-                        onChange={(event) => form.setData('requirements', event.target.value)}
-                        className="w-full bg-transparent border border-zinc-200 focus:ring-0 focus:border-black p-3 transition-all text-black rounded-sm min-h-[100px] text-sm"
+                        onChange={(value) => form.setData('requirements', value)}
                         placeholder="List the required skills..."
                     />
                 </FormField>
 
                 <FormField label="Responsibilities" error={form.errors.responsibilities} className="md:col-span-2">
-                    <Textarea
-                        rows={4}
+                    <RichTextEditor
                         value={form.data.responsibilities}
-                        onChange={(event) => form.setData('responsibilities', event.target.value)}
-                        className="w-full bg-transparent border border-zinc-200 focus:ring-0 focus:border-black p-3 transition-all text-black rounded-sm min-h-[100px] text-sm"
+                        onChange={(value) => form.setData('responsibilities', value)}
                         placeholder="Key duties and day-to-day tasks..."
                     />
                 </FormField>

@@ -16,6 +16,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyApplication;
+use App\Support\RichText;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -70,9 +71,9 @@ class EmployerHubPresenter
             'location' => $vacancy->location,
             'employment_type' => $vacancy->employment_type ? Str::headline(str_replace('_', ' ', $vacancy->employment_type)) : null,
             'work_mode' => $vacancy->work_mode ? Str::headline(str_replace('_', ' ', $vacancy->work_mode)) : null,
-            'description' => $vacancy->description,
-            'requirements' => $vacancy->requirements,
-            'responsibilities' => $vacancy->responsibilities,
+            'description' => RichText::sanitize($vacancy->description),
+            'requirements' => RichText::sanitize($vacancy->requirements),
+            'responsibilities' => RichText::sanitize($vacancy->responsibilities),
             'salary_min' => $this->decimal($vacancy->salary_min),
             'salary_max' => $this->decimal($vacancy->salary_max),
             'currency' => $vacancy->currency,

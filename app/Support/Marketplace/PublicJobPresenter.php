@@ -5,6 +5,7 @@ namespace App\Support\Marketplace;
 use App\Models\CompanyProfile;
 use App\Models\Vacancy;
 use App\Services\Marketplace\ExchangeEngine;
+use App\Support\RichText;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 
@@ -32,7 +33,7 @@ class PublicJobPresenter
             'id' => $vacancy->id,
             'title' => $vacancy->title,
             'company_name' => $vacancy->company?->company_name ?? 'Unknown company',
-            'description' => Str::limit($vacancy->description ?? 'No description available for this vacancy yet.', 220),
+            'description' => Str::limit(RichText::plainText($vacancy->description ?: 'No description available for this vacancy yet.'), 220),
             'location' => $vacancy->location ?: 'Remote',
             'salary' => $this->salary($vacancy),
             'work_mode' => $this->workModeLabel($vacancy->work_mode),
@@ -51,6 +52,9 @@ class PublicJobPresenter
             ...$this->card($vacancy, $match),
             'department' => $vacancy->department,
             'category' => $vacancy->category ? Str::headline(str_replace('_', ' ', $vacancy->category)) : null,
+            'description_html' => RichText::sanitize($vacancy->description),
+            'requirements_html' => RichText::sanitize($vacancy->requirements),
+            'responsibilities_html' => RichText::sanitize($vacancy->responsibilities),
             'responsibilities' => $this->responsibilities($vacancy),
             'requirements' => $this->requirements($vacancy),
             'company' => $this->company($company),
@@ -81,7 +85,7 @@ class PublicJobPresenter
             'Contribute practical ideas that improve team velocity and candidate or customer experience.',
         ];
 
-        return $this->bulletList($vacancy->responsibilities, $fallback);
+        return RichText::bulletList($vacancy->responsibilities, $fallback);
     }
 
     private function requirements(Vacancy $vacancy): array
@@ -93,29 +97,7 @@ class PublicJobPresenter
             'Ability to work independently, manage priorities, and maintain a high standard of execution.',
         ];
 
-        return $this->bulletList($vacancy->requirements, $fallback);
-    }
-
-    private function bulletList(?string $text, array $fallback): array
-    {
-        $segments = collect(preg_split('/(?:\r\n|\r|\n|•|-|\d+\.)+/u', (string) $text) ?: [])
-            ->map(fn (string $segment) => trim($segment, " \t\n\r\0\x0B•-"))
-            ->filter();
-
-        if ($segments->count() <= 1) {
-            $segments = collect(preg_split('/(?<=[.!?])\s+/u', trim((string) $text)) ?: [])
-                ->map(fn (string $segment) => trim($segment))
-                ->filter();
-        }
-
-        return $segments
-            ->merge($fallback)
-            ->map(fn (string $item) => trim($item))
-            ->filter()
-            ->unique()
-            ->take(5)
-            ->values()
-            ->all();
+        return RichText::bulletList($vacancy->requirements, $fallback);
     }
 
     private function salary(Vacancy $vacancy): string

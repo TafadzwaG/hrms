@@ -17,6 +17,7 @@ import {
     ExternalLink
 } from 'lucide-react';
 
+import { RichTextContent } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
 import {
     EmployerEmptyState,
@@ -109,39 +110,21 @@ export default function EmployerVacancyShowPage() {
                             </div>
 
                             {vacancy.description && (
-                                <div className="prose prose-zinc max-w-none mt-4">
-                                    <p className="text-zinc-600 leading-relaxed text-xs">
-                                        {vacancy.description}
-                                    </p>
-                                </div>
+                                <RichTextContent html={vacancy.description} className="mt-4 text-xs leading-6 text-zinc-600" />
                             )}
                         </section>
 
                         {vacancy.requirements && (
                             <section className="p-5 bg-zinc-50 rounded-sm border border-zinc-200">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4">Requirements</h4>
-                                <ul className="space-y-2.5">
-                                    {vacancy.requirements.split('\n').filter(Boolean).map((req, idx) => (
-                                        <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-700 font-medium">
-                                            <CheckCircle2 className="text-emerald-500 h-3.5 w-3.5 mt-0.5 shrink-0" />
-                                            <span className="leading-relaxed">{req}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <RichTextContent html={vacancy.requirements} className="text-xs leading-6 text-zinc-700" />
                             </section>
                         )}
 
                         {vacancy.responsibilities && (
                             <section className="p-5 bg-zinc-50 rounded-sm border border-zinc-200">
                                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4">Responsibilities</h4>
-                                <ul className="space-y-2.5">
-                                    {vacancy.responsibilities.split('\n').filter(Boolean).map((resp, idx) => (
-                                        <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-700 font-medium">
-                                            <CircleDot className="text-blue-500 h-3.5 w-3.5 mt-0.5 shrink-0" />
-                                            <span className="leading-relaxed">{resp}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <RichTextContent html={vacancy.responsibilities} className="text-xs leading-6 text-zinc-700" />
                             </section>
                         )}
                     </div>
