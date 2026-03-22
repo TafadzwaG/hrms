@@ -50,9 +50,9 @@ type Props = {
 
 const routes = {
   home: '/',
-  browseJobs: '/search',
+  browseJobs: '/candidate/login',
   talentPool: '/candidate/register',
-  forCompanies: '/employer/register',
+  forCompanies: '/employer/login',
   pricing: '#pricing',
   login: '/login',
   dashboard: '/dashboard',

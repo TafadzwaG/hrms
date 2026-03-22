@@ -34,7 +34,7 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
                     <AppLogoIcon className="h-6 w-6 fill-white" />
                 </div>
-                <span className="text-lg font-semibold text-slate-900">Providence HRMS</span>
+                <span className="text-lg font-semibold text-slate-900">HRX Employer Portal</span>
             </div>
 
             {/* Card */}

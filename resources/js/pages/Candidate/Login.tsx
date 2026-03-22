@@ -34,7 +34,7 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
                     <AppLogoIcon className="h-6 w-6 fill-white" />
                 </div>
-                <span className="text-lg font-semibold text-slate-900">Providence HRMS</span>
+                <span className="text-lg font-semibold text-slate-900">HRX Candidate Portal</span>
             </div>
 
             <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">

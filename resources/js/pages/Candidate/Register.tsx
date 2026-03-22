@@ -118,7 +118,7 @@ export default function CandidateRegister() {
                 </div>
                 <div className="text-center">
                     <h1 className="text-xl font-bold text-slate-900">{setupMode ? 'Complete your candidate profile' : 'Create your account'}</h1>
-                    <p className="mt-1 text-sm text-slate-500">{setupMode ? 'Finish setting up the Candidate Hub' : 'Join the Providence Candidate Hub'}</p>
+                    <p className="mt-1 text-sm text-slate-500">{setupMode ? 'Finish setting up the Candidate Hub' : 'Join the HRX Candidate Hub'}</p>
                 </div>
             </div>
 
