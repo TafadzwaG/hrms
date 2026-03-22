@@ -1,27 +1,30 @@
 import { Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import {
-    ArrowRight,
     Award,
     BookOpen,
     Briefcase,
     Calendar,
+    CalendarRangeIcon,
+    DollarSignIcon,
     Download,
     Eye,
     FileText,
     GraduationCap,
     Mail,
     MapPin,
+    Pencil,
     Phone,
+    Plus,
     Search,
     ShieldCheck,
     Star,
+    Tangent,
     Upload,
     User,
     Wrench,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     CandidateEmptyState,
@@ -34,6 +37,10 @@ import {
     formatCandidateDate,
     getInitials,
 } from './components/hub';
+import {
+    candidatePrimaryButtonClassName,
+    candidateSecondaryButtonClassName,
+} from './components/form';
 import type {
     CandidateApplication,
     CandidateDocument,
@@ -80,35 +87,36 @@ export default function CandidateDashboard() {
             candidate={candidate}
             completeness={completeness}
         >
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <KpiCard icon={<Briefcase className="h-5 w-5" />} label="Applications" value={metrics.total_applications} color="bg-blue-50 text-blue-600" />
-                <KpiCard icon={<FileText className="h-5 w-5" />} label="Documents" value={metrics.resumes_uploaded} color="bg-purple-50 text-purple-600" />
-                <KpiCard icon={<Eye className="h-5 w-5" />} label="Profile Views" value={metrics.profile_views} color="bg-amber-50 text-amber-600" />
-                <KpiCard icon={<Wrench className="h-5 w-5" />} label="Skills" value={metrics.skills_count} color="bg-emerald-50 text-emerald-600" />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-12">
+                <KpiCard icon={<Briefcase size={20} />} label="Applications" value={metrics.total_applications} sub="Hiring pipeline" />
+                <KpiCard icon={<FileText size={20} />} label="Documents" value={metrics.resumes_uploaded} sub="Saved files" />
+                <KpiCard icon={<Eye size={20} />} label="Profile Views" value={metrics.profile_views} sub="Employer traffic" />
+                <KpiCard icon={<Wrench size={20} />} label="Skills" value={metrics.skills_count} sub="Current stack" />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                <div className="xl:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+                <div className="space-y-6 xl:col-span-2">
                     <CandidateSectionCard
                         title="Personal Information"
                         icon={<User className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/profile">
-                                <Button variant="outline" size="sm" className="text-xs">
-                                    Edit Profile
-                                </Button>
-                            </Link>
+                            <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                <Pencil className="mr-2 h-3.5 w-3.5" />
+                                Edit Profile
+                            </Button>
+                        </Link>
                         }
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <CandidateInfoField label="Full Name" value={candidate.full_name} />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <CandidateInfoField label="Full Name" value={candidate.full_name} icon={<User className="h-3.5 w-3.5" />} />
                             <CandidateInfoField label="Email" value={candidate.email} icon={<Mail className="h-3.5 w-3.5" />} />
                             <CandidateInfoField label="Phone" value={candidate.phone} icon={<Phone className="h-3.5 w-3.5" />} />
                             <CandidateInfoField label="Location" value={candidate.location} icon={<MapPin className="h-3.5 w-3.5" />} />
-                            <CandidateInfoField label="Gender" value={candidate.gender} />
+                            <CandidateInfoField label="Gender" value={candidate.gender} icon={<Tangent className="h-3.5 w-3.5" />}/>
                             <CandidateInfoField label="Date of Birth" value={candidate.date_of_birth} icon={<Calendar className="h-3.5 w-3.5" />} />
-                            <CandidateInfoField label="Experience" value={`${candidate.years_experience ?? 0} years`} />
-                            <CandidateInfoField label="Expected Salary" value={`${candidate.salary_currency ?? 'USD'} ${candidate.expected_salary ?? '—'}`} />
+                            <CandidateInfoField label="Experience" value={`${candidate.years_experience ?? 0} years`} icon={<CalendarRangeIcon className="h-3.5 w-3.5" />} />
+                            <CandidateInfoField label="Expected Salary" value={`${candidate.salary_currency ?? 'USD'} ${candidate.expected_salary ?? 'N/A'}`} icon={<DollarSignIcon className="h-3.5 w-3.5" />}/>
                         </div>
                     </CandidateSectionCard>
 
@@ -117,25 +125,25 @@ export default function CandidateDashboard() {
                         icon={<Award className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/profile">
-                                <Button variant="outline" size="sm" className="text-xs">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
                                     Edit Summary
                                 </Button>
                             </Link>
                         }
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4">
                             <CandidateInfoField label="Experience" value={`${candidate.years_experience ?? 0} years`} icon={<Briefcase className="h-3.5 w-3.5" />} />
                             <CandidateInfoField
                                 label="Education"
                                 value={candidate.highest_education?.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())}
                                 icon={<GraduationCap className="h-3.5 w-3.5" />}
                             />
-                            <CandidateInfoField label="Expected Salary" value={`${candidate.salary_currency ?? 'USD'} ${candidate.expected_salary ?? '—'}`} />
+                            <CandidateInfoField label="Expected Salary" value={`${candidate.salary_currency ?? 'USD'} ${candidate.expected_salary ?? 'N/A'}`} />
                         </div>
                         {candidate.professional_summary ? (
-                            <div className="pt-4 border-t border-border">
-                                <p className="text-xs font-medium text-muted-foreground mb-1">Summary</p>
-                                <p className="text-sm text-foreground leading-relaxed">{candidate.professional_summary}</p>
+                            <div className="border-t border-zinc-200 pt-4">
+                                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-500">Summary</p>
+                                <p className="text-sm leading-relaxed text-zinc-600">{candidate.professional_summary}</p>
                             </div>
                         ) : (
                             <CandidateEmptyState message="Add your professional summary to improve your profile." />
@@ -147,7 +155,7 @@ export default function CandidateDashboard() {
                         icon={<Briefcase className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/profile">
-                                <Button variant="outline" size="sm" className="text-xs">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
                                     Add Experience
                                 </Button>
                             </Link>
@@ -156,25 +164,25 @@ export default function CandidateDashboard() {
                         {experiences.length > 0 ? (
                             <div className="space-y-5">
                                 {experiences.map((experience) => (
-                                    <div key={experience.id} className="border-b border-border/50 last:border-0 pb-4 last:pb-0">
-                                        <div className="flex items-start justify-between">
+                                    <div key={experience.id} className="border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
+                                        <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="text-sm font-semibold text-foreground">{experience.job_title}</p>
-                                                <p className="text-xs text-muted-foreground">{experience.employer_name}</p>
+                                                <p className="text-sm font-bold text-black">{experience.job_title}</p>
+                                                <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-400">{experience.employer_name}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                <p className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-500">
                                                     <Calendar className="h-3 w-3" />
-                                                    {formatCandidateDate(experience.start_date)} — {experience.currently_working ? 'Present' : formatCandidateDate(experience.end_date)}
+                                                    {formatCandidateDate(experience.start_date)} - {experience.currently_working ? 'Present' : formatCandidateDate(experience.end_date)}
                                                 </p>
-                                                {experience.currently_working && (
-                                                    <Badge variant="outline" className="text-[10px] mt-1 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                                {experience.currently_working ? (
+                                                    <span className="mt-2 inline-flex rounded-sm border border-black bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
                                                         Current
-                                                    </Badge>
-                                                )}
+                                                    </span>
+                                                ) : null}
                                             </div>
                                         </div>
-                                        {experience.description && <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{experience.description}</p>}
+                                        {experience.description ? <p className="mt-3 text-sm leading-relaxed text-zinc-600">{experience.description}</p> : null}
                                     </div>
                                 ))}
                             </div>
@@ -188,7 +196,8 @@ export default function CandidateDashboard() {
                         icon={<GraduationCap className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/education">
-                                <Button variant="outline" size="sm" className="text-xs">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                <Plus className="mr-2 h-3.5 w-3.5" />
                                     Add Education
                                 </Button>
                             </Link>
@@ -197,20 +206,20 @@ export default function CandidateDashboard() {
                         {educations.length > 0 ? (
                             <div className="space-y-4">
                                 {educations.map((education) => (
-                                    <div key={education.id} className="border-b border-border/50 last:border-0 pb-4 last:pb-0">
-                                        <div className="flex items-start justify-between">
+                                    <div key={education.id} className="border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
+                                        <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="text-sm font-semibold text-foreground">{education.qualification}</p>
-                                                <p className="text-xs text-muted-foreground">
+                                                <p className="text-sm font-bold text-black">{education.qualification}</p>
+                                                <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                                                     {education.institution}
-                                                    {education.field_of_study ? ` — ${education.field_of_study}` : ''}
+                                                    {education.field_of_study ? ` - ${education.field_of_study}` : ''}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-xs text-muted-foreground">
-                                                    {formatCandidateDate(education.start_date)} — {formatCandidateDate(education.end_date)}
+                                                <p className="text-[11px] font-medium text-zinc-500">
+                                                    {formatCandidateDate(education.start_date)} - {formatCandidateDate(education.end_date)}
                                                 </p>
-                                                {education.grade && <p className="text-xs font-medium text-foreground/70 mt-0.5">Grade: {education.grade}</p>}
+                                                {education.grade ? <p className="mt-1 text-[11px] font-bold text-zinc-600">Grade: {education.grade}</p> : null}
                                             </div>
                                         </div>
                                     </div>
@@ -226,7 +235,8 @@ export default function CandidateDashboard() {
                         icon={<FileText className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/applications">
-                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                <Eye className="mr-2 h-3.5 w-3.5" />
                                     View Applications
                                 </Button>
                             </Link>
@@ -234,34 +244,34 @@ export default function CandidateDashboard() {
                     >
                         {recentApplications.length > 0 ? (
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="w-full text-left">
                                     <thead>
-                                        <tr className="border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
-                                            <th className="text-left p-3">Position</th>
-                                            <th className="text-left p-3">Company</th>
-                                            <th className="text-left p-3">Status</th>
-                                            <th className="text-left p-3">Applied</th>
+                                        <tr className="border-b border-zinc-200 bg-zinc-50">
+                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Position</th>
+                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Company</th>
+                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Status</th>
+                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Applied</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="divide-y divide-zinc-100">
                                         {recentApplications.map((application) => (
-                                            <tr key={application.id} className="border-b border-border/50 last:border-0 hover:bg-accent/40 transition-colors">
-                                                <td className="p-3">
-                                                    <p className="text-sm font-semibold text-foreground">{application.vacancy_title}</p>
-                                                    {application.location && (
-                                                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                            <tr key={application.id} className="transition-colors hover:bg-zinc-50">
+                                                <td className="px-4 py-4">
+                                                    <p className="text-sm font-bold text-black">{application.vacancy_title}</p>
+                                                    {application.location ? (
+                                                        <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-zinc-500">
                                                             <MapPin className="h-3 w-3" />
                                                             {application.location}
                                                         </p>
-                                                    )}
+                                                    ) : null}
                                                 </td>
-                                                <td className="p-3 text-sm text-muted-foreground">{application.company_name}</td>
-                                                <td className="p-3">
-                                                    <Badge variant="outline" className={`text-xs capitalize ${candidateStatusColor[application.status] || ''}`}>
+                                                <td className="px-4 py-4 text-sm text-zinc-500">{application.company_name}</td>
+                                                <td className="px-4 py-4">
+                                                    <span className={`inline-flex rounded-sm border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${candidateStatusColor[application.status] || ''}`}>
                                                         {application.status}
-                                                    </Badge>
+                                                    </span>
                                                 </td>
-                                                <td className="p-3 text-sm text-muted-foreground">{formatCandidateDate(application.applied_at)}</td>
+                                                <td className="px-4 py-4 text-sm text-zinc-500">{formatCandidateDate(application.applied_at)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -274,45 +284,59 @@ export default function CandidateDashboard() {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="surface-elevated rounded-xl p-6 text-center">
-                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary mx-auto mb-3">
-                            {getInitials(candidate.full_name)}
+                    <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+                        <div className="mb-6 flex items-start gap-4">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm bg-black text-lg font-bold text-white">
+                                {getInitials(candidate.full_name)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <h2 className="truncate text-lg font-bold text-black">{candidate.full_name}</h2>
+                                <p className="truncate text-xs font-medium text-zinc-500">{candidate.headline || 'No headline set'}</p>
+                                {candidate.location ? (
+                                    <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-zinc-400">
+                                        <MapPin className="h-3 w-3" />
+                                        {candidate.location}
+                                    </p>
+                                ) : null}
+                            </div>
                         </div>
-                        <p className="text-base font-bold text-foreground">{candidate.full_name}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{candidate.headline || 'No headline set'}</p>
-                        {candidate.location && (
-                            <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
-                                <MapPin className="h-3 w-3" /> {candidate.location}
-                            </p>
-                        )}
-                        <div className="flex items-center justify-center gap-2 mt-3">
-                            {candidate.is_verified && (
-                                <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
-                                    <ShieldCheck className="h-3 w-3 mr-1" /> Verified
-                                </Badge>
-                            )}
-                            <Badge variant="outline" className={`text-[10px] capitalize ${candidateVisibilityColor[candidate.profile_visibility_status] || ''}`}>
+
+                        <div className="mb-6 flex flex-wrap gap-2">
+                            {candidate.is_verified ? (
+                                <span className="flex items-center gap-1 rounded bg-black px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-white">
+                                    <ShieldCheck className="h-3 w-3" />
+                                    Verified
+                                </span>
+                            ) : null}
+                            <span className={`rounded border px-2 py-1 text-[9px] font-bold uppercase tracking-widest ${candidateVisibilityColor[candidate.profile_visibility_status] || 'border-zinc-200 bg-zinc-100 text-zinc-500'}`}>
                                 {candidate.profile_visibility_status}
-                            </Badge>
+                            </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 mt-5">
-                            <Link href="/candidate/profile">
-                                <Button variant="outline" size="sm" className="w-full text-xs">
-                                    Edit Profile <ArrowRight className="h-3 w-3 ml-1" />
+
+                        <div className="flex flex-col gap-3 border-t border-zinc-100 pt-6">
+                            <Link href="/candidate/documents" className="w-full">
+                                <Button className="w-full bg-black text-white hover:bg-zinc-800 h-10 text-xs font-bold uppercase tracking-widest rounded-md transition-all flex items-center justify-center gap-2">
+                                    <Upload className="h-4 w-4" />
+                                    Upload CV
                                 </Button>
                             </Link>
-                            <Link href="/candidate/documents">
-                                <Button size="sm" className="w-full text-xs bg-primary text-primary-foreground">
-                                    Upload CV <Upload className="h-3 w-3 ml-1" />
-                                </Button>
-                            </Link>
-                            <Link href="/candidate/skills">
-                                <Button variant="outline" size="sm" className="w-full text-xs">
-                                    Add Skill
-                                </Button>
-                            </Link>
-                            <Link href="/candidate/applications">
-                                <Button variant="outline" size="sm" className="w-full text-xs">
+                            <div className="grid grid-cols-2 gap-3">
+                                <Link href="/candidate/profile" className="w-full">
+                                    <Button variant="outline" className="w-full border-zinc-200 hover:bg-zinc-50 text-black h-9 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all">
+                                    <Pencil className="mr-2 h-3.5 w-3.5" />
+                                        Edit Profile
+                                    </Button>
+                                </Link>
+                                <Link href="/candidate/skills" className="w-full">
+                                    <Button variant="outline" className="w-full border-zinc-200 hover:bg-zinc-50 text-black h-9 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all">
+                                    <Plus className="mr-2 h-3.5 w-3.5" />
+                                        Add Skill
+                                    </Button>
+                                </Link>
+                            </div>
+                            <Link href="/candidate/applications" className="w-full mt-2">
+                                <Button variant="ghost" className="w-full border border-dashed border-zinc-200 text-zinc-500 hover:border-black hover:text-black h-10 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all">
+                                <Eye className="mr-2 h-3.5 w-3.5" />
                                     View Applications
                                 </Button>
                             </Link>
@@ -324,7 +348,8 @@ export default function CandidateDashboard() {
                         icon={<Wrench className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/skills">
-                                <Button variant="outline" size="sm" className="text-xs">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                <Plus className="mr-2 h-3.5 w-3.5" />
                                     Add Skill
                                 </Button>
                             </Link>
@@ -333,12 +358,9 @@ export default function CandidateDashboard() {
                         {skills.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {skills.map((skill) => (
-                                    <div
-                                        key={skill.id}
-                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${candidateSkillLevelColor[skill.level || 'beginner']}`}
-                                    >
+                                    <div key={skill.id} className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${candidateSkillLevelColor[skill.level || 'beginner']}`}>
                                         {skill.name}
-                                        {skill.years_experience != null && <span className="text-[10px] opacity-70">{skill.years_experience}y</span>}
+                                        {skill.years_experience != null ? <span className="opacity-70">{skill.years_experience}Y</span> : null}
                                     </div>
                                 ))}
                             </div>
@@ -352,7 +374,8 @@ export default function CandidateDashboard() {
                         icon={<FileText className="h-4 w-4" />}
                         action={
                             <Link href="/candidate/documents">
-                                <Button variant="outline" size="sm" className="text-xs">
+                                <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                <Upload className="mr-2 h-3.5 w-3.5" />
                                     Upload CV
                                 </Button>
                             </Link>
@@ -361,18 +384,20 @@ export default function CandidateDashboard() {
                         {resumes.length > 0 ? (
                             <div className="space-y-3">
                                 {resumes.map((resume) => (
-                                    <div key={resume.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                                    <div key={resume.id} className="flex items-center justify-between rounded-sm border border-zinc-200 bg-white p-4">
                                         <div className="flex items-center gap-3">
-                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                            <FileText className="h-4 w-4 text-zinc-400" />
                                             <div>
-                                                <p className="text-sm font-medium text-foreground">{resume.file_name}</p>
-                                                <p className="text-xs text-muted-foreground">{formatCandidateDate(resume.uploaded_at)}</p>
+                                                <p className="text-sm font-bold text-black">{resume.file_name}</p>
+                                                <p className="text-[11px] font-medium text-zinc-500">{formatCandidateDate(resume.uploaded_at)}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {resume.is_primary && <Badge className="bg-primary/10 text-primary border-0 text-[10px]">Primary</Badge>}
+                                            {resume.is_primary ? (
+                                                <span className="rounded-sm border border-black bg-black px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">Primary</span>
+                                            ) : null}
                                             <a href={resume.download_url}>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-black">
                                                     <Download className="h-3.5 w-3.5" />
                                                 </Button>
                                             </a>
@@ -386,18 +411,18 @@ export default function CandidateDashboard() {
                     </CandidateSectionCard>
 
                     <CandidateSectionCard title="Application Pipeline" icon={<Star className="h-4 w-4" />}>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {Object.entries(applicationsByStatus).map(([status, count]) => (
-                                <div key={status} className="flex items-center justify-between">
-                                    <span className="text-sm text-muted-foreground capitalize">{status}</span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-20 h-1.5 bg-secondary rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary rounded-full"
-                                                style={{ width: `${metrics.total_applications > 0 ? (count / metrics.total_applications) * 100 : 0}%` }}
-                                            />
-                                        </div>
-                                        <span className="text-sm font-mono font-semibold text-foreground w-6 text-right">{count}</span>
+                                <div key={status}>
+                                    <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
+                                        <span className="text-zinc-500">{status}</span>
+                                        <span>{count}</span>
+                                    </div>
+                                    <div className="h-1 rounded-full bg-zinc-100">
+                                        <div
+                                            className="h-full bg-black transition-all duration-500"
+                                            style={{ width: `${metrics.total_applications > 0 ? (count / metrics.total_applications) * 100 : 0}%` }}
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -415,39 +440,40 @@ export default function CandidateDashboard() {
                 </div>
             </div>
 
-            {recommendedVacancies.length > 0 && (
-                <div className="mt-8">
-                    <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-lg font-bold text-foreground">Recommended Opportunities</h2>
+            {recommendedVacancies.length > 0 ? (
+                <div className="mt-10">
+                    <div className="mb-6 flex items-center justify-between">
+                        <h2 className="text-xl font-bold tracking-tight text-black">Recommended Opportunities</h2>
                         <Link href="/candidate/jobs">
-                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                                Browse Jobs <Search className="h-3.5 w-3.5 ml-1" />
+                            <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
+                                Browse Jobs
+                                <Search className="ml-2 h-3.5 w-3.5" />
                             </Button>
                         </Link>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {recommendedVacancies.map((job) => (
-                            <div key={job.id} className="surface-elevated rounded-xl p-5 hover:shadow-lg transition-shadow duration-300 h-full">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                            <div key={job.id} className="border border-zinc-200/50 bg-white p-6 transition-all duration-300 hover:bg-zinc-50">
+                                <div className="mb-4 flex items-start justify-between">
+                                    <div className="flex h-10 w-10 items-center justify-center bg-zinc-100 text-xs font-bold text-zinc-600">
                                         {job.company_name.substring(0, 2).toUpperCase()}
                                     </div>
-                                    {job.salary_max && (
-                                        <span className="text-xs font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                                    {job.salary_max ? (
+                                        <span className="bg-zinc-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-zinc-600">
                                             {job.currency ?? 'USD'} {Number(job.salary_max).toLocaleString()}
                                         </span>
-                                    )}
+                                    ) : null}
                                 </div>
-                                <p className="text-sm font-semibold text-foreground">{job.title}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    {job.company_name} — {job.location || 'Remote'}
+                                <p className="text-sm font-bold text-black">{job.title}</p>
+                                <p className="mt-1 text-[11px] font-medium text-zinc-500">
+                                    {job.company_name} - {job.location || 'Remote'}
                                 </p>
-                                <div className="flex items-center justify-between mt-3">
-                                    <Badge variant="outline" className="text-[10px]">
+                                <div className="mt-4 flex items-center justify-between">
+                                    <span className="rounded-sm border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
                                         {job.employment_type || 'Full-time'}
-                                    </Badge>
+                                    </span>
                                     <Link href="/candidate/jobs">
-                                        <Button variant="ghost" size="sm" className="text-xs h-7 text-primary">
+                                        <Button variant="ghost" size="sm" className="h-auto p-0 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-black">
                                             {job.has_applied ? 'Applied' : 'Apply'}
                                         </Button>
                                     </Link>
@@ -456,7 +482,7 @@ export default function CandidateDashboard() {
                         ))}
                     </div>
                 </div>
-            )}
+            ) : null}
         </CandidateHubLayout>
     );
 }
@@ -465,21 +491,22 @@ function KpiCard({
     icon,
     label,
     value,
-    color,
+    sub,
 }: {
     icon: ReactNode;
     label: string;
     value: string | number;
-    color: string;
+    sub: string;
 }) {
     return (
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm group hover:shadow-lg transition-shadow duration-300">
-            <div className="flex items-center gap-4">
-                <div className={`h-11 w-11 rounded-lg flex items-center justify-center ${color}`}>{icon}</div>
-                <div>
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
-                </div>
+        <div className="group flex flex-col justify-between border border-zinc-200/50 bg-white p-6 transition-all duration-300 hover:bg-zinc-50">
+            <div className="mb-4 flex items-start justify-between">
+                <span className="text-zinc-400 transition-colors group-hover:text-black">{icon}</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">{sub}</span>
+            </div>
+            <div>
+                <p className="text-3xl font-bold tracking-tighter text-black">{value}</p>
+                <p className="text-sm font-medium text-zinc-500">{label}</p>
             </div>
         </div>
     );
