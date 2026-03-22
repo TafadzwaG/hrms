@@ -29,6 +29,10 @@ export function Breadcrumbs({
                                             <BreadcrumbPage>
                                                 {item.title}
                                             </BreadcrumbPage>
+                                        ) : !item.href ? (
+                                            <BreadcrumbPage>
+                                                {item.title}
+                                            </BreadcrumbPage>
                                         ) : (
                                             <BreadcrumbLink asChild>
                                                 <Link href={item.href}>

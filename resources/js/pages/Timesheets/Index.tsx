@@ -63,20 +63,23 @@ type PaginatedRecords = {
     per_page: number;
 };
 
-export default function TimesheetIndex() {
-    const { records, filters, stats, statusOptions } = usePage().props as {
-        records: PaginatedRecords;
-        filters: { search?: string; status?: string };
-        stats: {
-            total: number;
-            pending: number;
-            approved: number;
-            rejected: number;
-            total_minutes: number;
-            overtime_minutes: number;
-        };
-        statusOptions: string[];
+type TimesheetsPageProps = {
+    records: PaginatedRecords;
+    filters: { search?: string; status?: string };
+    stats: {
+        total: number;
+        pending: number;
+        approved: number;
+        rejected: number;
+        total_minutes: number;
+        overtime_minutes: number;
     };
+    statusOptions: string[];
+};
+
+export default function TimesheetIndex() {
+    const { records, filters, stats, statusOptions } =
+        usePage<TimesheetsPageProps>().props;
 
     const [search, setSearch] = useState<string>(filters?.search ?? '');
     const [status, setStatus] = useState<string>(filters?.status ?? 'all');

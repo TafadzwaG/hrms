@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+﻿import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
 import heroImage from '@/assets/hero-team.jpg';
@@ -50,7 +50,7 @@ type Props = {
 
 const routes = {
   home: '/',
-  browseJobs: '/candidate/register',
+  browseJobs: '/search',
   talentPool: '/candidate/register',
   forCompanies: '/employer/register',
   pricing: '#pricing',
@@ -58,6 +58,7 @@ const routes = {
   dashboard: '/dashboard',
   candidateLogin: '/candidate/login',
   employerLogin: '/employer/login',
+  jobDetail: (id: number | string) => `/jobs/${id}`,
 };
 
 const defaultStats: Stats = {
@@ -386,7 +387,7 @@ function HeroSection({ stats }: { stats: Stats }) {
                   type="button"
                   onClick={() => {
                     setQuery(term);
-                    router.visit(`/search?q=${term}`);
+                    router.visit(`/search?q=${encodeURIComponent(term)}`);
                   }}
                   className="px-3 py-1 rounded-full text-xs bg-background/60 border border-border text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors active:scale-95"
                 >
@@ -520,7 +521,7 @@ function JobsSection({ featuredVacancies }: { featuredVacancies: Vacancy[] }) {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {featuredVacancies.slice(0, 4).map((job, i) => (
             <Reveal key={job.id} delay={i * 0.07}>
-              <Link href={routes.browseJobs}>
+              <Link href={routes.jobDetail(job.id)}>
                 <motion.div
                   whileHover={{ y: -6, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
                   className="surface-elevated rounded-xl p-5 cursor-pointer group"
@@ -846,3 +847,4 @@ export default function Landing({ auth, stats, featuredVacancies }: Props) {
     </>
   );
 }
+

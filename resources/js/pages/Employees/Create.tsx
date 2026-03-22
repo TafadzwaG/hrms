@@ -40,6 +40,12 @@ type EmployeeFormOptions = {
     educational_levels: string[];
 };
 
+type EmployeeCreatePageProps = {
+    departments: Array<{ id: number; name: string }>;
+    positions: Array<{ id: number; name: string }>;
+    options: EmployeeFormOptions;
+};
+
 const STEPS: Step[] = [
     {
         id: 1,
@@ -104,11 +110,8 @@ function FieldHint({ children }: { children: React.ReactNode }) {
 
 /* ─── main component ─────────────────────────────────────────── */
 export default function EmployeeCreate() {
-    const { departments, positions, options } = usePage().props as {
-        departments: Array<{ id: number; name: string }>;
-        positions: Array<{ id: number; name: string }>;
-        options: EmployeeFormOptions;
-    };
+    const { departments, positions, options } =
+        usePage<EmployeeCreatePageProps>().props;
 
     const PATHS = {
         index: `${API}/employees`,

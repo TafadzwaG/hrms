@@ -7,6 +7,7 @@ use App\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CompanyProfile extends Model
@@ -78,6 +79,26 @@ class CompanyProfile extends Model
         return $this->hasMany(Vacancy::class);
     }
 
+    public function billingProfile(): HasOne
+    {
+        return $this->hasOne(CompanyBillingProfile::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(CompanySubscription::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(CompanyInvoice::class);
+    }
+
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(CompanySubscription::class)->where('status', 'active')->latestOfMany('started_at');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -86,6 +107,16 @@ class CompanyProfile extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->creator();
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->updater();
     }
 
     public function scopeActive($query)

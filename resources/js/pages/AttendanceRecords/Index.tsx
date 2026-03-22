@@ -180,7 +180,10 @@ export default function AttendanceRecordsIndex() {
         return null;
     };
 
-    const computeWorkedMinutes = (clockIn?: string, clockOut?: string) => {
+    const computeWorkedMinutes = (
+        clockIn?: string | null,
+        clockOut?: string | null,
+    ) => {
         const start = parseTimeToMinutes(clockIn);
         const end = parseTimeToMinutes(clockOut);
 

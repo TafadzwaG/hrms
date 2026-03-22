@@ -27,6 +27,11 @@ type ModuleTheme = {
     action: string;
 };
 
+type ModuleShowPageProps = {
+    module: ModuleMeta;
+    record: Record<string, unknown>;
+};
+
 const moduleThemes: Record<string, ModuleTheme> = {
     'leave-requests': {
         surface:
@@ -90,10 +95,7 @@ const formatValue = (value: unknown, field?: ModuleField): ReactNode => {
 };
 
 export default function ModuleShow() {
-    const { module, record } = usePage().props as {
-        module: ModuleMeta;
-        record: Record<string, unknown>;
-    };
+    const { module, record } = usePage<ModuleShowPageProps>().props;
 
     const theme = getTheme(module.slug);
 

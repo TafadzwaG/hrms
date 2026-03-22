@@ -38,6 +38,36 @@ type EmployeeFormOptions = {
     educational_levels: string[];
 };
 
+type EmployeeRecord = Record<string, unknown> & {
+    id: number;
+    staff_number?: string | null;
+    first_name?: string | null;
+    middle_name?: string | null;
+    surname?: string | null;
+    date_of_birth?: string | null;
+    email?: string | null;
+    national_id?: string | null;
+    gender?: string | null;
+    occupation?: string | null;
+    contact_number?: string | null;
+    alt_phone_number?: string | null;
+    address?: string | null;
+    pay_point?: string | null;
+    marital_status?: string | null;
+    nationality?: string | null;
+    educational_level?: string | null;
+    department_id?: number | null;
+    position_id?: number | null;
+    user?: { email?: string | null } | null;
+};
+
+type EmployeeEditPageProps = {
+    employee: EmployeeRecord;
+    departments: Array<{ id: number; name: string }>;
+    positions: Array<{ id: number; name: string }>;
+    options: EmployeeFormOptions;
+};
+
 const STEPS: Step[] = [
     {
         id: 1,
@@ -126,33 +156,8 @@ function InstructionItem({
 
 /* ─── main component ─────────────────────────────────────────── */
 export default function EmployeeEdit() {
-    const { employee, departments, positions, options } = usePage().props as {
-        employee: Record<string, unknown> & {
-            id: number;
-            staff_number?: string | null;
-            first_name?: string | null;
-            middle_name?: string | null;
-            surname?: string | null;
-            date_of_birth?: string | null;
-            email?: string | null;
-            national_id?: string | null;
-            gender?: string | null;
-            occupation?: string | null;
-            contact_number?: string | null;
-            alt_phone_number?: string | null;
-            address?: string | null;
-            pay_point?: string | null;
-            marital_status?: string | null;
-            nationality?: string | null;
-            educational_level?: string | null;
-            department_id?: number | null;
-            position_id?: number | null;
-            user?: { email?: string | null } | null;
-        };
-        departments: Array<{ id: number; name: string }>;
-        positions: Array<{ id: number; name: string }>;
-        options: EmployeeFormOptions;
-    };
+    const { employee, departments, positions, options } =
+        usePage<EmployeeEditPageProps>().props;
 
     const PATHS = {
         index: `${API}/employees`,

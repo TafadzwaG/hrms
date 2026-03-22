@@ -1,8 +1,9 @@
 import PasswordResetController from './PasswordResetController'
+import MarketplaceController from './MarketplaceController'
 import CandidateAuthController from './CandidateAuthController'
 import EmployerAuthController from './EmployerAuthController'
-import CandidateHubDashboardController from './CandidateHubDashboardController'
-import EmployerHubDashboardController from './EmployerHubDashboardController'
+import Candidate from './Candidate'
+import Employer from './Employer'
 import CurrentOrganizationController from './CurrentOrganizationController'
 import DashboardController from './DashboardController'
 import OrganizationController from './OrganizationController'
@@ -68,10 +69,11 @@ import PaymentWebhookController from './PaymentWebhookController'
 import Settings from './Settings'
 const Controllers = {
     PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
+MarketplaceController: Object.assign(MarketplaceController, MarketplaceController),
 CandidateAuthController: Object.assign(CandidateAuthController, CandidateAuthController),
 EmployerAuthController: Object.assign(EmployerAuthController, EmployerAuthController),
-CandidateHubDashboardController: Object.assign(CandidateHubDashboardController, CandidateHubDashboardController),
-EmployerHubDashboardController: Object.assign(EmployerHubDashboardController, EmployerHubDashboardController),
+Candidate: Object.assign(Candidate, Candidate),
+Employer: Object.assign(Employer, Employer),
 CurrentOrganizationController: Object.assign(CurrentOrganizationController, CurrentOrganizationController),
 DashboardController: Object.assign(DashboardController, DashboardController),
 OrganizationController: Object.assign(OrganizationController, OrganizationController),

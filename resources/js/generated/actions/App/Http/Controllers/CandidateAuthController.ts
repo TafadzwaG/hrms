@@ -212,7 +212,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     showRegister.form = showRegisterForm
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:48
+ * @see app/Http/Controllers/CandidateAuthController.php:59
  * @route '/candidate/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:48
+ * @see app/Http/Controllers/CandidateAuthController.php:59
  * @route '/candidate/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:48
+ * @see app/Http/Controllers/CandidateAuthController.php:59
  * @route '/candidate/register'
  */
 register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:48
+ * @see app/Http/Controllers/CandidateAuthController.php:59
  * @route '/candidate/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:48
+ * @see app/Http/Controllers/CandidateAuthController.php:59
  * @route '/candidate/register'
  */
         registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -34,6 +34,12 @@ type ModuleMeta = {
     fields: ModuleField[];
 };
 
+type ModuleFormPageProps = {
+    module: ModuleMeta;
+    mode: 'create' | 'edit';
+    record: Record<string, unknown> | null;
+};
+
 type ModuleFormData = Record<string, string | boolean>;
 
 type ModuleTheme = {
@@ -96,11 +102,7 @@ const valueForInput = (field: ModuleField, value: unknown): string => {
 };
 
 export default function ModuleForm() {
-    const { module, mode, record } = usePage().props as {
-        module: ModuleMeta;
-        mode: 'create' | 'edit';
-        record: Record<string, unknown> | null;
-    };
+    const { module, mode, record } = usePage<ModuleFormPageProps>().props;
 
     const theme = getTheme(module.slug);
 

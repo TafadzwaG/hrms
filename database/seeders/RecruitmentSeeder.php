@@ -2,10 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\CompanyProfile;
+use App\Models\SubscriptionPlan;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class RecruitmentSeeder extends Seeder
 {
@@ -14,14 +18,23 @@ class RecruitmentSeeder extends Seeder
         $now = now();
 
         DB::transaction(function () use ($now): void {
-            $companyIds = $this->seedCompanyProfiles($now);
-            $candidateIds = $this->seedCandidateProfiles($now);
-            $this->seedCandidateEducations($candidateIds, $now);
-            $this->seedCandidateExperiences($candidateIds, $now);
-            $this->seedCandidateSkills($candidateIds, $now);
-            $vacancyIds = $this->seedVacancies($companyIds, $now);
-            $this->seedVacancyApplications($vacancyIds, $candidateIds, $now);
-            $this->seedPayments($candidateIds, $now);
+            $seededBulkDataset = DB::table('company_profiles')
+                ->where('registration_number', 'ZW-2024-10231')
+                ->exists();
+
+            if (! $seededBulkDataset) {
+                $companyIds = $this->seedCompanyProfiles($now);
+                $candidateIds = $this->seedCandidateProfiles($now);
+                $this->seedCandidateEducations($candidateIds, $now);
+                $this->seedCandidateExperiences($candidateIds, $now);
+                $this->seedCandidateSkills($candidateIds, $now);
+                $vacancyIds = $this->seedVacancies($companyIds, $now);
+                $this->seedVacancyApplications($vacancyIds, $candidateIds, $now);
+                $this->seedPayments($candidateIds, $now);
+            }
+
+            $planIds = $this->seedSubscriptionPlans($now);
+            $this->seedDemoHubUsers($planIds, $now);
         });
 
         $this->command?->info('RecruitmentSeeder completed.');
@@ -1307,5 +1320,383 @@ class RecruitmentSeeder extends Seeder
         ];
 
         DB::table('payments')->insert($records);
+    }
+
+    private function seedSubscriptionPlans(CarbonInterface $now): array
+    {
+        $plans = [
+            [
+                'code' => 'starter',
+                'name' => 'Starter',
+                'description' => 'Basic hiring workflow for small teams.',
+                'price' => 49.00,
+                'currency' => 'USD',
+                'billing_interval' => 'monthly',
+                'seat_limit' => 3,
+                'features' => ['3 active vacancies', 'Basic candidate pipeline', 'Email support'],
+                'is_active' => true,
+            ],
+            [
+                'code' => 'growth',
+                'name' => 'Growth',
+                'description' => 'Expanded recruiting workflow for growing employers.',
+                'price' => 129.00,
+                'currency' => 'USD',
+                'billing_interval' => 'monthly',
+                'seat_limit' => 10,
+                'features' => ['15 active vacancies', 'Reporting dashboard', 'Priority support'],
+                'is_active' => true,
+            ],
+            [
+                'code' => 'enterprise',
+                'name' => 'Enterprise',
+                'description' => 'Unlimited hiring activity and advanced support.',
+                'price' => 299.00,
+                'currency' => 'USD',
+                'billing_interval' => 'monthly',
+                'seat_limit' => null,
+                'features' => ['Unlimited vacancies', 'Advanced reports', 'Dedicated onboarding'],
+                'is_active' => true,
+            ],
+        ];
+
+        $ids = [];
+
+        foreach ($plans as $plan) {
+            $record = SubscriptionPlan::query()->updateOrCreate(
+                ['code' => $plan['code']],
+                [...$plan, 'updated_at' => $now, 'created_at' => $now],
+            );
+
+            $ids[$plan['code']] = $record->id;
+        }
+
+        return $ids;
+    }
+
+    private function seedDemoHubUsers(array $planIds, CarbonInterface $now): void
+    {
+        $candidateUser = User::query()->updateOrCreate(
+            ['email' => 'candidate.demo@hrxhub.test'],
+            [
+                'name' => 'Rumbidzai Moyo',
+                'password' => Hash::make('password'),
+                'email_verified_at' => $now,
+            ],
+        );
+
+        DB::table('candidate_profiles')->updateOrInsert(
+            ['user_id' => $candidateUser->id],
+            [
+                'organization_id' => null,
+                'requisition_code' => null,
+                'full_name' => 'Rumbidzai Moyo',
+                'email' => 'candidate.demo@hrxhub.test',
+                'phone' => '+263 77 123 4567',
+                'stage' => 'listed',
+                'status' => 'available',
+                'notes' => 'Seeded demo candidate for hub flows.',
+                'alt_phone' => '+263 78 765 4321',
+                'national_id' => '63-123456A63',
+                'gender' => 'female',
+                'date_of_birth' => '1998-04-12',
+                'location' => 'Harare, Zimbabwe',
+                'headline' => 'Frontend Developer - React - TypeScript',
+                'professional_summary' => 'Product-focused frontend developer with experience building modern web applications, design systems, and user-friendly dashboards across HR and recruitment platforms.',
+                'expected_salary' => 2200.00,
+                'salary_currency' => 'USD',
+                'years_experience' => 5,
+                'highest_education' => 'bachelors',
+                'profile_visibility_status' => 'active',
+                'is_public' => true,
+                'is_verified' => true,
+                'listing_fee_amount' => 1.00,
+                'listing_fee_currency' => 'USD',
+                'listing_activated_at' => Carbon::parse('2026-01-10 09:00:00'),
+                'listing_expires_at' => Carbon::parse('2026-06-30 23:59:59'),
+                'metadata' => json_encode([
+                    'profile_views' => 146,
+                    'preferences' => [
+                        'job_alerts' => true,
+                        'newsletter' => false,
+                        'remote_only' => false,
+                        'preferred_work_modes' => ['remote', 'hybrid'],
+                    ],
+                ], JSON_THROW_ON_ERROR),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        $candidateId = DB::table('candidate_profiles')->where('user_id', $candidateUser->id)->value('id');
+
+        DB::table('candidate_educations')->updateOrInsert(
+            ['candidate_profile_id' => $candidateId, 'institution' => 'University of Zimbabwe', 'qualification' => 'BSc Computer Science'],
+            [
+                'field_of_study' => 'Software Engineering',
+                'start_date' => '2016-08-01',
+                'end_date' => '2020-11-30',
+                'grade' => '2.1',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        DB::table('candidate_educations')->updateOrInsert(
+            ['candidate_profile_id' => $candidateId, 'institution' => 'Google Career Certificates', 'qualification' => 'UX Design Certificate'],
+            [
+                'field_of_study' => 'UX Design',
+                'start_date' => '2022-01-01',
+                'end_date' => '2022-06-30',
+                'grade' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        DB::table('candidate_experiences')->updateOrInsert(
+            ['candidate_profile_id' => $candidateId, 'employer_name' => 'Providence Digital', 'job_title' => 'Frontend Developer'],
+            [
+                'start_date' => '2023-01-01',
+                'end_date' => null,
+                'currently_working' => true,
+                'description' => 'Building internal dashboards, candidate portals, and HR workflow tools using React, TypeScript, and Tailwind CSS.',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        DB::table('candidate_experiences')->updateOrInsert(
+            ['candidate_profile_id' => $candidateId, 'employer_name' => 'ZimTech Solutions', 'job_title' => 'Junior Web Developer'],
+            [
+                'start_date' => '2020-02-01',
+                'end_date' => '2022-12-01',
+                'currently_working' => false,
+                'description' => 'Worked on company websites, recruitment landing pages, and CMS integrations for business clients.',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        foreach ([
+            ['React', 'expert', 5],
+            ['TypeScript', 'advanced', 4],
+            ['Tailwind CSS', 'advanced', 4],
+            ['JavaScript', 'expert', 5],
+            ['UI Design', 'intermediate', 3],
+            ['Figma', 'intermediate', 3],
+            ['Inertia.js', 'intermediate', 2],
+            ['Laravel', 'beginner', 1],
+        ] as [$name, $level, $years]) {
+            DB::table('candidate_skills')->updateOrInsert(
+                ['candidate_profile_id' => $candidateId, 'name' => $name],
+                [
+                    'level' => $level,
+                    'years_experience' => $years,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        foreach ([
+            ['Rumbidzai_Moyo_CV_2026.pdf', 'resume', 'Primary CV', true, '2026-01-15 10:00:00'],
+            ['Rumbidzai_Moyo_Portfolio.pdf', 'portfolio', 'Portfolio highlights', false, '2026-02-01 09:00:00'],
+            ['Rumbidzai_Moyo_Resume_Design.pdf', 'resume', 'Design-focused resume', false, '2026-02-20 16:00:00'],
+        ] as [$fileName, $documentType, $description, $isPrimary, $uploadedAt]) {
+            DB::table('candidate_resumes')->updateOrInsert(
+                ['candidate_profile_id' => $candidateId, 'file_name' => $fileName],
+                [
+                    'document_type' => $documentType,
+                    'file_path' => 'seeded/'.$candidateId.'/'.$fileName,
+                    'description' => $description,
+                    'mime_type' => 'application/pdf',
+                    'size' => 102400,
+                    'is_primary' => $isPrimary,
+                    'uploaded_by' => $candidateUser->id,
+                    'uploaded_at' => Carbon::parse($uploadedAt),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        $employerUser = User::query()->updateOrCreate(
+            ['email' => 'employer.demo@hrxhub.test'],
+            [
+                'name' => 'Amanda Ncube',
+                'password' => Hash::make('password'),
+                'email_verified_at' => $now,
+            ],
+        );
+
+        CompanyProfile::withoutGlobalScopes()->updateOrCreate(
+            ['owner_user_id' => $employerUser->id],
+            [
+                'organization_id' => null,
+                'company_name' => 'Providence HR',
+                'industry' => 'information_technology',
+                'registration_number' => 'ZW-2026-HRX-001',
+                'email' => 'amanda@providencehr.co.zw',
+                'phone' => '+263 242 881100',
+                'website' => 'https://www.providencehr.co.zw',
+                'address' => 'Borrowdale Road, Harare',
+                'description' => 'Recruitment and HR technology company focused on employer and candidate self-service workflows.',
+                'logo_path' => null,
+                'status' => 'active',
+                'approved_at' => Carbon::parse('2026-01-05 08:00:00'),
+                'metadata' => [
+                    'team_size' => 7,
+                    'plan_label' => 'Growth',
+                ],
+                'created_by' => $employerUser->id,
+                'updated_by' => $employerUser->id,
+            ],
+        );
+
+        $companyId = CompanyProfile::withoutGlobalScopes()
+            ->where('owner_user_id', $employerUser->id)
+            ->value('id');
+
+        DB::table('company_billing_profiles')->updateOrInsert(
+            ['company_profile_id' => $companyId],
+            [
+                'billing_name' => 'Providence HR Finance',
+                'billing_email' => 'billing@providencehr.co.zw',
+                'billing_phone' => '+263 242 881199',
+                'billing_address' => 'Borrowdale Road, Harare',
+                'tax_number' => 'TIN-PRV-HR-2026',
+                'metadata' => json_encode(['contact_person' => 'Amanda Ncube'], JSON_THROW_ON_ERROR),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        DB::table('company_subscriptions')->updateOrInsert(
+            ['company_profile_id' => $companyId, 'status' => 'active'],
+            [
+                'subscription_plan_id' => $planIds['growth'],
+                'seats' => 7,
+                'amount' => 129.00,
+                'currency' => 'USD',
+                'started_at' => Carbon::parse('2026-01-01 00:00:00'),
+                'renews_at' => Carbon::parse('2026-04-01 00:00:00'),
+                'cancelled_at' => null,
+                'metadata' => json_encode(['renewal_day' => 1], JSON_THROW_ON_ERROR),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
+
+        $subscriptionId = DB::table('company_subscriptions')
+            ->where('company_profile_id', $companyId)
+            ->where('status', 'active')
+            ->value('id');
+
+        foreach ([
+            ['INV-2026-0001', 129.00, 'paid', '2026-01-01 00:00:00', '2026-01-07 00:00:00', '2026-01-02 09:00:00', 'Growth plan subscription'],
+            ['INV-2026-0002', 129.00, 'paid', '2026-02-01 00:00:00', '2026-02-07 00:00:00', '2026-02-03 11:30:00', 'Growth plan subscription'],
+            ['INV-2026-0003', 129.00, 'pending', '2026-03-01 00:00:00', '2026-03-07 00:00:00', null, 'Growth plan subscription'],
+        ] as [$invoiceNumber, $amount, $status, $issuedAt, $dueAt, $paidAt, $description]) {
+            DB::table('company_invoices')->updateOrInsert(
+                ['invoice_number' => $invoiceNumber],
+                [
+                    'company_profile_id' => $companyId,
+                    'company_subscription_id' => $subscriptionId,
+                    'amount' => $amount,
+                    'currency' => 'USD',
+                    'status' => $status,
+                    'description' => $description,
+                    'issued_at' => Carbon::parse($issuedAt),
+                    'due_at' => Carbon::parse($dueAt),
+                    'paid_at' => $paidAt ? Carbon::parse($paidAt) : null,
+                    'metadata' => json_encode(['source' => 'recruitment_seeder'], JSON_THROW_ON_ERROR),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        foreach ([
+            ['Senior Frontend Developer', 'Engineering', 'information_technology', 'full_time', 'hybrid', 'Harare', 2100, 2900, 'published', '2026-02-10'],
+            ['UI Engineer', 'Product', 'information_technology', 'contract', 'remote', 'Remote', 1800, 2500, 'published', '2026-02-18'],
+            ['Product Designer', 'Design', 'marketing', 'full_time', 'onsite', 'Harare', 1600, 2400, 'draft', null],
+            ['HR Business Partner', 'Human Resources', 'human_resources', 'full_time', 'hybrid', 'Bulawayo', 1900, 2600, 'published', '2026-03-01'],
+        ] as [$title, $department, $category, $employmentType, $workMode, $location, $salaryMin, $salaryMax, $status, $publishedAt]) {
+            DB::table('vacancies')->updateOrInsert(
+                ['company_profile_id' => $companyId, 'title' => $title],
+                [
+                    'department' => $department,
+                    'category' => $category,
+                    'employment_type' => $employmentType,
+                    'work_mode' => $workMode,
+                    'location' => $location,
+                    'description' => $title.' vacancy for Providence HR seeded for dashboard functionality.',
+                    'requirements' => 'Relevant experience, strong communication, and the ability to collaborate across teams.',
+                    'responsibilities' => 'Deliver strong hiring outcomes, collaborate with stakeholders, and maintain a high-quality candidate experience.',
+                    'salary_min' => $salaryMin,
+                    'salary_max' => $salaryMax,
+                    'currency' => 'USD',
+                    'application_deadline' => Carbon::parse('2026-05-30')->toDateString(),
+                    'status' => $status,
+                    'published_at' => $publishedAt ? Carbon::parse($publishedAt) : null,
+                    'closed_at' => null,
+                    'created_by' => $employerUser->id,
+                    'updated_by' => $employerUser->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        $vacancies = DB::table('vacancies')
+            ->where('company_profile_id', $companyId)
+            ->pluck('id', 'title');
+
+        $primaryResumeId = DB::table('candidate_resumes')
+            ->where('candidate_profile_id', $candidateId)
+            ->where('is_primary', true)
+            ->value('id');
+
+        foreach ([
+            ['Senior Frontend Developer', 'shortlisted', '2026-02-10 12:00:00', 'Shortlisted for technical review.'],
+            ['UI Engineer', 'interview', '2026-02-18 09:30:00', 'Interview panel scheduled.'],
+            ['HR Business Partner', 'submitted', '2026-03-02 08:15:00', 'Awaiting recruiter review.'],
+        ] as [$vacancyTitle, $status, $appliedAt, $notes]) {
+            DB::table('vacancy_applications')->updateOrInsert(
+                ['vacancy_id' => $vacancies[$vacancyTitle], 'candidate_profile_id' => $candidateId],
+                [
+                    'resume_id' => $primaryResumeId,
+                    'cover_letter' => 'I am excited to apply for the '.$vacancyTitle.' role and believe my recent experience aligns strongly with the team’s needs.',
+                    'status' => $status,
+                    'applied_at' => Carbon::parse($appliedAt),
+                    'shortlisted_at' => $status === 'shortlisted' || $status === 'interview' ? Carbon::parse($appliedAt)->addDays(4) : null,
+                    'rejected_at' => null,
+                    'notes' => $notes,
+                    'metadata' => json_encode(['source' => 'demo_hub_seed'], JSON_THROW_ON_ERROR),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        DB::table('payments')->updateOrInsert(
+            ['payable_type' => 'App\\Models\\CandidateProfile', 'payable_id' => $candidateId, 'provider_reference' => 'DEMO-CANDIDATE-001'],
+            [
+                'user_id' => $candidateUser->id,
+                'amount' => 1.00,
+                'currency' => 'USD',
+                'provider' => 'manual',
+                'customer_phone' => '+263 77 123 4567',
+                'customer_email' => 'candidate.demo@hrxhub.test',
+                'status' => 'paid',
+                'initiated_at' => Carbon::parse('2026-01-10 09:00:00'),
+                'paid_at' => Carbon::parse('2026-01-10 09:05:00'),
+                'failed_at' => null,
+                'metadata' => json_encode(['source' => 'demo_hub_seed'], JSON_THROW_ON_ERROR),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        );
     }
 }

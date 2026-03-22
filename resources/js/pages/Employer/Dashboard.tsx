@@ -1,366 +1,284 @@
-import { Head, Link, router } from '@inertiajs/react';
-import {
-    Briefcase,
-    Users,
-    Building2,
-    LogOut,
-    ChevronRight,
-    ShieldCheck,
-    LayoutDashboard,
-    Settings,
-    Bell,
-    TrendingUp,
-    FileText,
-    Info,
-} from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { Briefcase, Users, Calendar, BarChart3, Verified, Info } from 'lucide-react';
+import { EmployerHubLayout, EmployerPrimaryButton } from './components/hub';
+import type { Company, Metrics, RecentApplication, RecommendedTalent, User, Vacancy } from './dummyData';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-
-import {
-    company,
-    user,
-    metrics,
-    vacancies,
-    recentApplications,
-    recommendedTalent,
-} from './dummyData';
+type PageProps = {
+    company: Company;
+    user: User;
+    metrics: Metrics;
+    vacancies: Vacancy[];
+    recentApplications: RecentApplication[];
+    recommendedTalent: RecommendedTalent[];
+    applicationsByStatus: Record<string, number>;
+    billingSummary?: {
+        subscription?: {
+            plan?: {
+                name?: string;
+            } | null;
+            seats?: number | null;
+        } | null;
+    };
+};
 
 export default function EmployerDashboard() {
-    const handleLogout = () => router.post('/logout');
+    const { company, user, metrics, vacancies, recentApplications, recommendedTalent, applicationsByStatus, billingSummary } = usePage<PageProps>().props;
+
+    const totalPipeline = Object.values(applicationsByStatus).reduce((sum, value) => sum + value, 0);
+    const interviewCount = applicationsByStatus.interview ?? 0;
+    const publishedVacancyRate = metrics.total_vacancies > 0 ? Math.round((metrics.published_vacancies / metrics.total_vacancies) * 100) : 0;
+    const interviewConversionRate = totalPipeline > 0 ? Math.round((interviewCount / totalPipeline) * 100) : 0;
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans text-slate-900 antialiased">
-            <Head title="Employer Hub - HRX" />
-
-            {/* ===== SIDEBAR NAVIGATION ===== */}
-            <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
-                <div className="flex items-center space-x-2 border-b border-slate-100 p-6">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-900 text-white">
-                        <ShieldCheck size={20} />
+        <EmployerHubLayout
+            title="Employer Hub"
+            subtitle="Overview of your current hiring activity"
+            active="dashboard"
+            company={company}
+            user={user}
+            headerActions={<EmployerPrimaryButton href="/employer/vacancies/create">Post a New Job</EmployerPrimaryButton>}
+        >
+            <div className="w-full px-6 md:px-10">
+                {/* Hero Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="px-2 py-0.5 bg-zinc-200 text-[10px] font-bold tracking-widest uppercase rounded">Verified Employer</span>
+                        </div>
+                        <h2 className="text-[2.5rem] font-bold tracking-tight text-black leading-tight">Employer Hub</h2>
+                        <p className="text-zinc-500 font-medium text-lg">Overview of your current hiring activity</p>
                     </div>
-                    <span className="text-lg font-bold tracking-tight text-slate-900 uppercase">
-                        HRX <span className="text-slate-400 font-medium italic lowercase">Hub</span>
-                    </span>
                 </div>
 
-                <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-                    <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Main Menu</p>
-                    <SidebarLink href="/employer/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" active />
-                    <SidebarLink href="/employer/dashboard" icon={<Briefcase size={20} />} label="Vacancies" />
-                    <SidebarLink href="/employer/dashboard" icon={<Users size={20} />} label="Candidates" />
-
-                    <p className="mb-2 mt-8 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Organization</p>
-                    <SidebarLink href="/employer/dashboard" icon={<FileText size={20} />} label="Reports" />
-                    <SidebarLink href="/employer/dashboard" icon={<Building2 size={20} />} label="Company Profile" />
-                    <SidebarLink href="/employer/dashboard" icon={<Settings size={20} />} label="Billing" />
-
-                    <div className="mt-8">
-                        <SidebarLink href="/" icon={<ChevronRight size={20} className="rotate-180" />} label="Back to Home" />
-                    </div>
-                </nav>
-
-                {/* User Profile Section at bottom */}
-                <div className="border-t border-slate-100 p-4">
-                    <div className="flex items-center px-2 py-3">
-                        <div className="flex-shrink-0">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600 text-xs">
-                                {user?.name?.split(' ').map((n) => n[0]).join('').substring(0, 2) || 'U'}
+                {/* KPI Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <KpiCard 
+                        icon={<Briefcase size={20} />} 
+                        label="Active Vacancies" 
+                        value={metrics.total_vacancies} 
+                        sub="Live Status" 
+                    />
+                    <KpiCard 
+                        icon={<Users size={20} />} 
+                        label="Total Applications" 
+                        value={metrics.total_applications} 
+                        sub="Across all pipelines" 
+                    />
+                    <KpiCard 
+                        icon={<Calendar size={20} />} 
+                        label="Interviews" 
+                        value={interviewCount} 
+                        sub="Currently Scheduled" 
+                    />
+                    <div className="bg-white p-6 border border-zinc-200/50 flex flex-col justify-between group hover:bg-zinc-50 transition-all duration-300">
+                        <div className="flex justify-between items-start mb-4">
+                            <BarChart3 className="text-zinc-400 group-hover:text-black transition-colors" size={20} />
+                            <div className="w-12 h-1 bg-zinc-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-black" style={{ width: '92%' }}></div>
                             </div>
                         </div>
-                        <div className="ml-3 overflow-hidden">
-                            <p className="truncate text-xs font-semibold text-slate-900">{user?.name || 'User'}</p>
-                            <p className="truncate text-[10px] text-slate-500 font-medium">{user?.email}</p>
+                        <div>
+                            <p className="text-3xl font-bold tracking-tighter">92%</p>
+                            <p className="text-sm font-medium text-zinc-500">Profile Health</p>
                         </div>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                    >
-                        <LogOut size={14} /> Terminate Session
-                    </button>
                 </div>
-            </aside>
 
-            {/* ===== MAIN CONTENT AREA ===== */}
-            <main className="flex-1 overflow-y-auto bg-slate-50">
-                {/* TOP BAR */}
-                <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900">Employer Hub</h1>
-                        <p className="text-sm text-slate-500">Overview of your current hiring activity</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                            <Bell size={24} />
-                        </button>
-                        <Button className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-colors uppercase tracking-tighter">
-                            Post a New Job
-                        </Button>
-                    </div>
-                </header>
-
-                <div className="mx-auto w-full p-8">
-                    {/* METRICS ROW */}
-                    <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <KPICard label="Active Vacancies" value={metrics.total_vacancies} trend="2 new" />
-                        <KPICard label="New Applications" value={metrics.total_applications} subLabel="Last 24 hours" />
-                        <KPICard label="Interviews" value="6" subLabel="Today" />
-                        <KPICard label="Total Hires" value="124" subLabel="Year to date" />
-                    </section>
-
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                        {/* LEFT COLUMN (2/3) */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {/* ACTIVE REQUISITIONS */}
-                            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="flex items-center justify-between border-b border-slate-100 p-6">
-                                    <h2 className="text-lg font-bold text-slate-900">Active Requisitions</h2>
-                                    <button className="text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900">
-                                        View All
-                                    </button>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead className="border-b border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                            <tr>
-                                                <th className="px-6 py-3">Job Title</th>
-                                                <th className="px-6 py-3">Department</th>
-                                                <th className="px-6 py-3">Applicants</th>
-                                                <th className="px-6 py-3">Status</th>
-                                                <th className="px-6 py-3"></th>
+                {/* Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column */}
+                    <div className="lg:col-span-8 space-y-12">
+                        {/* Active Requisitions */}
+                        <section>
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold tracking-tight">Active Requisitions</h3>
+                                <Link href="/employer/vacancies" className="text-sm font-semibold text-zinc-500 hover:text-black transition-colors">View All</Link>
+                            </div>
+                            <div className="bg-white overflow-hidden border border-zinc-200/50 rounded-sm">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-zinc-50">
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Job Title</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Department</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Applicants</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Status</th>
+                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-100">
+                                        {vacancies.map((vacancy) => (
+                                            <tr key={vacancy.id} className="hover:bg-zinc-50 transition-colors group">
+                                                <td className="py-4 px-6">
+                                                    <p className="font-bold text-sm truncate">{vacancy.title}</p>
+                                                    <p className="text-[10px] text-zinc-500 uppercase tracking-tighter mt-0.5">Ref: VAC-{vacancy.id}</p>
+                                                </td>
+                                                <td className="py-4 px-6 text-sm">{vacancy.department || '—'}</td>
+                                                <td className="py-4 px-6 text-center text-sm font-bold">{vacancy.applications_count}</td>
+                                                <td className="py-4 px-6">
+                                                    <span className={`inline-flex items-center gap-1.5 py-0.5 px-2 rounded-sm text-[9px] font-black uppercase tracking-widest border ${
+                                                        vacancy.status.toLowerCase() === 'published' ? 'bg-black text-white border-black' : 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                                                    }`}>
+                                                        {vacancy.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6 text-right">
+                                                    <Link href={`/employer/vacancies/${vacancy.id}`} className="text-xs font-bold underline decoration-zinc-300 hover:decoration-black">View</Link>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 text-sm">
-                                            {vacancies.map((v) => (
-                                                <tr key={v.id} className="transition-colors hover:bg-slate-50">
-                                                    <td className="px-6 py-4 font-semibold text-slate-900">{v.title}</td>
-                                                    <td className="px-6 py-4 text-slate-600">{v.department || 'Engineering'}</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="font-medium text-slate-900">{v.applications_count}</span>
-                                                            <span className="text-[10px] font-bold text-emerald-500">+12%</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <Badge className="rounded bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase text-white border-0">
-                                                            {v.status}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button className="text-slate-400 hover:text-slate-900">
-                                                            <ChevronRight size={20} />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </section>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
 
-                            {/* RECENT APPLICANTS */}
-                            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="border-b border-slate-100 p-6">
-                                    <h2 className="text-lg font-bold text-slate-900">Recent Applicants</h2>
-                                </div>
-                                <div className="divide-y divide-slate-100">
-                                    {recentApplications.map((app) => (
-                                        <div key={app.id} className="flex items-center justify-between p-6 transition-colors hover:bg-slate-50">
-                                            <div className="flex items-center">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 font-bold text-slate-400 text-xs">
-                                                    {app.candidate_name.substring(0, 1)}
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <h4 className="text-sm font-bold text-slate-900">{app.candidate_name}</h4>
-                                                        <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold italic text-white uppercase">
-                                                            {app.match_score ?? 98}% Match
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-500">
-                                                        Applied for <span className="font-medium text-slate-700">{app.vacancy_title}</span> • {app.applied_at}
-                                                    </p>
-                                                </div>
+                        {/* Recent Applicants */}
+                        <section>
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold tracking-tight">Recent Applicants</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {recentApplications.slice(0, 4).map((app, idx) => (
+                                    <div key={app.id} className="bg-white p-5 border border-zinc-200/50 hover:border-black transition-all">
+                                        <div className="flex gap-4 items-start mb-4">
+                                            <div className={`h-12 w-12 flex items-center justify-center font-bold text-lg shrink-0 ${idx % 2 === 0 ? 'bg-black text-white' : 'bg-zinc-200 text-zinc-700'}`}>
+                                                {getInitials(app.candidate_name)}
                                             </div>
-                                            <div className="flex space-x-2">
-                                                <button className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-slate-50">
-                                                    Profile
-                                                </button>
-                                                <button className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-slate-800">
-                                                    Shortlist
-                                                </button>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <h4 className="font-bold text-sm truncate">{app.candidate_name}</h4>
+                                                    {app.match_score && (
+                                                        <span className="bg-zinc-100 px-2 py-0.5 text-[9px] font-bold rounded">{app.match_score}% Match</span>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-zinc-500 truncate">Applied for: {app.vacancy_title}</p>
                                             </div>
                                         </div>
-                                    ))}
+                                        <div className="flex gap-2">
+                                            <button className="flex-1 bg-black text-white py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-800 transition-colors">Shortlist</button>
+                                            <Link href="/employer/candidates" className="flex-1">
+                                                <button className="w-full bg-zinc-100 py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-200 text-zinc-700 transition-colors">Profile</button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="lg:col-span-4 space-y-8">
+                        {/* Hiring Progress */}
+                        <div className="bg-white p-8 border border-zinc-200/50 rounded-sm">
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-8">Hiring Progress</h3>
+                            
+                            <div className="flex flex-col items-center mb-10">
+                                <div className="relative flex items-center justify-center">
+                                    <svg className="w-32 h-32 transform -rotate-90">
+                                        <circle className="text-zinc-100" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeWidth="8"></circle>
+                                        <circle className="text-black" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" strokeDasharray="364.4" strokeDashoffset={364.4 - (364.4 * publishedVacancyRate) / 100} strokeWidth="8"></circle>
+                                    </svg>
+                                    <div className="absolute flex flex-col items-center">
+                                        <span className="text-2xl font-bold tracking-tighter">{publishedVacancyRate}%</span>
+                                        <span className="text-[9px] uppercase font-bold text-zinc-500">Live</span>
+                                    </div>
                                 </div>
-                            </section>
+                            </div>
+
+                            <div className="space-y-6">
+                                <ProgressBar label="Published Vacancy Rate" value={publishedVacancyRate} />
+                                <ProgressBar label="Interview Conversion" value={interviewConversionRate} />
+                            </div>
                         </div>
 
-                        {/* RIGHT COLUMN (1/3) */}
-                        <div className="space-y-8">
-                            {/* HIRING PROGRESS */}
-                            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h2 className="mb-6 text-sm font-bold uppercase tracking-wider text-slate-900">Hiring Progress</h2>
-                                <div className="space-y-6">
-                                    <div>
-                                        <div className="mb-2 flex justify-between text-xs font-bold">
-                                            <span className="text-slate-500">Filling Rate</span>
-                                            <span className="text-slate-900">78%</span>
+                        {/* Talent Matches */}
+                        <div className="bg-white p-8 border border-zinc-200/50 rounded-sm">
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">Talent Matches</h3>
+                            <div className="space-y-6">
+                                {recommendedTalent.slice(0, 3).map((talent) => (
+                                    <div key={talent.id} className="flex items-center justify-between gap-4 group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-zinc-100 rounded-sm flex items-center justify-center overflow-hidden font-bold text-xs text-zinc-500">
+                                                {talent.initials}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold truncate max-w-[120px]">{talent.name}</p>
+                                                <p className="text-[10px] text-zinc-500 font-medium truncate max-w-[120px]">{talent.headline}</p>
+                                            </div>
                                         </div>
-                                        <Progress value={78} className="h-2 bg-slate-100" />
+                                        <button className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">Invite</button>
                                     </div>
-                                    <div>
-                                        <div className="mb-2 flex justify-between text-xs font-bold">
-                                            <span className="text-slate-500">Onboarding Velocity</span>
-                                            <span className="text-slate-900">62%</span>
-                                        </div>
-                                        <Progress value={62} className="h-2 bg-slate-100" />
-                                    </div>
-                                </div>
-                                <div className="mt-8 border-t border-slate-100 pt-6 text-center">
-                                    <div className="relative inline-flex h-24 w-24 items-center justify-center rounded-full border-[6px] border-slate-900 border-r-slate-100">
-                                        <div className="text-center">
-                                            <span className="block text-xl font-bold text-slate-900">12</span>
-                                            <span className="text-[10px] font-bold uppercase text-slate-400">Days to Hire</span>
-                                        </div>
-                                    </div>
-                                    <p className="mt-4 text-[10px] font-medium text-slate-400 uppercase tracking-tight">
-                                        Average across all departments
-                                    </p>
-                                </div>
-                            </section>
-
-                            {/* TALENT MATCHES */}
-                            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="flex items-center justify-between border-b border-slate-100 p-4">
-                                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">Talent Matches</h2>
-                                    <Info size={16} className="text-slate-400" />
-                                </div>
-                                <div className="space-y-4 p-4">
-                                    {recommendedTalent.map((talent) => (
-                                        <RecommendedTalent
-                                            key={talent.id}
-                                            name={talent.name}
-                                            headline={talent.headline}
-                                            initials={talent.initials}
-                                        />
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* COMPANY ACCOUNT */}
-                            <section className="rounded-xl bg-slate-900 p-6 text-white shadow-lg shadow-slate-200">
-                                <div className="mb-6 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Company Account</span>
-                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase text-white">ENTERPRISE</span>
-                                </div>
-                                <div className="mb-4">
-                                    <h3 className="text-lg font-bold">{company?.company_name || 'HRX Global'}</h3>
-                                    <p className="text-xs text-slate-400 font-medium">Billing: Monthly Pro Plan</p>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-slate-800 py-4">
-                                    <div className="flex -space-x-2">
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-700"></div>
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-600"></div>
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-500"></div>
-                                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-900 bg-slate-800 text-[8px] font-bold">
-                                            +4
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-medium text-slate-300">7 Active Users</span>
-                                </div>
-                                <button className="mt-2 w-full rounded bg-white py-2 text-xs font-bold text-slate-900 transition-colors hover:bg-slate-100 uppercase tracking-widest">
-                                    Manage Subscriptions
+                                ))}
+                            </div>
+                            <Link href="/employer/candidates">
+                                <button className="w-full mt-8 py-3 text-[10px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-50 hover:bg-zinc-100 transition-colors">
+                                    Find More Matches
                                 </button>
-                            </section>
+                            </Link>
+                        </div>
+
+                        {/* Company Account Summary */}
+                        <div className="bg-black text-white p-8 rounded-lg shadow-2xl">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Company Account</h3>
+                                <Verified className="text-white" size={18} />
+                            </div>
+                            <div className="mb-8">
+                                <p className="text-2xl font-bold tracking-tight mb-1">{company.company_name}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">{billingSummary?.subscription?.plan?.name ?? 'Standard Plan'}</p>
+                            </div>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="flex -space-x-2">
+                                    <div className="w-6 h-6 rounded-full border border-black bg-zinc-700"></div>
+                                    <div className="w-6 h-6 rounded-full border border-black bg-zinc-500"></div>
+                                    <div className="w-6 h-6 rounded-full border border-black bg-zinc-300"></div>
+                                </div>
+                                <p className="text-[10px] font-bold uppercase tracking-tighter">{billingSummary?.subscription?.seats ?? 1} Active Admins</p>
+                            </div>
+                            <Link href="/employer/billing">
+                                <button className="w-full bg-white text-black py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                                    Manage Subscription
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </EmployerHubLayout>
     );
 }
 
-// ---------- HELPERS / SUB-COMPONENTS ----------
+/* --- Subcomponents --- */
 
-function SidebarLink({
-    href,
-    icon,
-    label,
-    active = false,
-}: {
-    href: string;
-    icon: React.ReactNode;
-    label: string;
-    active?: boolean;
-}) {
+function KpiCard({ icon, label, value, sub }: { icon: any, label: string, value: string | number, sub: string }) {
     return (
-        <Link
-            href={href}
-            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all ${
-                active
-                    ? 'bg-slate-100 text-slate-900 border-r-2 border-slate-900 rounded-none'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-        >
-            <span className="mr-3">{icon}</span>
-            {label}
-        </Link>
-    );
-}
-
-function KPICard({
-    label,
-    value,
-    trend,
-    subLabel,
-}: {
-    label: string;
-    value: string | number;
-    trend?: string;
-    subLabel?: string;
-}) {
-    return (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
-            <div className="flex items-end justify-between">
-                <h3 className="text-3xl font-bold text-slate-900 leading-none">{value}</h3>
-                {trend && (
-                    <span className="flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-500">
-                        <TrendingUp size={12} className="mr-1" /> {trend}
-                    </span>
-                )}
-                {subLabel && <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">{subLabel}</span>}
+        <div className="bg-white p-6 border border-zinc-200/50 flex flex-col justify-between group hover:bg-zinc-50 transition-all duration-300">
+            <div className="flex justify-between items-start mb-4">
+                <span className="text-zinc-400 group-hover:text-black transition-colors">{icon}</span>
+                <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{sub}</span>
+            </div>
+            <div>
+                <p className="text-3xl font-bold tracking-tighter">{value}</p>
+                <p className="text-sm font-medium text-zinc-500">{label}</p>
             </div>
         </div>
     );
 }
 
-function RecommendedTalent({
-    name,
-    headline,
-    initials,
-}: {
-    name: string;
-    headline: string;
-    initials: string;
-}) {
+function ProgressBar({ label, value }: { label: string, value: number }) {
     return (
-        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 transition-colors hover:bg-white">
-            <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                    {initials}
-                </div>
-                <div>
-                    <h5 className="text-xs font-bold text-slate-900">{name}</h5>
-                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">{headline}</p>
-                </div>
+        <div>
+            <div className="flex justify-between text-[10px] font-bold uppercase mb-2 tracking-widest">
+                <span className="text-zinc-500">{label}</span>
+                <span>{value}%</span>
             </div>
-            <button className="mt-3 w-full rounded border border-slate-200 py-1.5 text-[10px] font-bold uppercase transition-colors hover:bg-slate-50 tracking-widest">
-                Invite to Apply
-            </button>
+            <div className="h-1 bg-zinc-100 rounded-full">
+                <div className="h-full bg-black transition-all duration-500" style={{ width: `${value}%` }}></div>
+            </div>
         </div>
     );
+}
+
+function getInitials(name?: string | null): string {
+    if (!name) return 'EX';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 }

@@ -75,6 +75,16 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class);
     }
 
+    public function candidateProfile(): HasOne
+    {
+        return $this->hasOne(CandidateProfile::class);
+    }
+
+    public function companyProfile(): HasOne
+    {
+        return $this->hasOne(CompanyProfile::class, 'owner_user_id');
+    }
+
     public function isSuperAdmin(): bool
     {
         $roles = $this->relationLoaded('roles')

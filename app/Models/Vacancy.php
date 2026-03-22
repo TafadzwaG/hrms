@@ -101,6 +101,16 @@ class Vacancy extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function createdBy(): BelongsTo
+    {
+        return $this->creator();
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->updater();
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');

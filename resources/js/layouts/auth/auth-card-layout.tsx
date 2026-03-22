@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import {
     Card,
@@ -16,7 +16,7 @@ export default function AuthCardLayout({
     description,
 }: PropsWithChildren<{
     name?: string;
-    title?: string;
+    title?: ReactNode;
     description?: string;
 }>) {
     return (

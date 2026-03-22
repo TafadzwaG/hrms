@@ -43,11 +43,65 @@ class EmployerAuthController extends Controller
 
     public function showRegister()
     {
-        return Inertia::render('Employer/Register');
+        if (Auth::check() && CompanyProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+            ->where('owner_user_id', Auth::id())->exists()) {
+            return redirect()->route('employer.dashboard');
+        }
+
+        return Inertia::render('Employer/Register', [
+            'setupMode' => Auth::check(),
+            'initialValues' => Auth::check() ? [
+                'name' => Auth::user()?->name,
+                'email' => Auth::user()?->email,
+            ] : null,
+        ]);
     }
 
     public function register(Request $request): RedirectResponse
     {
+        if ($request->user()) {
+            $request->merge(array_map(
+                fn ($v) => $v === '' ? null : $v,
+                $request->only(['industry', 'registration_number', 'company_email', 'company_phone', 'website'])
+            ));
+
+            $data = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$request->user()->id],
+                'company_name' => ['required', 'string', 'max:255'],
+                'industry' => ['required', 'string', Rule::in(\App\Models\CompanyProfile::INDUSTRIES)],
+                'registration_number' => ['nullable', 'string', 'max:100'],
+                'company_email' => ['nullable', 'string', 'email', 'max:255'],
+                'company_phone' => ['nullable', 'string', 'max:50'],
+                'website' => ['nullable', 'string', 'url:http,https', 'max:500'],
+            ]);
+
+            DB::transaction(function () use ($data, $request) {
+                $request->user()->update([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                ]);
+
+                CompanyProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)->updateOrCreate(
+                    ['owner_user_id' => $request->user()->id],
+                    [
+                        'company_name' => $data['company_name'],
+                        'industry' => $data['industry'] ?? null,
+                        'registration_number' => $data['registration_number'] ?? null,
+                        'email' => $data['company_email'] ?? $data['email'],
+                        'phone' => $data['company_phone'] ?? '',
+                        'website' => $data['website'] ?? null,
+                        'status' => 'pending_review',
+                        'created_by' => $request->user()->id,
+                        'updated_by' => $request->user()->id,
+                    ],
+                );
+            });
+
+            return redirect('/employer/dashboard')
+                ->with('success', 'Company profile setup complete.');
+        }
+
         // Convert empty strings to null for optional fields
         $request->merge(array_map(
             fn ($v) => $v === '' ? null : $v,

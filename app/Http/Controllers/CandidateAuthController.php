@@ -42,11 +42,61 @@ class CandidateAuthController extends Controller
 
     public function showRegister()
     {
-        return Inertia::render('Candidate/Register');
+        if (Auth::check() && CandidateProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+            ->where('user_id', Auth::id())->exists()) {
+            return redirect()->route('candidate.dashboard');
+        }
+
+        return Inertia::render('Candidate/Register', [
+            'setupMode' => Auth::check(),
+            'initialValues' => Auth::check() ? [
+                'name' => Auth::user()?->name,
+                'email' => Auth::user()?->email,
+            ] : null,
+        ]);
     }
 
     public function register(Request $request): RedirectResponse
     {
+        if ($request->user()) {
+            $data = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$request->user()->id],
+                'headline' => ['nullable', 'string', 'max:255'],
+                'phone' => ['nullable', 'string', 'max:50'],
+                'location' => ['nullable', 'string', 'max:255'],
+                'years_experience' => ['nullable', 'integer', 'min:0'],
+                'highest_education' => ['nullable', 'string', 'max:50'],
+            ]);
+
+            DB::transaction(function () use ($data, $request) {
+                $request->user()->update([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                ]);
+
+                CandidateProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)->updateOrCreate(
+                    ['user_id' => $request->user()->id],
+                    [
+                        'full_name' => $data['name'],
+                        'email' => $data['email'],
+                        'phone' => $data['phone'] ?? null,
+                        'location' => $data['location'] ?? null,
+                        'headline' => $data['headline'] ?? null,
+                        'years_experience' => $data['years_experience'] ?? null,
+                        'highest_education' => $data['highest_education'] ?? null,
+                        'profile_visibility_status' => 'draft',
+                        'is_public' => false,
+                        'stage' => 'listed',
+                        'status' => 'available',
+                    ],
+                );
+            });
+
+            return redirect('/candidate/dashboard')
+                ->with('success', 'Candidate profile setup complete.');
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -76,8 +126,8 @@ class CandidateAuthController extends Controller
                 'highest_education' => $data['highest_education'] ?? null,
                 'profile_visibility_status' => 'draft',
                 'is_public' => false,
-                'stage' => 'APPLIED',
-                'status' => 'ACTIVE',
+                'stage' => 'listed',
+                'status' => 'available',
             ]);
 
             return $user;

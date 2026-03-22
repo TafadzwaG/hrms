@@ -77,9 +77,51 @@ export type CandidateRecommendedVacancy = {
     company_name: string;
     location: string | null;
     employment_type: string | null;
+    work_mode?: string | null;
     salary_min: string | null;
     salary_max: string | null;
     currency: string | null;
+    department?: string | null;
+    category?: string | null;
+    description?: string | null;
+    requirements?: string | null;
+    responsibilities?: string | null;
+    application_deadline?: string | null;
+    status?: string | null;
+    published_at?: string | null;
+    has_applied?: boolean;
+    application_status?: string | null;
+};
+
+export type CandidateApplication = CandidateRecentApplication & {
+    vacancy_id?: number | null;
+    work_mode?: string | null;
+    salary_min?: string | null;
+    salary_max?: string | null;
+    currency?: string | null;
+    cover_letter?: string | null;
+    notes?: string | null;
+    resume?: {
+        id: number;
+        file_name: string;
+    } | null;
+};
+
+export type CandidateDocument = CandidateResume & {
+    document_type: string | null;
+    description: string | null;
+    mime_type: string | null;
+    size: number | null;
+    download_url: string;
+};
+
+export type CandidateSettings = {
+    preferences: {
+        job_alerts: boolean;
+        newsletter: boolean;
+        remote_only: boolean;
+        preferred_work_modes: string[];
+    };
 };
 
 export const candidateUser: CandidateUser = {

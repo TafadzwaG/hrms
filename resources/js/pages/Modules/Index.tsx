@@ -61,6 +61,12 @@ type PaginatedRecords = {
     total?: number;
 };
 
+type ModuleIndexPageProps = {
+    module: ModuleMeta;
+    records: PaginatedRecords;
+    filters: { search?: string };
+};
+
 const formatValue = (value: unknown, field?: ModuleField): ReactNode => {
     if (value === null || value === undefined || value === '') return '—';
 
@@ -90,11 +96,7 @@ const formatValue = (value: unknown, field?: ModuleField): ReactNode => {
 };
 
 export default function ModuleIndex() {
-    const { module, records, filters } = usePage().props as {
-        module: ModuleMeta;
-        records: PaginatedRecords;
-        filters: { search?: string };
-    };
+    const { module, records, filters } = usePage<ModuleIndexPageProps>().props;
 
     const [search, setSearch] = useState<string>(filters?.search ?? '');
 

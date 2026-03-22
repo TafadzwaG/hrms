@@ -61,18 +61,21 @@ type PaginatedRecords = {
     per_page: number;
 };
 
-export default function PayrollExportsIndex() {
-    const { module, records, filters, stats } = usePage().props as {
-        module: any;
-        records: PaginatedRecords;
-        filters: { search?: string; status?: string };
-        stats: {
-            total: number;
-            completed: number;
-            failed: number;
-            latest: any;
-        };
+type PayrollExportsPageProps = {
+    module: any;
+    records: PaginatedRecords;
+    filters: { search?: string; status?: string };
+    stats: {
+        total: number;
+        completed: number;
+        failed: number;
+        latest: any;
     };
+};
+
+export default function PayrollExportsIndex() {
+    const { module, records, filters, stats } =
+        usePage<PayrollExportsPageProps>().props;
 
     const [search, setSearch] = useState(filters?.search ?? '');
     const [status, setStatus] = useState(filters?.status ?? 'all');

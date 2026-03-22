@@ -1,4 +1,5 @@
 import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
+import type { ReactNode } from 'react';
 
 export default function AuthLayout({
     children,
@@ -7,7 +8,7 @@ export default function AuthLayout({
     ...props
 }: {
     children: React.ReactNode;
-    title: string;
+    title: ReactNode;
     description: string;
 }) {
     return (

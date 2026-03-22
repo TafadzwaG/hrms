@@ -81,10 +81,23 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\RecruitmentDashboardController;
 use App\Http\Controllers\Reports\RecruitmentReportController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\CandidateAuthController;
-use App\Http\Controllers\CandidateHubDashboardController;
 use App\Http\Controllers\EmployerAuthController;
-use App\Http\Controllers\EmployerHubDashboardController;
+use App\Http\Controllers\Candidate\ApplicationsController as CandidateApplicationsController;
+use App\Http\Controllers\Candidate\DashboardController as CandidateDashboardController;
+use App\Http\Controllers\Candidate\DocumentsController as CandidateDocumentsController;
+use App\Http\Controllers\Candidate\EducationController as CandidateEducationController;
+use App\Http\Controllers\Candidate\JobsController as CandidateJobsController;
+use App\Http\Controllers\Candidate\ProfileController as CandidateProfileHubController;
+use App\Http\Controllers\Candidate\SettingsController as CandidateSettingsController;
+use App\Http\Controllers\Candidate\SkillsController as CandidateSkillsController;
+use App\Http\Controllers\Employer\BillingController as EmployerBillingController;
+use App\Http\Controllers\Employer\CandidatesController as EmployerCandidatesController;
+use App\Http\Controllers\Employer\CompanyProfileController as EmployerCompanyProfileHubController;
+use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
+use App\Http\Controllers\Employer\ReportsController as EmployerReportsController;
+use App\Http\Controllers\Employer\VacanciesController as EmployerVacanciesController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -110,6 +123,11 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 })->name('home');
 
+Route::get('/search', [MarketplaceController::class, 'search'])->name('marketplace.search');
+Route::get('/jobs/{vacancy}', [MarketplaceController::class, 'show'])
+    ->whereNumber('vacancy')
+    ->name('marketplace.jobs.show');
+
 Route::get('/reset-password', [PasswordResetController::class, 'show'])->name('password.manual.reset');
 Route::post('/reset-password', [PasswordResetController::class, 'store'])->name('password.manual.update');
 
@@ -117,22 +135,77 @@ Route::post('/reset-password', [PasswordResetController::class, 'store'])->name(
 Route::middleware('guest')->group(function () {
     Route::get('/candidate/login', [CandidateAuthController::class, 'showLogin'])->name('candidate.login');
     Route::post('/candidate/login', [CandidateAuthController::class, 'login']);
-    Route::get('/candidate/register', [CandidateAuthController::class, 'showRegister'])->name('candidate.register');
-    Route::post('/candidate/register', [CandidateAuthController::class, 'register']);
 });
+Route::get('/candidate/register', [CandidateAuthController::class, 'showRegister'])->name('candidate.register');
+Route::post('/candidate/register', [CandidateAuthController::class, 'register']);
 
 // ── Employer Hub Auth ─────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/employer/login', [EmployerAuthController::class, 'showLogin'])->name('employer.login');
     Route::post('/employer/login', [EmployerAuthController::class, 'login']);
-    Route::get('/employer/register', [EmployerAuthController::class, 'showRegister'])->name('employer.register');
-    Route::post('/employer/register', [EmployerAuthController::class, 'register']);
 });
+Route::get('/employer/register', [EmployerAuthController::class, 'showRegister'])->name('employer.register');
+Route::post('/employer/register', [EmployerAuthController::class, 'register']);
 
 // ── Candidate & Employer Hub Dashboards ──────────
 Route::middleware('auth')->group(function () {
-    Route::get('/candidate/dashboard', CandidateHubDashboardController::class)->name('candidate.dashboard');
-    Route::get('/employer/dashboard', EmployerHubDashboardController::class)->name('employer.dashboard');
+    Route::prefix('candidate')->name('candidate.')->group(function () {
+        Route::get('/dashboard', CandidateDashboardController::class)->name('dashboard');
+        Route::get('/applications', [CandidateApplicationsController::class, 'index'])->name('applications');
+        Route::get('/jobs', [CandidateJobsController::class, 'index'])->name('jobs');
+        Route::post('/jobs/{vacancy}/apply', [CandidateJobsController::class, 'apply'])->name('jobs.apply');
+
+        Route::get('/profile', [CandidateProfileHubController::class, 'edit'])->name('profile');
+        Route::put('/profile', [CandidateProfileHubController::class, 'update'])->name('profile.update');
+        Route::put('/profile/summary', [CandidateProfileHubController::class, 'updateSummary'])->name('profile.summary.update');
+        Route::post('/profile/experiences', [CandidateProfileHubController::class, 'storeExperience'])->name('profile.experiences.store');
+        Route::put('/profile/experiences/{experience}', [CandidateProfileHubController::class, 'updateExperience'])->name('profile.experiences.update');
+        Route::delete('/profile/experiences/{experience}', [CandidateProfileHubController::class, 'destroyExperience'])->name('profile.experiences.destroy');
+
+        Route::get('/documents', [CandidateDocumentsController::class, 'index'])->name('documents');
+        Route::post('/documents', [CandidateDocumentsController::class, 'store'])->name('documents.store');
+        Route::get('/documents/{document}/download', [CandidateDocumentsController::class, 'download'])->name('documents.download');
+        Route::put('/documents/{document}/primary', [CandidateDocumentsController::class, 'makePrimary'])->name('documents.primary');
+        Route::delete('/documents/{document}', [CandidateDocumentsController::class, 'destroy'])->name('documents.destroy');
+
+        Route::get('/education', [CandidateEducationController::class, 'index'])->name('education');
+        Route::post('/education', [CandidateEducationController::class, 'store'])->name('education.store');
+        Route::put('/education/{education}', [CandidateEducationController::class, 'update'])->name('education.update');
+        Route::delete('/education/{education}', [CandidateEducationController::class, 'destroy'])->name('education.destroy');
+
+        Route::get('/skills', [CandidateSkillsController::class, 'index'])->name('skills');
+        Route::post('/skills', [CandidateSkillsController::class, 'store'])->name('skills.store');
+        Route::put('/skills/{skill}', [CandidateSkillsController::class, 'update'])->name('skills.update');
+        Route::delete('/skills/{skill}', [CandidateSkillsController::class, 'destroy'])->name('skills.destroy');
+
+        Route::get('/settings', [CandidateSettingsController::class, 'edit'])->name('settings');
+        Route::put('/settings', [CandidateSettingsController::class, 'update'])->name('settings.update');
+    });
+
+    Route::prefix('employer')->name('employer.')->group(function () {
+        Route::get('/dashboard', EmployerDashboardController::class)->name('dashboard');
+
+        Route::get('/vacancies', [EmployerVacanciesController::class, 'index'])->name('vacancies.index');
+        Route::get('/vacancies/create', [EmployerVacanciesController::class, 'create'])->name('vacancies.create');
+        Route::post('/vacancies', [EmployerVacanciesController::class, 'store'])->name('vacancies.store');
+        Route::get('/vacancies/{vacancy}', [EmployerVacanciesController::class, 'show'])->name('vacancies.show');
+        Route::get('/vacancies/{vacancy}/edit', [EmployerVacanciesController::class, 'edit'])->name('vacancies.edit');
+        Route::put('/vacancies/{vacancy}', [EmployerVacanciesController::class, 'update'])->name('vacancies.update');
+        Route::patch('/vacancies/{vacancy}/status', [EmployerVacanciesController::class, 'updateStatus'])->name('vacancies.status.update');
+        Route::delete('/vacancies/{vacancy}', [EmployerVacanciesController::class, 'destroy'])->name('vacancies.destroy');
+
+        Route::get('/candidates', [EmployerCandidatesController::class, 'index'])->name('candidates');
+        Route::patch('/applications/{application}/status', [EmployerCandidatesController::class, 'updateStatus'])->name('candidates.status.update');
+
+        Route::get('/reports', [EmployerReportsController::class, 'index'])->name('reports');
+
+        Route::get('/company-profile', [EmployerCompanyProfileHubController::class, 'edit'])->name('company');
+        Route::put('/company-profile', [EmployerCompanyProfileHubController::class, 'update'])->name('company.update');
+
+        Route::get('/billing', [EmployerBillingController::class, 'edit'])->name('billing');
+        Route::put('/billing/profile', [EmployerBillingController::class, 'updateProfile'])->name('billing.profile.update');
+        Route::put('/billing/subscription', [EmployerBillingController::class, 'changeSubscription'])->name('billing.subscription.update');
+    });
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { importMethod as importOrgUnits, index as orgUnitsIndex, template as orgUnitsTemplate } from "@/routes/org-units";
 
 type PageProps = {
   types: string[];
@@ -40,7 +41,7 @@ export default function Upload() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    post(route("org-units.import"), {
+    post(importOrgUnits.url(), {
       forceFormData: true,
       onSuccess: () => setData("file", null),
     });
@@ -63,11 +64,11 @@ export default function Upload() {
 
           <div className="flex gap-2">
             <Button asChild variant="secondary">
-              <Link href={route("org-units.index")}>Back</Link>
+              <Link href={orgUnitsIndex.url()}>Back</Link>
             </Button>
             <Button asChild variant="secondary">
               {/* normal download link */}
-              <a href={route("org-units.template")}>Download Template</a>
+              <a href={orgUnitsTemplate.url()}>Download Template</a>
             </Button>
           </div>
         </div>
@@ -148,7 +149,7 @@ export default function Upload() {
 
             <form onSubmit={submit} className="flex justify-end gap-2">
               <Button type="button" variant="secondary" asChild>
-                <a href={route("org-units.template")}>Download Template</a>
+                <a href={orgUnitsTemplate.url()}>Download Template</a>
               </Button>
               <Button type="submit" disabled={processing || !data.file}>
                 {processing ? "Uploading..." : "Upload & Import"}
