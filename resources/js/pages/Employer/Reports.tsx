@@ -34,24 +34,24 @@ export default function EmployerReportsPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-10">
+            <div className="w-full px-6 md:px-8">
                 {/* Hero Header Section */}
-                <header className="mb-12">
-                    <h2 className="text-[3.5rem] font-black tracking-tighter leading-none mb-4 text-black">Reports</h2>
-                    <p className="text-zinc-500 text-lg max-w-2xl font-medium opacity-80">
+                <header className="mb-8">
+                    <h2 className="text-3xl font-black tracking-tighter leading-none mb-1.5 text-black uppercase">Reports.</h2>
+                    <p className="text-zinc-500 text-xs font-medium max-w-2xl">
                         Recruitment reporting based on current company vacancies and applications.
                     </p>
                 </header>
 
                 {/* Summary Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
                     {/* Card 1: Summary */}
-                    <div className="bg-white p-6 flex flex-col gap-6 shadow-sm border border-zinc-100">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Summary</span>
-                            <Briefcase className="h-4 w-4 text-black" />
+                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                        <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Summary</span>
+                            <Briefcase className="h-3.5 w-3.5 text-black" />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <MetricRow label="Total vacancies" value={summary.total_vacancies} />
                             <MetricRow label="Published vacancies" value={summary.published_vacancies} isPrimary />
                             <MetricRow label="Total applications" value={summary.total_applications} />
@@ -62,19 +62,19 @@ export default function EmployerReportsPage() {
                     </div>
 
                     {/* Card 2: Status Breakdown */}
-                    <div className="bg-white p-6 flex flex-col gap-6 shadow-sm border border-zinc-100">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Status Breakdown</span>
-                            <BarChart3 className="h-4 w-4 text-black" />
+                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                        <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Status Breakdown</span>
+                            <BarChart3 className="h-3.5 w-3.5 text-black" />
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {Object.entries(applicationsByStatus).map(([status, count]) => (
                                 <div key={status} className="group">
-                                    <div className="flex justify-between text-[10px] font-bold uppercase mb-1.5">
-                                        <span>{status.replace(/_/g, ' ')}</span>
-                                        <span>{count}</span>
+                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest mb-1.5">
+                                        <span className="text-zinc-600">{status.replace(/_/g, ' ')}</span>
+                                        <span className="text-black">{count}</span>
                                     </div>
-                                    <div className="w-full bg-zinc-100 h-1.5 overflow-hidden">
+                                    <div className="w-full bg-zinc-100 h-1 overflow-hidden rounded-full">
                                         <div 
                                             className="bg-black h-full transition-all duration-500" 
                                             style={{ width: `${Math.min(100, (count / summary.total_applications) * 100)}%` }}
@@ -86,22 +86,22 @@ export default function EmployerReportsPage() {
                     </div>
 
                     {/* Card 3: Monthly Trend */}
-                    <div className="bg-white p-6 flex flex-col gap-6 shadow-sm border border-zinc-100">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Monthly Trend</span>
-                            <TrendingUp className="h-4 w-4 text-black" />
+                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                        <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Monthly Trend</span>
+                            <TrendingUp className="h-3.5 w-3.5 text-black" />
                         </div>
-                        <div className="flex items-end justify-between h-full pt-8 pb-2 gap-2">
+                        <div className="flex items-end justify-between h-full pt-4 pb-1 gap-2">
                             {monthlyTrend.map((point) => (
-                                <div key={point.label} className="flex flex-col items-center gap-3 w-full group">
-                                    <span className="text-[10px] font-bold text-zinc-400 group-hover:text-black transition-colors">
+                                <div key={point.label} className="flex flex-col items-center gap-2 w-full group">
+                                    <span className="text-[9px] font-bold text-zinc-400 group-hover:text-black transition-colors">
                                         {point.applications}
                                     </span>
                                     <div 
-                                        className="w-full bg-zinc-200 hover:bg-black transition-colors cursor-pointer" 
-                                        style={{ height: `${Math.max(10, point.applications * 2)}px` }}
+                                        className="w-full bg-zinc-200 hover:bg-black transition-colors cursor-pointer rounded-t-sm" 
+                                        style={{ height: `${Math.max(10, point.applications * 1.5)}px` }}
                                     />
-                                    <span className="text-[10px] font-bold uppercase tracking-tighter">{point.label}</span>
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">{point.label}</span>
                                 </div>
                             ))}
                         </div>
@@ -109,46 +109,46 @@ export default function EmployerReportsPage() {
                 </div>
 
                 {/* Vacancy Performance Table Section */}
-                <section className="bg-white border border-zinc-100 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-zinc-400" />
-                        <h3 className="text-[10px] font-bold uppercase tracking-widest">Vacancy Performance</h3>
+                <section className="bg-white border border-zinc-200 shadow-sm rounded-sm overflow-hidden mb-12">
+                    <div className="px-5 py-4 border-b border-zinc-200 flex items-center gap-2">
+                        <FileText className="h-3.5 w-3.5 text-zinc-400" />
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Vacancy Performance</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="bg-zinc-50 text-[10px] font-black uppercase tracking-wider text-zinc-500 border-b border-zinc-100">
-                                    <th className="px-6 py-4">Vacancy</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4">Applications</th>
-                                    <th className="px-6 py-4 text-right">Deadline</th>
+                                <tr className="bg-zinc-50 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-200">
+                                    <th className="px-5 py-3 whitespace-nowrap">Vacancy</th>
+                                    <th className="px-5 py-3 whitespace-nowrap">Status</th>
+                                    <th className="px-5 py-3 whitespace-nowrap">Applications</th>
+                                    <th className="px-5 py-3 text-right whitespace-nowrap">Deadline</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">
                                 {vacancyPerformance.map((vacancy) => (
-                                    <tr key={vacancy.id} className="hover:bg-zinc-50 transition-colors group">
-                                        <td className="px-6 py-5">
+                                    <tr key={vacancy.id} className="hover:bg-zinc-50/50 transition-colors group">
+                                        <td className="px-5 py-3.5">
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-black group-hover:underline cursor-pointer">
+                                                <span className="text-xs font-bold text-black group-hover:underline cursor-pointer truncate max-w-[200px] sm:max-w-xs">
                                                     {vacancy.title}
                                                 </span>
-                                                <span className="text-[10px] text-zinc-400 uppercase tracking-tighter font-medium">
+                                                <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mt-0.5">
                                                     {vacancy.location || 'Remote'}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
-                                                vacancy.status === 'published' ? 'bg-black text-white' : 'bg-zinc-200 text-zinc-600'
+                                        <td className="px-5 py-3.5">
+                                            <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-sm ${
+                                                vacancy.status === 'published' ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-500 border border-zinc-200'
                                             }`}>
                                                 {vacancy.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-sm font-black">{vacancy.applications_count}</span>
+                                        <td className="px-5 py-3.5">
+                                            <span className="text-xs font-black text-black">{vacancy.applications_count}</span>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
-                                            <span className="text-xs font-medium text-zinc-500">
+                                        <td className="px-5 py-3.5 text-right">
+                                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                                                 {vacancy.application_deadline ?? 'Not set'}
                                             </span>
                                         </td>
@@ -157,15 +157,15 @@ export default function EmployerReportsPage() {
                             </tbody>
                         </table>
                     </div>
-                    <div className="px-6 py-4 bg-zinc-50 border-t border-zinc-100 flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                    <div className="px-5 py-3 bg-zinc-50 border-t border-zinc-200 flex justify-between items-center">
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                             Showing {vacancyPerformance.length} Vacancies
                         </span>
-                        <div className="flex gap-2">
-                            <button className="p-2 bg-white border border-zinc-200 hover:bg-black hover:text-white transition-colors">
+                        <div className="flex gap-1.5">
+                            <button className="p-1.5 bg-white border border-zinc-200 hover:bg-black hover:text-white hover:border-black transition-colors rounded-sm">
                                 <ChevronLeft className="h-3 w-3" />
                             </button>
-                            <button className="p-2 bg-white border border-zinc-200 hover:bg-black hover:text-white transition-colors">
+                            <button className="p-1.5 bg-white border border-zinc-200 hover:bg-black hover:text-white hover:border-black transition-colors rounded-sm">
                                 <ChevronRight className="h-3 w-3" />
                             </button>
                         </div>
@@ -188,11 +188,11 @@ function MetricRow({
     isBold?: boolean;
 }) {
     return (
-        <div className={`flex items-center justify-between p-3 transition-colors ${isPrimary ? 'bg-zinc-100' : 'bg-zinc-50/50'}`}>
-            <span className={`text-[11px] font-bold uppercase tracking-tight ${isBold ? 'text-black' : 'text-zinc-500'}`}>
+        <div className={`flex items-center justify-between py-2 px-3 rounded-sm transition-colors ${isPrimary ? 'bg-zinc-100' : 'bg-zinc-50/50 hover:bg-zinc-50'}`}>
+            <span className={`text-[9px] font-bold uppercase tracking-widest ${isBold ? 'text-black' : 'text-zinc-500'}`}>
                 {label}
             </span>
-            <span className={`text-sm font-black ${isPrimary ? 'text-black' : ''}`}>
+            <span className={`text-xs font-black ${isPrimary || isBold ? 'text-black' : 'text-zinc-700'}`}>
                 {value}
             </span>
         </div>

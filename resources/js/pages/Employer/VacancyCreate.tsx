@@ -1,8 +1,9 @@
 import { usePage } from '@inertiajs/react';
-import { Lightbulb, History } from 'lucide-react';
+import { Briefcase, Lightbulb, History } from 'lucide-react';
+
 import { EmployerHubLayout } from './components/hub';
 import { VacancyForm } from './components/VacancyForm';
-import type { Company, User } from './dummyData';
+import type { Company, User, Vacancy } from './dummyData';
 
 type PageProps = {
     company: Company;
@@ -30,23 +31,29 @@ export default function EmployerVacancyCreatePage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-10">
-                <header className="mb-10">
-                    <h1 className="text-4xl font-black tracking-tighter text-black mb-2">
-                        Post a New Job
-                    </h1>
-                    <p className="text-zinc-500 max-w-2xl text-sm font-medium tracking-tight">
-                        Create a new vacancy using the existing employer dashboard workflow.
-                    </p>
+            <div className="w-full px-6 md:px-8">
+                {/* Header Section */}
+                <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">
+                            Post a New Job.
+                        </h1>
+                        <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
+                            Create a new vacancy using the existing employer dashboard workflow.
+                        </p>
+                    </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12">
-                    <section className="space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+                    
+                    {/* Left Column: Form Section */}
+                    <section className="space-y-6">
                         <div className="bg-transparent">
-                            <h2 className="text-lg font-bold tracking-tight mb-6 border-b border-zinc-200 pb-3 text-black">
-                                Vacancy Details
+                            <h2 className="text-sm font-bold tracking-tight mb-4 border-b border-zinc-200 pb-2 text-black uppercase flex items-center gap-2">
+                                <Briefcase className="h-4 w-4 text-zinc-400" /> Vacancy Details
                             </h2>
 
+                            {/* The VacancyForm component handles the actual inputs/dropdowns */}
                             <VacancyForm
                                 vacancy={vacancy}
                                 options={options}
@@ -57,42 +64,49 @@ export default function EmployerVacancyCreatePage() {
                         </div>
                     </section>
 
-                    <aside className="space-y-6">
-                        <div className="bg-black p-6 rounded-lg shadow-[0px_40px_80px_-40px_rgba(0,0,0,0.04)] text-white">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="w-12 h-12 bg-white/10 flex items-center justify-center rounded-sm text-white">
-                                    <Lightbulb className="h-6 w-6" />
+                    {/* Right Column: Consistent Sidebar Cards */}
+                    <aside className="space-y-5">
+                        
+                        {/* Pro-Tip Card */}
+                        <div className="bg-black p-5 rounded-sm shadow-sm text-white relative overflow-hidden group">
+                            {/* Color Accent glow on hover */}
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-amber-500/20"></div>
+                            <div className="flex items-start justify-between mb-3 relative z-10">
+                                <div className="w-8 h-8 bg-amber-500/20 flex items-center justify-center rounded-sm text-amber-400">
+                                    <Lightbulb className="h-4 w-4" />
                                 </div>
                             </div>
-                            <h3 className="text-lg font-bold tracking-tight text-white mb-2">Pro-Tip</h3>
-                            <p className="text-zinc-400 text-xs leading-relaxed">
-                                Complete descriptions and specific locations receive 40% more qualified candidates within the first 48 hours.
+                            <h3 className="text-sm font-bold tracking-tight text-white mb-1.5 uppercase relative z-10">Pro-Tip</h3>
+                            <p className="text-zinc-400 text-[10px] leading-relaxed relative z-10">
+                                Complete descriptions and specific locations receive 40% more qualified candidates within the first 48 hours. Make sure your perks stand out.
                             </p>
                         </div>
 
-                        <div className="bg-zinc-50 p-6 border border-zinc-200 rounded-lg">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-400 mb-6 flex items-center gap-2">
-                                <History size={14} /> Drafts
+                        {/* Drafts List */}
+                        <div className="bg-zinc-50 p-5 border border-zinc-200 rounded-sm">
+                            <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-400 mb-4 flex items-center gap-1.5">
+                                <History className="h-3.5 w-3.5 text-blue-500" /> Drafts
                             </h4>
-                            <div className="space-y-4">
-                                <div className="group cursor-pointer">
-                                    <p className="text-[13px] font-bold text-black group-hover:underline">
+                            <div className="space-y-3">
+                                <div className="group cursor-pointer border-b border-zinc-200/60 pb-3">
+                                    <p className="text-xs font-black text-black group-hover:text-blue-600 transition-colors uppercase truncate">
                                         Visual Designer Intern
                                     </p>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-medium mt-1">
+                                    <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mt-1">
                                         Edited 2h ago
                                     </p>
                                 </div>
                                 <div className="group cursor-pointer">
-                                    <p className="text-[13px] font-bold text-black group-hover:underline">
+                                    <p className="text-xs font-black text-black group-hover:text-blue-600 transition-colors uppercase truncate">
                                         Senior Backend Eng
                                     </p>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-medium mt-1">
+                                    <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest mt-1">
                                         Edited yesterday
                                     </p>
                                 </div>
                             </div>
                         </div>
+
                     </aside>
                 </div>
             </div>

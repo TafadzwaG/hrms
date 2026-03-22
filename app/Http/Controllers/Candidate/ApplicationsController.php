@@ -21,10 +21,26 @@ class ApplicationsController extends BaseCandidateHubController
         }
 
         $status = $request->string('status')->toString();
+        $search = trim($request->string('search')->toString());
 
         $applications = VacancyApplication::query()
             ->where('candidate_profile_id', $candidate->id)
             ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->when($search !== '', function ($query) use ($search) {
+                $query->whereHas('vacancy', function ($vacancyQuery) use ($search) {
+                    $vacancyQuery
+                        ->withoutGlobalScope(OrganizationScope::class)
+                        ->where(function ($vacancySearchQuery) use ($search) {
+                            $vacancySearchQuery
+                                ->where('title', 'like', "%{$search}%")
+                                ->orWhere('location', 'like', "%{$search}%")
+                                ->orWhere('department', 'like', "%{$search}%")
+                                ->orWhereHas('company', fn ($companyQuery) => $companyQuery
+                                    ->withoutGlobalScope(OrganizationScope::class)
+                                    ->where('company_name', 'like', "%{$search}%"));
+                        });
+                });
+            })
             ->with([
                 'interviews' => fn ($query) => $query->latest('scheduled_at'),
                 'resume',
@@ -42,6 +58,7 @@ class ApplicationsController extends BaseCandidateHubController
             'applications' => $applications,
             'filters' => [
                 'status' => $status,
+                'search' => $search,
             ],
             'statuses' => \App\Models\VacancyApplication::STATUSES,
         ]);

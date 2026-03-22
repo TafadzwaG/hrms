@@ -3,13 +3,9 @@ import { GraduationCap, Edit2, Trash2, Calendar, Award } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button';
 import InputError from '@/components/input-error';
-import {
-    CandidateEmptyState,
-    CandidateHubLayout,
-    formatCandidateDate,
-} from './components/hub';
+import { Button } from '@/components/ui/button';
+import { CandidateHubLayout } from './components/hub';
 import type { CandidateEducation, CandidateUser } from './dummyData';
 
 type PageProps = {
@@ -62,82 +58,86 @@ export default function CandidateEducationPage() {
         <CandidateHubLayout
             title="Education"
             active="education"
+            subtitle='Academic Qualifications'
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-10">
-                <div className="mb-12">
-                    <h2 className="text-[2.5rem] font-black tracking-tighter leading-none text-black mb-2 uppercase">Education.</h2>
-                    <p className="text-zinc-500 max-w-xl font-medium">Manage your academic history and certifications.</p>
+            <div className="w-full px-6 md:px-8">
+                {/* Page Title */}
+                <div className="mb-8">
+                    <h1 className="text-4xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Education.</h1>
+                    <p className="text-zinc-500 text-sm font-medium max-w-xl">Manage your academic history and certifications.</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                    <div className="lg:col-span-5 space-y-8">
-                        <div className="bg-zinc-50 border border-zinc-200 p-8 rounded-xl shadow-sm">
-                            <div className="flex items-center gap-3 mb-8 border-b border-zinc-200 pb-4">
-                                <GraduationCap className="h-5 w-5 text-black" />
-                                <h3 className="text-lg font-bold tracking-tight text-black uppercase">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    {/* Left Column: Form */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-sm shadow-sm">
+                            <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 pb-3">
+                                <GraduationCap className="h-4 w-4 text-black" />
+                                <h3 className="text-sm font-bold tracking-tight text-black uppercase">
                                     {editingEducationId ? 'Edit Education' : 'Add Education'}
                                 </h3>
                             </div>
 
-                            <form className="space-y-6">
+                            <form className="space-y-5">
                                 <FormField label="Institution" error={form.errors.institution}>
-                                    <input
-                                        value={form.data.institution}
-                                        onChange={(event) => form.setData('institution', event.target.value)}
-                                        className={underlinedInput}
-                                        placeholder="e.g. Stanford University"
+                                    <input 
+                                        value={form.data.institution} 
+                                        onChange={(event) => form.setData('institution', event.target.value)} 
+                                        className={underlinedInput} 
+                                        placeholder="e.g. Stanford University" 
                                     />
                                 </FormField>
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-5">
                                     <FormField label="Qualification" error={form.errors.qualification}>
-                                        <input
-                                            value={form.data.qualification}
-                                            onChange={(event) => form.setData('qualification', event.target.value)}
-                                            className={underlinedInput}
-                                            placeholder="e.g. Bachelor's"
+                                        <input 
+                                            value={form.data.qualification} 
+                                            onChange={(event) => form.setData('qualification', event.target.value)} 
+                                            className={underlinedInput} 
+                                            placeholder="e.g. Bachelor's" 
                                         />
                                     </FormField>
                                     <FormField label="Grade" error={form.errors.grade}>
-                                        <input
-                                            value={form.data.grade}
-                                            onChange={(event) => form.setData('grade', event.target.value)}
-                                            className={underlinedInput}
-                                            placeholder="e.g. 4.0 GPA"
+                                        <input 
+                                            value={form.data.grade} 
+                                            onChange={(event) => form.setData('grade', event.target.value)} 
+                                            className={underlinedInput} 
+                                            placeholder="e.g. 4.0 GPA" 
                                         />
                                     </FormField>
                                 </div>
 
                                 <FormField label="Field of Study" error={form.errors.field_of_study}>
-                                    <input
-                                        value={form.data.field_of_study}
-                                        onChange={(event) => form.setData('field_of_study', event.target.value)}
-                                        className={underlinedInput}
-                                        placeholder="e.g. Computer Science"
+                                    <input 
+                                        value={form.data.field_of_study} 
+                                        onChange={(event) => form.setData('field_of_study', event.target.value)} 
+                                        className={underlinedInput} 
+                                        placeholder="e.g. Computer Science" 
                                     />
                                 </FormField>
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-5">
                                     <FormField label="Start Date" error={form.errors.start_date}>
-                                        <MonthYearInput
-                                            value={form.data.start_date}
-                                            onChange={(value) => form.setData('start_date', value)}
+                                        <MonthYearInput 
+                                            value={form.data.start_date} 
+                                            onChange={(value) => form.setData('start_date', value)} 
                                         />
                                     </FormField>
                                     <FormField label="End Date" error={form.errors.end_date}>
-                                        <MonthYearInput
-                                            value={form.data.end_date}
-                                            onChange={(value) => form.setData('end_date', value)}
+                                        <MonthYearInput 
+                                            value={form.data.end_date} 
+                                            onChange={(value) => form.setData('end_date', value)} 
                                         />
                                     </FormField>
                                 </div>
 
-                                <div className="flex flex-wrap gap-4 pt-4">
-                                    <Button
-                                        type="button"
-                                        className="flex-1 bg-black text-white py-6 h-auto text-xs font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors rounded-sm"
-                                        onClick={submit}
+                                <div className="flex flex-wrap gap-3 pt-3">
+                                    <Button 
+                                        type="button" 
+                                        className="flex-1 bg-black text-white py-5 h-auto text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors rounded-sm"
+                                        onClick={submit} 
                                         disabled={form.processing}
                                     >
                                         {editingEducationId ? 'Update' : 'Add Record'}
@@ -146,7 +146,7 @@ export default function CandidateEducationPage() {
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            className="flex-1 px-8 py-6 h-auto border-zinc-200 text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-50 transition-colors rounded-sm"
+                                            className="flex-1 px-6 py-5 h-auto border-zinc-200 text-black text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-50 transition-colors rounded-sm"
                                             onClick={() => {
                                                 setEditingEducationId(null);
                                                 form.reset();
@@ -160,30 +160,30 @@ export default function CandidateEducationPage() {
                         </div>
                     </div>
 
+                    {/* Right Column: History */}
                     <div className="lg:col-span-7 space-y-4">
-                        <div className="flex items-end justify-between mb-8 border-b border-zinc-200 pb-4">
+                        <div className="flex items-end justify-between mb-6 border-b border-zinc-200 pb-3">
                             <div>
-                                <h2 className="text-2xl font-bold tracking-tight text-black">Education History</h2>
-                                <p className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 mt-1">{educations.length} Records</p>
+                                <h2 className="text-lg font-bold tracking-tight text-black uppercase">Education History</h2>
+                                <p className="text-[9px] uppercase font-bold tracking-widest text-zinc-400 mt-0.5">{educations.length} Records</p>
                             </div>
                         </div>
 
                         {educations.length > 0 ? (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 {educations.map((education, index) => (
-                                    <div key={education.id} className="bg-white p-6 flex items-start gap-5 group relative shadow-sm border border-zinc-200 hover:border-black transition-all rounded-lg overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-black opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div key={education.id} className={`bg-white p-5 flex items-start gap-4 group relative shadow-sm border ${index === 0 ? 'border-zinc-300' : 'border-zinc-200'} hover:border-black transition-all rounded-sm overflow-hidden`}>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <h3 className="font-bold text-lg text-black">{education.qualification}</h3>
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-1">{education.institution}</p>
+                                                    <h3 className="font-black text-base text-black uppercase tracking-tighter">{education.qualification}</h3>
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mt-0.5">{education.institution}</p>
                                                     {education.field_of_study && (
-                                                        <p className="text-sm font-medium text-black mt-2">{education.field_of_study}</p>
+                                                        <p className="text-xs font-semibold text-black mt-1.5">{education.field_of_study}</p>
                                                     )}
                                                 </div>
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                                    <button
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                    <button 
                                                         onClick={() => {
                                                             setEditingEducationId(education.id);
                                                             form.setData({
@@ -195,30 +195,30 @@ export default function CandidateEducationPage() {
                                                                 grade: education.grade ?? '',
                                                             });
                                                         }}
-                                                        className="p-2 text-zinc-400 hover:text-black transition-colors rounded-md hover:bg-zinc-100"
+                                                        className="p-1.5 text-zinc-400 hover:text-black transition-colors rounded-sm hover:bg-zinc-100"
                                                     >
-                                                        <Edit2 size={16} />
+                                                        <Edit2 size={14} />
                                                     </button>
-                                                    <button
+                                                    <button 
                                                         onClick={() => window.confirm('Delete this education record?') && form.delete(`/candidate/education/${education.id}`, { preserveScroll: true })}
-                                                        className="p-2 text-red-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50"
+                                                        className="p-1.5 text-red-400 hover:text-red-600 transition-colors rounded-sm hover:bg-red-50"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <Trash2 size={14} />
                                                     </button>
                                                 </div>
                                             </div>
-
+                                            
                                             <div className="flex gap-4 pt-3 mt-3 border-t border-zinc-100">
                                                 <div className="flex items-center gap-1.5 text-zinc-500">
-                                                    <Calendar size={14} />
-                                                    <span className="text-xs font-medium">
-                                                        {formatCandidateDate(education.start_date)} — {formatCandidateDate(education.end_date)}
+                                                    <Calendar size={12} />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                                        {formatRange(education.start_date, education.end_date)}
                                                     </span>
                                                 </div>
                                                 {education.grade && (
                                                     <div className="flex items-center gap-1.5 text-zinc-500">
-                                                        <Award size={14} />
-                                                        <span className="text-xs font-medium italic">Grade: {education.grade}</span>
+                                                        <Award size={12} />
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest">Grade: {education.grade}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -227,12 +227,12 @@ export default function CandidateEducationPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 px-4 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
-                                <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center mb-4">
-                                    <GraduationCap className="text-zinc-400 h-8 w-8" />
+                            <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-zinc-200 rounded-sm bg-zinc-50/50">
+                                <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mb-3">
+                                    <GraduationCap className="text-zinc-400 h-6 w-6" />
                                 </div>
-                                <h4 className="text-lg font-bold tracking-tight text-black">No education records added yet</h4>
-                                <p className="text-sm text-zinc-500 max-w-[280px] text-center mt-1">Start by adding your first qualification using the form on the left.</p>
+                                <h4 className="text-sm font-black uppercase tracking-widest text-black">No records added</h4>
+                                <p className="text-xs text-zinc-500 max-w-[280px] text-center mt-1">Start by adding your first qualification on the left.</p>
                             </div>
                         )}
                     </div>
@@ -244,8 +244,8 @@ export default function CandidateEducationPage() {
 
 function FormField({ label, error, children, className }: { label: string; error?: string; children: ReactNode; className?: string }) {
     return (
-        <div className={`space-y-1.5 ${className ?? ''}`}>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+        <div className={`space-y-1 ${className ?? ''}`}>
+            <label className="block text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
                 {label}
             </label>
             {children}
@@ -286,7 +286,7 @@ function MonthYearInput({
     };
 
     return (
-        <div className="grid grid-cols-[1fr_120px] gap-4">
+        <div className="grid grid-cols-[1fr_80px] gap-3">
             <input
                 type="text"
                 inputMode="numeric"
@@ -303,7 +303,7 @@ function MonthYearInput({
                 onChange={(e) => handleMonthChange(e.target.value)}
                 className={underlinedInput}
             >
-                <option value="">Month</option>
+                <option value="">Mo</option>
                 <option value="01">Jan</option>
                 <option value="02">Feb</option>
                 <option value="03">Mar</option>
@@ -321,4 +321,11 @@ function MonthYearInput({
     );
 }
 
-const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-300 focus:ring-0 focus:border-black px-0 py-2.5 transition-all text-sm font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none";
+function formatRange(start?: string | null, end?: string | null): string {
+    if (!start && !end) return 'Dates not provided';
+    const startLabel = start ? new Date(start).getFullYear() : 'Unknown';
+    const endLabel = end ? new Date(end).getFullYear() : 'Present';
+    return `${startLabel} — ${endLabel}`;
+}
+
+const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none";

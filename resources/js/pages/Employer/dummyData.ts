@@ -57,6 +57,7 @@ export type RecentApplication = {
     status: string;
     applied_at: string;
     applied_at_date?: string | null;
+    created_at: string | null;
     cover_letter?: string | null;
     notes?: string | null;
     resume?: {
@@ -283,53 +284,7 @@ export const vacancies: Vacancy[] = [
     },
 ];
 
-export const recentApplications: RecentApplication[] = [
-    {
-        id: 1,
-        candidate_name: 'Tafadzwa Moyo',
-        candidate_headline: 'Frontend Developer',
-        vacancy_title: 'Senior Frontend Developer',
-        status: 'new',
-        applied_at: '2 hours ago',
-        match_score: 98,
-        match: {
-            score: 98,
-            label: 'Strong Match',
-            vacancy_title: 'Senior Frontend Developer',
-            reasons: ['Matches your React and Laravel stack.', 'Experience level lines up with this role.'],
-        },
-    },
-    {
-        id: 2,
-        candidate_name: 'Nomsa Dube',
-        candidate_headline: 'HR Specialist',
-        vacancy_title: 'HR Business Partner',
-        status: 'shortlisted',
-        applied_at: '4 hours ago',
-        match_score: 96,
-        match: {
-            score: 96,
-            label: 'Strong Match',
-            vacancy_title: 'HR Business Partner',
-            reasons: ['Role keywords align with your profile and experience.'],
-        },
-    },
-    {
-        id: 3,
-        candidate_name: 'Brian Chitauro',
-        candidate_headline: 'Finance Lead',
-        vacancy_title: 'Finance Manager',
-        status: 'interview',
-        applied_at: 'Today, 08:30 AM',
-        match_score: 94,
-        match: {
-            score: 94,
-            label: 'Strong Match',
-            vacancy_title: 'Finance Manager',
-            reasons: ['Experience level lines up with this role.'],
-        },
-    },
-];
+
 
 export const applicationsByStatus: Record<string, number> = {
     new: 24,

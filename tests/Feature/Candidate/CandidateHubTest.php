@@ -210,6 +210,64 @@ test('candidate dashboard and applications pages render database-backed data', f
         );
 });
 
+test('candidate applications search filters by role company and location', function () {
+    $user = User::factory()->create();
+    $candidate = candidateHubCreateProfile($user);
+    $resume = candidateHubCreateResume($candidate);
+
+    $remoteCompany = candidateHubCreateCompany([
+        'company_name' => 'Atlas Remote Labs',
+    ]);
+    $onsiteCompany = candidateHubCreateCompany([
+        'company_name' => 'Granite Systems',
+    ]);
+
+    $remoteVacancy = candidateHubCreateVacancy($remoteCompany, [
+        'title' => 'React Platform Engineer',
+        'location' => 'Remote',
+    ]);
+    $onsiteVacancy = candidateHubCreateVacancy($onsiteCompany, [
+        'title' => 'Payroll Analyst',
+        'location' => 'Bulawayo',
+        'department' => 'Finance',
+    ]);
+
+    candidateHubCreateApplication($candidate, $remoteVacancy, $resume);
+    candidateHubCreateApplication($candidate, $onsiteVacancy, $resume, [
+        'applied_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('candidate.applications', ['search' => 'React']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/Applications')
+            ->where('filters.search', 'React')
+            ->has('applications.data', 1)
+            ->where('applications.data.0.vacancy_title', 'React Platform Engineer')
+        );
+
+    $this->actingAs($user)
+        ->get(route('candidate.applications', ['search' => 'Atlas Remote Labs']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/Applications')
+            ->where('filters.search', 'Atlas Remote Labs')
+            ->has('applications.data', 1)
+            ->where('applications.data.0.company_name', 'Atlas Remote Labs')
+        );
+
+    $this->actingAs($user)
+        ->get(route('candidate.applications', ['search' => 'Bulawayo']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/Applications')
+            ->where('filters.search', 'Bulawayo')
+            ->has('applications.data', 1)
+            ->where('applications.data.0.location', 'Bulawayo')
+        );
+});
+
 test('candidate can update profile details summary and work experience records', function () {
     $user = User::factory()->create();
     $candidate = candidateHubCreateProfile($user);

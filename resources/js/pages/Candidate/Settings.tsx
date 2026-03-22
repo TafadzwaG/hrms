@@ -1,6 +1,16 @@
 import { useForm, usePage } from '@inertiajs/react';
-import { Settings, Info, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import { 
+    Settings, 
+    Info, 
+    ShieldCheck, 
+    CheckCircle2, 
+    Bell, 
+    Mail, 
+    Globe2, 
+    Laptop, 
+    Building2 
+} from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { CandidateHubLayout } from './components/hub';
@@ -31,48 +41,69 @@ export default function CandidateSettingsPage() {
         );
     };
 
+    const getModeStyles = (mode: string, checked: boolean) => {
+        if (!checked) return 'bg-white border-zinc-200 text-black hover:border-black';
+        
+        const normalized = mode.toLowerCase();
+        if (normalized.includes('remote')) return 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-600/20';
+        if (normalized.includes('hybrid')) return 'bg-violet-600 border-violet-600 text-white shadow-sm shadow-violet-600/20';
+        if (normalized.includes('site') || normalized.includes('office')) return 'bg-orange-500 border-orange-500 text-white shadow-sm shadow-orange-500/20';
+        
+        return 'bg-black border-black text-white';
+    };
+
+    const getModeIcon = (mode: string) => {
+        const normalized = mode.toLowerCase();
+        if (normalized.includes('remote')) return <Globe2 className="h-4 w-4 shrink-0" />;
+        if (normalized.includes('hybrid')) return <Laptop className="h-4 w-4 shrink-0" />;
+        return <Building2 className="h-4 w-4 shrink-0" />;
+    };
+
     return (
         <CandidateHubLayout
             title="Settings"
             active="settings"
-            subtitle="Manage your discovery preferences and notification architecture for an optimized career search."
+            subtitle='Configure your account.'
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-10">
+            <div className="w-full px-6 md:px-8">
                 {/* Page Header (Asymmetric Layout) */}
-                <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-black tracking-tighter text-black mb-2 uppercase">Account Configuration</h1>
-                        {/* <p className="text-zinc-500 font-medium text-lg max-w-lg">Manage your discovery preferences and notification architecture for an optimized career search.</p> */}
+                        <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">Account Configuration.</h1>
+                        <p className="text-zinc-500 font-medium text-sm max-w-lg">Manage your discovery preferences and notification architecture.</p>
                     </div>
-                    <div className="text-right">
-                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-400 px-2 py-1 border border-zinc-200">Node_ID: 0x82f1a</span>
+                    <div className="text-left md:text-right">
+                        <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-zinc-400 px-2 py-1 border border-zinc-200 rounded-sm">Node_ID: 0x82f1a</span>
                     </div>
                 </div>
 
                 {/* Main Preferences Card */}
-                <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-zinc-200">
-                    <div className="p-8 border-b border-zinc-200">
-                        <div className="flex items-center gap-3 mb-8">
-                            <Settings className="text-black h-6 w-6" />
-                            <h2 className="text-2xl font-bold tracking-tight text-black">Preferences</h2>
+                <div className="bg-white shadow-sm rounded-sm overflow-hidden border border-zinc-200">
+                    <div className="p-6 border-b border-zinc-200">
+                        <div className="flex items-center gap-2 mb-8">
+                            <Settings className="text-black h-4 w-4" />
+                            <h2 className="text-lg font-bold tracking-tight text-black uppercase">Preferences</h2>
                         </div>
 
                         {/* Toggle Rows */}
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             <CustomToggleRow
+                                icon={<Bell className="h-5 w-5" />}
                                 label="Job alerts"
                                 description="Receive notifications when new jobs match your profile."
                                 checked={form.data.job_alerts}
                                 onChange={(checked) => form.setData('job_alerts', checked)}
                             />
                             <CustomToggleRow
+                                icon={<Mail className="h-5 w-5" />}
                                 label="Newsletter"
                                 description="Receive platform updates and career resources."
                                 checked={form.data.newsletter}
                                 onChange={(checked) => form.setData('newsletter', checked)}
                             />
                             <CustomToggleRow
+                                icon={<Globe2 className="h-5 w-5" />}
                                 label="Remote only"
                                 description="Prioritize remote-first opportunities in your recommendations."
                                 checked={form.data.remote_only}
@@ -82,9 +113,9 @@ export default function CandidateSettingsPage() {
                     </div>
 
                     {/* Work Modes Section */}
-                    <div className="p-8 bg-zinc-50">
-                        <h3 className="text-sm font-bold tracking-widest uppercase text-zinc-500 mb-6">Preferred Work Modes</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-6 bg-zinc-50 border-b border-zinc-200">
+                        <h3 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 mb-4">Preferred Work Modes</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             {workModes.map((mode) => {
                                 const isChecked = form.data.preferred_work_modes.includes(mode);
                                 return (
@@ -95,11 +126,14 @@ export default function CandidateSettingsPage() {
                                             checked={isChecked}
                                             onChange={() => toggleWorkMode(mode)}
                                         />
-                                        <div className={`flex items-center justify-between px-5 py-4 border rounded transition-all duration-200 ${isChecked ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-black'}`}>
-                                            <span className="font-bold uppercase text-xs tracking-widest">
-                                                {mode.replace(/_/g, ' ')}
-                                            </span>
-                                            <CheckCircle2 className={`h-5 w-5 transition-opacity ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
+                                        <div className={`flex items-center justify-between px-4 py-3 border rounded-sm transition-all duration-200 ${getModeStyles(mode, isChecked)}`}>
+                                            <div className="flex items-center gap-2.5">
+                                                {getModeIcon(mode)}
+                                                <span className="font-bold uppercase text-[10px] tracking-widest">
+                                                    {mode.replace(/_/g, ' ')}
+                                                </span>
+                                            </div>
+                                            <CheckCircle2 className={`h-4 w-4 transition-opacity ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
                                         </div>
                                     </label>
                                 );
@@ -108,9 +142,9 @@ export default function CandidateSettingsPage() {
                     </div>
 
                     {/* Actions Footer */}
-                    <div className="p-8 flex justify-end bg-white">
+                    <div className="p-6 flex justify-end bg-white">
                         <Button 
-                            className="bg-black text-white px-8 py-6 font-black tracking-widest text-xs uppercase rounded-md active:scale-[0.98] transition-all hover:bg-zinc-800 h-auto"
+                            className="bg-black text-white px-6 py-4 font-black tracking-widest text-[10px] uppercase rounded-sm active:scale-[0.98] transition-all hover:bg-zinc-800 h-auto w-full sm:w-auto"
                             onClick={() => form.put('/candidate/settings', { preserveScroll: true })}
                             disabled={form.processing}
                         >
@@ -120,19 +154,19 @@ export default function CandidateSettingsPage() {
                 </div>
 
                 {/* Bento-style utility bits */}
-                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-zinc-50 p-6 border border-zinc-200 rounded-lg flex gap-4 items-start">
-                        <Info className="text-zinc-400 h-5 w-5 shrink-0" />
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-zinc-50 p-5 border border-zinc-200 rounded-sm flex gap-3 items-start">
+                        <Info className="text-zinc-400 h-4 w-4 shrink-0 mt-0.5" />
                         <div>
-                            <h4 className="font-bold text-sm uppercase tracking-tighter text-black">System Integrity</h4>
-                            <p className="text-sm text-zinc-500 mt-1">Changes are synced across all active sessions in real-time. Last updated recently.</p>
+                            <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-black">System Integrity</h4>
+                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">Changes are synced across all active sessions in real-time. Last updated recently.</p>
                         </div>
                     </div>
-                    <div className="bg-zinc-50 p-6 border border-zinc-200 rounded-lg flex gap-4 items-start">
-                        <ShieldCheck className="text-zinc-400 h-5 w-5 shrink-0" />
+                    <div className="bg-zinc-50 p-5 border border-zinc-200 rounded-sm flex gap-3 items-start">
+                        <ShieldCheck className="text-zinc-400 h-4 w-4 shrink-0 mt-0.5" />
                         <div>
-                            <h4 className="font-bold text-sm uppercase tracking-tighter text-black">Privacy Protocol</h4>
-                            <p className="text-sm text-zinc-500 mt-1">Your preferences are encrypted and only used to filter matching job opportunities.</p>
+                            <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-black">Privacy Protocol</h4>
+                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">Your preferences are encrypted and only used to filter matching job opportunities.</p>
                         </div>
                     </div>
                 </div>
@@ -141,32 +175,40 @@ export default function CandidateSettingsPage() {
     );
 }
 
-/* Internal Custom Toggle Component based on the HTML reference */
+/* Internal Custom Toggle Component */
 function CustomToggleRow({ 
+    icon,
     label, 
     description, 
     checked, 
     onChange 
 }: { 
+    icon: ReactNode,
     label: string, 
     description: string, 
     checked: boolean, 
     onChange: (val: boolean) => void 
 }) {
     return (
-        <div className="flex items-start justify-between gap-6 group">
-            <div className="flex-grow">
-                <h3 className="font-bold text-black text-lg">{label}</h3>
-                <p className="text-zinc-500 text-sm mt-1 max-w-md">{description}</p>
+        <div className="flex items-start justify-between gap-4 group">
+            <div className="flex items-start gap-4 flex-grow">
+                <div className="mt-0.5 text-zinc-400 group-hover:text-black transition-colors">
+                    {icon}
+                </div>
+                <div>
+                    <h3 className="font-bold text-black text-sm uppercase">{label}</h3>
+                    <p className="text-zinc-500 text-xs mt-1 max-w-md">{description}</p>
+                </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer pt-1">
+            <label className="relative inline-flex items-center cursor-pointer pt-0.5 shrink-0">
                 <input 
                     type="checkbox" 
                     className="sr-only peer" 
                     checked={checked}
                     onChange={(e) => onChange(e.target.checked)}
                 />
-                <div className="w-11 h-6 bg-zinc-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black transition-colors"></div>
+                {/* Changed peer-checked:bg-black to peer-checked:bg-emerald-500 */}
+                <div className="w-9 h-5 bg-zinc-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 transition-colors"></div>
             </label>
         </div>
     );

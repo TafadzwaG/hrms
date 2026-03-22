@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::withdraw
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:50
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:67
  * @route '/candidate/applications/{application}/withdraw'
  */
 export const withdraw = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -94,7 +94,7 @@ withdraw.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::withdraw
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:50
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:67
  * @route '/candidate/applications/{application}/withdraw'
  */
 withdraw.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -122,7 +122,7 @@ withdraw.url = (args: { application: string | number } | [application: string | 
 
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::withdraw
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:50
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:67
  * @route '/candidate/applications/{application}/withdraw'
  */
 withdraw.patch = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -132,7 +132,7 @@ withdraw.patch = (args: { application: string | number } | [application: string 
 
     /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::withdraw
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:50
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:67
  * @route '/candidate/applications/{application}/withdraw'
  */
     const withdrawForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -147,7 +147,7 @@ withdraw.patch = (args: { application: string | number } | [application: string 
 
             /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::withdraw
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:50
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:67
  * @route '/candidate/applications/{application}/withdraw'
  */
         withdrawForm.patch = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
