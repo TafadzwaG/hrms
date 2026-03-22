@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ApplicationInterview;
 use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateProfile;
@@ -119,6 +120,24 @@ function candidateHubCreateApplication(CandidateProfile $candidate, Vacancy $vac
     ]);
 }
 
+function candidateHubCreateInterview(VacancyApplication $application, CompanyProfile $company, array $overrides = []): ApplicationInterview
+{
+    return ApplicationInterview::query()->create([
+        'vacancy_application_id' => $application->id,
+        'company_profile_id' => $company->id,
+        'candidate_profile_id' => $application->candidate_profile_id,
+        'vacancy_id' => $application->vacancy_id,
+        'scheduled_at' => now()->addDays(2),
+        'ends_at' => now()->addDays(2)->addHour(),
+        'timezone' => 'Africa/Johannesburg',
+        'meeting_type' => 'video',
+        'location' => 'Google Meet',
+        'instructions' => 'Join the interview five minutes early.',
+        'status' => 'scheduled',
+        ...$overrides,
+    ]);
+}
+
 test('candidate hub redirects authenticated users without profiles to registration', function () {
     $user = User::factory()->create();
 
@@ -176,6 +195,7 @@ test('candidate dashboard and applications pages render database-backed data', f
             ->has('resumes', 1)
             ->has('recommendedVacancies', 1)
             ->where('recommendedVacancies.0.title', $recommendedVacancy->title)
+            ->has('recommendedVacancies.0.match.reasons.0')
         );
 
     $this->actingAs($user)
@@ -184,6 +204,7 @@ test('candidate dashboard and applications pages render database-backed data', f
         ->assertInertia(fn (Assert $page) => $page
             ->component('Candidate/Applications')
             ->has('applications.data', 1)
+            ->where('applications.data.0.vacancy_id', $appliedVacancy->id)
             ->where('applications.data.0.vacancy_title', $appliedVacancy->title)
             ->where('applications.data.0.company_name', $company->company_name)
         );
@@ -396,9 +417,24 @@ test('candidate can upload download reprioritize and delete documents', function
         ->and($legacyDocument->fresh()->is_primary)->toBeTrue();
 
     $this->actingAs($user)
+        ->get(route('candidate.documents'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/Documents')
+            ->has('documents', 2)
+            ->has('documents.0.preview_url')
+            ->has('documents.1.preview_url')
+        );
+
+    $this->actingAs($user)
         ->get(route('candidate.documents.download', $document->id))
         ->assertOk()
         ->assertDownload('portfolio.pdf');
+
+    $this->actingAs($user)
+        ->get(route('candidate.documents.preview', $document->id))
+        ->assertOk()
+        ->assertHeader('Content-Disposition', 'inline; filename='.$document->file_name);
 
     $this->actingAs($user)
         ->from(route('candidate.documents'))
@@ -469,4 +505,124 @@ test('candidate can browse jobs apply with a primary resume and cannot apply twi
             ->where('candidate_profile_id', $candidate->id)
             ->count()
     )->toBe(1);
+});
+
+test('candidate browse jobs prioritizes personalized vacancy matches', function () {
+    $user = User::factory()->create();
+    $candidate = candidateHubCreateProfile($user, [
+        'headline' => 'React TypeScript Engineer',
+        'professional_summary' => 'Builds React platforms and frontend systems.',
+        'metadata' => [
+            'preferences' => [
+                'job_alerts' => true,
+                'newsletter' => false,
+                'remote_only' => true,
+                'preferred_work_modes' => ['remote'],
+            ],
+        ],
+    ]);
+
+    $candidate->skills()->create([
+        'name' => 'React',
+        'level' => 'expert',
+        'years_experience' => 5,
+    ]);
+
+    $company = candidateHubCreateCompany();
+
+    candidateHubCreateVacancy($company, [
+        'title' => 'Finance Operations Manager',
+        'department' => 'Finance',
+        'category' => 'finance',
+        'work_mode' => 'onsite',
+        'location' => 'Bulawayo',
+        'published_at' => now()->subMinute(),
+        'description' => 'Lead finance operations and reporting.',
+        'requirements' => 'Finance, accounting, compliance.',
+    ]);
+
+    $recommendedVacancy = candidateHubCreateVacancy($company, [
+        'title' => 'Frontend Platform Engineer',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'location' => 'Remote',
+        'published_at' => now()->subDay(),
+        'description' => 'Build React and TypeScript hiring workflows.',
+        'requirements' => 'React, TypeScript, frontend systems.',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('candidate.jobs'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/BrowseJobs')
+            ->where('vacancies.0.title', $recommendedVacancy->title)
+            ->where('vacancies.0.match.label', 'Strong Match')
+            ->has('vacancies.0.match.reasons.0')
+        );
+});
+
+test('candidate can view and respond to scheduled interviews from applications', function () {
+    $user = User::factory()->create();
+    $candidate = candidateHubCreateProfile($user);
+    $resume = candidateHubCreateResume($candidate);
+    $company = candidateHubCreateCompany();
+    $vacancy = candidateHubCreateVacancy($company);
+    $application = candidateHubCreateApplication($candidate, $vacancy, $resume, [
+        'status' => 'interview',
+    ]);
+
+    $interview = candidateHubCreateInterview($application, $company);
+
+    $this->actingAs($user)
+        ->get(route('candidate.applications'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Candidate/Applications')
+            ->has('applications.data.0.interviews', 1)
+            ->where('applications.data.0.interviews.0.status', 'scheduled')
+        );
+
+    $this->actingAs($user)
+        ->from(route('candidate.applications'))
+        ->patch(route('candidate.interviews.respond', $interview->id), [
+            'response' => 'accepted',
+            'candidate_response_note' => 'Confirmed. I will be available.',
+        ])
+        ->assertRedirect(route('candidate.applications'));
+
+    $interview->refresh();
+    expect($interview->status)->toBe('accepted')
+        ->and($interview->candidate_response_note)->toBe('Confirmed. I will be available.')
+        ->and($interview->responded_at)->not->toBeNull();
+});
+
+test('candidate can withdraw an active application from my applications', function () {
+    $user = User::factory()->create();
+    $candidate = candidateHubCreateProfile($user);
+    $resume = candidateHubCreateResume($candidate);
+    $company = candidateHubCreateCompany();
+    $vacancy = candidateHubCreateVacancy($company);
+    $application = candidateHubCreateApplication($candidate, $vacancy, $resume, [
+        'status' => 'interview',
+    ]);
+
+    $interview = candidateHubCreateInterview($application, $company, [
+        'status' => 'scheduled',
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('candidate.applications'))
+        ->patch(route('candidate.applications.withdraw', $application->id))
+        ->assertRedirect(route('candidate.applications'))
+        ->assertSessionHas('success', 'Application withdrawn successfully.');
+
+    $application->refresh();
+    $interview->refresh();
+
+    expect($application->status)->toBe('withdrawn')
+        ->and(data_get($application->metadata, 'withdrawn_from'))->toBe('candidate_hub')
+        ->and($interview->status)->toBe('cancelled')
+        ->and($interview->candidate_response_note)->toBe('Application withdrawn by candidate.');
 });

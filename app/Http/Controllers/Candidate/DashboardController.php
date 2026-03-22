@@ -19,7 +19,7 @@ class DashboardController extends BaseCandidateHubController
         }
 
         $candidate->loadCount(['applications', 'resumes', 'educations', 'experiences', 'skills']);
-        $candidate->load(['skills']);
+        $candidate->load(['skills', 'experiences', 'educations']);
 
         $applications = VacancyApplication::query()
             ->where('candidate_profile_id', $candidate->id)
@@ -37,15 +37,13 @@ class DashboardController extends BaseCandidateHubController
         $skills = $candidate->skills()->orderByDesc('years_experience')->orderBy('name')->get();
         $documents = $candidate->resumes()->latest('uploaded_at')->latest()->get();
 
-        $recommendedVacancies = $this->context->vacancyQuery()
-            ->where('status', 'published')
-            ->whereNotIn('id', $applications->pluck('vacancy_id'))
-            ->with(['company' => fn ($query) => $query->withoutGlobalScope(OrganizationScope::class)])
-            ->get()
-            ->sortByDesc(fn ($vacancy) => $this->vacancyMatchScore($candidate, $vacancy))
-            ->take(6)
-            ->values()
-            ->map(fn ($vacancy) => $this->presenter->vacancy($vacancy))
+        $recommendedVacancies = $this->exchange
+            ->recommendVacanciesForCandidate($candidate, 6, $applications->pluck('vacancy_id')->all())
+            ->map(fn ($vacancy) => $this->presenter->vacancy(
+                $vacancy,
+                null,
+                $this->exchange->matchInsightsForCandidate($candidate, $vacancy),
+            ))
             ->all();
 
         return Inertia::render('Candidate/Dashboard', [

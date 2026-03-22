@@ -62,8 +62,11 @@ export type RecentApplication = {
     resume?: {
         id: number;
         file_name: string;
+        download_url?: string;
     } | null;
     match_score?: number;
+    match?: EmployerMatch | null;
+    latest_interview?: EmployerInterview | null;
 };
 
 export type Metrics = {
@@ -80,6 +83,104 @@ export type RecommendedTalent = {
     initials: string;
     match_score?: number;
     location?: string | null;
+    match?: EmployerMatch | null;
+};
+
+export type EmployerMatch = {
+    score: number;
+    label: string;
+    reasons: string[];
+    vacancy_id?: number | null;
+    vacancy_title?: string | null;
+};
+
+export type EmployerInterview = {
+    id: number;
+    application_id: number;
+    candidate_id?: number | null;
+    vacancy_id?: number | null;
+    candidate_name?: string | null;
+    candidate_headline?: string | null;
+    vacancy_title?: string | null;
+    scheduled_at: string | null;
+    scheduled_at_label?: string | null;
+    ends_at?: string | null;
+    ends_at_label?: string | null;
+    timezone?: string | null;
+    meeting_type: string;
+    location?: string | null;
+    instructions?: string | null;
+    status: string;
+    status_label?: string | null;
+    candidate_response_note?: string | null;
+    responded_at?: string | null;
+    responded_at_label?: string | null;
+};
+
+export type EmployerCandidateProfile = {
+    id: number;
+    full_name: string;
+    email: string;
+    phone: string;
+    alt_phone?: string | null;
+    national_id?: string | null;
+    gender?: string | null;
+    date_of_birth?: string | null;
+    location?: string | null;
+    headline?: string | null;
+    professional_summary?: string | null;
+    expected_salary?: string | null;
+    salary_currency?: string | null;
+    years_experience?: number | null;
+    highest_education?: string | null;
+    profile_visibility_status?: string | null;
+    is_public?: boolean;
+    is_verified?: boolean;
+    stage?: string | null;
+    status?: string | null;
+    listing_activated_at?: string | null;
+    listing_expires_at?: string | null;
+    profile_views?: number;
+};
+
+export type EmployerCandidateEducation = {
+    id: number;
+    institution: string;
+    qualification: string;
+    field_of_study?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    grade?: string | null;
+};
+
+export type EmployerCandidateExperience = {
+    id: number;
+    employer_name: string;
+    job_title: string;
+    start_date?: string | null;
+    end_date?: string | null;
+    currently_working: boolean;
+    description?: string | null;
+};
+
+export type EmployerCandidateSkill = {
+    id: number;
+    name: string;
+    level?: string | null;
+    years_experience?: number | null;
+};
+
+export type EmployerCandidateDocument = {
+    id: number;
+    file_name: string;
+    document_type?: string | null;
+    description?: string | null;
+    mime_type?: string | null;
+    size?: number | null;
+    is_primary: boolean;
+    uploaded_at?: string | null;
+    preview_url: string;
+    download_url: string;
 };
 
 export type BillingProfile = {
@@ -191,6 +292,12 @@ export const recentApplications: RecentApplication[] = [
         status: 'new',
         applied_at: '2 hours ago',
         match_score: 98,
+        match: {
+            score: 98,
+            label: 'Strong Match',
+            vacancy_title: 'Senior Frontend Developer',
+            reasons: ['Matches your React and Laravel stack.', 'Experience level lines up with this role.'],
+        },
     },
     {
         id: 2,
@@ -200,6 +307,12 @@ export const recentApplications: RecentApplication[] = [
         status: 'shortlisted',
         applied_at: '4 hours ago',
         match_score: 96,
+        match: {
+            score: 96,
+            label: 'Strong Match',
+            vacancy_title: 'HR Business Partner',
+            reasons: ['Role keywords align with your profile and experience.'],
+        },
     },
     {
         id: 3,
@@ -209,6 +322,12 @@ export const recentApplications: RecentApplication[] = [
         status: 'interview',
         applied_at: 'Today, 08:30 AM',
         match_score: 94,
+        match: {
+            score: 94,
+            label: 'Strong Match',
+            vacancy_title: 'Finance Manager',
+            reasons: ['Experience level lines up with this role.'],
+        },
     },
 ];
 

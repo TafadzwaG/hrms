@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Candidate\JobsController::apply
- * @see app/Http/Controllers/Candidate/JobsController.php:80
+ * @see app/Http/Controllers/Candidate/JobsController.php:86
  * @route '/candidate/jobs/{vacancy}/apply'
  */
 export const apply = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ apply.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\JobsController::apply
- * @see app/Http/Controllers/Candidate/JobsController.php:80
+ * @see app/Http/Controllers/Candidate/JobsController.php:86
  * @route '/candidate/jobs/{vacancy}/apply'
  */
 apply.url = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ apply.url = (args: { vacancy: string | number } | [vacancy: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Candidate\JobsController::apply
- * @see app/Http/Controllers/Candidate/JobsController.php:80
+ * @see app/Http/Controllers/Candidate/JobsController.php:86
  * @route '/candidate/jobs/{vacancy}/apply'
  */
 apply.post = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ apply.post = (args: { vacancy: string | number } | [vacancy: string | number ] |
 
     /**
 * @see \App\Http\Controllers\Candidate\JobsController::apply
- * @see app/Http/Controllers/Candidate/JobsController.php:80
+ * @see app/Http/Controllers/Candidate/JobsController.php:86
  * @route '/candidate/jobs/{vacancy}/apply'
  */
     const applyForm = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ apply.post = (args: { vacancy: string | number } | [vacancy: string | number ] |
 
             /**
 * @see \App\Http\Controllers\Candidate\JobsController::apply
- * @see app/Http/Controllers/Candidate/JobsController.php:80
+ * @see app/Http/Controllers/Candidate/JobsController.php:86
  * @route '/candidate/jobs/{vacancy}/apply'
  */
         applyForm.post = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

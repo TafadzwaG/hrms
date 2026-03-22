@@ -114,6 +114,11 @@ class CandidateProfile extends Model
         return $this->hasMany(VacancyApplication::class);
     }
 
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(ApplicationInterview::class);
+    }
+
     public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable');

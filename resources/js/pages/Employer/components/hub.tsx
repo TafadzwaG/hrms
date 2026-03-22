@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
     Bell,
+    Calendar,
     Briefcase,
     Building2,
     FileText,
@@ -23,7 +24,7 @@ import type { Company, User } from '../dummyData';
 type EmployerHubLayoutProps = {
     title: string;
     subtitle: string;
-    active: 'dashboard' | 'vacancies' | 'candidates' | 'reports' | 'company' | 'billing';
+    active: 'dashboard' | 'vacancies' | 'candidates' | 'interviews' | 'reports' | 'company' | 'billing';
     company: Company;
     user: User;
     children: ReactNode;
@@ -34,6 +35,7 @@ const employerLinks = {
     dashboard: '/employer/dashboard',
     vacancies: '/employer/vacancies',
     candidates: '/employer/candidates',
+    interviews: '/employer/interviews',
     reports: '/employer/reports',
     company: '/employer/company-profile',
     billing: '/employer/billing',
@@ -47,6 +49,11 @@ const employerStatusColor: Record<string, string> = {
     closed: 'bg-amber-50 text-amber-700 border-amber-200',
     archived: 'bg-red-50 text-red-700 border-red-200',
     suspended: 'bg-red-50 text-red-700 border-red-200',
+    scheduled: 'bg-blue-50 text-blue-700 border-blue-200',
+    accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    rejected: 'bg-red-50 text-red-700 border-red-200',
+    completed: 'bg-zinc-900 text-white border-zinc-900',
+    cancelled: 'bg-zinc-100 text-zinc-500 border-zinc-200',
 };
 
 export function EmployerHubLayout({
@@ -179,6 +186,7 @@ function EmployerSidebarContent({
                         <EmployerSidebarLink href={employerLinks.dashboard} icon={<LayoutDashboard size={18} />} label="Dashboard" active={active === 'dashboard'} onNavigate={onNavigate} />
                         <EmployerSidebarLink href={employerLinks.vacancies} icon={<Briefcase size={18} />} label="Vacancies" active={active === 'vacancies'} onNavigate={onNavigate} />
                         <EmployerSidebarLink href={employerLinks.candidates} icon={<Users size={18} />} label="Candidates" active={active === 'candidates'} onNavigate={onNavigate} />
+                        <EmployerSidebarLink href={employerLinks.interviews} icon={<Calendar size={18} />} label="Interviews" active={active === 'interviews'} onNavigate={onNavigate} />
                     </nav>
                 </div>
 

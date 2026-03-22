@@ -2,6 +2,7 @@
 
 namespace App\Support\Hubs;
 
+use App\Models\ApplicationInterview;
 use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateProfile;
@@ -106,7 +107,15 @@ class CandidateHubPresenter
             'resume' => $application->resume ? [
                 'id' => $application->resume->id,
                 'file_name' => $application->resume->file_name,
+                'download_url' => route('candidate.documents.download', $application->resume->id),
             ] : null,
+            'interviews' => $application->relationLoaded('interviews')
+                ? $application->interviews
+                    ->sortByDesc(fn (ApplicationInterview $interview) => $interview->scheduled_at?->getTimestamp() ?? 0)
+                    ->values()
+                    ->map(fn (ApplicationInterview $interview) => $this->interview($interview))
+                    ->all()
+                : [],
         ];
     }
 
@@ -157,11 +166,12 @@ class CandidateHubPresenter
             'size' => $resume->size,
             'is_primary' => (bool) $resume->is_primary,
             'uploaded_at' => $resume->uploaded_at?->toDateString() ?? $resume->created_at?->toDateString(),
+            'preview_url' => route('candidate.documents.preview', $resume->id),
             'download_url' => route('candidate.documents.download', $resume->id),
         ];
     }
 
-    public function vacancy(Vacancy $vacancy, ?VacancyApplication $application = null): array
+    public function vacancy(Vacancy $vacancy, ?VacancyApplication $application = null, ?array $match = null): array
     {
         return [
             'id' => $vacancy->id,
@@ -183,6 +193,7 @@ class CandidateHubPresenter
             'published_at' => $vacancy->published_at?->toDateString(),
             'has_applied' => (bool) $application,
             'application_status' => $application?->status,
+            'match' => $match,
         ];
     }
 
@@ -195,6 +206,28 @@ class CandidateHubPresenter
                 'remote_only' => (bool) data_get($candidate->metadata, 'preferences.remote_only', false),
                 'preferred_work_modes' => data_get($candidate->metadata, 'preferences.preferred_work_modes', []),
             ],
+        ];
+    }
+
+    public function interview(ApplicationInterview $interview): array
+    {
+        return [
+            'id' => $interview->id,
+            'scheduled_at' => $interview->scheduled_at?->toDateTimeString(),
+            'scheduled_at_label' => $interview->scheduled_at?->format('D, d M Y \\a\\t H:i'),
+            'ends_at' => $interview->ends_at?->toDateTimeString(),
+            'ends_at_label' => $interview->ends_at?->format('D, d M Y \\a\\t H:i'),
+            'timezone' => $interview->timezone,
+            'meeting_type' => Str::headline($interview->meeting_type),
+            'location' => $interview->location,
+            'instructions' => $interview->instructions,
+            'status' => $interview->status,
+            'status_label' => Str::headline($interview->status),
+            'candidate_response_note' => $interview->candidate_response_note,
+            'responded_at' => $interview->responded_at?->toDateTimeString(),
+            'responded_at_label' => $interview->responded_at?->format('D, d M Y \\a\\t H:i'),
+            'can_respond' => $interview->status === 'scheduled',
+            'response_url' => route('candidate.interviews.respond', $interview->id),
         ];
     }
 

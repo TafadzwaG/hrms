@@ -138,11 +138,18 @@ export default function BrowseJobsPage() {
                                             <h3 className="text-2xl font-black tracking-tighter leading-tight text-black group-hover:underline cursor-pointer">{vacancy.title}</h3>
                                             <p className="text-sm font-bold text-zinc-500">{vacancy.company_name}</p>
                                         </div>
-                                        {vacancy.has_applied ? (
-                                            <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] font-bold uppercase tracking-tighter border border-zinc-200 rounded-sm">
-                                                Applied
-                                            </span>
-                                        ) : null}
+                                        <div className="flex flex-col items-end gap-2">
+                                            {vacancy.match ? (
+                                                <div className="rounded-sm border border-black bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                                                    {vacancy.match.score}% {vacancy.match.label}
+                                                </div>
+                                            ) : null}
+                                            {vacancy.has_applied ? (
+                                                <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] font-bold uppercase tracking-tighter border border-zinc-200 rounded-sm">
+                                                    Applied
+                                                </span>
+                                            ) : null}
+                                        </div>
                                     </div>
                                     
                                     <div className="flex flex-wrap gap-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-6">
@@ -169,6 +176,25 @@ export default function BrowseJobsPage() {
                                     <p className="text-sm leading-relaxed text-zinc-600 line-clamp-3">
                                         {vacancy.description}
                                     </p>
+
+                                    {vacancy.match ? (
+                                        <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Why this fits</p>
+                                                <span className="text-[11px] font-bold uppercase tracking-widest text-black">
+                                                    {vacancy.match.score}% match
+                                                </span>
+                                            </div>
+                                            <ul className="mt-3 space-y-1.5">
+                                                {vacancy.match.reasons.slice(0, 2).map((reason) => (
+                                                    <li key={reason} className="flex items-start gap-2 text-xs leading-relaxed text-zinc-600">
+                                                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                                        <span>{reason}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : null}
                                 </div>
 
                                 {/* Inline Application Form */}

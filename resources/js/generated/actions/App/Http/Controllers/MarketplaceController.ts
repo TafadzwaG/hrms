@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
     const searchForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
         searchForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
         searchForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     search.form = searchForm
 /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
 export const show = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
 show.url = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -122,7 +122,7 @@ show.url = (args: { vacancy: string | number } | [vacancy: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
 show.get = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,7 +131,7 @@ show.get = (args: { vacancy: string | number } | [vacancy: string | number ] | s
 })
 /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
 show.head = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -141,7 +141,7 @@ show.head = (args: { vacancy: string | number } | [vacancy: string | number ] | 
 
     /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
     const showForm = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -151,7 +151,7 @@ show.head = (args: { vacancy: string | number } | [vacancy: string | number ] | 
 
             /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
         showForm.get = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -160,7 +160,7 @@ show.head = (args: { vacancy: string | number } | [vacancy: string | number ] | 
         })
             /**
 * @see \App\Http\Controllers\MarketplaceController::show
- * @see app/Http/Controllers/MarketplaceController.php:42
+ * @see app/Http/Controllers/MarketplaceController.php:43
  * @route '/jobs/{vacancy}'
  */
         showForm.head = (args: { vacancy: string | number } | [vacancy: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

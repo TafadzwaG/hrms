@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import vacancies from './vacancies'
 import candidatesC822a9 from './candidates'
+import interviews9b91d6 from './interviews'
 import company890735 from './company'
 import billingFfcdcb from './billing'
 /**
@@ -239,7 +240,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     dashboard.form = dashboardForm
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
 export const candidates = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,7 +255,7 @@ candidates.definition = {
 
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
 candidates.url = (options?: RouteQueryOptions) => {
@@ -263,7 +264,7 @@ candidates.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
 candidates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +273,7 @@ candidates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
 candidates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -282,7 +283,7 @@ candidates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
     const candidatesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -292,7 +293,7 @@ candidates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
         candidatesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -301,7 +302,7 @@ candidates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Employer\CandidatesController::candidates
- * @see app/Http/Controllers/Employer/CandidatesController.php:15
+ * @see app/Http/Controllers/Employer/CandidatesController.php:17
  * @route '/employer/candidates'
  */
         candidatesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -315,6 +316,84 @@ candidates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     candidates.form = candidatesForm
+/**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+export const interviews = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: interviews.url(options),
+    method: 'get',
+})
+
+interviews.definition = {
+    methods: ["get","head"],
+    url: '/employer/interviews',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+interviews.url = (options?: RouteQueryOptions) => {
+    return interviews.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+interviews.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: interviews.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+interviews.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: interviews.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+    const interviewsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: interviews.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+        interviewsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: interviews.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\Employer\InterviewsController::interviews
+ * @see app/Http/Controllers/Employer/InterviewsController.php:18
+ * @route '/employer/interviews'
+ */
+        interviewsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: interviews.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    interviews.form = interviewsForm
 /**
 * @see \App\Http\Controllers\Employer\ReportsController::reports
  * @see app/Http/Controllers/Employer/ReportsController.php:14
@@ -555,6 +634,7 @@ register: Object.assign(register, register),
 dashboard: Object.assign(dashboard, dashboard),
 vacancies: Object.assign(vacancies, vacancies),
 candidates: Object.assign(candidates, candidatesC822a9),
+interviews: Object.assign(interviews, interviews9b91d6),
 reports: Object.assign(reports, reports),
 company: Object.assign(company, company890735),
 billing: Object.assign(billing, billingFfcdcb),

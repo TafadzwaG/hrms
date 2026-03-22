@@ -71,6 +71,12 @@ export type CandidateResume = {
     uploaded_at: string;
 };
 
+export type CandidateVacancyMatch = {
+    score: number;
+    label: string;
+    reasons: string[];
+};
+
 export type CandidateRecommendedVacancy = {
     id: number;
     title: string;
@@ -91,6 +97,7 @@ export type CandidateRecommendedVacancy = {
     published_at?: string | null;
     has_applied?: boolean;
     application_status?: string | null;
+    match?: CandidateVacancyMatch | null;
 };
 
 export type CandidateApplication = CandidateRecentApplication & {
@@ -104,7 +111,28 @@ export type CandidateApplication = CandidateRecentApplication & {
     resume?: {
         id: number;
         file_name: string;
+        download_url?: string;
     } | null;
+    interviews?: CandidateInterview[];
+};
+
+export type CandidateInterview = {
+    id: number;
+    scheduled_at: string | null;
+    scheduled_at_label?: string | null;
+    ends_at?: string | null;
+    ends_at_label?: string | null;
+    timezone?: string | null;
+    meeting_type: string;
+    location?: string | null;
+    instructions?: string | null;
+    status: string;
+    status_label?: string | null;
+    candidate_response_note?: string | null;
+    responded_at?: string | null;
+    responded_at_label?: string | null;
+    can_respond?: boolean;
+    response_url?: string;
 };
 
 export type CandidateDocument = CandidateResume & {
@@ -112,6 +140,7 @@ export type CandidateDocument = CandidateResume & {
     description: string | null;
     mime_type: string | null;
     size: number | null;
+    preview_url: string;
     download_url: string;
 };
 
@@ -278,6 +307,11 @@ export const candidateRecommendedVacancies: CandidateRecommendedVacancy[] = [
         salary_min: '1800',
         salary_max: '2600',
         currency: 'USD',
+        match: {
+            score: 92,
+            label: 'Strong Match',
+            reasons: ['Matches your React skills.', 'Matches your remote work preference.'],
+        },
     },
     {
         id: 102,
@@ -288,6 +322,11 @@ export const candidateRecommendedVacancies: CandidateRecommendedVacancy[] = [
         salary_min: '1500',
         salary_max: '2300',
         currency: 'USD',
+        match: {
+            score: 78,
+            label: 'Good Match',
+            reasons: ['Role keywords align with your profile and experience.'],
+        },
     },
     {
         id: 103,

@@ -11,6 +11,11 @@ type RelatedJob = {
     title: string;
     company_name: string;
     location: string;
+    match?: {
+        score: number;
+        label: string;
+        reasons: string[];
+    } | null;
 };
 
 type Job = {
@@ -26,6 +31,11 @@ type Job = {
     tags: string[];
     responsibilities: string[];
     requirements: string[];
+    match?: {
+        score: number;
+        label: string;
+        reasons: string[];
+    } | null;
     company: {
         name: string;
         initials: string;
@@ -194,6 +204,11 @@ export default function JobDetail({ job, relatedJobs, applyAction }: Props) {
                             </div>
 
                             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-border pt-6">
+                                {job.match ? (
+                                    <Badge className="border border-primary/20 bg-primary/10 text-primary hover:bg-primary/10">
+                                        {job.match.score}% {job.match.label}
+                                    </Badge>
+                                ) : null}
                                 <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                     <DollarSign className="h-4 w-4" />
                                     {job.salary}
@@ -215,6 +230,25 @@ export default function JobDetail({ job, relatedJobs, applyAction }: Props) {
                                     Posted {job.posted}
                                 </span>
                             </div>
+
+                            {job.match ? (
+                                <div className="mt-6 rounded-xl border border-border bg-secondary/50 p-5">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <h2 className="text-sm font-semibold text-foreground">Why This Fits You</h2>
+                                        <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                                            {job.match.score}% match
+                                        </span>
+                                    </div>
+                                    <ul className="mt-3 space-y-2">
+                                        {job.match.reasons.map((reason) => (
+                                            <li key={reason} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                <span>{reason}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
                         </div>
                     </Reveal>
 
@@ -332,12 +366,24 @@ export default function JobDetail({ job, relatedJobs, applyAction }: Props) {
                                         <div className="space-y-3">
                                             {relatedJobs.map((relatedJob) => (
                                                 <Link key={relatedJob.id} href={`/jobs/${relatedJob.id}`} className="group block">
-                                                    <p className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
-                                                        {relatedJob.title}
-                                                    </p>
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <p className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                                                            {relatedJob.title}
+                                                        </p>
+                                                        {relatedJob.match ? (
+                                                            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                                                                {relatedJob.match.score}%
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
                                                     <p className="text-xs text-muted-foreground">
                                                         {relatedJob.company_name} · {relatedJob.location}
                                                     </p>
+                                                    {relatedJob.match?.reasons?.[0] ? (
+                                                        <p className="mt-1 text-[11px] text-muted-foreground">
+                                                            {relatedJob.match.reasons[0]}
+                                                        </p>
+                                                    ) : null}
                                                 </Link>
                                             ))}
                                         </div>

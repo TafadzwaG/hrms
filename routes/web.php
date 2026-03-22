@@ -88,6 +88,7 @@ use App\Http\Controllers\Candidate\ApplicationsController as CandidateApplicatio
 use App\Http\Controllers\Candidate\DashboardController as CandidateDashboardController;
 use App\Http\Controllers\Candidate\DocumentsController as CandidateDocumentsController;
 use App\Http\Controllers\Candidate\EducationController as CandidateEducationController;
+use App\Http\Controllers\Candidate\InterviewsController as CandidateInterviewsController;
 use App\Http\Controllers\Candidate\JobsController as CandidateJobsController;
 use App\Http\Controllers\Candidate\ProfileController as CandidateProfileHubController;
 use App\Http\Controllers\Candidate\SettingsController as CandidateSettingsController;
@@ -96,6 +97,7 @@ use App\Http\Controllers\Employer\BillingController as EmployerBillingController
 use App\Http\Controllers\Employer\CandidatesController as EmployerCandidatesController;
 use App\Http\Controllers\Employer\CompanyProfileController as EmployerCompanyProfileHubController;
 use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
+use App\Http\Controllers\Employer\InterviewsController as EmployerInterviewsController;
 use App\Http\Controllers\Employer\ReportsController as EmployerReportsController;
 use App\Http\Controllers\Employer\VacanciesController as EmployerVacanciesController;
 use Illuminate\Support\Facades\Auth;
@@ -152,6 +154,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('candidate')->name('candidate.')->group(function () {
         Route::get('/dashboard', CandidateDashboardController::class)->name('dashboard');
         Route::get('/applications', [CandidateApplicationsController::class, 'index'])->name('applications');
+        Route::patch('/applications/{application}/withdraw', [CandidateApplicationsController::class, 'withdraw'])->name('applications.withdraw');
+        Route::patch('/interviews/{interview}/response', [CandidateInterviewsController::class, 'respond'])->name('interviews.respond');
         Route::get('/jobs', [CandidateJobsController::class, 'index'])->name('jobs');
         Route::post('/jobs/{vacancy}/apply', [CandidateJobsController::class, 'apply'])->name('jobs.apply');
 
@@ -164,6 +168,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/documents', [CandidateDocumentsController::class, 'index'])->name('documents');
         Route::post('/documents', [CandidateDocumentsController::class, 'store'])->name('documents.store');
+        Route::get('/documents/{document}/preview', [CandidateDocumentsController::class, 'preview'])->name('documents.preview');
         Route::get('/documents/{document}/download', [CandidateDocumentsController::class, 'download'])->name('documents.download');
         Route::put('/documents/{document}/primary', [CandidateDocumentsController::class, 'makePrimary'])->name('documents.primary');
         Route::delete('/documents/{document}', [CandidateDocumentsController::class, 'destroy'])->name('documents.destroy');
@@ -195,7 +200,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/vacancies/{vacancy}', [EmployerVacanciesController::class, 'destroy'])->name('vacancies.destroy');
 
         Route::get('/candidates', [EmployerCandidatesController::class, 'index'])->name('candidates');
+        Route::get('/candidates/{application}', [EmployerCandidatesController::class, 'show'])->name('candidates.show');
+        Route::get('/candidates/{application}/resumes/{resume}/preview', [EmployerCandidatesController::class, 'previewResume'])->name('candidates.resume.preview');
+        Route::get('/candidates/{application}/resumes/{resume}/download', [EmployerCandidatesController::class, 'downloadResume'])->name('candidates.resume.download');
         Route::patch('/applications/{application}/status', [EmployerCandidatesController::class, 'updateStatus'])->name('candidates.status.update');
+        Route::get('/interviews', [EmployerInterviewsController::class, 'index'])->name('interviews');
+        Route::post('/applications/{application}/interviews', [EmployerInterviewsController::class, 'store'])->name('interviews.store');
+        Route::patch('/interviews/{interview}', [EmployerInterviewsController::class, 'update'])->name('interviews.update');
 
         Route::get('/reports', [EmployerReportsController::class, 'index'])->name('reports');
 

@@ -1680,6 +1680,37 @@ class RecruitmentSeeder extends Seeder
             );
         }
 
+        $uiEngineerApplicationId = DB::table('vacancy_applications')
+            ->where('vacancy_id', $vacancies['UI Engineer'])
+            ->where('candidate_profile_id', $candidateId)
+            ->value('id');
+
+        if ($uiEngineerApplicationId) {
+            DB::table('application_interviews')->updateOrInsert(
+                [
+                    'vacancy_application_id' => $uiEngineerApplicationId,
+                    'scheduled_at' => Carbon::parse('2026-03-26 10:00:00'),
+                ],
+                [
+                    'company_profile_id' => $companyId,
+                    'candidate_profile_id' => $candidateId,
+                    'vacancy_id' => $vacancies['UI Engineer'],
+                    'ends_at' => Carbon::parse('2026-03-26 11:00:00'),
+                    'timezone' => config('app.timezone', 'UTC'),
+                    'meeting_type' => 'video',
+                    'location' => 'Google Meet',
+                    'instructions' => 'Join five minutes early, test your audio, and prepare to discuss your recent React and TypeScript delivery work.',
+                    'status' => 'scheduled',
+                    'responded_at' => null,
+                    'candidate_response_note' => null,
+                    'created_by' => $employerUser->id,
+                    'updated_by' => $employerUser->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
         DB::table('payments')->updateOrInsert(
             ['payable_type' => 'App\\Models\\CandidateProfile', 'payable_id' => $candidateId, 'provider_reference' => 'DEMO-CANDIDATE-001'],
             [

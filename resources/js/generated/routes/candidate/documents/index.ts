@@ -55,6 +55,103 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+export const preview = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: preview.url(args, options),
+    method: 'get',
+})
+
+preview.definition = {
+    methods: ["get","head"],
+    url: '/candidate/documents/{document}/preview',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+preview.url = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { document: args }
+    }
+
+    
+    if (Array.isArray(args)) {
+        args = {
+                    document: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        document: args.document,
+                }
+
+    return preview.definition.url
+            .replace('{document}', parsedArgs.document.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+preview.get = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: preview.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+preview.head = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: preview.url(args, options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+    const previewForm = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: preview.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+        previewForm.get = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: preview.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\Candidate\DocumentsController::preview
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @route '/candidate/documents/{document}/preview'
+ */
+        previewForm.head = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: preview.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    preview.form = previewForm
+/**
 * @see \App\Http\Controllers\Candidate\DocumentsController::download
  * @see app/Http/Controllers/Candidate/DocumentsController.php:70
  * @route '/candidate/documents/{document}/download'
@@ -153,7 +250,7 @@ download.head = (args: { document: string | number } | [document: string | numbe
     download.form = downloadForm
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::primary
- * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:119
  * @route '/candidate/documents/{document}/primary'
  */
 export const primary = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -168,7 +265,7 @@ primary.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::primary
- * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:119
  * @route '/candidate/documents/{document}/primary'
  */
 primary.url = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -196,7 +293,7 @@ primary.url = (args: { document: string | number } | [document: string | number 
 
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::primary
- * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:119
  * @route '/candidate/documents/{document}/primary'
  */
 primary.put = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -206,7 +303,7 @@ primary.put = (args: { document: string | number } | [document: string | number 
 
     /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::primary
- * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:119
  * @route '/candidate/documents/{document}/primary'
  */
     const primaryForm = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -221,7 +318,7 @@ primary.put = (args: { document: string | number } | [document: string | number 
 
             /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::primary
- * @see app/Http/Controllers/Candidate/DocumentsController.php:91
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:119
  * @route '/candidate/documents/{document}/primary'
  */
         primaryForm.put = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -237,7 +334,7 @@ primary.put = (args: { document: string | number } | [document: string | number 
     primary.form = primaryForm
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::destroy
- * @see app/Http/Controllers/Candidate/DocumentsController.php:109
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:137
  * @route '/candidate/documents/{document}'
  */
 export const destroy = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -252,7 +349,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::destroy
- * @see app/Http/Controllers/Candidate/DocumentsController.php:109
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:137
  * @route '/candidate/documents/{document}'
  */
 destroy.url = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -280,7 +377,7 @@ destroy.url = (args: { document: string | number } | [document: string | number 
 
 /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::destroy
- * @see app/Http/Controllers/Candidate/DocumentsController.php:109
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:137
  * @route '/candidate/documents/{document}'
  */
 destroy.delete = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -290,7 +387,7 @@ destroy.delete = (args: { document: string | number } | [document: string | numb
 
     /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::destroy
- * @see app/Http/Controllers/Candidate/DocumentsController.php:109
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:137
  * @route '/candidate/documents/{document}'
  */
     const destroyForm = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -305,7 +402,7 @@ destroy.delete = (args: { document: string | number } | [document: string | numb
 
             /**
 * @see \App\Http\Controllers\Candidate\DocumentsController::destroy
- * @see app/Http/Controllers/Candidate/DocumentsController.php:109
+ * @see app/Http/Controllers/Candidate/DocumentsController.php:137
  * @route '/candidate/documents/{document}'
  */
         destroyForm.delete = (args: { document: string | number } | [document: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -321,6 +418,7 @@ destroy.delete = (args: { document: string | number } | [document: string | numb
     destroy.form = destroyForm
 const documents = {
     store: Object.assign(store, store),
+preview: Object.assign(preview, preview),
 download: Object.assign(download, download),
 primary: Object.assign(primary, primary),
 destroy: Object.assign(destroy, destroy),

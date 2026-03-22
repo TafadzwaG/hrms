@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class VacancyApplication extends Model
 {
@@ -55,5 +57,15 @@ class VacancyApplication extends Model
     public function resume(): BelongsTo
     {
         return $this->belongsTo(CandidateResume::class, 'resume_id');
+    }
+
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(ApplicationInterview::class, 'vacancy_application_id');
+    }
+
+    public function latestInterview(): HasOne
+    {
+        return $this->hasOne(ApplicationInterview::class, 'vacancy_application_id')->latestOfMany('scheduled_at');
     }
 }

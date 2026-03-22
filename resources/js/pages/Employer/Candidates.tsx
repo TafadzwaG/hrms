@@ -1,5 +1,5 @@
-import { router, usePage } from '@inertiajs/react';
-import { Briefcase, Calendar, Filter, Target, Search, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { Briefcase, Calendar, Filter, Target, Search, ArrowLeft, ArrowRight, Clock3 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -136,6 +136,51 @@ export default function EmployerCandidatesPage() {
                                                 )}
                                             </div>
 
+                                            {application.match?.label ? (
+                                                <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+                                                    {application.match.label}
+                                                    {application.match.vacancy_title ? ` • Best fit: ${application.match.vacancy_title}` : ''}
+                                                </p>
+                                            ) : null}
+
+                                            {application.match?.reasons?.length ? (
+                                                <div className="mb-4 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+                                                    <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Why this candidate fits</p>
+                                                    <ul className="space-y-1.5">
+                                                        {application.match.reasons.slice(0, 3).map((reason) => (
+                                                            <li key={reason} className="flex items-start gap-2 text-xs leading-relaxed text-zinc-600">
+                                                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                                                <span>{reason}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ) : null}
+
+                                            {application.latest_interview ? (
+                                                <div className="mb-4 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+                                                    <div className="mb-2 flex items-center justify-between gap-3">
+                                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Latest Interview</p>
+                                                        <span className="rounded border border-zinc-200 bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                            {application.latest_interview.status_label ?? application.latest_interview.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-1.5 text-xs text-zinc-600">
+                                                        <p className="flex items-center gap-2">
+                                                            <Calendar className="h-3.5 w-3.5" />
+                                                            <span>{application.latest_interview.scheduled_at_label}</span>
+                                                        </p>
+                                                        <p className="flex items-center gap-2">
+                                                            <Clock3 className="h-3.5 w-3.5" />
+                                                            <span>{application.latest_interview.meeting_type}</span>
+                                                        </p>
+                                                        {application.latest_interview.location ? (
+                                                            <p className="text-[11px] text-zinc-500">{application.latest_interview.location}</p>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+
                                             {application.cover_letter && (
                                                 <div className="p-4 bg-zinc-50 rounded border-l-2 border-black">
                                                     <p className="text-xs leading-relaxed text-zinc-700 italic">
@@ -149,13 +194,17 @@ export default function EmployerCandidatesPage() {
                                         <div className="lg:w-72 flex flex-col justify-between gap-4">
                                             <div className="grid grid-cols-2 gap-2">
                                                 <button onClick={() => updateStatus(application.id, 'shortlisted')} className={actionBtnClass}>Shortlist</button>
-                                                <button onClick={() => updateStatus(application.id, 'interview')} className={actionBtnClass}>Interview</button>
+                                                <Link href={`/employer/candidates/${application.id}#schedule-interview`} className={actionBtnClass}>
+                                                    Schedule
+                                                </Link>
                                                 <button onClick={() => updateStatus(application.id, 'offered')} className={actionBtnClass}>Offer</button>
                                                 <button onClick={() => updateStatus(application.id, 'rejected')} className={`${actionBtnClass} border-red-200 text-red-600 hover:bg-red-50 hover:border-red-600`}>Reject</button>
                                             </div>
-                                            <Button className="w-full py-6 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-none shadow-lg shadow-black/5 hover:bg-zinc-800 transition-all">
-                                                View Full Profile
-                                            </Button>
+                                            <Link href={`/employer/candidates/${application.id}`}>
+                                                <Button className="w-full py-6 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-none shadow-lg shadow-black/5 hover:bg-zinc-800 transition-all">
+                                                    View Full Profile
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>

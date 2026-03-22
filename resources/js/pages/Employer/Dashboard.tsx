@@ -151,11 +151,27 @@ export default function EmployerDashboard() {
                                                     )}
                                                 </div>
                                                 <p className="text-xs text-zinc-500 truncate">Applied for: {app.vacancy_title}</p>
+                                                {app.match?.label ? (
+                                                    <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{app.match.label}</p>
+                                                ) : null}
                                             </div>
                                         </div>
+                                        {app.match?.reasons?.length ? (
+                                            <div className="mb-4 rounded-sm border border-zinc-200 bg-zinc-50 p-3">
+                                                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Why this candidate fits</p>
+                                                <ul className="space-y-1.5">
+                                                    {app.match.reasons.slice(0, 2).map((reason) => (
+                                                        <li key={reason} className="flex items-start gap-2 text-[11px] leading-relaxed text-zinc-600">
+                                                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                                            <span>{reason}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ) : null}
                                         <div className="flex gap-2">
                                             <button className="flex-1 bg-black text-white py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-800 transition-colors">Shortlist</button>
-                                            <Link href="/employer/candidates" className="flex-1">
+                                            <Link href={`/employer/candidates/${app.id}`} className="flex-1">
                                                 <button className="w-full bg-zinc-100 py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-200 text-zinc-700 transition-colors">Profile</button>
                                             </Link>
                                         </div>
@@ -195,17 +211,39 @@ export default function EmployerDashboard() {
                             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">Talent Matches</h3>
                             <div className="space-y-6">
                                 {recommendedTalent.slice(0, 3).map((talent) => (
-                                    <div key={talent.id} className="flex items-center justify-between gap-4 group">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-zinc-100 rounded-sm flex items-center justify-center overflow-hidden font-bold text-xs text-zinc-500">
-                                                {talent.initials}
+                                    <div key={talent.id} className="border border-zinc-200 rounded-sm p-4 group hover:border-black transition-all">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-zinc-100 rounded-sm flex items-center justify-center overflow-hidden font-bold text-xs text-zinc-500">
+                                                    {talent.initials}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold truncate max-w-[150px]">{talent.name}</p>
+                                                    <p className="text-[10px] text-zinc-500 font-medium truncate max-w-[150px]">{talent.headline}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold truncate max-w-[120px]">{talent.name}</p>
-                                                <p className="text-[10px] text-zinc-500 font-medium truncate max-w-[120px]">{talent.headline}</p>
+                                            <div className="text-right">
+                                                {talent.match_score ? (
+                                                    <span className="inline-flex bg-zinc-100 px-2 py-0.5 text-[9px] font-bold rounded">{talent.match_score}% Match</span>
+                                                ) : null}
+                                                <button className="mt-2 block text-[10px] font-bold text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">Invite</button>
                                             </div>
                                         </div>
-                                        <button className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">Invite</button>
+                                        {talent.match?.vacancy_title ? (
+                                            <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                                Best fit: {talent.match.vacancy_title}
+                                            </p>
+                                        ) : null}
+                                        {talent.match?.reasons?.length ? (
+                                            <ul className="mt-3 space-y-1.5">
+                                                {talent.match.reasons.slice(0, 2).map((reason) => (
+                                                    <li key={reason} className="flex items-start gap-2 text-[11px] leading-relaxed text-zinc-600">
+                                                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                                        <span>{reason}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : null}
                                     </div>
                                 ))}
                             </div>

@@ -2,7 +2,12 @@
 
 namespace App\Support\Hubs;
 
+use App\Models\ApplicationInterview;
+use App\Models\CandidateEducation;
+use App\Models\CandidateExperience;
 use App\Models\CandidateProfile;
+use App\Models\CandidateResume;
+use App\Models\CandidateSkill;
 use App\Models\CompanyBillingProfile;
 use App\Models\CompanyInvoice;
 use App\Models\CompanyProfile;
@@ -80,7 +85,7 @@ class EmployerHubPresenter
         ];
     }
 
-    public function application(VacancyApplication $application, ?int $matchScore = null): array
+    public function application(VacancyApplication $application, ?array $match = null): array
     {
         $candidate = $application->candidate;
 
@@ -103,8 +108,16 @@ class EmployerHubPresenter
             'resume' => $application->resume ? [
                 'id' => $application->resume->id,
                 'file_name' => $application->resume->file_name,
+                'download_url' => route('employer.candidates.resume.download', [
+                    'application' => $application->id,
+                    'resume' => $application->resume->id,
+                ]),
             ] : null,
-            'match_score' => $matchScore,
+            'match_score' => $match['score'] ?? null,
+            'match' => $this->matchPayload($match),
+            'latest_interview' => $application->relationLoaded('latestInterview') && $application->latestInterview
+                ? $this->interview($application->latestInterview)
+                : null,
         ];
     }
 
@@ -117,7 +130,7 @@ class EmployerHubPresenter
             ->all();
     }
 
-    public function recommendedTalent(CandidateProfile $candidate, int $score): array
+    public function recommendedTalent(CandidateProfile $candidate, ?array $match = null): array
     {
         return [
             'id' => $candidate->id,
@@ -128,8 +141,122 @@ class EmployerHubPresenter
                 ->map(fn (string $part) => strtoupper(substr($part, 0, 1)))
                 ->take(2)
                 ->implode(''),
-            'match_score' => $score,
+            'match_score' => $match['score'] ?? null,
             'location' => $candidate->location,
+            'match' => $this->matchPayload($match),
+        ];
+    }
+
+    public function candidateProfile(CandidateProfile $candidate): array
+    {
+        return [
+            'id' => $candidate->id,
+            'full_name' => $candidate->full_name,
+            'email' => $candidate->email,
+            'phone' => $candidate->phone,
+            'alt_phone' => $candidate->alt_phone,
+            'national_id' => $candidate->national_id,
+            'gender' => $candidate->gender ? Str::headline($candidate->gender) : null,
+            'date_of_birth' => $candidate->date_of_birth?->toDateString(),
+            'location' => $candidate->location,
+            'headline' => $candidate->headline,
+            'professional_summary' => $candidate->professional_summary,
+            'expected_salary' => $this->decimal($candidate->expected_salary),
+            'salary_currency' => $candidate->salary_currency,
+            'years_experience' => $candidate->years_experience,
+            'highest_education' => $candidate->highest_education ? Str::headline(str_replace('_', ' ', $candidate->highest_education)) : null,
+            'profile_visibility_status' => $candidate->profile_visibility_status,
+            'is_public' => (bool) $candidate->is_public,
+            'is_verified' => (bool) $candidate->is_verified,
+            'stage' => $candidate->stage,
+            'status' => $candidate->status,
+            'listing_activated_at' => $candidate->listing_activated_at?->toDateString(),
+            'listing_expires_at' => $candidate->listing_expires_at?->toDateString(),
+            'profile_views' => (int) data_get($candidate->metadata, 'profile_views', 0),
+        ];
+    }
+
+    public function candidateEducation(CandidateEducation $education): array
+    {
+        return [
+            'id' => $education->id,
+            'institution' => $education->institution,
+            'qualification' => $education->qualification,
+            'field_of_study' => $education->field_of_study,
+            'start_date' => $education->start_date?->toDateString(),
+            'end_date' => $education->end_date?->toDateString(),
+            'grade' => $education->grade,
+        ];
+    }
+
+    public function candidateExperience(CandidateExperience $experience): array
+    {
+        return [
+            'id' => $experience->id,
+            'employer_name' => $experience->employer_name,
+            'job_title' => $experience->job_title,
+            'start_date' => $experience->start_date?->toDateString(),
+            'end_date' => $experience->end_date?->toDateString(),
+            'currently_working' => (bool) $experience->currently_working,
+            'description' => $experience->description,
+        ];
+    }
+
+    public function candidateSkill(CandidateSkill $skill): array
+    {
+        return [
+            'id' => $skill->id,
+            'name' => $skill->name,
+            'level' => $skill->level ? Str::headline($skill->level) : null,
+            'years_experience' => $skill->years_experience,
+        ];
+    }
+
+    public function candidateDocument(CandidateResume $resume, int $applicationId): array
+    {
+        return [
+            'id' => $resume->id,
+            'file_name' => $resume->file_name,
+            'document_type' => $resume->document_type ? Str::headline(str_replace('_', ' ', $resume->document_type)) : null,
+            'description' => $resume->description,
+            'mime_type' => $resume->mime_type,
+            'size' => $resume->size,
+            'is_primary' => (bool) $resume->is_primary,
+            'uploaded_at' => $resume->uploaded_at?->toDateString() ?? $resume->created_at?->toDateString(),
+            'preview_url' => route('employer.candidates.resume.preview', [
+                'application' => $applicationId,
+                'resume' => $resume->id,
+            ]),
+            'download_url' => route('employer.candidates.resume.download', [
+                'application' => $applicationId,
+                'resume' => $resume->id,
+            ]),
+        ];
+    }
+
+    public function interview(ApplicationInterview $interview): array
+    {
+        return [
+            'id' => $interview->id,
+            'application_id' => $interview->vacancy_application_id,
+            'candidate_id' => $interview->candidate_profile_id,
+            'vacancy_id' => $interview->vacancy_id,
+            'candidate_name' => $interview->candidate?->full_name,
+            'candidate_headline' => $interview->candidate?->headline,
+            'vacancy_title' => $interview->vacancy?->title,
+            'scheduled_at' => $interview->scheduled_at?->toDateTimeString(),
+            'scheduled_at_label' => $interview->scheduled_at?->format('D, d M Y \\a\\t H:i'),
+            'ends_at' => $interview->ends_at?->toDateTimeString(),
+            'ends_at_label' => $interview->ends_at?->format('D, d M Y \\a\\t H:i'),
+            'timezone' => $interview->timezone,
+            'meeting_type' => Str::headline($interview->meeting_type),
+            'location' => $interview->location,
+            'instructions' => $interview->instructions,
+            'status' => $interview->status,
+            'status_label' => Str::headline($interview->status),
+            'candidate_response_note' => $interview->candidate_response_note,
+            'responded_at' => $interview->responded_at?->toDateTimeString(),
+            'responded_at_label' => $interview->responded_at?->format('D, d M Y \\a\\t H:i'),
         ];
     }
 
@@ -203,5 +330,20 @@ class EmployerHubPresenter
         }
 
         return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+    }
+
+    private function matchPayload(?array $match): ?array
+    {
+        if (! $match) {
+            return null;
+        }
+
+        return [
+            'score' => $match['score'] ?? null,
+            'label' => $match['label'] ?? null,
+            'reasons' => array_values($match['reasons'] ?? []),
+            'vacancy_id' => $match['vacancy_id'] ?? null,
+            'vacancy_title' => $match['vacancy_title'] ?? null,
+        ];
     }
 }

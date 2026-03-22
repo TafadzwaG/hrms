@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::update
- * @see app/Http/Controllers/Employer/CandidatesController.php:74
+ * @see app/Http/Controllers/Employer/CandidatesController.php:146
  * @route '/employer/applications/{application}/status'
  */
 export const update = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::update
- * @see app/Http/Controllers/Employer/CandidatesController.php:74
+ * @see app/Http/Controllers/Employer/CandidatesController.php:146
  * @route '/employer/applications/{application}/status'
  */
 update.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ update.url = (args: { application: string | number } | [application: string | nu
 
 /**
 * @see \App\Http\Controllers\Employer\CandidatesController::update
- * @see app/Http/Controllers/Employer/CandidatesController.php:74
+ * @see app/Http/Controllers/Employer/CandidatesController.php:146
  * @route '/employer/applications/{application}/status'
  */
 update.patch = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -54,7 +54,7 @@ update.patch = (args: { application: string | number } | [application: string | 
 
     /**
 * @see \App\Http\Controllers\Employer\CandidatesController::update
- * @see app/Http/Controllers/Employer/CandidatesController.php:74
+ * @see app/Http/Controllers/Employer/CandidatesController.php:146
  * @route '/employer/applications/{application}/status'
  */
     const updateForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -69,7 +69,7 @@ update.patch = (args: { application: string | number } | [application: string | 
 
             /**
 * @see \App\Http\Controllers\Employer\CandidatesController::update
- * @see app/Http/Controllers/Employer/CandidatesController.php:74
+ * @see app/Http/Controllers/Employer/CandidatesController.php:146
  * @route '/employer/applications/{application}/status'
  */
         updateForm.patch = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -1,4 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import applications17f98b from './applications'
+import interviews from './interviews'
 import jobsF3446c from './jobs'
 import profile937a89 from './profile'
 import documentsC2fd24 from './documents'
@@ -241,7 +243,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     dashboard.form = dashboardForm
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
 export const applications = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -256,7 +258,7 @@ applications.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
 applications.url = (options?: RouteQueryOptions) => {
@@ -265,7 +267,7 @@ applications.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
 applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -274,7 +276,7 @@ applications.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
 applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -284,7 +286,7 @@ applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
     const applicationsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -294,7 +296,7 @@ applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
         applicationsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -303,7 +305,7 @@ applications.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Candidate\ApplicationsController::applications
- * @see app/Http/Controllers/Candidate/ApplicationsController.php:13
+ * @see app/Http/Controllers/Candidate/ApplicationsController.php:15
  * @route '/candidate/applications'
  */
         applicationsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -789,7 +791,8 @@ const candidate = {
     login: Object.assign(login, login),
 register: Object.assign(register, register),
 dashboard: Object.assign(dashboard, dashboard),
-applications: Object.assign(applications, applications),
+applications: Object.assign(applications, applications17f98b),
+interviews: Object.assign(interviews, interviews),
 jobs: Object.assign(jobs, jobsF3446c),
 profile: Object.assign(profile, profile937a89),
 documents: Object.assign(documents, documentsC2fd24),

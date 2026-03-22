@@ -1,7 +1,8 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { Download, FileText, Star, Upload, Calendar, Database, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
+import { DocumentPreviewDialog } from '@/components/document-preview-dialog';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +21,8 @@ type PageProps = {
 
 export default function CandidateDocumentsPage() {
     const { candidate, documents, documentTypes } = usePage<PageProps>().props;
+    const [activeDocumentId, setActiveDocumentId] = useState<number | null>(documents[0]?.id ?? null);
+    const [previewOpen, setPreviewOpen] = useState(false);
 
     const form = useForm<{
         document: File | null;
@@ -32,6 +35,21 @@ export default function CandidateDocumentsPage() {
         description: '',
         is_primary: false,
     });
+
+    const activeDocument = useMemo(
+        () => documents.find((document) => document.id === activeDocumentId) ?? documents[0] ?? null,
+        [activeDocumentId, documents],
+    );
+
+    const togglePreview = (documentId: number) => {
+        if (activeDocumentId === documentId && previewOpen) {
+            setPreviewOpen(false);
+            return;
+        }
+
+        setActiveDocumentId(documentId);
+        setPreviewOpen(true);
+    };
 
     return (
         <CandidateHubLayout
@@ -178,6 +196,19 @@ export default function CandidateDocumentsPage() {
 
                                             {/* Actions Row */}
                                             <div className="mt-4 pt-4 border-t border-zinc-100 flex flex-wrap items-center gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => togglePreview(document.id)}
+                                                    className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                                                        activeDocument?.id === document.id && previewOpen
+                                                            ? 'text-black'
+                                                            : 'text-zinc-500 hover:text-black'
+                                                    }`}
+                                                >
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    {activeDocument?.id === document.id && previewOpen ? 'Close Preview' : 'Open Preview'}
+                                                </button>
+
                                                 {!document.is_primary ? (
                                                     <button 
                                                         type="button"
@@ -210,6 +241,7 @@ export default function CandidateDocumentsPage() {
                     </div>
                 </div>
             </div>
+            <DocumentPreviewDialog document={activeDocument} open={previewOpen} onOpenChange={setPreviewOpen} />
         </CandidateHubLayout>
     );
 }

@@ -18,6 +18,11 @@ type Job = {
     type: string;
     posted: string;
     tags: string[];
+    match?: {
+        score: number;
+        label: string;
+        reasons: string[];
+    } | null;
 };
 
 type Props = {
@@ -260,6 +265,27 @@ export default function SearchResults({ jobs, filters }: Props) {
                                                     {job.description}
                                                 </p>
 
+                                                {job.match ? (
+                                                    <div className="mb-3 rounded-lg border border-border bg-secondary/50 p-3">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                                                                Why this fits
+                                                            </p>
+                                                            <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                                                {job.match.score}% {job.match.label}
+                                                            </span>
+                                                        </div>
+                                                        <ul className="mt-2 space-y-1">
+                                                            {job.match.reasons.slice(0, 2).map((reason) => (
+                                                                <li key={reason} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                                    <span>{reason}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ) : null}
+
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {job.tags.map((tag) => (
                                                         <Badge key={tag} variant="secondary" className="text-[10px]">
@@ -270,6 +296,11 @@ export default function SearchResults({ jobs, filters }: Props) {
                                             </div>
 
                                             <div className="hidden shrink-0 flex-col items-end gap-2 text-right sm:flex">
+                                                {job.match ? (
+                                                    <Badge className="border border-primary/20 bg-primary/10 text-[10px] text-primary hover:bg-primary/10">
+                                                        {job.match.score}% match
+                                                    </Badge>
+                                                ) : null}
                                                 <span className="text-sm font-semibold text-foreground">{job.salary}</span>
                                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                     <MapPin className="h-3 w-3" />
@@ -291,6 +322,11 @@ export default function SearchResults({ jobs, filters }: Props) {
                                         </div>
 
                                         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3 sm:hidden">
+                                            {job.match ? (
+                                                <Badge className="border border-primary/20 bg-primary/10 text-[10px] text-primary hover:bg-primary/10">
+                                                    {job.match.score}% match
+                                                </Badge>
+                                            ) : null}
                                             <span className="text-xs font-medium text-foreground">{job.salary}</span>
                                             <span className="text-xs text-muted-foreground">· {job.location}</span>
                                             <Badge variant="outline" className="text-[10px]">

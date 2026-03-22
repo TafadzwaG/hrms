@@ -458,16 +458,36 @@ export default function CandidateDashboard() {
                                     <div className="flex h-10 w-10 items-center justify-center bg-zinc-100 text-xs font-bold text-zinc-600">
                                         {job.company_name.substring(0, 2).toUpperCase()}
                                     </div>
-                                    {job.salary_max ? (
-                                        <span className="bg-zinc-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-zinc-600">
-                                            {job.currency ?? 'USD'} {Number(job.salary_max).toLocaleString()}
-                                        </span>
-                                    ) : null}
+                                    <div className="flex flex-col items-end gap-2">
+                                        {job.match ? (
+                                            <span className="rounded-sm border border-black bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white">
+                                                {job.match.score}% {job.match.label}
+                                            </span>
+                                        ) : null}
+                                        {job.salary_max ? (
+                                            <span className="bg-zinc-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-zinc-600">
+                                                {job.currency ?? 'USD'} {Number(job.salary_max).toLocaleString()}
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </div>
                                 <p className="text-sm font-bold text-black">{job.title}</p>
                                 <p className="mt-1 text-[11px] font-medium text-zinc-500">
                                     {job.company_name} - {job.location || 'Remote'}
                                 </p>
+                                {job.match ? (
+                                    <div className="mt-4 rounded-sm border border-zinc-200 bg-zinc-50 p-3">
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Why this fits</p>
+                                        <ul className="mt-2 space-y-1">
+                                            {job.match.reasons.slice(0, 2).map((reason) => (
+                                                <li key={reason} className="flex items-start gap-2 text-[11px] leading-relaxed text-zinc-600">
+                                                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                                    <span>{reason}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : null}
                                 <div className="mt-4 flex items-center justify-between">
                                     <span className="rounded-sm border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
                                         {job.employment_type || 'Full-time'}

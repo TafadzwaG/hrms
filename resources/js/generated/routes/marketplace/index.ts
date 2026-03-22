@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import jobs from './jobs'
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ search.definition = {
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ search.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
     const searchForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
         searchForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,7 +64,7 @@ search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\MarketplaceController::search
- * @see app/Http/Controllers/MarketplaceController.php:25
+ * @see app/Http/Controllers/MarketplaceController.php:21
  * @route '/search'
  */
         searchForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

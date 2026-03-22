@@ -91,6 +91,11 @@ class Vacancy extends Model
         return $this->hasMany(VacancyApplication::class);
     }
 
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(ApplicationInterview::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

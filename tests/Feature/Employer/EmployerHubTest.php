@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ApplicationInterview;
 use App\Models\CandidateProfile;
 use App\Models\CandidateResume;
 use App\Models\CompanyBillingProfile;
@@ -111,6 +112,24 @@ function employerHubCreateApplication(CandidateProfile $candidate, Vacancy $vaca
     ]);
 }
 
+function employerHubCreateInterview(VacancyApplication $application, CompanyProfile $company, array $overrides = []): ApplicationInterview
+{
+    return ApplicationInterview::query()->create([
+        'vacancy_application_id' => $application->id,
+        'company_profile_id' => $company->id,
+        'candidate_profile_id' => $application->candidate_profile_id,
+        'vacancy_id' => $application->vacancy_id,
+        'scheduled_at' => now()->addDays(3),
+        'ends_at' => now()->addDays(3)->addHour(),
+        'timezone' => 'Africa/Johannesburg',
+        'meeting_type' => 'video',
+        'location' => 'Google Meet',
+        'instructions' => 'Bring your portfolio and be ready to discuss platform delivery.',
+        'status' => 'scheduled',
+        ...$overrides,
+    ]);
+}
+
 function employerHubCreatePlan(array $overrides = []): SubscriptionPlan
 {
     return SubscriptionPlan::query()->create([
@@ -203,6 +222,8 @@ test('employer dashboard and reports render live metrics data', function () {
             ->where('metrics.total_vacancies', 1)
             ->has('recentApplications', 1)
             ->has('recommendedTalent', 1)
+            ->has('recentApplications.0.match.reasons.0')
+            ->has('recommendedTalent.0.match.reasons.0')
             ->where('billingSummary.subscription.plan.name', $plan->name)
         );
 
@@ -353,6 +374,7 @@ test('employer candidates page is scoped to owned vacancies and statuses can be 
             ->has('applications.data', 1)
             ->where('applications.data.0.candidate_name', 'Shortlist Me')
             ->where('applications.data.0.vacancy_title', $vacancy->title)
+            ->has('applications.data.0.match.reasons.0')
         );
 
     $this->actingAs($owner)
@@ -373,6 +395,107 @@ test('employer candidates page is scoped to owned vacancies and statuses can be 
             'status' => 'rejected',
         ])
         ->assertNotFound();
+});
+
+test('employer can view a full candidate profile and manage interviews', function () {
+    $owner = User::factory()->create();
+    $company = employerHubCreateCompany($owner);
+    $vacancy = employerHubCreateVacancy($company);
+
+    $candidate = employerHubCreateCandidate([
+        'full_name' => 'Detailed Candidate',
+        'headline' => 'Senior Frontend Engineer',
+        'professional_summary' => 'Builds large hiring platforms with React and Laravel.',
+    ]);
+    $candidate->educations()->create([
+        'institution' => 'State University',
+        'qualification' => 'BSc Computer Science',
+        'field_of_study' => 'Software Engineering',
+        'start_date' => '2015-01-01',
+        'end_date' => '2018-12-01',
+        'grade' => 'Upper Second',
+    ]);
+    $candidate->experiences()->create([
+        'employer_name' => 'Launch Labs',
+        'job_title' => 'Lead Engineer',
+        'start_date' => '2021-01-01',
+        'currently_working' => true,
+        'description' => 'Leads platform delivery.',
+    ]);
+    $candidate->skills()->create([
+        'name' => 'React',
+        'level' => 'expert',
+        'years_experience' => 6,
+    ]);
+
+    $resume = employerHubCreateResume($candidate);
+    $application = employerHubCreateApplication($candidate, $vacancy, $resume, [
+        'status' => 'shortlisted',
+    ]);
+
+    employerHubCreateInterview($application, $company);
+
+    $this->actingAs($owner)
+        ->get(route('employer.candidates.show', $application->id))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Employer/CandidateProfile')
+            ->where('candidate.full_name', 'Detailed Candidate')
+            ->has('educations', 1)
+            ->has('experiences', 1)
+            ->has('skills', 1)
+            ->has('documents', 1)
+            ->has('documents.0.preview_url')
+            ->has('interviews', 1)
+        );
+
+    $candidate->refresh();
+    expect(data_get($candidate->metadata, 'profile_views'))->toBe(1);
+
+    $this->actingAs($owner)
+        ->get(route('employer.candidates.resume.preview', [
+            'application' => $application->id,
+            'resume' => $resume->id,
+        ]))
+        ->assertOk()
+        ->assertHeader('Content-Disposition', 'inline; filename="'.$resume->file_name.'"');
+
+    $this->actingAs($owner)
+        ->from(route('employer.candidates.show', $application->id))
+        ->post(route('employer.interviews.store', $application->id), [
+            'scheduled_at' => now()->addDays(7)->format('Y-m-d H:i:s'),
+            'ends_at' => now()->addDays(7)->addHour()->format('Y-m-d H:i:s'),
+            'timezone' => 'Africa/Johannesburg',
+            'meeting_type' => 'onsite',
+            'location' => 'HQ Boardroom',
+            'instructions' => 'Bring identification and arrive 10 minutes early.',
+        ])
+        ->assertRedirect(route('employer.candidates.show', $application->id));
+
+    $application->refresh();
+    expect($application->status)->toBe('interview');
+
+    $latestInterview = ApplicationInterview::query()->where('vacancy_application_id', $application->id)->latest('id')->first();
+    expect($latestInterview)->not->toBeNull()
+        ->and($latestInterview?->meeting_type)->toBe('onsite');
+
+    $this->actingAs($owner)
+        ->get(route('employer.interviews'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Employer/Interviews')
+            ->has('interviews.data')
+            ->where('interviews.data.0.application_id', $application->id)
+        );
+
+    $this->actingAs($owner)
+        ->from(route('employer.interviews'))
+        ->patch(route('employer.interviews.update', $latestInterview->id), [
+            'status' => 'completed',
+        ])
+        ->assertRedirect(route('employer.interviews'));
+
+    expect($latestInterview->fresh()?->status)->toBe('completed');
 });
 
 test('employer can update company profile and billing subscription data', function () {

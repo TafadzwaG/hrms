@@ -33,7 +33,7 @@ class DashboardController extends BaseEmployerHubController
                 'vacancy' => fn ($query) => $query->withoutGlobalScope(OrganizationScope::class),
                 'candidate' => fn ($query) => $query
                     ->withoutGlobalScope(OrganizationScope::class)
-                    ->with(['skills']),
+                    ->with(['skills', 'experiences', 'educations']),
             ])
             ->latest('applied_at')
             ->get();
@@ -44,16 +44,16 @@ class DashboardController extends BaseEmployerHubController
             ->where('is_public', true)
             ->where('profile_visibility_status', 'active')
             ->whereNotIn('id', $applications->pluck('candidate_profile_id'))
-            ->with(['skills'])
+            ->with(['skills', 'experiences', 'educations'])
             ->get()
             ->map(fn ($candidate) => [
-                'score' => $this->candidateMatchScore($candidate, $openVacancies),
+                'match' => $this->candidateMatchForVacancies($candidate, $openVacancies),
                 'candidate' => $candidate,
             ])
-            ->filter(fn (array $entry) => $entry['score'] > 0)
-            ->sortByDesc('score')
+            ->filter(fn (array $entry) => ($entry['match']['score'] ?? 0) > 0)
+            ->sortByDesc(fn (array $entry) => $entry['match']['score'])
             ->take(5)
-            ->map(fn (array $entry) => $this->presenter->recommendedTalent($entry['candidate'], $entry['score']))
+            ->map(fn (array $entry) => $this->presenter->recommendedTalent($entry['candidate'], $entry['match']))
             ->values()
             ->all();
 
@@ -62,10 +62,12 @@ class DashboardController extends BaseEmployerHubController
             'user' => $this->presenter->user($request->user()),
             'metrics' => $this->presenter->metrics($company, $vacancies, $applications),
             'vacancies' => $vacancies->take(8)->map(fn ($vacancy) => $this->presenter->vacancy($vacancy))->all(),
-            'recentApplications' => $applications->take(6)->map(function ($application) use ($openVacancies) {
+            'recentApplications' => $applications->take(6)->map(function ($application) {
                 return $this->presenter->application(
                     $application,
-                    $application->candidate ? $this->candidateMatchScore($application->candidate, $openVacancies) : null,
+                    $application->candidate && $application->vacancy
+                        ? $this->exchange->matchInsightsForCandidate($application->candidate, $application->vacancy)
+                        : null,
                 );
             })->all(),
             'applicationsByStatus' => $this->presenter->applicationsByStatus($applications),

@@ -125,8 +125,139 @@ test('public search page renders published vacancies with query filters', functi
             ->where('filters.q', 'React')
             ->where('filters.location', 'remote')
             ->where('filters.work_mode', 'remote')
-            ->has('jobs', 2)
+            ->has('jobs', 1)
             ->where('jobs.0.title', $matchingVacancy->title)
+        );
+});
+
+test('public search page surfaces personalized match insights for candidate users', function () {
+    $company = landingSearchCreateCompany();
+    $matchingVacancy = landingSearchCreateVacancy($company);
+
+    landingSearchCreateVacancy($company, [
+        'title' => 'Finance Manager',
+        'department' => 'Finance',
+        'category' => 'finance',
+        'work_mode' => 'onsite',
+        'location' => 'Harare',
+        'description' => 'Lead finance operations and reporting.',
+        'requirements' => 'Finance, compliance, accounting.',
+    ]);
+
+    $user = User::factory()->create();
+    $candidate = landingSearchCreateCandidateProfile($user, [
+        'headline' => 'Senior React Engineer',
+        'professional_summary' => 'Builds React and TypeScript hiring experiences.',
+    ]);
+
+    $candidate->skills()->create([
+        'name' => 'React',
+        'level' => 'expert',
+        'years_experience' => 5,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('marketplace.search', ['q' => 'React']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/SearchResults')
+            ->where('jobs.0.title', $matchingVacancy->title)
+            ->where('jobs.0.match.label', 'Strong Match')
+            ->has('jobs.0.match.reasons.0')
+        );
+});
+
+test('public vacancy detail orders related jobs by exchange relevance', function () {
+    $company = landingSearchCreateCompany();
+    $sourceVacancy = landingSearchCreateVacancy($company, [
+        'title' => 'Senior React Engineer',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'description' => 'Build React and TypeScript candidate experiences.',
+        'requirements' => 'React, TypeScript, frontend systems.',
+    ]);
+
+    landingSearchCreateVacancy($company, [
+        'title' => 'Frontend Platform Engineer',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'description' => 'React, TypeScript, frontend platform work.',
+        'requirements' => 'React, TypeScript, frontend architecture.',
+    ]);
+
+    landingSearchCreateVacancy($company, [
+        'title' => 'Finance Manager',
+        'department' => 'Finance',
+        'category' => 'finance',
+        'work_mode' => 'onsite',
+        'location' => 'Harare',
+        'description' => 'Lead finance operations and reporting.',
+        'requirements' => 'Finance, compliance, accounting.',
+    ]);
+
+    $this->get(route('marketplace.jobs.show', $sourceVacancy->id))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/JobDetail')
+            ->where('relatedJobs.0.title', 'Frontend Platform Engineer')
+        );
+});
+
+test('public vacancy detail personalizes related jobs for logged-in candidates', function () {
+    $company = landingSearchCreateCompany();
+    $sourceVacancy = landingSearchCreateVacancy($company, [
+        'title' => 'Engineering Delivery Manager',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'description' => 'Lead engineering delivery across product teams.',
+        'requirements' => 'Planning, stakeholder communication, and execution.',
+        'responsibilities' => 'Coordinate delivery and remove execution blockers.',
+    ]);
+
+    landingSearchCreateVacancy($company, [
+        'title' => 'Engineering Operations Manager',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'published_at' => now()->subMinute(),
+        'description' => 'Coordinate engineering operations, planning, and reporting.',
+        'requirements' => 'Operations leadership and planning.',
+    ]);
+
+    $recommendedVacancy = landingSearchCreateVacancy($company, [
+        'title' => 'Frontend Platform Engineer',
+        'department' => 'Engineering',
+        'category' => 'information_technology',
+        'work_mode' => 'remote',
+        'published_at' => now()->subDay(),
+        'description' => 'Build React and TypeScript hiring experiences.',
+        'requirements' => 'React, TypeScript, frontend architecture.',
+        'responsibilities' => 'Own frontend delivery and collaborate with design.',
+    ]);
+
+    $user = User::factory()->create();
+    $candidate = landingSearchCreateCandidateProfile($user, [
+        'headline' => 'React TypeScript Engineer',
+        'professional_summary' => 'Builds React platforms and frontend systems.',
+    ]);
+
+    $candidate->skills()->create([
+        'name' => 'React',
+        'level' => 'expert',
+        'years_experience' => 5,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('marketplace.jobs.show', $sourceVacancy->id))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/JobDetail')
+            ->has('job.match.reasons.0')
+            ->where('relatedJobs.0.title', $recommendedVacancy->title)
+            ->where('relatedJobs.0.match.label', 'Strong Match')
         );
 });
 

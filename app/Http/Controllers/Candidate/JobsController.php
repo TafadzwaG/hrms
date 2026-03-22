@@ -22,7 +22,7 @@ class JobsController extends BaseCandidateHubController
             return $candidate;
         }
 
-        $candidate->load(['skills']);
+        $candidate->load(['skills', 'experiences', 'educations']);
 
         $search = $request->string('search')->toString();
         $category = $request->string('category')->toString();
@@ -34,7 +34,7 @@ class JobsController extends BaseCandidateHubController
             ->get()
             ->keyBy('vacancy_id');
 
-        $vacancies = $this->context->vacancyQuery()
+        $vacancyResults = $this->context->vacancyQuery()
             ->where('status', 'published')
             ->with(['company' => fn ($query) => $query->withoutGlobalScope(OrganizationScope::class)])
             ->when($search !== '', function ($query) use ($search) {
@@ -49,10 +49,16 @@ class JobsController extends BaseCandidateHubController
             ->when($category !== '', fn ($query) => $query->where('category', $category))
             ->when($employmentType !== '', fn ($query) => $query->where('employment_type', $employmentType))
             ->when($workMode !== '', fn ($query) => $query->where('work_mode', $workMode))
-            ->get()
-            ->sortByDesc(fn (Vacancy $vacancy) => $this->vacancyMatchScore($candidate, $vacancy))
+            ->get();
+
+        $vacancies = $this->exchange
+            ->rankVacanciesForCandidate($candidate, $vacancyResults)
             ->values()
-            ->map(fn (Vacancy $vacancy) => $this->presenter->vacancy($vacancy, $existingApplications->get($vacancy->id)))
+            ->map(fn (Vacancy $vacancy) => $this->presenter->vacancy(
+                $vacancy,
+                $existingApplications->get($vacancy->id),
+                $this->exchange->matchInsightsForCandidate($candidate, $vacancy),
+            ))
             ->all();
 
         return Inertia::render('Candidate/BrowseJobs', [

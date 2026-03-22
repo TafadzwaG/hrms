@@ -94,6 +94,11 @@ class CompanyProfile extends Model
         return $this->hasMany(CompanyInvoice::class);
     }
 
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(ApplicationInterview::class);
+    }
+
     public function activeSubscription(): HasOne
     {
         return $this->hasOne(CompanySubscription::class)->where('status', 'active')->latestOfMany('started_at');

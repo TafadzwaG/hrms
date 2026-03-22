@@ -88,6 +88,34 @@ class DocumentsController extends BaseCandidateHubController
         ]);
     }
 
+    public function preview(Request $request, int $document)
+    {
+        $candidate = $this->candidate($request);
+
+        if ($candidate instanceof \Illuminate\Http\RedirectResponse) {
+            return $candidate;
+        }
+
+        $resume = $candidate->resumes()->findOrFail($document);
+
+        if (Storage::disk('public')->exists($resume->file_path)) {
+            return Storage::disk('public')->response(
+                $resume->file_path,
+                $resume->file_name,
+                ['Content-Type' => $resume->mime_type ?: 'application/octet-stream']
+            );
+        }
+
+        return response(
+            'Seeded document placeholder for '.$resume->file_name,
+            200,
+            [
+                'Content-Type' => 'text/plain; charset=UTF-8',
+                'Content-Disposition' => 'inline; filename="'.$resume->file_name.'"',
+            ],
+        );
+    }
+
     public function makePrimary(Request $request, int $document): RedirectResponse
     {
         $candidate = $this->candidate($request);

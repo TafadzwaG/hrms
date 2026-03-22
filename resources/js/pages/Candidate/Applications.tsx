@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Briefcase, Calendar, MapPin, Search, Clock, FileText, Download, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Briefcase, Calendar, MapPin, Search, Clock, FileText, Download, ArrowLeft, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +7,7 @@ import {
     CandidateHubLayout,
     formatCandidateDate,
 } from './components/hub';
-import type { CandidateApplication, CandidateUser } from './dummyData';
+import type { CandidateApplication, CandidateInterview, CandidateUser } from './dummyData';
 
 type PageProps = {
     candidate: CandidateUser;
@@ -20,6 +20,10 @@ type PageProps = {
         search?: string;
     };
     statuses: string[];
+    flash?: {
+        success?: string | null;
+        error?: string | null;
+    };
 };
 
 const getStatusStyles = (status: string) => {
@@ -34,7 +38,7 @@ const getStatusStyles = (status: string) => {
 };
 
 export default function CandidateApplicationsPage() {
-    const { candidate, applications, filters, statuses } = usePage<PageProps>().props;
+    const { candidate, applications, filters, statuses, flash } = usePage<PageProps>().props;
 
     const handleFilterChange = (key: string, value: string) => {
         const query = new URLSearchParams(window.location.search);
@@ -44,6 +48,14 @@ export default function CandidateApplicationsPage() {
             query.delete(key);
         }
         router.get(`/candidate/applications?${query.toString()}`, {}, { preserveState: true });
+    };
+
+    const withdrawApplication = (applicationId: number) => {
+        if (!window.confirm('Withdraw this application?')) {
+            return;
+        }
+
+        router.patch(`/candidate/applications/${applicationId}/withdraw`, {}, { preserveScroll: true });
     };
 
     return (
@@ -58,6 +70,20 @@ export default function CandidateApplicationsPage() {
                     <h2 className="text-[2.5rem] font-black tracking-tighter leading-none text-black mb-2 uppercase">Applications.</h2>
                     <p className="text-zinc-500 max-w-xl font-medium">Track and manage your professional journey. Review your current status, interview schedules, and historical submissions.</p>
                 </div>
+
+                {flash?.success ? (
+                    <div className="mb-8 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>{flash.success}</span>
+                    </div>
+                ) : null}
+
+                {flash?.error ? (
+                    <div className="mb-8 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+                        <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>{flash.error}</span>
+                    </div>
+                ) : null}
 
                 {/* Filter Section - Matched to Vacancies Style */}
                 <section className="bg-zinc-50 p-8 border border-zinc-200 rounded-xl mb-12 shadow-sm">
@@ -185,16 +211,47 @@ export default function CandidateApplicationsPage() {
                                                 )}
                                             </div>
 
+                                            {application.interviews && application.interviews.length > 0 ? (
+                                                <div className="mb-8 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                                                    <div className="mb-4 flex items-center justify-between gap-3">
+                                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Interview Schedule</p>
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                                            {application.interviews.length} interview{application.interviews.length === 1 ? '' : 's'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        {application.interviews.map((interview) => (
+                                                            <InterviewCard key={interview.id} interview={interview} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+
                                             {/* Footer Actions */}
                                             <div className="flex justify-end gap-3 pt-6 border-t border-zinc-100">
-                                                <button className="px-6 py-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 hover:text-black border border-transparent rounded transition-colors">
-                                                    Withdraw
+                                                <button
+                                                    type="button"
+                                                    onClick={() => withdrawApplication(application.id)}
+                                                    disabled={['withdrawn', 'rejected', 'hired'].includes(application.status)}
+                                                    className="px-6 py-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 hover:text-black border border-transparent rounded transition-colors disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent"
+                                                >
+                                                    {application.status === 'withdrawn' ? 'Withdrawn' : 'Withdraw'}
                                                 </button>
-                                                <Link href={`/candidate/jobs/${application.vacancy_id}`}>
-                                                    <button className="px-6 py-2 text-xs font-bold uppercase tracking-widest bg-black text-white rounded hover:bg-zinc-800 transition-all">
+                                                {application.vacancy_id ? (
+                                                    <Link href={`/jobs/${application.vacancy_id}`}>
+                                                        <button type="button" className="px-6 py-2 text-xs font-bold uppercase tracking-widest bg-black text-white rounded hover:bg-zinc-800 transition-all">
+                                                            View Job
+                                                        </button>
+                                                    </Link>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        disabled
+                                                        className="px-6 py-2 text-xs font-bold uppercase tracking-widest bg-zinc-200 text-zinc-400 rounded cursor-not-allowed"
+                                                    >
                                                         View Job
                                                     </button>
-                                                </Link>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -249,6 +306,60 @@ export default function CandidateApplicationsPage() {
                 )}
             </div>
         </CandidateHubLayout>
+    );
+}
+
+function InterviewCard({ interview }: { interview: CandidateInterview }) {
+    const respond = (response: 'accepted' | 'rejected') => {
+        router.patch(
+            interview.response_url ?? `/candidate/interviews/${interview.id}/response`,
+            { response },
+            { preserveScroll: true },
+        );
+    };
+
+    return (
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p className="text-sm font-bold text-black">{interview.scheduled_at_label ?? interview.scheduled_at ?? 'Interview schedule pending'}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                        {interview.meeting_type}
+                        {interview.location ? ` • ${interview.location}` : ''}
+                    </p>
+                </div>
+                <span className="rounded-sm border border-zinc-200 bg-zinc-100 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                    {interview.status_label ?? interview.status}
+                </span>
+            </div>
+
+            {interview.instructions ? (
+                <p className="text-sm leading-6 text-zinc-600">{interview.instructions}</p>
+            ) : null}
+
+            {interview.responded_at_label || interview.candidate_response_note ? (
+                <div className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Your Response</p>
+                    <p className="mt-1 text-xs font-semibold text-zinc-500">{interview.responded_at_label || 'Pending response'}</p>
+                    {interview.candidate_response_note ? (
+                        <p className="mt-2 text-sm leading-6 text-zinc-600">{interview.candidate_response_note}</p>
+                    ) : null}
+                </div>
+            ) : null}
+
+            {interview.can_respond ? (
+                <div className="mt-4 flex flex-wrap gap-3">
+                    <button onClick={() => respond('accepted')} className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-zinc-800">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Accept
+                    </button>
+                    <button onClick={() => respond('rejected')} className="inline-flex items-center gap-2 rounded-md border border-red-200 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-red-600 transition-colors hover:bg-red-50">
+                        <XCircle className="h-3.5 w-3.5" />
+                        Decline
+                    </button>
+                </div>
+            ) : null}
+        </div>
     );
 }
 
