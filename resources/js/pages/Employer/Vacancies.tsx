@@ -58,8 +58,8 @@ export default function EmployerVacanciesPage() {
                 {/* compact header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
                     <div>
-                        <h2 className="text-4xl font-black tracking-tighter text-black uppercase leading-none">vacancies.</h2>
-                        <p className="mt-2 text-zinc-500 font-medium tracking-tight text-xs">manage creation, publishing, and lifecycle.</p>
+                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Vacancies</h2>
+                        <p className="mt-1.5 text-sm text-muted-foreground">Manage creation, publishing, and lifecycle.</p>
                     </div>
                     <Link href="/employer/vacancies/create">
                         <button className="bg-black text-white px-5 py-2.5 rounded-sm font-bold text-[10px] tracking-widest uppercase flex items-center gap-2 hover:bg-zinc-800 transition-all active:scale-[0.98]">
@@ -71,7 +71,7 @@ export default function EmployerVacanciesPage() {
                 {/* filter section */}
                 <section className="bg-zinc-50 border border-zinc-200 rounded-sm p-4 mb-6 flex flex-wrap items-end gap-3 shadow-sm">
                     <div className="flex-1 min-w-[200px] space-y-1.5">
-                        <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">search</label>
+                        <label className="block text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1">Search</label>
                         <div className="relative group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
                             <input 
@@ -84,7 +84,7 @@ export default function EmployerVacanciesPage() {
                         </div>
                     </div>
                     <div className="w-40 space-y-1.5">
-                        <label className="block text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">status</label>
+                        <label className="block text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1">Status</label>
                         <select name="status" defaultValue={filters.status} className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-xs focus:border-black focus:ring-0 appearance-none font-medium">
                             <option value="">all statuses</option>
                             {options.statuses.map((status) => (
@@ -110,7 +110,7 @@ export default function EmployerVacanciesPage() {
                                         <div className="flex items-start justify-between">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2.5">
-                                                    <h3 className="text-xl font-black tracking-tighter text-black uppercase">{vacancy.title}</h3>
+                                                    <h3 className="text-base font-semibold tracking-tight text-foreground">{vacancy.title}</h3>
                                                     <span className={`px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-sm border ${getStatusStyles(vacancy.status_code ?? 'draft')}`}>
                                                         {vacancy.status}
                                                     </span>
@@ -164,8 +164,8 @@ export default function EmployerVacanciesPage() {
 
                 {/* pagination */}
                 <div className="mt-10 flex items-center justify-between border-t border-zinc-100 pt-6 mb-10">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
-                        showing {vacancies.data.length} vacancies
+                    <p className="text-xs font-medium text-muted-foreground">
+                        Showing {vacancies.data.length} vacancies
                     </p>
                     <div className="flex items-center gap-1">
                         {vacancies.links.map((link, index) => (
@@ -197,18 +197,18 @@ const Badge = ({ label }: { label: string }) => (
 
 const Metric = ({ label, value }: { label: string; value: string | number }) => (
     <div className="space-y-0.5 min-w-0">
-        <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">{label}</p>
-        <p className="text-sm font-bold text-black truncate">{value}</p>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">{label}</p>
+        <p className="text-sm font-semibold text-foreground truncate">{value}</p>
     </div>
 );
 
 const Panel = ({ label, content }: { label: string; content?: string | null }) => (
     <div className="space-y-1.5">
-        <h4 className="text-[9px] font-black uppercase tracking-widest text-black flex items-center gap-1.5">
+        <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
             <div className="w-1 h-1 bg-zinc-300 rounded-full"></div> {label}
         </h4>
-        <p className="text-[11px] text-zinc-500 leading-relaxed line-clamp-2 italic">
-            {richTextToPlainText(content)?.trim() || `none.`}
+        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+            {richTextToPlainText(content)?.trim() || 'None.'}
         </p>
     </div>
 );

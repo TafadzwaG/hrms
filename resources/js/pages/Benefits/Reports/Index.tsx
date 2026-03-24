@@ -108,7 +108,7 @@ export default function BenefitsReports() {
         >
             <Head title="Benefits Reports" />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="space-y-1">
                     <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
                         Benefits Reports

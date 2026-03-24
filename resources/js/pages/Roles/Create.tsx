@@ -50,7 +50,7 @@ export default function RoleCreate() {
             <form onSubmit={submit} className="space-y-6 p-4 md:p-6 lg:p-8">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Create role</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Create role</h1>
                         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
                             Define a new role and select the permissions it should grant immediately after creation.
                         </p>

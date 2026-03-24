@@ -29,9 +29,11 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowRight,
     Eye,
     Pencil,
     Plus,
+    RotateCcw,
     Search,
     Trash2,
     Package,
@@ -104,11 +106,11 @@ export default function AssetCategoryIndex() {
         >
             <Head title="Asset Categories" />
 
-            <div className="w-full space-y-8 p-4 md:p-8">
+            <div className="w-full space-y-6 p-4 md:p-6">
                 {/* Header Section */}
                 <div className="flex items-start justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                             Asset Categories
                         </h1>
                         <p className="mt-1 text-muted-foreground">
@@ -200,6 +202,7 @@ export default function AssetCategoryIndex() {
                             className="text-muted-foreground"
                             onClick={() => setSearch('')}
                         >
+                            <RotateCcw className="mr-2 h-4 w-4" />
                             Reset
                         </Button>
                     </div>
@@ -264,13 +267,15 @@ export default function AssetCategoryIndex() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
+                                                <Link href={`/asset-categories/${cat.id}`}>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
                                                 <Link
                                                     href={`/asset-categories/${cat.id}/edit`}
                                                 >

@@ -218,7 +218,7 @@ export default function EnrollmentIndex() {
         >
             <Head title="Benefit Enrollments" />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
@@ -249,7 +249,7 @@ export default function EnrollmentIndex() {
                                     <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
                                         {item.label}
                                     </p>
-                                    <p className="text-3xl font-bold text-zinc-900">{item.val}</p>
+                                    <p className="text-2xl font-semibold text-zinc-900">{item.val}</p>
                                 </div>
                                 <item.icon className="h-6 w-6 text-zinc-400" />
                             </CardContent>

@@ -230,7 +230,7 @@ export default function PerformanceReviewShow() {
                         {/* Review Overview */}
                         <Card className="border-border bg-background shadow-sm">
                             <CardContent className="flex flex-col p-0 md:flex-row">
-                                <div className="flex-1 space-y-6 p-6 md:p-8">
+                                <div className="flex-1 space-y-6 p-4 md:p-6">
                                     <h3 className="text-base font-bold text-foreground">
                                         Review Overview
                                     </h3>

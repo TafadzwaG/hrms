@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type LocationPayload = {
@@ -164,6 +164,7 @@ export default function AssetLocationEdit() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href="/asset-locations">
                             <Button variant="outline" type="button">
+                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

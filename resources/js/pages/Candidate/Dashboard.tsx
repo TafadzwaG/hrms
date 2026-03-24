@@ -142,7 +142,7 @@ export default function CandidateDashboard() {
                         </div>
                         {candidate.professional_summary ? (
                             <div className="border-t border-zinc-200 pt-4">
-                                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-zinc-500">Summary</p>
+                                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-zinc-500">Summary</p>
                                 <p className="text-sm leading-relaxed text-zinc-600">{candidate.professional_summary}</p>
                             </div>
                         ) : (
@@ -167,8 +167,8 @@ export default function CandidateDashboard() {
                                     <div key={experience.id} className="border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="text-sm font-bold text-black">{experience.job_title}</p>
-                                                <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-400">{experience.employer_name}</p>
+                                                <p className="text-sm font-semibold text-foreground">{experience.job_title}</p>
+                                                <p className="mt-1 text-xs font-medium uppercase tracking-widest text-zinc-500">{experience.employer_name}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-500">
@@ -209,8 +209,8 @@ export default function CandidateDashboard() {
                                     <div key={education.id} className="border-b border-zinc-100 pb-4 last:border-0 last:pb-0">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <p className="text-sm font-bold text-black">{education.qualification}</p>
-                                                <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                                                <p className="text-sm font-semibold text-foreground">{education.qualification}</p>
+                                                <p className="mt-1 text-xs font-medium uppercase tracking-widest text-zinc-500">
                                                     {education.institution}
                                                     {education.field_of_study ? ` - ${education.field_of_study}` : ''}
                                                 </p>
@@ -247,17 +247,17 @@ export default function CandidateDashboard() {
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="border-b border-zinc-200 bg-zinc-50">
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Position</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Company</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Status</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Applied</th>
+                                            <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500">Position</th>
+                                            <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500">Company</th>
+                                            <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500">Status</th>
+                                            <th className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500">Applied</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-zinc-100">
                                         {recentApplications.map((application) => (
                                             <tr key={application.id} className="transition-colors hover:bg-zinc-50">
                                                 <td className="px-4 py-4">
-                                                    <p className="text-sm font-bold text-black">{application.vacancy_title}</p>
+                                                    <p className="text-sm font-semibold text-foreground">{application.vacancy_title}</p>
                                                     {application.location ? (
                                                         <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium text-zinc-500">
                                                             <MapPin className="h-3 w-3" />
@@ -388,7 +388,7 @@ export default function CandidateDashboard() {
                                         <div className="flex items-center gap-3">
                                             <FileText className="h-4 w-4 text-zinc-400" />
                                             <div>
-                                                <p className="text-sm font-bold text-black">{resume.file_name}</p>
+                                                <p className="text-sm font-semibold text-foreground">{resume.file_name}</p>
                                                 <p className="text-[11px] font-medium text-zinc-500">{formatCandidateDate(resume.uploaded_at)}</p>
                                             </div>
                                         </div>
@@ -414,7 +414,7 @@ export default function CandidateDashboard() {
                         <div className="space-y-4">
                             {Object.entries(applicationsByStatus).map(([status, count]) => (
                                 <div key={status}>
-                                    <div className="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <div className="mb-2 flex items-center justify-between text-xs font-medium uppercase tracking-widest">
                                         <span className="text-zinc-500">{status}</span>
                                         <span>{count}</span>
                                     </div>
@@ -443,7 +443,7 @@ export default function CandidateDashboard() {
             {recommendedVacancies.length > 0 ? (
                 <div className="mt-10">
                     <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-xl font-bold tracking-tight text-black">Recommended Opportunities</h2>
+                        <h2 className="text-base font-semibold tracking-tight text-foreground">Recommended Opportunities</h2>
                         <Link href="/candidate/jobs">
                             <Button variant="outline" size="sm" className={candidateSecondaryButtonClassName}>
                                 Browse Jobs
@@ -471,7 +471,7 @@ export default function CandidateDashboard() {
                                         ) : null}
                                     </div>
                                 </div>
-                                <p className="text-sm font-bold text-black">{job.title}</p>
+                                <p className="text-sm font-semibold text-foreground">{job.title}</p>
                                 <p className="mt-1 text-[11px] font-medium text-zinc-500">
                                     {job.company_name} - {job.location || 'Remote'}
                                 </p>
@@ -522,10 +522,10 @@ function KpiCard({
         <div className="group flex flex-col justify-between border border-zinc-200/50 bg-white p-6 transition-all duration-300 hover:bg-zinc-50">
             <div className="mb-4 flex items-start justify-between">
                 <span className="text-zinc-400 transition-colors group-hover:text-black">{icon}</span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">{sub}</span>
+                <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{sub}</span>
             </div>
             <div>
-                <p className="text-3xl font-bold tracking-tighter text-black">{value}</p>
+                <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
                 <p className="text-sm font-medium text-zinc-500">{label}</p>
             </div>
         </div>

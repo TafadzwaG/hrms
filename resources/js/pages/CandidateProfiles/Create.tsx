@@ -96,7 +96,7 @@ export default function CandidateProfileCreate() {
                                             Personal Information
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div className="space-y-3">
                                                 <Label className="text-sm font-semibold">
@@ -178,7 +178,7 @@ export default function CandidateProfileCreate() {
                                             Application Details
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div className="space-y-3 md:col-span-2">
                                                 <Label className="text-sm font-semibold">

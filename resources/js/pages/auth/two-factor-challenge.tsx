@@ -10,6 +10,7 @@ import {
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
+import { ArrowRight } from 'lucide-react';
 import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/two-factor/login';
 
@@ -108,6 +109,7 @@ export default function TwoFactorChallenge() {
                                 disabled={processing}
                             >
                                 Continue
+                                <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
 
                             <div className="text-center text-sm text-muted-foreground">

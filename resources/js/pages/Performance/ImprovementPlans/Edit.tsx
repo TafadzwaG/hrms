@@ -18,7 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 
 type Employee = {
     id: number;
@@ -261,7 +261,7 @@ export default function ImprovementPlanEdit() {
                     {/* Actions */}
                     <div className="flex justify-end gap-4">
                         <Link href={`/improvement-plans/${plan.id}`}>
-                            <Button variant="outline" type="button">Cancel</Button>
+                            <Button variant="outline" type="button"><X className="mr-2 h-4 w-4" />Cancel</Button>
                         </Link>
                         <Button type="submit" disabled={processing}>
                             <Save className="mr-2 h-4 w-4" />

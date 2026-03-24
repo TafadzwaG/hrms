@@ -57,10 +57,10 @@ export default function CandidateDocumentsPage() {
             active="documents"
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Page Title */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Documents.</h1>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Documents.</h1>
                     <p className="text-zinc-500 max-w-xl text-sm font-medium">Upload resumes, portfolios, and supporting documents.</p>
                 </div>
 

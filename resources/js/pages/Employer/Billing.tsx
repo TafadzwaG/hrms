@@ -47,21 +47,21 @@ export default function EmployerBillingPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-black tracking-tighter text-black mb-1 uppercase">Billing.</h2>
-                    <p className="text-zinc-500 text-xs font-medium">Manage your enterprise subscription, profile details, and review invoice history.</p>
+            <div className="w-full px-4 md:px-6">
+                <div className="mb-6">
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Billing</h2>
+                    <p className="text-sm text-muted-foreground">Manage your enterprise subscription, profile details, and review invoice history.</p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column: Profile & Subscription */}
-                    <div className="lg:col-span-5 flex flex-col gap-8">
+                    <div className="lg:col-span-5 flex flex-col gap-6">
                         
                         {/* Billing Profile (No Card Background) */}
                         <section className="space-y-6">
                             <div className="flex items-center gap-2 border-b border-zinc-200 pb-3">
                                 <Mail className="h-4 w-4 text-black" />
-                                <h3 className="text-sm font-bold uppercase tracking-tight">Billing Profile</h3>
+                                <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-700">Billing Profile</h3>
                             </div>
                             
                             <div className="space-y-4">
@@ -98,10 +98,10 @@ export default function EmployerBillingPage() {
                         <section className="bg-black text-white p-6 rounded-sm shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:bg-white/10"></div>
                             <div className="relative z-10">
-                                <div className="flex items-start justify-between mb-8">
+                                <div className="flex items-start justify-between mb-6">
                                     <div>
                                         <div className="inline-flex items-center gap-2 bg-white/10 px-2 py-0.5 rounded-sm mb-3">
-                                            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                                            <span className="w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse"></span>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-white">Active Plan</span>
                                         </div>
                                         <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function EmployerBillingPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="grid grid-cols-2 gap-4 mb-6">
                                     <div className="space-y-0.5">
                                         <p className="text-[8px] font-bold uppercase tracking-widest text-white/50 flex items-center gap-1"><CreditCard className="h-2.5 w-2.5" /> Seats</p>
                                         <p className="text-base font-bold">{subscription?.seats ?? 0} <span className="text-white/20 text-xs">/ 50</span></p>
@@ -140,12 +140,12 @@ export default function EmployerBillingPage() {
                     {/* Right Column: Invoices */}
                     <div className="lg:col-span-7">
                         <section className="bg-white p-6 border border-zinc-200 rounded-sm shadow-sm h-full">
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 className="text-sm font-black uppercase tracking-tight flex items-center gap-2">
+                                    <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-700 flex items-center gap-2">
                                         <FileText className="h-4 w-4" /> Invoice History
                                     </h3>
-                                    <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-widest mt-1">Download and manage statements.</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Download and manage statements.</p>
                                 </div>
                                 <button className="text-[9px] font-black uppercase tracking-widest text-black border-b-2 border-black pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-colors">
                                     Export CSV
@@ -153,7 +153,7 @@ export default function EmployerBillingPage() {
                             </div>
 
                             <div className="space-y-0">
-                                <div className="hidden md:grid grid-cols-12 px-3 py-2 bg-zinc-50 mb-4 rounded-sm text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 border border-zinc-100">
+                                <div className="hidden md:grid grid-cols-12 px-3 py-2 bg-zinc-50 mb-4 rounded-sm text-xs font-medium uppercase tracking-widest text-zinc-500 border border-zinc-100">
                                     <div className="col-span-2 flex items-center gap-1"><Hash className="h-2.5 w-2.5" /> ID</div>
                                     <div className="col-span-4 flex items-center gap-1"><FileText className="h-2.5 w-2.5" /> Desc</div>
                                     <div className="col-span-2 text-center flex items-center gap-1 justify-center"><Calendar className="h-2.5 w-2.5" /> Date</div>
@@ -219,7 +219,7 @@ function FormField({
 }) {
     return (
         <div className="flex flex-col gap-0.5">
-            <label className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-0.5">
+            <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-zinc-500 mb-0.5">
                 {icon} {label}
             </label>
             {children}

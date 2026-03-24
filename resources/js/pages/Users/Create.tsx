@@ -139,7 +139,7 @@ export default function UserCreate() {
                                     state.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6 p-6 md:p-8">
+                            <CardContent className="space-y-6 p-4 md:p-6">
                                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                     <Field
                                         label="Full Name"

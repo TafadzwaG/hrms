@@ -84,8 +84,8 @@ export function CandidateHubLayout({
         <div className="flex h-screen overflow-hidden bg-[#f9f9f9] font-['Inter'] antialiased text-zinc-950">
             <Head title={`${title} - Candidate Hub`} />
 
-            <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 lg:flex z-50">
-                <div className="px-6 py-8">
+            <aside className="hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 lg:flex z-50">
+                <div className="px-5 py-6">
                     <Link href="/" className="flex items-center gap-2">
                         <Zap className="h-6 w-6 text-black" fill="currentColor" />
                         <span className="text-xl font-black uppercase tracking-tighter text-black">HRX Hub</span>
@@ -122,7 +122,7 @@ export function CandidateHubLayout({
             ) : null}
 
             <main className="flex flex-1 flex-col overflow-hidden">
-                <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/80 px-6 backdrop-blur-md lg:px-10">
+                <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/80 px-5 backdrop-blur-md lg:px-8">
                     <div className="flex items-center gap-4">
                         <Button
                             type="button"
@@ -139,7 +139,7 @@ export function CandidateHubLayout({
                             <div className="flex items-center gap-3">
                                 <h1 className="text-2xl font-semibold tracking-tight text-black">{title}</h1>
                                 {candidate.is_verified ? (
-                                    <span className="flex items-center gap-1 rounded border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                                    <span className="flex items-center gap-1 rounded border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
                                         <ShieldCheck className="h-3 w-3" />
                                         Verified
                                     </span>
@@ -160,7 +160,7 @@ export function CandidateHubLayout({
 
                         {completeness !== undefined ? (
                             <div className="hidden items-center gap-3 sm:flex">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Profile</span>
+                                <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-400">Profile</span>
                                 <div className="h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200">
                                     <div className="h-full bg-black transition-all duration-500" style={{ width: `${completeness}%` }} />
                                 </div>
@@ -181,7 +181,7 @@ export function CandidateHubLayout({
                     </div>
                 </header>
 
-                <div className="no-scrollbar flex-1 overflow-y-auto p-6 md:p-10">{children}</div>
+                <div className="no-scrollbar flex-1 overflow-y-auto p-4 md:p-8">{children}</div>
             </main>
         </div>
     );
@@ -202,7 +202,7 @@ function CandidateSidebarContent({
         <div className="flex h-full flex-col justify-between">
             <div className="space-y-6">
                 <div>
-                    <h3 className="mb-3 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Candidate Hub</h3>
+                    <h3 className="mb-3 px-6 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Candidate Hub</h3>
                     <nav className="space-y-1 px-3">
                         <CandidateSidebarLink href={candidateLinks.dashboard} icon={<LayoutDashboard size={18} />} label="Dashboard" active={active === 'dashboard'} onNavigate={onNavigate} />
                         <CandidateSidebarLink href={candidateLinks.applications} icon={<Briefcase size={18} />} label="My Applications" active={active === 'applications'} onNavigate={onNavigate} />
@@ -213,7 +213,7 @@ function CandidateSidebarContent({
                 </div>
 
                 <div>
-                    <h3 className="mb-3 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Career</h3>
+                    <h3 className="mb-3 px-6 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Career</h3>
                     <nav className="space-y-1 px-3">
                         <CandidateSidebarLink href={candidateLinks.education} icon={<GraduationCap size={18} />} label="Education" active={active === 'education'} onNavigate={onNavigate} />
                         <CandidateSidebarLink href={candidateLinks.skills} icon={<Wrench size={18} />} label="Skills" active={active === 'skills'} onNavigate={onNavigate} />
@@ -228,7 +228,7 @@ function CandidateSidebarContent({
                         {getInitials(candidate.full_name)}
                     </div>
                     <div className="min-w-0">
-                        <span className="block truncate text-xs font-bold text-black">{candidate.full_name || 'Candidate'}</span>
+                        <span className="block truncate text-xs font-semibold text-foreground">{candidate.full_name || 'Candidate'}</span>
                         <span className="block truncate text-[10px] text-zinc-500">{candidate.email}</span>
                     </div>
                 </div>
@@ -283,11 +283,11 @@ export function CandidateSectionCard({
     children: ReactNode;
 }) {
     return (
-        <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
-            <div className="mb-6 flex items-center justify-between border-b border-zinc-200 pb-4">
+        <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between border-b border-zinc-200 pb-3">
                 <div className="flex items-center gap-2">
                     {icon ? <span className="text-zinc-400">{icon}</span> : null}
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">{title}</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">{title}</h3>
                 </div>
                 {action}
             </div>
@@ -311,8 +311,8 @@ export function CandidateInfoField({
                 {icon}
             </div>
             <div>
-                <p className="mb-1.5 text-[9px] font-bold uppercase leading-none tracking-wider text-zinc-400">{label}</p>
-                <div className="text-sm font-bold text-black">{value ?? <span className="font-medium italic text-zinc-400">Not provided</span>}</div>
+                <p className="mb-1.5 text-xs font-medium uppercase leading-none tracking-widest text-zinc-400">{label}</p>
+                <div className="text-sm font-semibold text-foreground">{value ?? <span className="font-medium italic text-zinc-400">Not provided</span>}</div>
             </div>
         </div>
     );
@@ -322,7 +322,7 @@ export function CandidateEmptyState({ message }: { message: string }) {
     return (
         <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 py-12 text-center">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-zinc-300" />
-            <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{message}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">{message}</p>
         </div>
     );
 }

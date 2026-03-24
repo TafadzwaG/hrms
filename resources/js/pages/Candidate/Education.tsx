@@ -61,9 +61,9 @@ export default function CandidateEducationPage() {
             subtitle='Academic Qualifications'
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Page Title */}
-                <div className="mb-8">
+                <div className="mb-6">
                     <h1 className="text-4xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Education.</h1>
                     <p className="text-zinc-500 text-sm font-medium max-w-xl">Manage your academic history and certifications.</p>
                 </div>

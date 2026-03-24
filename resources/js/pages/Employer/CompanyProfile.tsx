@@ -45,9 +45,9 @@ export default function EmployerCompanyProfilePage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">Company Profile.</h1>
+            <div className="w-full px-4 md:px-6">
+                <header className="mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Company Profile.</h1>
                     <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
                         Configure your organization's public identity, operational details, and billing entities.
                     </p>

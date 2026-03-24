@@ -248,7 +248,7 @@ export default function CandidateShow() {
         >
             <Head title={candidate.full_name} />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">

@@ -116,7 +116,7 @@ export default function OnboardingTaskEdit() {
                                             task assignment.
                                         </p>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:gap-8">
                                             {/* Assigned Employee */}
                                             <div className="space-y-3 md:col-span-2">

@@ -42,18 +42,21 @@ const employerLinks = {
 };
 
 const employerStatusColor: Record<string, string> = {
-    active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    draft: 'bg-zinc-100 text-zinc-500 border-zinc-200',
-    published: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    open: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    closed: 'bg-amber-50 text-amber-700 border-amber-200',
-    archived: 'bg-red-50 text-red-700 border-red-200',
-    suspended: 'bg-red-50 text-red-700 border-red-200',
-    scheduled: 'bg-blue-50 text-blue-700 border-blue-200',
-    accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    rejected: 'bg-red-50 text-red-700 border-red-200',
+    // Active / live states — dark
+    active: 'bg-zinc-900 text-white border-zinc-900',
+    published: 'bg-zinc-900 text-white border-zinc-900',
+    open: 'bg-zinc-900 text-white border-zinc-900',
+    accepted: 'bg-zinc-900 text-white border-zinc-900',
     completed: 'bg-zinc-900 text-white border-zinc-900',
+    // Mid-weight states
+    scheduled: 'bg-zinc-200 text-zinc-800 border-zinc-300',
+    closed: 'bg-zinc-200 text-zinc-700 border-zinc-300',
+    // Neutral / inactive states
+    draft: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+    archived: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+    suspended: 'bg-zinc-200 text-zinc-600 border-zinc-300',
     cancelled: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+    rejected: 'bg-white text-zinc-400 border-zinc-200',
 };
 
 export function EmployerHubLayout({
@@ -75,8 +78,8 @@ export function EmployerHubLayout({
             <Head title={`${title} - Employer Hub`} />
 
             {/* Desktop Sidebar */}
-            <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 lg:flex z-50">
-                <div className="px-6 py-8">
+            <aside className="hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 lg:flex z-50">
+                <div className="px-5 py-6">
                     <Link href="/" className="flex items-center gap-2">
                         <ShieldCheck className="h-6 w-6 text-black" />
                         <span className="text-xl font-black tracking-tighter text-black uppercase">HRX Hub</span>
@@ -115,7 +118,7 @@ export function EmployerHubLayout({
 
             <main className="flex flex-1 flex-col overflow-hidden">
                 {/* Topbar */}
-                <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/80 backdrop-blur-md px-6 lg:px-10">
+                <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/80 backdrop-blur-md px-5 lg:px-8">
                     <div className="flex items-center gap-4">
                         <Button
                             type="button"
@@ -130,7 +133,7 @@ export function EmployerHubLayout({
 
                         <div className="hidden md:flex items-center gap-3">
                             <h1 className="text-2xl font-semibold tracking-tight text-black">{title}</h1>
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded border ${employerStatusColor[(company.status || '').toLowerCase()] || ''}`}>
+                            <span className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded border ${employerStatusColor[(company.status || '').toLowerCase()] || ''}`}>
                                 {company.status || 'Active'}
                             </span>
                         </div>
@@ -156,7 +159,7 @@ export function EmployerHubLayout({
                 </header>
 
                 {/* Page Content Canvas */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 no-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar">
                     {children}
                 </div>
             </main>
@@ -181,7 +184,7 @@ function EmployerSidebarContent({
         <div className="flex flex-col h-full justify-between">
             <div className="space-y-6">
                 <div>
-                    <h3 className="px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Employer Hub</h3>
+                    <h3 className="px-6 mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Employer Hub</h3>
                     <nav className="space-y-1 px-3">
                         <EmployerSidebarLink href={employerLinks.dashboard} icon={<LayoutDashboard size={18} />} label="Dashboard" active={active === 'dashboard'} onNavigate={onNavigate} />
                         <EmployerSidebarLink href={employerLinks.vacancies} icon={<Briefcase size={18} />} label="Vacancies" active={active === 'vacancies'} onNavigate={onNavigate} />
@@ -191,7 +194,7 @@ function EmployerSidebarContent({
                 </div>
 
                 <div>
-                    <h3 className="px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Organization</h3>
+                    <h3 className="px-6 mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Organization</h3>
                     <nav className="space-y-1 px-3">
                         <EmployerSidebarLink href={employerLinks.reports} icon={<BarChart3 size={18} />} label="Reports" active={active === 'reports'} onNavigate={onNavigate} />
                         <EmployerSidebarLink href={employerLinks.company} icon={<Building2 size={18} />} label="Company Profile" active={active === 'company'} onNavigate={onNavigate} />
@@ -206,7 +209,7 @@ function EmployerSidebarContent({
                         {getEmployerInitials(user?.name)}
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-black truncate">{user?.name || 'John Doe'}</span>
+                        <span className="text-xs font-semibold text-foreground truncate">{user?.name || 'John Doe'}</span>
                         <span className="text-[10px] text-zinc-500 truncate">{company.company_name}</span>
                     </div>
                 </div>
@@ -263,11 +266,11 @@ export function EmployerSectionCard({
     children: ReactNode;
 }) {
     return (
-        <section className="bg-zinc-50 border border-zinc-200 p-6 rounded-lg shadow-sm">
-            <div className="flex items-center justify-between mb-6 border-b border-zinc-200 pb-4">
+        <section className="bg-zinc-50 border border-zinc-200 p-5 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between mb-4 border-b border-zinc-200 pb-3">
                 <div className="flex items-center gap-2">
                     {icon && <span className="text-zinc-400">{icon}</span>}
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">{title}</h3>
+                    <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">{title}</h3>
                 </div>
                 {action}
             </div>
@@ -281,7 +284,7 @@ export function EmployerStatusBadge({ status }: { status: string }) {
 
     return (
         <span
-            className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded border ${
+            className={`px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest rounded border ${
                 employerStatusColor[normalized] || 'border-zinc-200 bg-zinc-100 text-zinc-500'
             }`}
         >
@@ -294,7 +297,7 @@ export function EmployerEmptyState({ message }: { message: string }) {
     return (
         <div className="py-12 text-center border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-zinc-300" />
-            <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{message}</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">{message}</p>
         </div>
     );
 }

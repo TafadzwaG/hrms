@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
@@ -171,6 +171,7 @@ export default function AssetVendorCreate() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href="/asset-vendors">
                             <Button variant="outline" type="button">
+                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

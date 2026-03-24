@@ -9,7 +9,7 @@ import skillsC32d22 from './skills'
 import settings69f00b from './settings'
 /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -24,7 +24,7 @@ login.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -33,7 +33,7 @@ login.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -42,7 +42,7 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -52,7 +52,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
     const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -62,7 +62,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
         loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -71,7 +71,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:17
+ * @see app/Http/Controllers/CandidateAuthController.php:18
  * @route '/candidate/login'
  */
         loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -87,7 +87,7 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     login.form = loginForm
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -102,7 +102,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
 register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
 register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -130,7 +130,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -140,7 +140,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
         registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -149,7 +149,7 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:43
+ * @see app/Http/Controllers/CandidateAuthController.php:56
  * @route '/candidate/register'
  */
         registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

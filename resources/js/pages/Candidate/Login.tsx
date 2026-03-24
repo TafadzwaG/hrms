@@ -27,38 +27,38 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12 font-sans">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 px-4 py-12 font-sans">
             <Head title="Candidate Login" />
 
             <div className="mb-8 flex flex-col items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900">
                     <AppLogoIcon className="h-6 w-6 fill-white" />
                 </div>
-                <span className="text-lg font-semibold text-slate-900">HRX Candidate Portal</span>
+                <span className="text-lg font-semibold text-zinc-900">HRX Candidate Portal</span>
             </div>
 
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm sm:p-10">
                 <div className="mb-8 text-center">
-                    <div className="mb-2 flex items-center justify-center gap-2 text-slate-500">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-zinc-500">
                         <User className="h-5 w-5" />
                         <span className="text-sm font-medium uppercase tracking-wide">Candidate Portal</span>
                     </div>
-                    <p className="text-sm text-slate-500">Log in to manage your applications and profile</p>
+                    <p className="text-sm text-zinc-500">Log in to manage your applications and profile</p>
                 </div>
 
                 {status ? (
-                    <div className="mb-6 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-center text-sm font-medium text-emerald-700">
+                    <div className="mb-6 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-center text-sm font-medium text-zinc-700">
                         {status}
                     </div>
                 ) : null}
 
                 <form onSubmit={submit} className="flex flex-col gap-5">
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-slate-700">
+                        <Label htmlFor="email" className="text-zinc-700">
                             Email Address
                         </Label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 id="email"
                                 type="email"
@@ -76,17 +76,17 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
 
                     <div className="grid gap-2">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="password" className="text-slate-700">
+                            <Label htmlFor="password" className="text-zinc-700">
                                 Password
                             </Label>
                             {canResetPassword ? (
-                                <Link href="/candidate/forgot-password" className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900">
+                                <Link href="/candidate/forgot-password" className="text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-900">
                                     Forgot password?
                                 </Link>
                             ) : null}
                         </div>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 id="password"
                                 type="password"
@@ -107,14 +107,14 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
                             type="checkbox"
                             checked={data.remember}
                             onChange={(event) => setData('remember', event.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
                         />
-                        <Label htmlFor="remember" className="text-sm text-slate-600">
+                        <Label htmlFor="remember" className="text-sm text-zinc-600">
                             Remember me
                         </Label>
                     </div>
 
-                    <Button type="submit" className="mt-2 w-full bg-slate-900 py-5 font-semibold text-white hover:bg-slate-800" disabled={processing}>
+                    <Button type="submit" className="mt-2 w-full bg-zinc-900 py-5 font-semibold text-white hover:bg-zinc-800" disabled={processing}>
                         {processing ? <Spinner className="mr-2" /> : null}
                         Log In
                     </Button>
@@ -125,13 +125,13 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
                         <div className="w-full border-t border-slate-200" />
                     </div>
                     <div className="relative flex justify-center text-xs">
-                        <span className="bg-white px-3 text-slate-400 uppercase tracking-wide">Or continue with</span>
+                        <span className="bg-white px-3 text-zinc-400 uppercase tracking-wide">Or continue with</span>
                     </div>
                 </div>
 
                 <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50"
                 >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                         <path
@@ -155,9 +155,9 @@ export default function CandidateLogin({ status, canResetPassword = true }: Prop
                 </button>
             </div>
 
-            <p className="mt-6 text-center text-sm text-slate-500">
+            <p className="mt-6 text-center text-sm text-zinc-500">
                 Don&apos;t have an account?{' '}
-                <Link href="/candidate/register" className="font-semibold text-slate-900 hover:underline">
+                <Link href="/candidate/register" className="font-semibold text-zinc-900 hover:underline">
                     Create candidate account
                 </Link>
             </p>

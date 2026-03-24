@@ -71,7 +71,7 @@ export default function RoleShow() {
                             {role.is_protected ? <Badge variant="outline">Seeded role</Badge> : null}
                         </div>
                         <div>
-                            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{role.name}</h1>
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{role.name}</h1>
                             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{role.description || 'No role description provided.'}</p>
                         </div>
                     </div>
@@ -202,7 +202,7 @@ function MetricCard({ title, value, description }: { title: string; value: numbe
         <Card className="rounded-2xl border-border shadow-sm">
             <CardContent className="p-5">
                 <div className="text-sm font-medium text-muted-foreground">{title}</div>
-                <div className="mt-2 text-3xl font-semibold text-foreground">{value}</div>
+                <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
                 <div className="mt-2 text-sm text-muted-foreground">{description}</div>
             </CardContent>
         </Card>

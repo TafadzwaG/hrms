@@ -132,7 +132,7 @@ export default function DocumentEdit() {
                                             General Information
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <div className="space-y-3">
                                                 <Label className="text-sm font-semibold">
@@ -274,7 +274,7 @@ export default function DocumentEdit() {
                                             File & Validity
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="space-y-3">
                                             <Label className="text-sm font-semibold">
                                                 File Storage URI{' '}
@@ -369,7 +369,7 @@ export default function DocumentEdit() {
                                             Security & Metadata
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="max-w-md space-y-3">
                                             <Label className="text-sm font-semibold">
                                                 Access Policy{' '}

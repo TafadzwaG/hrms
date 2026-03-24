@@ -105,7 +105,7 @@ export default function PerformanceReviewEdit() {
                                             Basic Information
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="space-y-3">
                                             <Label className="text-sm font-semibold">
                                                 Cycle Name
@@ -274,7 +274,7 @@ export default function PerformanceReviewEdit() {
                                             Timeline Configuration
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:gap-8">
                                             <div className="space-y-3">
                                                 <Label className="text-sm font-semibold">

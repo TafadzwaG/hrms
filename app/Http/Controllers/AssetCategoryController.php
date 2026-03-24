@@ -46,6 +46,45 @@ class AssetCategoryController extends Controller
             ->with('success', 'Asset category created successfully.');
     }
 
+    public function show(AssetCategory $assetCategory)
+    {
+        $assetCategory->load(['parent:id,name', 'children:id,name,code']);
+
+        $recentAssets = $assetCategory->assets()
+            ->with('location:id,name')
+            ->select(['id', 'name', 'asset_tag', 'status', 'condition', 'asset_location_id', 'purchase_price', 'currency'])
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'asset_tag' => $a->asset_tag,
+                'status' => $a->status,
+                'condition' => $a->condition,
+                'location' => $a->location?->name,
+                'purchase_price' => $a->purchase_price,
+                'currency' => $a->currency,
+                'links' => ['show' => "/assets/{$a->id}"],
+            ]);
+
+        return Inertia::render('AssetCategories/Show', [
+            'category' => [
+                'id' => $assetCategory->id,
+                'name' => $assetCategory->name,
+                'code' => $assetCategory->code,
+                'description' => $assetCategory->description,
+                'depreciation_method' => $assetCategory->depreciation_method,
+                'useful_life_years' => $assetCategory->useful_life_years,
+                'depreciation_rate' => $assetCategory->depreciation_rate,
+                'parent' => $assetCategory->parent ? ['id' => $assetCategory->parent->id, 'name' => $assetCategory->parent->name] : null,
+                'children' => $assetCategory->children->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'code' => $c->code]),
+                'assets_count' => $assetCategory->assets()->count(),
+                'recent_assets' => $recentAssets,
+            ],
+        ]);
+    }
+
     public function edit(AssetCategory $assetCategory)
     {
         return Inertia::render('AssetCategories/Edit', [

@@ -49,11 +49,11 @@ export default function EmployerVacancyShowPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Page Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                     <div>
-                        <h2 className="text-3xl font-black tracking-tighter leading-none text-black mb-1.5 uppercase">{vacancy.title}</h2>
+                        <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1">{vacancy.title}</h2>
                         <p className="text-zinc-500 text-xs font-medium">Vacancy overview and application pipeline.</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export default function EmployerVacancyShowPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column: Vacancy Details */}
                     <div className="lg:col-span-7 space-y-6">
                         <section className="bg-white p-5 border border-zinc-200 rounded-sm shadow-sm">

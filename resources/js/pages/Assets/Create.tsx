@@ -13,15 +13,19 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
-    Save,
-    Box,
-    Receipt,
-    MapPin,
     BarChart3,
+    Box,
+    ImageIcon,
+    MapPin,
     Notebook,
+    Receipt,
+    Save,
     ScanBarcode,
+    Trash2,
+    X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 
 type AssetOptions = {
     categories: { id: number; name: string }[];
@@ -84,11 +88,26 @@ export default function AssetCreate() {
         condition: 'new',
         barcode: '',
         notes: '',
+        image: null as File | null,
     });
+
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        setData('image', file);
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setImagePreview(null);
+        }
+    };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post('/assets', { preserveScroll: true });
+        post('/assets', { preserveScroll: true, forceFormData: true });
     };
 
     return (
@@ -101,7 +120,7 @@ export default function AssetCreate() {
             <Head title="New Asset" />
 
             {/* Changed from max-w-4xl to w-full and added larger padding */}
-            <div className="w-full space-y-6 p-6 lg:p-10">
+            <div className="w-full space-y-6 p-4 lg:p-8">
                 {/* Header Area */}
                 <div className="flex items-center justify-between border-b pb-6">
                     <div className="flex items-center gap-4">
@@ -115,7 +134,7 @@ export default function AssetCreate() {
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                                 New Asset
                             </h1>
                             <p className="text-muted-foreground">
@@ -127,6 +146,7 @@ export default function AssetCreate() {
                     <div className="flex items-center gap-3">
                         <Link href="/assets">
                             <Button variant="outline" type="button">
+                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>
@@ -586,6 +606,52 @@ export default function AssetCreate() {
                                         }
                                         placeholder="Administrative notes..."
                                     />
+                                </CardContent>
+                            </Card>
+
+                            {/* Image Upload Card */}
+                            <Card className="shadow-sm">
+                                <CardHeader className="bg-muted/30">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                        Asset Image
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-6">
+                                    {imagePreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="h-48 w-full rounded-lg border border-border object-contain"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setData('image', null);
+                                                    setImagePreview(null);
+                                                }}
+                                                className="absolute top-2 right-2 rounded-full bg-background/80 p-1 text-destructive shadow hover:bg-background"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label className="flex h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-foreground/40 hover:bg-muted/30">
+                                            <ImageIcon className="h-8 w-8" />
+                                            <span className="text-sm font-medium">Click to upload image</span>
+                                            <span className="text-xs">JPEG, PNG, GIF, WebP · max 5 MB</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="sr-only"
+                                                onChange={handleImageChange}
+                                            />
+                                        </label>
+                                    )}
+                                    {errors.image && (
+                                        <p className="mt-1.5 text-sm font-medium text-destructive">{errors.image}</p>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

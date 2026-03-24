@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CandidateProfile;
 use App\Models\CompanyProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -33,7 +34,19 @@ class EmployerAuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/employer/dashboard');
+            $user = Auth::user();
+
+            if (CandidateProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+                ->where('user_id', $user->id)->exists()) {
+                return redirect()->intended('/candidate/dashboard');
+            }
+
+            if (CompanyProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+                ->where('owner_user_id', $user->id)->exists()) {
+                return redirect()->intended('/employer/dashboard');
+            }
+
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([

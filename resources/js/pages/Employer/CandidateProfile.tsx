@@ -107,7 +107,7 @@ export default function EmployerCandidateProfilePage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Profile Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-5">
                     <div className="flex items-center gap-4">
@@ -116,7 +116,7 @@ export default function EmployerCandidateProfilePage() {
                         </div>
                         <div>
                             <div className="flex flex-wrap items-center gap-2.5">
-                                <h2 className="text-3xl font-black tracking-tighter text-black uppercase">{candidate.full_name}</h2>
+                                <h2 className="text-2xl font-semibold tracking-tight text-foreground">{candidate.full_name}</h2>
                                 {application.match_score ? (
                                     <span className="bg-black text-white px-2 py-0.5 text-[9px] font-black tracking-widest uppercase rounded-sm flex items-center gap-1">
                                         <Target className="h-3 w-3" />
@@ -142,14 +142,14 @@ export default function EmployerCandidateProfilePage() {
                 </div>
 
                 {/* Two-Column Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
                     {/* Main Content (Left) */}
                     <div className="col-span-12 lg:col-span-8 space-y-8">
                         
                         {/* Professional Summary */}
                         <section>
-                            <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-4 text-zinc-400">Professional Summary</h3>
+                            <h3 className="text-xs font-semibold tracking-widest uppercase mb-4 text-zinc-400">Professional Summary</h3>
                             <p className="text-zinc-800 text-sm leading-relaxed mb-6 max-w-3xl">
                                 {candidate.professional_summary || 'No professional summary provided.'}
                             </p>
@@ -163,7 +163,7 @@ export default function EmployerCandidateProfilePage() {
 
                         {/* Work Experience */}
                         <section>
-                            <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-5 text-zinc-400">Work Experience</h3>
+                            <h3 className="text-xs font-semibold tracking-widest uppercase mb-5 text-zinc-400">Work Experience</h3>
                             <div className="space-y-6">
                                 {experiences.length > 0 ? experiences.map((exp, idx) => (
                                     <div key={exp.id} className="relative pl-6 before:content-[''] before:absolute before:left-0 before:top-1.5 before:w-[2px] before:h-full before:bg-zinc-200">
@@ -189,7 +189,7 @@ export default function EmployerCandidateProfilePage() {
 
                         {/* Education */}
                         <section>
-                            <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-5 text-zinc-400">Education</h3>
+                            <h3 className="text-xs font-semibold tracking-widest uppercase mb-5 text-zinc-400">Education</h3>
                             <div className="space-y-3">
                                 {educations.length > 0 ? educations.map((edu, idx) => (
                                     <div key={edu.id} className={`flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 bg-zinc-50 rounded-sm gap-3 ${idx === 0 ? 'border-l-4 border-black' : 'border border-zinc-200'}`}>
@@ -209,9 +209,9 @@ export default function EmployerCandidateProfilePage() {
                         </section>
 
                         {/* Skills & Documents */}
-                        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-4 text-zinc-400">Core Skills</h3>
+                                <h3 className="text-xs font-semibold tracking-widest uppercase mb-4 text-zinc-400">Core Skills</h3>
                                 <div className="flex flex-wrap gap-1.5">
                                     {skills.length > 0 ? skills.map((skill) => (
                                         <span key={skill.id} className="bg-zinc-100 border border-zinc-200 px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded-sm text-black">
@@ -224,7 +224,7 @@ export default function EmployerCandidateProfilePage() {
                             </div>
                             
                             <div>
-                                <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-4 text-zinc-400">Shared Documents</h3>
+                                <h3 className="text-xs font-semibold tracking-widest uppercase mb-4 text-zinc-400">Shared Documents</h3>
                                 <div className="space-y-2">
                                     {documents.length > 0 ? documents.map((doc) => (
                                         <div 
@@ -257,10 +257,10 @@ export default function EmployerCandidateProfilePage() {
                         
                         {/* Application Snapshot */}
                         <div className="bg-white p-5 border border-zinc-200 shadow-sm rounded-sm">
-                            <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-4 text-zinc-400">Snapshot</h3>
+                            <h3 className="text-xs font-semibold tracking-widest uppercase mb-4 text-zinc-400">Snapshot</h3>
                             <div className="space-y-3">
                                 <SnapshotRow label="Vacancy" value={application.vacancy_title} />
-                                <SnapshotRow label="Applied" value={application.applied_at ? moment(application.applied_at).format('MMM D, YYYY') : 'N/A'} />
+                                <SnapshotRow label="Applied" value={application.applied_at ? moment(application.created_at).format('MMM D, YYYY') : 'N/A'} />
                                 <div className="flex justify-between items-center py-1.5">
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Status</span>
                                     <EmployerStatusBadge status={application.status} />
@@ -285,7 +285,7 @@ export default function EmployerCandidateProfilePage() {
                         {/* Cover Letter */}
                         {application.cover_letter && (
                             <div className="p-5 border-l-2 border-black bg-zinc-50">
-                                <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-2.5 text-zinc-400">Cover Letter</h3>
+                                <h3 className="text-xs font-semibold tracking-widest uppercase mb-2.5 text-zinc-400">Cover Letter</h3>
                                 <p className="text-xs text-zinc-600 italic leading-relaxed whitespace-pre-wrap">
                                     "{application.cover_letter}"
                                 </p>
@@ -294,7 +294,7 @@ export default function EmployerCandidateProfilePage() {
 
                         {/* Schedule Interview Form */}
                         <div className="bg-zinc-50 border border-zinc-200 p-5 rounded-sm shadow-sm" id="schedule-interview">
-                            <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-4 text-zinc-400">Schedule Interview</h3>
+                            <h3 className="text-xs font-semibold tracking-widest uppercase mb-4 text-zinc-400">Schedule Interview</h3>
                             <form onSubmit={submitInterview} className="space-y-3">
                                 <ScheduleField label="Date & Time" error={scheduleForm.errors.scheduled_at}>
                                     <input 
@@ -346,7 +346,7 @@ export default function EmployerCandidateProfilePage() {
                         {/* Interview History */}
                         {interviews.length > 0 && (
                             <div>
-                                <h3 className="text-[10px] font-black tracking-[0.2em] uppercase mb-3 text-zinc-400">Interview History</h3>
+                                <h3 className="text-xs font-semibold tracking-widest uppercase mb-3 text-zinc-400">Interview History</h3>
                                 <div className="space-y-2.5">
                                     {interviews.map((interview) => (
                                         <div key={interview.id} className="flex items-center gap-3 p-3 border border-zinc-200 bg-white rounded-sm shadow-sm">
@@ -395,7 +395,7 @@ function SnapshotRow({ label, value }: { label: string; value: string | null | u
 function ScheduleField({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
     return (
         <div>
-            <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1.5">{label}</label>
+            <label className="block text-xs font-medium uppercase tracking-widest text-zinc-500 mb-1.5">{label}</label>
             {children}
             <InputError message={error} className="mt-1" />
         </div>

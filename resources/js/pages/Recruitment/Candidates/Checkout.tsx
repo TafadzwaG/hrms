@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Banknote, CheckCircle2, Clock, CreditCard, Loader2, User } from 'lucide-react';
+import { Banknote, CheckCircle2, Clock, CreditCard, Loader2, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type Candidate = {
@@ -91,7 +91,7 @@ export default function CandidateCheckout() {
         >
             <Head title="Activate Listing" />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
@@ -151,7 +151,7 @@ export default function CandidateCheckout() {
                                     <p className="text-sm text-zinc-400">Activation Fee</p>
                                     <p className="text-xs text-zinc-400">One-time payment for listing visibility</p>
                                 </div>
-                                <p className="text-3xl font-bold text-zinc-900">
+                                <p className="text-2xl font-semibold text-zinc-900">
                                     {currency} {fee.toFixed(2)}
                                 </p>
                             </div>
@@ -234,6 +234,7 @@ export default function CandidateCheckout() {
                                         </Button>
                                         <Link href={`/candidate-profiles/${candidate.id}`}>
                                             <Button type="button" variant="outline" className="h-11 border-zinc-200">
+                                                <X className="mr-2 h-4 w-4" />
                                                 Cancel
                                             </Button>
                                         </Link>

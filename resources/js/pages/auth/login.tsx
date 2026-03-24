@@ -25,7 +25,7 @@ export default function Login({
     return (
         <AuthLayout
             title={
-                <span className="font-bold text-slate-900">
+                <span className="font-bold text-zinc-900">
                     Employee Portal Login
                 </span>
             }
@@ -42,7 +42,7 @@ export default function Login({
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">
+                                <Label htmlFor="email" className="text-zinc-700 dark:text-zinc-300">
                                     Work Email
                                 </Label>
                                 <Input
@@ -51,7 +51,7 @@ export default function Login({
                                     name="email"
                                     required
                                     autoFocus
-                                    className="border-slate-200 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                                    className="border-zinc-200 focus:ring-zinc-500 focus:border-zinc-500 transition-all"
                                     placeholder="name@company.com"
                                 />
                                 <InputError message={errors.email} />
@@ -59,13 +59,13 @@ export default function Login({
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
-                                    <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
+                                    <Label htmlFor="password" className="text-zinc-700 dark:text-zinc-300">
                                         Password
                                     </Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-xs font-semibold text-slate-500 hover:text-slate-900"
+                                            className="ml-auto text-xs font-semibold text-zinc-500 hover:text-zinc-900"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -77,7 +77,7 @@ export default function Login({
                                     type="password"
                                     name="password"
                                     required
-                                    className="border-slate-200 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                                    className="border-zinc-200 focus:ring-zinc-500 focus:border-zinc-500 transition-all"
                                     placeholder="••••••••"
                                 />
                                 <InputError message={errors.password} />
@@ -87,16 +87,16 @@ export default function Login({
                                 <Checkbox
                                     id="remember"
                                     name="remember"
-                                    className="border-slate-300 text-slate-900 focus:ring-slate-500"
+                                    className="border-zinc-300 text-zinc-900 focus:ring-zinc-500"
                                 />
-                                <Label htmlFor="remember" className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                <Label htmlFor="remember" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                                     Keep me signed in
                                 </Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-6 shadow-sm transition-all duration-300 border-none"
+                                className="mt-4 w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-4 shadow-sm transition-all duration-300 border-none"
                                 tabIndex={4}
                                 disabled={processing}
                             >
@@ -106,11 +106,11 @@ export default function Login({
                         </div>
 
                         {canRegister && (
-                            <div className="text-center text-sm text-slate-500">
+                            <div className="text-center text-sm text-zinc-500">
                                 New hire?{' '}
                                 <TextLink
                                     href={register()}
-                                    className="font-bold text-slate-900 hover:text-slate-700 underline-offset-4"
+                                    className="font-bold text-zinc-900 hover:text-zinc-700 underline-offset-4"
                                     tabIndex={5}
                                 >
                                     Initialize account
@@ -122,7 +122,7 @@ export default function Login({
             </Form>
 
             {status && (
-                <div className="mt-6 p-3 rounded-lg bg-emerald-50 text-center text-sm font-medium text-emerald-700 border border-emerald-100">
+                <div className="mt-6 p-3 rounded-lg bg-zinc-50 text-center text-sm font-medium text-zinc-700 border border-zinc-200">
                     {status}
                 </div>
             )}

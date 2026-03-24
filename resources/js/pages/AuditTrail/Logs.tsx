@@ -163,7 +163,7 @@ export default function AuditTrailLogs() {
             <div className="space-y-6 p-4 md:p-6 lg:p-8">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Audit log explorer</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Audit log explorer</h1>
                         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
                             Search and filter audit events by actor, module, event type, route, target record, and date range.
                         </p>
@@ -394,7 +394,7 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
         <Card className="rounded-2xl border-border shadow-sm">
             <CardContent className="p-5">
                 <div className="text-sm font-medium text-muted-foreground">{label}</div>
-                <div className="mt-2 text-3xl font-semibold text-foreground">{value}</div>
+                <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
             </CardContent>
         </Card>
     );

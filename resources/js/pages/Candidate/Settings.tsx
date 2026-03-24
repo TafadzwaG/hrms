@@ -66,11 +66,11 @@ export default function CandidateSettingsPage() {
             subtitle='Configure your account.'
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Page Header (Asymmetric Layout) */}
-                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">Account Configuration.</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Account Configuration.</h1>
                         <p className="text-zinc-500 font-medium text-sm max-w-lg">Manage your discovery preferences and notification architecture.</p>
                     </div>
                     <div className="text-left md:text-right">

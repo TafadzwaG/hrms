@@ -1,6 +1,6 @@
 import { Form } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
-import { Check, Copy, ScanLine } from 'lucide-react';
+import { ArrowLeft, Check, Copy, ScanLine } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -209,6 +209,7 @@ function TwoFactorVerificationStep({
                                 onClick={onBack}
                                 disabled={processing}
                             >
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back
                             </Button>
                             <Button
@@ -218,6 +219,7 @@ function TwoFactorVerificationStep({
                                     processing || code.length < OTP_MAX_LENGTH
                                 }
                             >
+                                <Check className="mr-2 h-4 w-4" />
                                 Confirm
                             </Button>
                         </div>

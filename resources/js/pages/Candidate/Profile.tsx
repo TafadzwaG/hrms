@@ -121,9 +121,9 @@ export default function CandidateProfilePage() {
             active="profile"
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-black tracking-tighter leading-none text-black mb-2 uppercase">
+            <div className="w-full px-4 md:px-6">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
                         Profile Settings.
                     </h1>
                     <p className="max-w-2xl text-sm font-medium text-zinc-500">

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
 export const showLogin = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ showLogin.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
 showLogin.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ showLogin.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
 showLogin.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ showLogin.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
 showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
     const showLoginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
         showLoginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\EmployerAuthController::showLogin
- * @see app/Http/Controllers/EmployerAuthController.php:18
+ * @see app/Http/Controllers/EmployerAuthController.php:19
  * @route '/employer/login'
  */
         showLoginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ showLogin.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     showLogin.form = showLoginForm
 /**
 * @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:26
+ * @see app/Http/Controllers/EmployerAuthController.php:27
  * @route '/employer/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ login.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:26
+ * @see app/Http/Controllers/EmployerAuthController.php:27
  * @route '/employer/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ login.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:26
+ * @see app/Http/Controllers/EmployerAuthController.php:27
  * @route '/employer/login'
  */
 login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:26
+ * @see app/Http/Controllers/EmployerAuthController.php:27
  * @route '/employer/login'
  */
     const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -123,7 +123,7 @@ login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:26
+ * @see app/Http/Controllers/EmployerAuthController.php:27
  * @route '/employer/login'
  */
         loginForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -134,7 +134,7 @@ login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     login.form = loginForm
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
 export const showRegister = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ showRegister.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
 showRegister.url = (options?: RouteQueryOptions) => {
@@ -158,7 +158,7 @@ showRegister.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
 showRegister.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +167,7 @@ showRegister.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
 showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +177,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
     const showRegisterForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -187,7 +187,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
         showRegisterForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -196,7 +196,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\EmployerAuthController::showRegister
- * @see app/Http/Controllers/EmployerAuthController.php:44
+ * @see app/Http/Controllers/EmployerAuthController.php:57
  * @route '/employer/register'
  */
         showRegisterForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -212,7 +212,7 @@ showRegister.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     showRegister.form = showRegisterForm
 /**
 * @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:60
+ * @see app/Http/Controllers/EmployerAuthController.php:73
  * @route '/employer/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ register.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:60
+ * @see app/Http/Controllers/EmployerAuthController.php:73
  * @route '/employer/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ register.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:60
+ * @see app/Http/Controllers/EmployerAuthController.php:73
  * @route '/employer/register'
  */
 register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:60
+ * @see app/Http/Controllers/EmployerAuthController.php:73
  * @route '/employer/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:60
+ * @see app/Http/Controllers/EmployerAuthController.php:73
  * @route '/employer/register'
  */
         registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

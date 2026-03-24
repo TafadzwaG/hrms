@@ -186,7 +186,7 @@ export default function UsersIndex() {
                 {/* Header Section */}
                 <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                             User Management
                         </h1>
                     </div>
@@ -224,7 +224,7 @@ export default function UsersIndex() {
                                 <Users className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-3xl font-extrabold tracking-tighter text-foreground">
+                                <h3 className="text-3xl font-semibold tracking-tight text-foreground">
                                     {users?.total?.toLocaleString() || 0}
                                 </h3>
                                 <p className="text-xs font-medium text-muted-foreground">
@@ -243,7 +243,7 @@ export default function UsersIndex() {
                                 <UserCircle2 className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-3xl font-extrabold tracking-tighter text-foreground">
+                                <h3 className="text-3xl font-semibold tracking-tight text-foreground">
                                     {linkedEmployeesCount.toLocaleString()}
                                 </h3>
                                 <p className="text-xs font-medium text-muted-foreground">
@@ -262,7 +262,7 @@ export default function UsersIndex() {
                                 <UserCheck className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-3xl font-extrabold tracking-tighter text-foreground">
+                                <h3 className="text-3xl font-semibold tracking-tight text-foreground">
                                     {verifiedCount.toLocaleString()}
                                 </h3>
                                 <p className="text-xs font-medium text-muted-foreground">
@@ -281,7 +281,7 @@ export default function UsersIndex() {
                                 <Filter className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-3xl font-extrabold tracking-tighter text-foreground">
+                                <h3 className="text-3xl font-semibold tracking-tight text-foreground">
                                     {search || roleId ? 'Applied' : 'None'}
                                 </h3>
                                 <p className="text-xs font-medium text-muted-foreground">

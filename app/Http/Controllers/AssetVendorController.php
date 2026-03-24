@@ -44,6 +44,45 @@ class AssetVendorController extends Controller
             ->with('success', 'Asset vendor created successfully.');
     }
 
+    public function show(AssetVendor $assetVendor)
+    {
+        $recentAssets = $assetVendor->assets()
+            ->with('category:id,name', 'location:id,name')
+            ->select(['id', 'name', 'asset_tag', 'status', 'condition', 'asset_category_id', 'asset_location_id', 'purchase_price', 'currency'])
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'name' => $a->name,
+                'asset_tag' => $a->asset_tag,
+                'status' => $a->status,
+                'condition' => $a->condition,
+                'category' => $a->category?->name,
+                'location' => $a->location?->name,
+                'purchase_price' => $a->purchase_price,
+                'currency' => $a->currency,
+                'links' => ['show' => "/assets/{$a->id}"],
+            ]);
+
+        return Inertia::render('AssetVendors/Show', [
+            'vendor' => [
+                'id' => $assetVendor->id,
+                'name' => $assetVendor->name,
+                'code' => $assetVendor->code,
+                'contact_person' => $assetVendor->contact_person,
+                'email' => $assetVendor->email,
+                'phone' => $assetVendor->phone,
+                'address' => $assetVendor->address,
+                'website' => $assetVendor->website,
+                'notes' => $assetVendor->notes,
+                'is_active' => $assetVendor->is_active,
+                'assets_count' => $assetVendor->assets()->count(),
+                'recent_assets' => $recentAssets,
+            ],
+        ]);
+    }
+
     public function edit(AssetVendor $assetVendor)
     {
         return Inertia::render('AssetVendors/Edit', [

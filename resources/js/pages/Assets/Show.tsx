@@ -131,6 +131,7 @@ type AssetPayload = {
     maintenance_records: MaintenanceRecord[];
     documents: DocumentItem[];
     status_history: StatusHistory[];
+    image_path: string | null;
     created_by: { id: number; name: string } | null;
     updated_by: { id: number; name: string } | null;
     created_at: string | null;
@@ -470,7 +471,7 @@ export default function AssetShow() {
 
                                 <div className="space-y-1.5">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                                             {asset.name}
                                         </h1>
                                         <Badge
@@ -777,6 +778,16 @@ export default function AssetShow() {
                                 </div>
 
                                 <div className="space-y-6">
+                                    {asset.image_path && (
+                                        <Card className="overflow-hidden rounded-2xl border shadow-sm">
+                                            <img
+                                                src={`/storage/${asset.image_path}`}
+                                                alt={asset.name}
+                                                className="h-56 w-full object-contain bg-muted/30"
+                                            />
+                                        </Card>
+                                    )}
+
                                     <Card className="overflow-hidden rounded-2xl border shadow-sm">
                                         <CardHeader className="border-b bg-background px-6 py-5">
                                             <CardTitle className="text-2xl font-semibold tracking-tight">

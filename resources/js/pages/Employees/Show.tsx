@@ -42,6 +42,7 @@ import {
     CreditCard,
     Download,
     FileText,
+    ArrowRight,
     Heart,
     Mail,
     MapPin,
@@ -3245,6 +3246,7 @@ function ContractsTab({ employee }: { employee: EmployeePayload }) {
                                 <Link href={employee.links.contracts_index}>
                                     <Button variant="outline" size="sm">
                                         View All
+                                        <ArrowRight className="ml-1.5 h-3 w-3" />
                                     </Button>
                                 </Link>
                             )}

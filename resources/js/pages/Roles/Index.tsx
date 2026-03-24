@@ -78,7 +78,7 @@ export default function RolesIndex() {
             <div className="space-y-6 p-4 md:p-6 lg:p-8">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Roles</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Roles</h1>
                         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
                             Browse and maintain dynamic roles. New roles become immediately assignable to users without backend or frontend hardcoding.
                         </p>
@@ -231,7 +231,7 @@ function StatCard({ title, value, description, icon }: { title: string; value: n
             <CardContent className="flex items-start justify-between p-5">
                 <div>
                     <div className="text-sm font-medium text-muted-foreground">{title}</div>
-                    <div className="mt-2 text-3xl font-semibold text-foreground">{value}</div>
+                    <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
                     <div className="mt-2 text-sm text-muted-foreground">{description}</div>
                 </div>
                 <div className="rounded-2xl bg-primary/10 p-3 text-primary">{icon}</div>

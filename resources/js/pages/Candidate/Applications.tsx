@@ -83,9 +83,9 @@ export default function CandidateApplicationsPage() {
             subtitle='Review your current status, interview schedules, and historical submissions.'
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-10">
+            <div className="w-full px-4 md:px-8">
                 {/* Page Title */}
-                <div className="mb-8">
+                <div className="mb-6">
                     <h2 className="text-4xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Applications.</h2>
                     <p className="text-zinc-500 text-sm font-medium max-w-xl">Track and manage your professional journey. </p>
                 </div>

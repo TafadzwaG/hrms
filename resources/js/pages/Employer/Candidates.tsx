@@ -53,10 +53,10 @@ export default function EmployerCandidatesPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Header Section */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">Candidates.</h1>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Candidates.</h1>
                     <p className="text-zinc-500 font-medium text-xs max-w-2xl">
                         Review, manage, and process applications across all your active job listings in one central archive.
                     </p>

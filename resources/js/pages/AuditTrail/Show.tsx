@@ -452,7 +452,7 @@ export default function AuditTrailShow() {
                                             Request Context
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <InfoRow
                                             label="HTTP Method"
                                             value={log.request.method || 'N/A'}

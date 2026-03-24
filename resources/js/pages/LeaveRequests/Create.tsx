@@ -98,7 +98,7 @@ export default function LeaveRequestCreate() {
             <div className="min-h-[calc(100vh-64px)] w-full space-y-8 bg-muted/10 p-4 md:p-8">
                 {/* Top Header */}
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                         Apply for Leave
                     </h1>
                     <p className="mt-1 text-muted-foreground">

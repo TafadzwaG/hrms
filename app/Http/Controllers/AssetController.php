@@ -102,6 +102,8 @@ class AssetController extends Controller
     {
         $data = $this->validateAsset($request);
 
+        $request->validate(['image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120']]);
+
         $asset = DB::transaction(function () use ($data, $request) {
             $asset = Asset::create([
                 ...$data,
@@ -119,6 +121,13 @@ class AssetController extends Controller
 
             return $asset;
         });
+
+        if ($request->hasFile('image')) {
+            $slug = \Illuminate\Support\Str::slug($asset->name);
+            $ext = $request->file('image')->getClientOriginalExtension();
+            $path = $request->file('image')->storeAs('assets', "{$slug}-{$asset->id}.{$ext}", 'public');
+            $asset->update(['image_path' => $path]);
+        }
 
         return redirect("/assets/{$asset->id}")
             ->with('success', 'Asset created successfully.');
@@ -170,6 +179,7 @@ class AssetController extends Controller
     public function update(Request $request, Asset $asset): RedirectResponse
     {
         $data = $this->validateAsset($request, $asset);
+        $request->validate(['image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120']]);
         $oldStatus = $asset->status;
 
         DB::transaction(function () use ($asset, $data, $request, $oldStatus) {
@@ -188,6 +198,16 @@ class AssetController extends Controller
                 ]);
             }
         });
+
+        if ($request->hasFile('image')) {
+            if ($asset->image_path) {
+                Storage::disk('public')->delete($asset->image_path);
+            }
+            $slug = \Illuminate\Support\Str::slug($asset->name);
+            $ext = $request->file('image')->getClientOriginalExtension();
+            $path = $request->file('image')->storeAs('assets', "{$slug}-{$asset->id}.{$ext}", 'public');
+            $asset->update(['image_path' => $path]);
+        }
 
         return redirect("/assets/{$asset->id}")
             ->with('success', 'Asset updated successfully.');

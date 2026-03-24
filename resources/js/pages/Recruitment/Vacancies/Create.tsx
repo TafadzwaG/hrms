@@ -70,7 +70,7 @@ export default function VacancyCreate() {
         >
             <Head title="Create Vacancy" />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-4xl font-bold tracking-tight text-zinc-900">

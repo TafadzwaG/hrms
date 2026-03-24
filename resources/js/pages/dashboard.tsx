@@ -207,10 +207,10 @@ const moduleIconMap: Record<string, LucideIcon> = {
 };
 
 const severityClassMap: Record<AlertItem['severity'], string> = {
-    critical: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200',
-    warning: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200',
-    info: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200',
-    success: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200',
+    critical: 'border-zinc-900 bg-zinc-950 text-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100',
+    warning: 'border-zinc-400 bg-zinc-200 text-zinc-800 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200',
+    info: 'border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300',
+    success: 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400',
 };
 
 export default function Dashboard() {
@@ -246,15 +246,15 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="min-h-[calc(100vh-64px)] space-y-6 px-4 py-6 md:px-6 lg:px-8">
+            <div className="min-h-[calc(100vh-64px)] space-y-5 px-4 py-4 md:px-6 lg:px-8">
                 <Card className="overflow-hidden border-border/70 bg-background/95 shadow-sm">
-                    <CardContent className="flex flex-col gap-6 p-6 lg:flex-row lg:items-end lg:justify-between lg:p-8">
+                    <CardContent className="flex flex-col gap-5 p-5 lg:flex-row lg:items-end lg:justify-between lg:p-6">
                         <div className="space-y-3">
-                            <Badge className="w-fit rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-primary shadow-none">
+                            <Badge className="w-fit rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground shadow-none">
                                 HRMS command centre
                             </Badge>
                             <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                                <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
                                     Welcome back, {firstName}.
                                 </h1>
                                 <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
@@ -306,7 +306,7 @@ export default function Dashboard() {
                                         </CardHeader>
                                         <CardContent className="space-y-3">
                                             {dashboard.alerts.map((alert) => (
-                                                <Link key={alert.key} href={alert.href} className={cn('flex items-start justify-between gap-3 rounded-2xl border p-4 transition-colors hover:border-primary/40 hover:bg-accent/40', severityClassMap[alert.severity])}>
+                                                <Link key={alert.key} href={alert.href} className={cn('flex items-start justify-between gap-3 rounded-lg border p-4 transition-colors hover:opacity-90', severityClassMap[alert.severity])}>
                                                     <div className="space-y-1">
                                                         <div className="text-sm font-semibold">{alert.title}</div>
                                                         <div className="text-xs leading-5 opacity-90">{alert.description}</div>
@@ -327,9 +327,9 @@ export default function Dashboard() {
                                                 const Icon = moduleIconMap[item.key] || LayoutGrid;
 
                                                 return (
-                                                    <Link key={item.key} href={item.href} className="rounded-2xl border border-border/70 bg-muted/20 p-4 transition-colors hover:border-primary/40 hover:bg-accent/40">
+                                                    <Link key={item.key} href={item.href} className="rounded-lg border border-border/70 bg-muted/20 p-4 transition-colors hover:border-border hover:bg-muted/40">
                                                         <div className="mb-3 flex items-center gap-3">
-                                                            <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                                                            <div className="rounded-md bg-muted p-2 text-muted-foreground">
                                                                 <Icon className="h-4 w-4" />
                                                             </div>
                                                             <div className="text-sm font-semibold text-foreground">{item.label}</div>
@@ -475,13 +475,13 @@ function MetricCard({ metric, compact = false }: { metric: Metric; compact?: boo
                     <div className="text-3xl font-semibold tracking-tight text-foreground">{formatMetricValue(metric.value, metric.format)}</div>
                     <div className="text-sm leading-6 text-muted-foreground">{metric.helper}</div>
                     {metric.href ? (
-                        <Link href={metric.href} className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                        <Link href={metric.href} className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline">
                             Open module
                             <ArrowUpRight className="h-3.5 w-3.5" />
                         </Link>
                     ) : null}
                 </div>
-                <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                <div className="rounded-lg bg-muted p-3 text-muted-foreground">
                     <Icon className="h-5 w-5" />
                 </div>
             </CardContent>
@@ -531,7 +531,7 @@ function RecordListCard({ block }: { block: ListBlock }) {
             </CardHeader>
             <CardContent className="space-y-3">
                 {block.items.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">No records to display.</div>
+                    <div className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">No records to display.</div>
                 ) : (
                     block.items.map((item, index) => <RecordRow key={`${item.title}-${index}`} item={item} />)
                 )}
@@ -545,21 +545,21 @@ function MiniModuleCard({ module }: { module: ModuleSummary }) {
     const primaryBreakdown = module.breakdown[0];
 
     return (
-        <Link href={module.href} className="group block rounded-2xl">
-            <Card className="h-full border-border/70 bg-background/95 shadow-sm transition-colors group-hover:border-primary/40">
+        <Link href={module.href} className="group block rounded-lg">
+            <Card className="h-full border-border/70 bg-background/95 shadow-sm transition-colors group-hover:border-border">
                 <CardContent className="space-y-4 p-5">
                     <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                             <div className="text-sm font-semibold text-foreground">{module.name}</div>
                             <div className="text-2xl font-semibold tracking-tight text-foreground">{formatNumber(module.total)}</div>
                         </div>
-                        <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
+                        <div className="rounded-md bg-muted p-2.5 text-muted-foreground">
                             <Icon className="h-4 w-4" />
                         </div>
                     </div>
                     <p className="text-sm leading-6 text-muted-foreground">{module.summary}</p>
                     {primaryBreakdown ? (
-                        <div className="rounded-xl bg-muted/30 p-3 text-xs text-muted-foreground">
+                        <div className="rounded-md bg-muted/30 p-3 text-xs text-muted-foreground">
                             <span className="font-medium text-foreground">{primaryBreakdown.label}</span> represents {primaryBreakdown.percentage}% of the visible module mix.
                         </div>
                     ) : null}
@@ -580,7 +580,7 @@ function ModuleCard({ module }: { module: ModuleSummary }) {
                         <CardTitle className="text-lg">{module.name}</CardTitle>
                         <CardDescription>{module.summary}</CardDescription>
                     </div>
-                    <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                    <div className="rounded-md bg-muted p-3 text-muted-foreground">
                         <Icon className="h-5 w-5" />
                     </div>
                 </div>
@@ -589,7 +589,7 @@ function ModuleCard({ module }: { module: ModuleSummary }) {
             <CardContent className="space-y-5">
                 <div className="space-y-2">
                     {module.highlights.slice(0, 3).map((highlight) => (
-                        <div key={highlight} className="rounded-xl bg-muted/30 px-3 py-2 text-sm text-muted-foreground">{highlight}</div>
+                        <div key={highlight} className="rounded-md bg-muted/30 px-3 py-2 text-sm text-muted-foreground">{highlight}</div>
                     ))}
                 </div>
 
@@ -617,7 +617,7 @@ function ModuleCard({ module }: { module: ModuleSummary }) {
 
 function RecordRow({ item, compact = false }: { item: RecordItem; compact?: boolean }) {
     const content = (
-        <div className={cn('rounded-2xl border border-border/70 bg-muted/20 p-4 transition-colors hover:border-primary/40 hover:bg-accent/30', compact && 'p-3')}>
+        <div className={cn('rounded-lg border border-border/70 bg-muted/20 p-4 transition-colors hover:border-border hover:bg-muted/40', compact && 'p-3')}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1">
                     <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
@@ -643,8 +643,8 @@ function BreakdownBars({ data, compact = false }: { data: BreakdownPoint[]; comp
                         <span className="truncate text-foreground">{item.label}</span>
                         <span className="shrink-0 text-muted-foreground">{formatNumber(item.value)}</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max((item.value / max) * 100, 4)}%` }} />
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-foreground/80" style={{ width: `${Math.max((item.value / max) * 100, 4)}%` }} />
                     </div>
                 </div>
             ))}
@@ -656,7 +656,7 @@ function SeriesBars({ data, variant }: { data: SeriesPoint[]; variant: 'dual' | 
     const max = Math.max(...data.flatMap((item) => [item.primary, item.secondary ?? 0, item.tertiary ?? 0]), 1);
 
     return (
-        <div className="flex h-52 items-end gap-3 rounded-2xl border border-border/70 bg-muted/20 p-4">
+        <div className="flex h-52 items-end gap-3 rounded-lg border border-border/70 bg-muted/20 p-4">
             {data.map((item) => (
                 <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
                     <div className="flex h-36 items-end justify-center gap-1.5">
@@ -672,13 +672,13 @@ function SeriesBars({ data, variant }: { data: SeriesPoint[]; variant: 'dual' | 
 }
 
 function Bar({ height, tone }: { height: number; tone: 'primary' | 'secondary' | 'tertiary' }) {
-    return <div className={cn('w-3 rounded-t-full', tone === 'primary' && 'bg-primary', tone === 'secondary' && 'bg-blue-400', tone === 'tertiary' && 'bg-amber-400')} style={{ height: `${Math.max(height, 6)}%` }} />;
+    return <div className={cn('w-3 rounded-t-full', tone === 'primary' && 'bg-foreground', tone === 'secondary' && 'bg-zinc-400', tone === 'tertiary' && 'bg-zinc-300')} style={{ height: `${Math.max(height, 6)}%` }} />;
 }
 
 function LegendPill({ label, tone }: { label: string; tone: 'primary' | 'secondary' | 'tertiary' }) {
     return (
         <div className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1">
-            <span className={cn('h-2 w-2 rounded-full', tone === 'primary' && 'bg-primary', tone === 'secondary' && 'bg-blue-400', tone === 'tertiary' && 'bg-amber-400')} />
+            <span className={cn('h-2 w-2 rounded-full', tone === 'primary' && 'bg-foreground', tone === 'secondary' && 'bg-zinc-400', tone === 'tertiary' && 'bg-zinc-300')} />
             {label}
         </div>
     );
@@ -704,7 +704,7 @@ function DashboardSkeleton() {
                     <Skeleton className="h-10 w-80" />
                     <div className="grid gap-4 xl:grid-cols-3">
                         {Array.from({ length: 3 }).map((_, index) => (
-                            <div key={index} className="space-y-3 rounded-2xl border border-border/70 p-4">
+                            <div key={index} className="space-y-3 rounded-lg border border-border/70 p-4">
                                 <Skeleton className="h-5 w-32" />
                                 <Skeleton className="h-4 w-full" />
                                 <Skeleton className="h-40 w-full" />
@@ -713,7 +713,7 @@ function DashboardSkeleton() {
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {Array.from({ length: 6 }).map((_, index) => (
-                            <Skeleton key={index} className="h-40 w-full rounded-2xl" />
+                            <Skeleton key={index} className="h-40 w-full rounded-lg" />
                         ))}
                     </div>
                 </CardContent>

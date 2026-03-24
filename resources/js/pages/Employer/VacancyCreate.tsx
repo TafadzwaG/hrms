@@ -31,11 +31,11 @@ export default function EmployerVacancyCreatePage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Header Section */}
-                <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tighter text-black mb-1.5 uppercase">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
                             Post a New Job.
                         </h1>
                         <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
@@ -44,7 +44,7 @@ export default function EmployerVacancyCreatePage() {
                     </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
                     
                     {/* Left Column: Form Section */}
                     <section className="space-y-6">

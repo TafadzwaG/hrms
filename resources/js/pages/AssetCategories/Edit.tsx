@@ -20,6 +20,7 @@ import {
     Info,
     Network,
     Save,
+    X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 
@@ -363,6 +364,7 @@ export default function AssetCategoryEdit() {
                                     type="button"
                                     className="h-12 w-full border-border font-bold hover:bg-muted"
                                 >
+                                    <X className="mr-2 h-4 w-4" />
                                     Cancel
                                 </Button>
                             </Link>

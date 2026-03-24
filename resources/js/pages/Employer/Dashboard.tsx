@@ -38,15 +38,15 @@ export default function EmployerDashboard() {
             user={user}
             headerActions={<EmployerPrimaryButton href="/employer/vacancies/create">Post a New Job</EmployerPrimaryButton>}
         >
-            <div className="w-full px-6 md:px-10">
+            <div className="w-full px-4 md:px-8">
                 {/* Hero Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
                             <span className="px-2 py-0.5 bg-zinc-200 text-[10px] font-bold tracking-widest uppercase rounded">Verified Employer</span>
                         </div>
-                        <h2 className="text-[2.5rem] font-bold tracking-tight text-black leading-tight">Employer Hub</h2>
-                        <p className="text-zinc-500 font-medium text-lg">Overview of your current hiring activity</p>
+                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Employer Hub</h2>
+                        <p className="text-sm text-muted-foreground">Overview of your current hiring activity</p>
                     </div>
                 </div>
 
@@ -78,31 +78,31 @@ export default function EmployerDashboard() {
                             </div>
                         </div>
                         <div>
-                            <p className="text-3xl font-bold tracking-tighter">92%</p>
+                            <p className="text-2xl font-semibold tracking-tight">92%</p>
                             <p className="text-sm font-medium text-zinc-500">Profile Health</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column */}
-                    <div className="lg:col-span-8 space-y-12">
+                    <div className="lg:col-span-8 space-y-8">
                         {/* Active Requisitions */}
                         <section>
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold tracking-tight">Active Requisitions</h3>
+                                <h3 className="text-base font-semibold tracking-tight text-foreground">Active Requisitions</h3>
                                 <Link href="/employer/vacancies" className="text-sm font-semibold text-zinc-500 hover:text-black transition-colors">View All</Link>
                             </div>
                             <div className="bg-white overflow-hidden border border-zinc-200/50 rounded-sm">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-zinc-50">
-                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Job Title</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Department</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Applicants</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Status</th>
-                                            <th className="py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Action</th>
+                                        <tr className="bg-zinc-50 border-b border-zinc-200">
+                                            <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500">Job Title</th>
+                                            <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500">Department</th>
+                                            <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500 text-center">Applicants</th>
+                                            <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500">Status</th>
+                                            <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500 text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-zinc-100">
@@ -134,7 +134,7 @@ export default function EmployerDashboard() {
                         {/* Recent Applicants */}
                         <section>
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold tracking-tight">Recent Applicants</h3>
+                                <h3 className="text-base font-semibold tracking-tight text-foreground">Recent Applicants</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {recentApplications.slice(0, 4).map((app, idx) => (
@@ -184,8 +184,8 @@ export default function EmployerDashboard() {
                     {/* Right Column */}
                     <div className="lg:col-span-4 space-y-8">
                         {/* Hiring Progress */}
-                        <div className="bg-white p-8 border border-zinc-200/50 rounded-sm">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-8">Hiring Progress</h3>
+                        <div className="bg-white p-6 border border-zinc-200/50 rounded-sm">
+                            <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-8">Hiring Progress</h3>
                             
                             <div className="flex flex-col items-center mb-10">
                                 <div className="relative flex items-center justify-center">
@@ -207,8 +207,8 @@ export default function EmployerDashboard() {
                         </div>
 
                         {/* Talent Matches */}
-                        <div className="bg-white p-8 border border-zinc-200/50 rounded-sm">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-6">Talent Matches</h3>
+                        <div className="bg-white p-6 border border-zinc-200/50 rounded-sm">
+                            <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-6">Talent Matches</h3>
                             <div className="space-y-6">
                                 {recommendedTalent.slice(0, 3).map((talent) => (
                                     <div key={talent.id} className="border border-zinc-200 rounded-sm p-4 group hover:border-black transition-all">
@@ -255,16 +255,16 @@ export default function EmployerDashboard() {
                         </div>
 
                         {/* Company Account Summary */}
-                        <div className="bg-black text-white p-8 rounded-lg shadow-2xl">
+                        <div className="bg-black text-white p-6 rounded-lg shadow-2xl">
                             <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Company Account</h3>
+                                <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Company Account</h3>
                                 <Verified className="text-white" size={18} />
                             </div>
-                            <div className="mb-8">
+                            <div className="mb-6">
                                 <p className="text-2xl font-bold tracking-tight mb-1">{company.company_name}</p>
                                 <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">{billingSummary?.subscription?.plan?.name ?? 'Standard Plan'}</p>
                             </div>
-                            <div className="flex items-center gap-4 mb-8">
+                            <div className="flex items-center gap-4 mb-6">
                                 <div className="flex -space-x-2">
                                     <div className="w-6 h-6 rounded-full border border-black bg-zinc-700"></div>
                                     <div className="w-6 h-6 rounded-full border border-black bg-zinc-500"></div>
@@ -295,7 +295,7 @@ function KpiCard({ icon, label, value, sub }: { icon: any, label: string, value:
                 <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{sub}</span>
             </div>
             <div>
-                <p className="text-3xl font-bold tracking-tighter">{value}</p>
+                <p className="text-2xl font-semibold tracking-tight">{value}</p>
                 <p className="text-sm font-medium text-zinc-500">{label}</p>
             </div>
         </div>

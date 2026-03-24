@@ -101,7 +101,7 @@ export default function OrgUnitCreate() {
                 {/* Top Header Section */}
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                             Create New Org Unit
                         </h1>
                         <p className="mt-1 text-muted-foreground">

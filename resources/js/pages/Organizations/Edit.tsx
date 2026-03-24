@@ -13,7 +13,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Building2, Check, ImagePlus } from 'lucide-react';
+import { Building2, Check, ImagePlus, Save } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 type OrganizationForm = {
@@ -105,6 +105,7 @@ export default function EditOrganization() {
                             className="h-11 bg-foreground px-8 font-bold text-background shadow-sm hover:bg-foreground/90"
                             disabled={form.processing}
                         >
+                            <Save className="mr-2 h-4 w-4" />
                             {form.processing ? 'Saving...' : 'Save Changes'}
                         </Button>
                     </div>
@@ -340,7 +341,7 @@ export default function EditOrganization() {
                                             payroll and compliance.
                                         </p>
                                     </div>
-                                    <CardContent className="space-y-6 p-6 md:p-8">
+                                    <CardContent className="space-y-6 p-4 md:p-6">
                                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                             <Field
                                                 label="Status"
@@ -500,6 +501,7 @@ export default function EditOrganization() {
                                         className="bg-foreground font-bold text-background shadow-sm hover:bg-foreground/90"
                                         disabled={form.processing}
                                     >
+                                        <Save className="mr-2 h-4 w-4" />
                                         Save Changes
                                     </Button>
                                 )}

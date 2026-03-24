@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(grep -n \"image\\\\|photo\\\\|picture\\\\|asset_images\\\\|getImages\\\\|image_path\" app/Models/Asset*.php app/Http/Controllers/AssetController.php)"
+    ]
+  }
+}

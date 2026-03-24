@@ -304,7 +304,7 @@ export default function LearningCourseShow() {
                                     Recurrence & Expiry Settings
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-6 p-6 md:p-8">
+                            <CardContent className="space-y-6 p-4 md:p-6">
                                 {expiresDays ? (
                                     <>
                                         <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-4">

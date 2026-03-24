@@ -19,6 +19,7 @@ import {
     ShieldCheck,
     TableProperties,
     Trash2,
+    Upload,
     Users,
     Wallet,
 } from 'lucide-react';
@@ -961,7 +962,7 @@ export default function Show() {
                                             className="h-9 bg-background pl-8"
                                         />
                                     </div>
-                                    <Button className="h-9">Upload File</Button>
+                                    <Button className="h-9"><Upload className="mr-2 h-4 w-4" />Upload File</Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">

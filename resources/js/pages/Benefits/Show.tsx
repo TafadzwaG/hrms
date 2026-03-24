@@ -263,7 +263,7 @@ export default function BenefitShow() {
         >
             <Head title={benefit.name} />
 
-            <div className="w-full space-y-6 p-6 lg:p-10">
+            <div className="w-full space-y-6 p-4 lg:p-8">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b pb-6">
                     <div className="flex items-center gap-4">
@@ -274,7 +274,7 @@ export default function BenefitShow() {
                         </Link>
                         <div>
                             <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                                     {benefit.name}
                                 </h1>
                                 <Badge

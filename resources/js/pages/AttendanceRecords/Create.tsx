@@ -226,7 +226,7 @@ export default function AttendanceRecordCreate() {
                     {/* RIGHT MAIN CONTENT: Form */}
                     <div className="flex-1 space-y-8">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                                 Create Attendance Record
                             </h1>
                             <p className="mt-2 text-base text-muted-foreground">

@@ -18,6 +18,7 @@ import {
     Save,
     Shield,
     Users,
+    X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useMemo } from 'react';
@@ -107,7 +108,7 @@ export default function EnrollmentCreate() {
         >
             <Head title="New Enrollment" />
 
-            <div className="w-full space-y-6 p-6 lg:p-10">
+            <div className="w-full space-y-6 p-4 lg:p-8">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b pb-6">
                     <div className="flex items-center gap-4">
@@ -117,7 +118,7 @@ export default function EnrollmentCreate() {
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                                 New Enrollment
                             </h1>
                             <p className="text-muted-foreground">
@@ -128,7 +129,7 @@ export default function EnrollmentCreate() {
 
                     <div className="flex items-center gap-3">
                         <Link href="/benefit-enrollments">
-                            <Button variant="outline" type="button">Cancel</Button>
+                            <Button variant="outline" type="button"><X className="mr-2 h-4 w-4" />Cancel</Button>
                         </Link>
                         <Button onClick={handleSubmit} disabled={processing} className="shadow-sm">
                             <Save className="mr-2 h-4 w-4" />

@@ -12,7 +12,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type EmployeeSummary = {
@@ -516,6 +516,7 @@ export default function ContractCreate() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href={`/employees/${employee.id}/contracts`}>
                             <Button variant="outline" type="button">
+                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

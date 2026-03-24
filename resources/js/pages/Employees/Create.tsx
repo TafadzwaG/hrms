@@ -204,7 +204,7 @@ export default function EmployeeCreate() {
                 {/* ── Page header ── */}
                 <div className="flex items-start justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
+                        <h1 className="text-2xl font-semibold tracking-tight">
                             Add New Employee
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">

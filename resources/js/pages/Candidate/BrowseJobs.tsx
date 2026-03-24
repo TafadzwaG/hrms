@@ -55,9 +55,9 @@ export default function BrowseJobsPage() {
             active="jobs"
             candidate={candidate}
         >
-            <div className="w-full px-6 md:px-10">
+            <div className="w-full px-4 md:px-8">
                 {/* Hero / Header */}
-                <section className="mb-8">
+                <section className="mb-6">
                     <h1 className="text-4xl font-black tracking-tighter text-black leading-none uppercase mb-2">Explore Vacancies.</h1>
                     <p className="text-zinc-500 text-sm font-medium tracking-tight">Explore published vacancies and apply with your saved documents.</p>
                 </section>

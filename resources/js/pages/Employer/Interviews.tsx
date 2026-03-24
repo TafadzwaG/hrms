@@ -50,10 +50,10 @@ export default function EmployerInterviewsPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Page Title */}
-                <div className="mb-8">
-                    <h1 className="mb-1.5 text-3xl font-black tracking-tighter text-black uppercase">Interviews.</h1>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Interviews.</h1>
                     <p className="max-w-2xl text-xs font-medium text-zinc-500">
                         Manage interview schedules, candidate responses, and the active interview calendar.
                     </p>

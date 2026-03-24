@@ -26,32 +26,32 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans flex flex-col items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-zinc-50 font-sans flex flex-col items-center justify-center px-4 py-12">
             <Head title="Employer Login" />
 
             {/* Logo & Branding */}
             <div className="mb-8 flex flex-col items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900">
                     <AppLogoIcon className="h-6 w-6 fill-white" />
                 </div>
-                <span className="text-lg font-semibold text-slate-900">HRX Employer Portal</span>
+                <span className="text-lg font-semibold text-zinc-900">HRX Employer Portal</span>
             </div>
 
             {/* Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-10 w-full max-w-md">
+            <div className="bg-white rounded-lg border border-zinc-200 shadow-sm p-8 sm:p-10 w-full max-w-md">
                 {/* Header */}
                 <div className="mb-8 text-center">
-                    <div className="mb-2 flex items-center justify-center gap-2 text-slate-500">
+                    <div className="mb-2 flex items-center justify-center gap-2 text-zinc-500">
                         <Building2 className="h-5 w-5" />
                         <span className="text-sm font-medium uppercase tracking-wide">Employer Portal</span>
                     </div>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-zinc-500">
                         Log in to manage your vacancies and candidates
                     </p>
                 </div>
 
                 {status && (
-                    <div className="mb-6 rounded-lg bg-emerald-50 p-3 text-center text-sm font-medium text-emerald-700 border border-emerald-100">
+                    <div className="mb-6 rounded-md border border-zinc-200 bg-zinc-50 p-3 text-center text-sm font-medium text-zinc-700">
                         {status}
                     </div>
                 )}
@@ -59,11 +59,11 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                 <form onSubmit={submit} className="flex flex-col gap-5">
                     {/* Email */}
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-slate-700">
+                        <Label htmlFor="email" className="text-zinc-700">
                             Email Address
                         </Label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 id="email"
                                 type="email"
@@ -82,20 +82,20 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                     {/* Password */}
                     <div className="grid gap-2">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="password" className="text-slate-700">
+                            <Label htmlFor="password" className="text-zinc-700">
                                 Password
                             </Label>
                             {canResetPassword && (
                                 <Link
                                     href="/employer/forgot-password"
-                                    className="text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                                    className="text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
                                 >
                                     Forgot password?
                                 </Link>
                             )}
                         </div>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                             <Input
                                 id="password"
                                 type="password"
@@ -117,9 +117,9 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                             type="checkbox"
                             checked={data.remember}
                             onChange={(e) => setData('remember', e.target.checked)}
-                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
                         />
-                        <Label htmlFor="remember" className="text-sm text-slate-600">
+                        <Label htmlFor="remember" className="text-sm text-zinc-600">
                             Remember me
                         </Label>
                     </div>
@@ -127,7 +127,7 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                     {/* Submit */}
                     <Button
                         type="submit"
-                        className="mt-2 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-5"
+                        className="mt-2 w-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold py-5"
                         disabled={processing}
                     >
                         {processing && <Spinner className="mr-2" />}
@@ -138,10 +138,10 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                 {/* Divider */}
                 <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-200" />
+                        <div className="w-full border-t border-zinc-200" />
                     </div>
                     <div className="relative flex justify-center text-xs">
-                        <span className="bg-white px-3 text-slate-400 uppercase tracking-wide">
+                        <span className="bg-white px-3 text-zinc-400 uppercase tracking-wide">
                             Or continue with
                         </span>
                     </div>
@@ -150,7 +150,7 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
                 {/* Google Button */}
                 <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors"
                 >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                         <path
@@ -175,11 +175,11 @@ export default function EmployerLogin({ status, canResetPassword = true }: Props
             </div>
 
             {/* Register Link */}
-            <p className="mt-6 text-center text-sm text-slate-500">
+            <p className="mt-6 text-center text-sm text-zinc-500">
                 Don&apos;t have an account?{' '}
                 <Link
                     href="/employer/register"
-                    className="font-semibold text-slate-900 hover:underline"
+                    className="font-semibold text-zinc-900 hover:underline"
                 >
                     Register your company
                 </Link>

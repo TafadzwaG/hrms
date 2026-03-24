@@ -34,21 +34,21 @@ export default function EmployerReportsPage() {
             company={company}
             user={user}
         >
-            <div className="w-full px-6 md:px-8">
+            <div className="w-full px-4 md:px-6">
                 {/* Hero Header Section */}
-                <header className="mb-8">
-                    <h2 className="text-3xl font-black tracking-tighter leading-none mb-1.5 text-black uppercase">Reports.</h2>
-                    <p className="text-zinc-500 text-xs font-medium max-w-2xl">
+                <header className="mb-6">
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1.5">Reports</h2>
+                    <p className="text-sm text-muted-foreground max-w-2xl">
                         Recruitment reporting based on current company vacancies and applications.
                     </p>
                 </header>
 
                 {/* Summary Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                     {/* Card 1: Summary */}
                     <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Summary</span>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Summary</span>
                             <Briefcase className="h-3.5 w-3.5 text-black" />
                         </div>
                         <div className="space-y-1.5">
@@ -64,7 +64,7 @@ export default function EmployerReportsPage() {
                     {/* Card 2: Status Breakdown */}
                     <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Status Breakdown</span>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Status Breakdown</span>
                             <BarChart3 className="h-3.5 w-3.5 text-black" />
                         </div>
                         <div className="space-y-3">
@@ -88,7 +88,7 @@ export default function EmployerReportsPage() {
                     {/* Card 3: Monthly Trend */}
                     <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-                            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400">Monthly Trend</span>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Monthly Trend</span>
                             <TrendingUp className="h-3.5 w-3.5 text-black" />
                         </div>
                         <div className="flex items-end justify-between h-full pt-4 pb-1 gap-2">
@@ -112,16 +112,16 @@ export default function EmployerReportsPage() {
                 <section className="bg-white border border-zinc-200 shadow-sm rounded-sm overflow-hidden mb-12">
                     <div className="px-5 py-4 border-b border-zinc-200 flex items-center gap-2">
                         <FileText className="h-3.5 w-3.5 text-zinc-400" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Vacancy Performance</h3>
+                        <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-700">Vacancy Performance</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="bg-zinc-50 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-200">
-                                    <th className="px-5 py-3 whitespace-nowrap">Vacancy</th>
-                                    <th className="px-5 py-3 whitespace-nowrap">Status</th>
-                                    <th className="px-5 py-3 whitespace-nowrap">Applications</th>
-                                    <th className="px-5 py-3 text-right whitespace-nowrap">Deadline</th>
+                                <tr className="bg-zinc-50 border-b border-zinc-200">
+                                    <th className="px-5 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500 whitespace-nowrap">Vacancy</th>
+                                    <th className="px-5 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500 whitespace-nowrap">Status</th>
+                                    <th className="px-5 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500 whitespace-nowrap">Applications</th>
+                                    <th className="px-5 py-3 text-xs font-medium uppercase tracking-widest text-zinc-500 text-right whitespace-nowrap">Deadline</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-100">
@@ -189,10 +189,10 @@ function MetricRow({
 }) {
     return (
         <div className={`flex items-center justify-between py-2 px-3 rounded-sm transition-colors ${isPrimary ? 'bg-zinc-100' : 'bg-zinc-50/50 hover:bg-zinc-50'}`}>
-            <span className={`text-[9px] font-bold uppercase tracking-widest ${isBold ? 'text-black' : 'text-zinc-500'}`}>
+            <span className={`text-xs font-medium uppercase tracking-widest ${isBold ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {label}
             </span>
-            <span className={`text-xs font-black ${isPrimary || isBold ? 'text-black' : 'text-zinc-700'}`}>
+            <span className={`text-sm font-semibold ${isPrimary || isBold ? 'text-foreground' : 'text-zinc-700'}`}>
                 {value}
             </span>
         </div>

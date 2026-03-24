@@ -312,7 +312,7 @@ export default function AssetIndex() {
         <AppLayout breadcrumbs={[{ title: 'Assets', href: '/assets' }]}>
             <Head title="Assets" />
 
-            <div className="w-full space-y-8 bg-white p-6 lg:p-10">
+            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
@@ -362,7 +362,7 @@ export default function AssetIndex() {
                                     <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
                                         {item.label}
                                     </p>
-                                    <p className="text-3xl font-bold text-zinc-900">
+                                    <p className="text-2xl font-semibold text-zinc-900">
                                         {item.val}
                                     </p>
                                 </div>

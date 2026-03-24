@@ -552,6 +552,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [AssetCategoryController::class, 'store'])
                 ->middleware('permission:assets.categories.manage')
                 ->name('store');
+            Route::get('/{assetCategory}', [AssetCategoryController::class, 'show'])
+                ->middleware('permission:assets.categories.view')
+                ->name('show');
             Route::get('/{assetCategory}/edit', [AssetCategoryController::class, 'edit'])
                 ->middleware('permission:assets.categories.manage')
                 ->name('edit');
@@ -575,6 +578,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [AssetVendorController::class, 'store'])
                 ->middleware('permission:assets.vendors.manage')
                 ->name('store');
+            Route::get('/{assetVendor}', [AssetVendorController::class, 'show'])
+                ->middleware('permission:assets.vendors.view')
+                ->name('show');
             Route::get('/{assetVendor}/edit', [AssetVendorController::class, 'edit'])
                 ->middleware('permission:assets.vendors.manage')
                 ->name('edit');

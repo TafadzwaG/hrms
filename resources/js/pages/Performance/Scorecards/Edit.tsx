@@ -12,7 +12,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useCallback, useState } from 'react';
 
@@ -438,6 +438,7 @@ export default function ScorecardEdit() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href="/employee-scorecards">
                             <Button variant="outline" type="button">
+                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

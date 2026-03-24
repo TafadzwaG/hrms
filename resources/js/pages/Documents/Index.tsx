@@ -798,7 +798,7 @@ export default function DocumentIndex() {
                                         Description & Audit
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6 p-6 md:p-8">
+                                <CardContent className="space-y-6 p-4 md:p-6">
                                     <p className="text-sm leading-relaxed font-medium text-foreground">
                                         {selectedDoc.metadata_json
                                             ?.description ||
