@@ -62,6 +62,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserImpersonationController;
 use App\Http\Controllers\WorkflowDefinitionController;
 use App\Http\Controllers\EmployeePayrollProfileController;
 use App\Http\Controllers\BenefitController;
@@ -83,8 +84,6 @@ use App\Http\Controllers\RecruitmentAdminPaymentsController;
 use App\Http\Controllers\Reports\RecruitmentReportController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\MarketplaceController;
-use App\Http\Controllers\CandidateAuthController;
-use App\Http\Controllers\EmployerAuthController;
 use App\Http\Controllers\Candidate\ApplicationsController as CandidateApplicationsController;
 use App\Http\Controllers\Candidate\DashboardController as CandidateDashboardController;
 use App\Http\Controllers\Candidate\DocumentsController as CandidateDocumentsController;
@@ -101,6 +100,7 @@ use App\Http\Controllers\Employer\DashboardController as EmployerDashboardContro
 use App\Http\Controllers\Employer\InterviewsController as EmployerInterviewsController;
 use App\Http\Controllers\Employer\ReportsController as EmployerReportsController;
 use App\Http\Controllers\Employer\VacanciesController as EmployerVacanciesController;
+use App\Support\Auth\PortalAccessResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -109,21 +109,10 @@ Route::get('/', function () {
         return app(LandingPageController::class)();
     }
 
-    $user = Auth::user();
+    $resolver = app(PortalAccessResolver::class);
+    $resolver->ensureDerivedPortalAccesses(Auth::user());
 
-    // Redirect candidates to their dashboard
-    if (\App\Models\CandidateProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
-        ->where('user_id', $user->id)->exists()) {
-        return redirect()->route('candidate.dashboard');
-    }
-
-    // Redirect employers to their dashboard
-    if (\App\Models\CompanyProfile::withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
-        ->where('owner_user_id', $user->id)->exists()) {
-        return redirect()->route('employer.dashboard');
-    }
-
-    return redirect()->route('dashboard');
+    return redirect($resolver->defaultPortalRedirectPath(Auth::user()));
 })->name('home');
 
 Route::get('/search', [MarketplaceController::class, 'search'])->name('marketplace.search');
@@ -131,26 +120,14 @@ Route::get('/jobs/{vacancy}', [MarketplaceController::class, 'show'])
     ->whereNumber('vacancy')
     ->name('marketplace.jobs.show');
 
-Route::get('/reset-password', [PasswordResetController::class, 'show'])->name('password.manual.reset');
-Route::post('/reset-password', [PasswordResetController::class, 'store'])->name('password.manual.update');
 
 // ── Candidate Hub Auth ────────────────────────────
-Route::middleware('guest')->group(function () {
-    Route::get('/candidate/login', [CandidateAuthController::class, 'showLogin'])->name('candidate.login');
-    Route::post('/candidate/login', [CandidateAuthController::class, 'login']);
-});
-Route::get('/candidate/register', [CandidateAuthController::class, 'showRegister'])->name('candidate.register');
-Route::post('/candidate/register', [CandidateAuthController::class, 'register']);
 
 // ── Employer Hub Auth ─────────────────────────────
-Route::middleware('guest')->group(function () {
-    Route::get('/employer/login', [EmployerAuthController::class, 'showLogin'])->name('employer.login');
-    Route::post('/employer/login', [EmployerAuthController::class, 'login']);
-});
-Route::get('/employer/register', [EmployerAuthController::class, 'showRegister'])->name('employer.register');
-Route::post('/employer/register', [EmployerAuthController::class, 'register']);
 
 // ── Candidate & Employer Hub Dashboards ──────────
+require __DIR__.'/auth.php';
+
 Route::middleware('auth')->group(function () {
     Route::prefix('candidate')->name('candidate.')->group(function () {
         Route::get('/dashboard', CandidateDashboardController::class)->name('dashboard');
@@ -218,6 +195,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/billing/profile', [EmployerBillingController::class, 'updateProfile'])->name('billing.profile.update');
         Route::put('/billing/subscription', [EmployerBillingController::class, 'changeSubscription'])->name('billing.subscription.update');
     });
+
+    Route::delete('/impersonation', [UserImpersonationController::class, 'destroy'])
+        ->name('impersonation.destroy');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -619,6 +599,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/users/{user}/send-password-reset-link', [PasswordResetController::class, 'sendResetLink'])
         ->middleware('permission:users.update')
         ->name('users.send-password-reset-link');
+    Route::post('/users/{user}/impersonation', [UserImpersonationController::class, 'store'])
+        ->middleware('permission:users.view')
+        ->name('users.impersonation.store');
     Route::delete('/users/{user}/roles/{role}', [UserController::class, 'destroyRole'])
         ->middleware('permission:users.assign_roles')
         ->name('users.roles.destroy');

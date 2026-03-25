@@ -4,12 +4,12 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-export const __invoke = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: __invoke.url(options),
+const EmailVerificationPromptController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: EmailVerificationPromptController.url(options),
     method: 'get',
 })
 
-__invoke.definition = {
+EmailVerificationPromptController.definition = {
     methods: ["get","head"],
     url: '/email/verify',
 } satisfies RouteDefinition<["get","head"]>
@@ -19,8 +19,8 @@ __invoke.definition = {
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-__invoke.url = (options?: RouteQueryOptions) => {
-    return __invoke.definition.url + queryParams(options)
+EmailVerificationPromptController.url = (options?: RouteQueryOptions) => {
+    return EmailVerificationPromptController.definition.url + queryParams(options)
 }
 
 /**
@@ -28,8 +28,8 @@ __invoke.url = (options?: RouteQueryOptions) => {
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-__invoke.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: __invoke.url(options),
+EmailVerificationPromptController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: EmailVerificationPromptController.url(options),
     method: 'get',
 })
 /**
@@ -37,8 +37,8 @@ __invoke.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-__invoke.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: __invoke.url(options),
+EmailVerificationPromptController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: EmailVerificationPromptController.url(options),
     method: 'head',
 })
 
@@ -47,8 +47,8 @@ __invoke.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-    const __invokeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: __invoke.url(options),
+    const EmailVerificationPromptControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: EmailVerificationPromptController.url(options),
         method: 'get',
     })
 
@@ -57,8 +57,8 @@ __invoke.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-        __invokeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: __invoke.url(options),
+        EmailVerificationPromptControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: EmailVerificationPromptController.url(options),
             method: 'get',
         })
             /**
@@ -66,8 +66,8 @@ __invoke.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
-        __invokeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: __invoke.url({
+        EmailVerificationPromptControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: EmailVerificationPromptController.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
@@ -76,7 +76,5 @@ __invoke.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
     
-    __invoke.form = __invokeForm
-const EmailVerificationPromptController = { __invoke }
-
+    EmailVerificationPromptController.form = EmailVerificationPromptControllerForm
 export default EmailVerificationPromptController

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 /**
-* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
- * @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see \App\Http\Controllers\PortalAuthController::store
+ * @see app/Http/Controllers/PortalAuthController.php:69
  * @route '/register'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -15,8 +15,8 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
- * @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see \App\Http\Controllers\PortalAuthController::store
+ * @see app/Http/Controllers/PortalAuthController.php:69
  * @route '/register'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
- * @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see \App\Http\Controllers\PortalAuthController::store
+ * @see app/Http/Controllers/PortalAuthController.php:69
  * @route '/register'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -34,8 +34,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
     /**
-* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
- * @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see \App\Http\Controllers\PortalAuthController::store
+ * @see app/Http/Controllers/PortalAuthController.php:69
  * @route '/register'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -44,8 +44,8 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     })
 
             /**
-* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
- * @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
+* @see \App\Http\Controllers\PortalAuthController::store
+ * @see app/Http/Controllers/PortalAuthController.php:69
  * @route '/register'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

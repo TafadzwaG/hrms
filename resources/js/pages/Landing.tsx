@@ -50,14 +50,14 @@ type Props = {
 
 const routes = {
   home: '/',
-  browseJobs: '/candidate/login',
-  talentPool: '/candidate/register',
-  forCompanies: '/employer/login',
+  browseJobs: '/search',
+  talentPool: '/register?portal=candidate',
+  forCompanies: '/register?portal=employer',
   pricing: '#pricing',
   login: '/login',
   dashboard: '/dashboard',
-  candidateLogin: '/candidate/login',
-  employerLogin: '/employer/login',
+  candidateLogin: '/login?portal=candidate',
+  employerLogin: '/login?portal=employer',
   jobDetail: (id: number | string) => `/jobs/${id}`,
 };
 
@@ -200,7 +200,7 @@ function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const portalHref = isAuthenticated ? routes.dashboard : routes.login;
+  const portalHref = isAuthenticated ? routes.home : routes.login;
   const portalLabel = isAuthenticated ? 'Dashboard' : 'Portal Login';
 
   return (
@@ -237,7 +237,7 @@ function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </Button>
 
           <Button asChild variant="outline" size="sm">
-            <Link href={routes.browseJobs}>
+            <Link href={routes.talentPool}>
               <Upload className="h-3.5 w-3.5" />
               Upload CV
             </Link>
@@ -279,7 +279,7 @@ function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
             <div className="pt-3 border-t border-border flex flex-col gap-2">
               <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href={routes.browseJobs}>
+                <Link href={routes.talentPool}>
                   <Upload className="h-3.5 w-3.5" />
                   Upload CV
                 </Link>
@@ -441,7 +441,7 @@ const hubs = [
     desc: 'Secure your professional identity, trade skills for global roles with one-click settle.',
     icon: UserRound,
     btn: 'Start My Journey',
-    href: routes.browseJobs,
+    href: routes.talentPool,
   },
   {
     title: 'Employer Hub',
@@ -716,7 +716,7 @@ function CTASection() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button asChild size="lg" variant="secondary" className="active:scale-[0.97]">
-                  <Link href={routes.browseJobs}>
+                  <Link href={routes.talentPool}>
                     <Upload className="h-4 w-4" />
                     Upload Your CV
                   </Link>
@@ -847,4 +847,3 @@ export default function Landing({ auth, stats, featuredVacancies }: Props) {
     </>
   );
 }
-

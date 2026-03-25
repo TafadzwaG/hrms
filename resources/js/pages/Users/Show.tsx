@@ -16,6 +16,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowRightLeft,
     CheckCircle2,
     History,
     Info,
@@ -101,6 +102,7 @@ type UserPayload = {
         show: string;
         edit: string;
         destroy: string;
+        impersonate: string | null;
         send_reset_link: string;
         audit_logs: string;
         audit_export: string;
@@ -236,6 +238,20 @@ export default function UserShow() {
                                             Actions
                                         </Button>
                                     )}
+                                    {user.links.impersonate ? (
+                                        <Button
+                                            variant="outline"
+                                            className="h-10 w-full border-border bg-background font-bold text-foreground shadow-sm"
+                                            onClick={() =>
+                                                router.post(
+                                                    user.links.impersonate!,
+                                                )
+                                            }
+                                        >
+                                            <ArrowRightLeft className="mr-2 h-4 w-4" />
+                                            Impersonate
+                                        </Button>
+                                    ) : null}
                                     {canExportAudit && (
                                         <Button
                                             variant="outline"

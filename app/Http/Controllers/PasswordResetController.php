@@ -29,9 +29,10 @@ class PasswordResetController extends Controller
 
         $token = Password::broker()->createToken($user);
 
-        $resetUrl = rtrim(config('app.url'), '/') .
-            '/reset-password?token=' . urlencode($token) .
-            '&email=' . urlencode($user->email);
+        $resetUrl = route('password.reset', [
+            'token' => $token,
+            'email' => $user->email,
+        ], absolute: true);
 
         // Queued mail (Mailable implements ShouldQueue)
         Mail::to($user->email)->queue(new PasswordResetLinkMail($user, $resetUrl));

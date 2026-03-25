@@ -1,9 +1,8 @@
-import PasswordResetController from './PasswordResetController'
 import MarketplaceController from './MarketplaceController'
-import CandidateAuthController from './CandidateAuthController'
-import EmployerAuthController from './EmployerAuthController'
+import PortalAuthController from './PortalAuthController'
 import Candidate from './Candidate'
 import Employer from './Employer'
+import UserImpersonationController from './UserImpersonationController'
 import CurrentOrganizationController from './CurrentOrganizationController'
 import DashboardController from './DashboardController'
 import OrganizationController from './OrganizationController'
@@ -22,6 +21,7 @@ import AssetMaintenanceController from './AssetMaintenanceController'
 import AssetCategoryController from './AssetCategoryController'
 import AssetVendorController from './AssetVendorController'
 import AssetLocationController from './AssetLocationController'
+import PasswordResetController from './PasswordResetController'
 import UserController from './UserController'
 import WorkflowDefinitionController from './WorkflowDefinitionController'
 import LeaveRequestController from './LeaveRequestController'
@@ -69,12 +69,11 @@ import CandidateDirectoryController from './CandidateDirectoryController'
 import PaymentWebhookController from './PaymentWebhookController'
 import Settings from './Settings'
 const Controllers = {
-    PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
-MarketplaceController: Object.assign(MarketplaceController, MarketplaceController),
-CandidateAuthController: Object.assign(CandidateAuthController, CandidateAuthController),
-EmployerAuthController: Object.assign(EmployerAuthController, EmployerAuthController),
+    MarketplaceController: Object.assign(MarketplaceController, MarketplaceController),
+PortalAuthController: Object.assign(PortalAuthController, PortalAuthController),
 Candidate: Object.assign(Candidate, Candidate),
 Employer: Object.assign(Employer, Employer),
+UserImpersonationController: Object.assign(UserImpersonationController, UserImpersonationController),
 CurrentOrganizationController: Object.assign(CurrentOrganizationController, CurrentOrganizationController),
 DashboardController: Object.assign(DashboardController, DashboardController),
 OrganizationController: Object.assign(OrganizationController, OrganizationController),
@@ -93,6 +92,7 @@ AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaint
 AssetCategoryController: Object.assign(AssetCategoryController, AssetCategoryController),
 AssetVendorController: Object.assign(AssetVendorController, AssetVendorController),
 AssetLocationController: Object.assign(AssetLocationController, AssetLocationController),
+PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
 UserController: Object.assign(UserController, UserController),
 WorkflowDefinitionController: Object.assign(WorkflowDefinitionController, WorkflowDefinitionController),
 LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),

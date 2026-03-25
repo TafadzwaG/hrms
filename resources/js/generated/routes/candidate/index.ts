@@ -1,4 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import loginDf2c2a from './login'
+import register702019 from './register'
 import applications17f98b from './applications'
 import interviews from './interviews'
 import jobsF3446c from './jobs'
@@ -8,8 +10,8 @@ import education001c63 from './education'
 import skillsC32d22 from './skills'
 import settings69f00b from './settings'
 /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,13 +20,13 @@ export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 login.definition = {
-    methods: ["get","head"],
+    methods: ["get","head","post","put","patch","delete","options"],
     url: '/candidate/login',
-} satisfies RouteDefinition<["get","head"]>
+} satisfies RouteDefinition<["get","head","post","put","patch","delete","options"]>
 
 /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -32,8 +34,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -41,18 +43,63 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: login.url(options),
     method: 'head',
 })
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: login.url(options),
+    method: 'post',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+login.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: login.url(options),
+    method: 'put',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+login.patch = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: login.url(options),
+    method: 'patch',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+login.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: login.url(options),
+    method: 'delete',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+login.options = (options?: RouteQueryOptions): RouteDefinition<'options'> => ({
+    url: login.url(options),
+    method: 'options',
+})
 
     /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
     const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -61,8 +108,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
         loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -70,8 +117,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\CandidateAuthController::login
- * @see app/Http/Controllers/CandidateAuthController.php:18
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/login'
  */
         loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,11 +130,76 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
                     }),
             method: 'get',
         })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+        loginForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url(options),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+        loginForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+        loginForm.patch = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+        loginForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/login'
+ */
+        loginForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'OPTIONS',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
     
     login.form = loginForm
 /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,13 +208,13 @@ export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 register.definition = {
-    methods: ["get","head"],
+    methods: ["get","head","post","put","patch","delete","options"],
     url: '/candidate/register',
-} satisfies RouteDefinition<["get","head"]>
+} satisfies RouteDefinition<["get","head","post","put","patch","delete","options"]>
 
 /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -110,8 +222,8 @@ register.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
 register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -119,18 +231,63 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
 register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: register.url(options),
     method: 'head',
 })
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: register.url(options),
+    method: 'post',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+register.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: register.url(options),
+    method: 'put',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+register.patch = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: register.url(options),
+    method: 'patch',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+register.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: register.url(options),
+    method: 'delete',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+register.options = (options?: RouteQueryOptions): RouteDefinition<'options'> => ({
+    url: register.url(options),
+    method: 'options',
+})
 
     /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -139,8 +296,8 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
         registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -148,14 +305,79 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\CandidateAuthController::register
- * @see app/Http/Controllers/CandidateAuthController.php:56
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/candidate/register'
  */
         registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: register.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+        registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url(options),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+        registerForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+        registerForm.patch = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+        registerForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/candidate/register'
+ */
+        registerForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'OPTIONS',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
                     }),
@@ -788,8 +1010,8 @@ settings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     settings.form = settingsForm
 const candidate = {
-    login: Object.assign(login, login),
-register: Object.assign(register, register),
+    login: Object.assign(login, loginDf2c2a),
+register: Object.assign(register, register702019),
 dashboard: Object.assign(dashboard, dashboard),
 applications: Object.assign(applications, applications17f98b),
 interviews: Object.assign(interviews, interviews),

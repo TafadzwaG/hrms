@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\BelongsToOrganization;
+use App\Support\Auth\PortalAccessResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,15 @@ class CompanyProfile extends Model
     use Auditable, BelongsToOrganization, SoftDeletes;
 
     protected string $auditModule = 'recruitment';
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $companyProfile): void {
+            if ($companyProfile->owner) {
+                app(PortalAccessResolver::class)->grantPortalAccess($companyProfile->owner, PortalAccessResolver::PORTAL_EMPLOYER);
+            }
+        });
+    }
 
     public const STATUSES = [
         'draft',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\Auditable;
 use App\Concerns\BelongsToOrganization;
+use App\Support\Auth\PortalAccessResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,15 @@ class CandidateProfile extends Model
     use Auditable, BelongsToOrganization;
 
     protected string $auditModule = 'candidates';
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $candidateProfile): void {
+            if ($candidateProfile->user) {
+                app(PortalAccessResolver::class)->grantPortalAccess($candidateProfile->user, PortalAccessResolver::PORTAL_CANDIDATE);
+            }
+        });
+    }
 
     public const VISIBILITY_STATUSES = [
         'draft',

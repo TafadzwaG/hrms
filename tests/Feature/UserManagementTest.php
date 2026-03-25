@@ -5,6 +5,7 @@ use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Auth\UserImpersonationService;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -154,4 +155,80 @@ test('assigned roles can be revoked from a user', function () {
 
     expect($target->fresh()->organizationRoles($organization->id)->contains('id', $role->id))->toBeFalse();
     expect(AuditLog::query()->withoutGlobalScopes()->where('event', 'revoke_role')->exists())->toBeTrue();
+});
+
+test('administrators can impersonate users and stop impersonation from dashboard flows', function () {
+    $organization = userManagementOrganization();
+
+    $usersViewPermission = Permission::query()->firstOrCreate(
+        ['name' => 'users.view'],
+        [
+            'module' => 'users',
+            'label' => 'View users',
+            'description' => 'Browse user accounts and account details.',
+        ],
+    );
+
+    $adminRole = Role::query()->create([
+        'code' => 'OPS_ADMIN',
+        'name' => 'Operations Admin',
+        'description' => 'Administrative role used for impersonation tests.',
+    ]);
+    $adminRole->permissions()->sync([$usersViewPermission->id]);
+
+    $admin = User::factory()->create([
+        'name' => 'Impersonator Admin',
+        'email' => 'impersonator@example.com',
+    ]);
+    $admin->attachToOrganization($organization);
+    $admin->syncRoles([$adminRole->id], $organization->id);
+    $admin->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    $target = User::factory()->create([
+        'name' => 'Target Employee',
+        'email' => 'target-employee@example.com',
+    ]);
+    $target->attachToOrganization($organization);
+    $target->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    $this->actingAs($admin)
+        ->post("/users/{$target->id}/impersonation")
+        ->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($target);
+    expect(session(UserImpersonationService::SESSION_ORIGINAL_PORTAL))->toBe('employee');
+    expect(AuditLog::query()->where('event', 'impersonation_started')->exists())->toBeTrue();
+
+    $this->get('/dashboard')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('auth.impersonation.active', true)
+            ->where('auth.impersonation.impersonator.id', $admin->id)
+            ->where('auth.impersonation.impersonated.id', $target->id)
+        );
+
+    $this->delete('/impersonation')
+        ->assertRedirect('/dashboard');
+
+    $this->assertAuthenticatedAs($admin);
+    expect(session(UserImpersonationService::SESSION_ORIGINAL_PORTAL))->toBeNull();
+    expect(AuditLog::query()->where('event', 'impersonation_ended')->exists())->toBeTrue();
+});
+
+test('non administrators cannot impersonate other users', function () {
+    $viewer = User::factory()->create();
+    $organization = grantUserPermissions($viewer, ['users.view']);
+    $target = User::factory()->create();
+    $target->attachToOrganization($organization);
+    $target->forceFill([
+        'current_organization_id' => $organization->id,
+    ])->saveQuietly();
+
+    $this->actingAs($viewer)
+        ->post("/users/{$target->id}/impersonation")
+        ->assertForbidden();
 });

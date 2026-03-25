@@ -38,6 +38,7 @@ import AppLayout from '@/layouts/app-layout';
 import { buildIndexParams } from '@/lib/index-table';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowRightLeft,
     CheckCircle2,
     Eye,
     Filter,
@@ -66,6 +67,8 @@ type UserItem = {
     roles_count: number;
     roles: RoleItem[];
     employee?: { id: number; staff_number: string; full_name: string } | null;
+    can_impersonate?: boolean;
+    impersonate_url?: string | null;
     created_at?: string | null;
 };
 
@@ -91,6 +94,8 @@ export default function UsersIndex() {
 
     const [resetDialogOpen, setResetDialogOpen] = useState(false);
     const [userToReset, setUserToReset] = useState<UserItem | null>(null);
+    const [impersonateDialogOpen, setImpersonateDialogOpen] = useState(false);
+    const [userToImpersonate, setUserToImpersonate] = useState<UserItem | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -146,6 +151,23 @@ export default function UsersIndex() {
                 },
             },
         );
+    };
+
+    const openImpersonateDialog = (u: UserItem) => {
+        if (!u.impersonate_url) return;
+        setUserToImpersonate(u);
+        setImpersonateDialogOpen(true);
+    };
+
+    const confirmImpersonation = () => {
+        if (!userToImpersonate?.impersonate_url) return;
+        router.post(userToImpersonate.impersonate_url, {}, {
+            preserveScroll: false,
+            onSuccess: () => {
+                setImpersonateDialogOpen(false);
+                setUserToImpersonate(null);
+            },
+        });
     };
 
     const pageData: UserItem[] = users?.data ?? [];
@@ -499,6 +521,22 @@ export default function UsersIndex() {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
+                                                        className={`h-8 w-8 ${u.can_impersonate ? 'text-muted-foreground hover:bg-primary/10 hover:text-primary' : 'cursor-not-allowed text-muted-foreground opacity-30'}`}
+                                                        disabled={!u.can_impersonate}
+                                                        onClick={() =>
+                                                            openImpersonateDialog(u)
+                                                        }
+                                                        title={
+                                                            u.can_impersonate
+                                                                ? 'Impersonate user'
+                                                                : 'Impersonation not allowed'
+                                                        }
+                                                    >
+                                                        <ArrowRightLeft className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
                                                         className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
                                                         onClick={() =>
                                                             openResetDialog(u)
@@ -635,6 +673,40 @@ export default function UsersIndex() {
                             onClick={(e) => confirmReset()}
                         >
                             Send Link
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog
+                open={impersonateDialogOpen}
+                onOpenChange={setImpersonateDialogOpen}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-foreground">
+                            Start Impersonation
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You are about to sign in as{' '}
+                            <strong className="text-foreground">
+                                {userToImpersonate?.name}
+                            </strong>
+                            . The target dashboard will open with an active impersonation banner until you stop the session.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-4 flex justify-end gap-3">
+                        <AlertDialogCancel
+                            className="border-border font-bold shadow-sm"
+                            onClick={() => setImpersonateDialogOpen(false)}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-primary font-bold text-primary-foreground shadow-sm hover:bg-primary/90"
+                            onClick={() => confirmImpersonation()}
+                        >
+                            Start Impersonation
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

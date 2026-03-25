@@ -2,14 +2,17 @@
 
 namespace App\Http\Responses;
 
-use App\Models\CandidateProfile;
-use App\Models\CompanyProfile;
-use App\Models\Scopes\OrganizationScope;
+use App\Support\Auth\PortalAccessResolver;
 use Illuminate\Http\JsonResponse;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
 {
+    public function __construct(
+        private readonly PortalAccessResolver $resolver,
+    ) {
+    }
+
     public function toResponse($request)
     {
         $user = $request->user();
@@ -18,19 +21,11 @@ class LoginResponse implements LoginResponseContract
             return new JsonResponse('', 204);
         }
 
-        // Redirect candidates to their dashboard
-        if (CandidateProfile::withoutGlobalScope(OrganizationScope::class)
-            ->where('user_id', $user->id)->exists()) {
-            return redirect()->intended('/candidate/dashboard');
-        }
+        $this->resolver->ensureDerivedPortalAccesses($user);
 
-        // Redirect employers to their dashboard
-        if (CompanyProfile::withoutGlobalScope(OrganizationScope::class)
-            ->where('owner_user_id', $user->id)->exists()) {
-            return redirect()->intended('/employer/dashboard');
-        }
+        $activePortal = $this->resolver->primaryPortal($user);
+        $request->session()->put('active_portal', $activePortal);
 
-        // Default: employee portal dashboard
-        return redirect()->intended(config('fortify.home'));
+        return redirect()->intended($this->resolver->dashboardPathForPortal($activePortal));
     }
 }

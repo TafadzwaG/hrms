@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Audit\AuditLogger;
+use App\Support\Auth\UserImpersonationService;
 use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -474,11 +475,19 @@ class UserController extends Controller
 
     private function userLinks(User $user): array
     {
+        $actor = request()->user();
+        $canImpersonate = $actor instanceof User
+            ? app(UserImpersonationService::class)->canImpersonate($actor, $user)
+            : false;
+
         return [
             'index' => route('users.index', [], false),
             'show' => route('users.show', $user, false),
             'edit' => route('users.edit', $user, false),
             'destroy' => route('users.destroy', $user, false),
+            'impersonate' => $canImpersonate
+                ? route('users.impersonation.store', $user, false)
+                : null,
             'send_reset_link' => route('users.send-password-reset-link', $user, false),
             'audit_logs' => route('audit-trail.logs', ['user_id' => $user->id], false),
             'audit_export' => route('audit-trail.export', ['user_id' => $user->id], false),
@@ -708,6 +717,10 @@ class UserController extends Controller
     {
         $effectiveRoles = $user->effectiveRoles($this->tenantId());
         $organizationRoleIds = $user->organizationRoles($this->tenantId())->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $actor = request()->user();
+        $canImpersonate = $actor instanceof User
+            ? app(UserImpersonationService::class)->canImpersonate($actor, $user)
+            : false;
 
         $payload = [
             'id' => $user->id,
@@ -740,6 +753,10 @@ class UserController extends Controller
                 'location' => $user->employee->location?->name,
                 'status' => $user->employee->status,
             ] : null,
+            'can_impersonate' => $canImpersonate,
+            'impersonate_url' => $canImpersonate
+                ? route('users.impersonation.store', $user, false)
+                : null,
             'created_at' => optional($user->created_at)->toDateTimeString(),
             'updated_at' => optional($user->updated_at)->toDateTimeString(),
         ];

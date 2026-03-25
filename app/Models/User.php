@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Support\Auth\PortalAccessResolver;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +16,11 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Lab404\Impersonate\Models\Impersonate;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, Impersonate;
 
     /**
      * Request-level cache for computed role/permission data.
@@ -29,6 +32,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'primary_portal',
         'current_organization_id',
     ];
 
@@ -46,6 +50,25 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $user): void {
+            app(PortalAccessResolver::class)->grantPortalAccess(
+                $user,
+                $user->getAttribute('primary_portal') ?: PortalAccessResolver::PORTAL_EMPLOYEE,
+                blank($user->getAttribute('primary_portal')),
+            );
+        });
+
+        static::saved(function (self $user): void {
+            $primaryPortal = $user->getAttribute('primary_portal');
+
+            if ($primaryPortal) {
+                app(PortalAccessResolver::class)->grantPortalAccess($user, $primaryPortal);
+            }
+        });
     }
 
     public function roles(): BelongsToMany
@@ -85,6 +108,26 @@ class User extends Authenticatable
         return $this->hasOne(CompanyProfile::class, 'owner_user_id');
     }
 
+    public function portalAccesses(): HasMany
+    {
+        return $this->hasMany(UserPortalAccess::class);
+    }
+
+    public function primaryPortal(): string
+    {
+        return app(PortalAccessResolver::class)->primaryPortal($this);
+    }
+
+    public function hasPortalAccess(string $portal): bool
+    {
+        return app(PortalAccessResolver::class)->hasPortalAccess($this, $portal);
+    }
+
+    public function defaultPortalRedirect(): string
+    {
+        return app(PortalAccessResolver::class)->defaultPortalRedirectPath($this);
+    }
+
     public function isSuperAdmin(): bool
     {
         $roles = $this->relationLoaded('roles')
@@ -92,6 +135,29 @@ class User extends Authenticatable
             : $this->roles()->get(['roles.id', 'roles.code', 'roles.name']);
 
         return $roles->contains(fn (Role $role) => $role->code === 'SYS_ADMIN');
+    }
+
+    public function isAdministrator(): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->effectiveRoles()->contains(function (Role $role): bool {
+            return $role->code === 'ADMIN'
+                || Str::endsWith($role->code, '_ADMIN')
+                || Str::contains(Str::upper($role->name), 'ADMIN');
+        });
+    }
+
+    public function canImpersonate(): bool
+    {
+        return $this->isAdministrator() && ! $this->isImpersonated();
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return true;
     }
 
     public function availableOrganizations(): Collection
@@ -329,6 +395,8 @@ class User extends Authenticatable
                 'joined_at' => now(),
             ],
         ]);
+
+        app(PortalAccessResolver::class)->grantPortalAccess($this, PortalAccessResolver::PORTAL_EMPLOYEE);
 
         return $this;
     }

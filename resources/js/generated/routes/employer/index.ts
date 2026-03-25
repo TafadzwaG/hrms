@@ -1,12 +1,14 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import loginDf2c2a from './login'
+import register702019 from './register'
 import vacancies from './vacancies'
 import candidatesC822a9 from './candidates'
 import interviews9b91d6 from './interviews'
 import company890735 from './company'
 import billingFfcdcb from './billing'
 /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,13 +17,13 @@ export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 login.definition = {
-    methods: ["get","head"],
+    methods: ["get","head","post","put","patch","delete","options"],
     url: '/employer/login',
-} satisfies RouteDefinition<["get","head"]>
+} satisfies RouteDefinition<["get","head","post","put","patch","delete","options"]>
 
 /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
 login.url = (options?: RouteQueryOptions) => {
@@ -29,8 +31,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -38,18 +40,63 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: login.url(options),
     method: 'head',
 })
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+login.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: login.url(options),
+    method: 'post',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+login.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: login.url(options),
+    method: 'put',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+login.patch = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: login.url(options),
+    method: 'patch',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+login.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: login.url(options),
+    method: 'delete',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+login.options = (options?: RouteQueryOptions): RouteDefinition<'options'> => ({
+    url: login.url(options),
+    method: 'options',
+})
 
     /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
     const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,8 +105,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
         loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -67,8 +114,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\EmployerAuthController::login
- * @see app/Http/Controllers/EmployerAuthController.php:19
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/login'
  */
         loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -80,11 +127,76 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
                     }),
             method: 'get',
         })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+        loginForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url(options),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+        loginForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+        loginForm.patch = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+        loginForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/login'
+ */
+        loginForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: login.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'OPTIONS',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
     
     login.form = loginForm
 /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
 export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -93,13 +205,13 @@ export const register = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 register.definition = {
-    methods: ["get","head"],
+    methods: ["get","head","post","put","patch","delete","options"],
     url: '/employer/register',
-} satisfies RouteDefinition<["get","head"]>
+} satisfies RouteDefinition<["get","head","post","put","patch","delete","options"]>
 
 /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
 register.url = (options?: RouteQueryOptions) => {
@@ -107,8 +219,8 @@ register.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
 register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,18 +228,63 @@ register.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
 register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: register.url(options),
     method: 'head',
 })
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+register.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: register.url(options),
+    method: 'post',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+register.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: register.url(options),
+    method: 'put',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+register.patch = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: register.url(options),
+    method: 'patch',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+register.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: register.url(options),
+    method: 'delete',
+})
+/**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+register.options = (options?: RouteQueryOptions): RouteDefinition<'options'> => ({
+    url: register.url(options),
+    method: 'options',
+})
 
     /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
     const registerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,8 +293,8 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
         registerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,14 +302,79 @@ register.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \App\Http\Controllers\EmployerAuthController::register
- * @see app/Http/Controllers/EmployerAuthController.php:57
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
  * @route '/employer/register'
  */
         registerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: register.url({
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+        registerForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url(options),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+        registerForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+        registerForm.patch = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+        registerForm.delete = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \Illuminate\Routing\RedirectController::__invoke
+ * @see vendor/laravel/framework/src/Illuminate/Routing/RedirectController.php:19
+ * @route '/employer/register'
+ */
+        registerForm.options = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: register.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'OPTIONS',
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
                     }),
@@ -629,8 +851,8 @@ billing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     billing.form = billingForm
 const employer = {
-    login: Object.assign(login, login),
-register: Object.assign(register, register),
+    login: Object.assign(login, loginDf2c2a),
+register: Object.assign(register, register702019),
 dashboard: Object.assign(dashboard, dashboard),
 vacancies: Object.assign(vacancies, vacancies),
 candidates: Object.assign(candidates, candidatesC822a9),

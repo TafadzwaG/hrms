@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -15,7 +15,7 @@ notice.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -24,7 +24,7 @@ notice.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -33,7 +33,7 @@ notice.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -43,7 +43,7 @@ notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -53,7 +53,7 @@ notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -62,7 +62,7 @@ notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
-* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
  * @route '/email/verify'
  */
@@ -78,7 +78,7 @@ notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     notice.form = noticeForm
 /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -93,7 +93,7 @@ verify.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -119,7 +119,7 @@ verify.url = (args: { id: string | number, hash: string | number } | [id: string
 }
 
 /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -128,7 +128,7 @@ verify.get = (args: { id: string | number, hash: string | number } | [id: string
     method: 'get',
 })
 /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -138,7 +138,7 @@ verify.head = (args: { id: string | number, hash: string | number } | [id: strin
 })
 
     /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -148,7 +148,7 @@ verify.head = (args: { id: string | number, hash: string | number } | [id: strin
     })
 
             /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */
@@ -157,7 +157,7 @@ verify.head = (args: { id: string | number, hash: string | number } | [id: strin
             method: 'get',
         })
             /**
-* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::__invoke
  * @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
  * @route '/email/verify/{id}/{hash}'
  */

@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Auth\PortalAccessResolver;
+use App\Support\Auth\UserImpersonationService;
 use App\Support\Rbac\PermissionRegistry;
 use App\Support\Settings\SystemSettingsService;
 use App\Support\Tenancy\TenantContext;
@@ -34,13 +36,18 @@ class HandleInertiaRequests extends Middleware
         $permissions = [];
         $can = [];
         $userPayload = null;
+        $impersonationPayload = null;
 
         if ($user instanceof User) {
+            $portalResolver = app(PortalAccessResolver::class);
+            $portalResolver->ensureDerivedPortalAccesses($user);
+
             $user->loadMissing([
                 'roles:id,code,name,description',
                 'permissions:id,name,module,label,description',
                 'roles.permissions:id,name,module,label,description',
                 'currentOrganization:id,name,slug,code,status,timezone',
+                'portalAccesses:id,user_id,portal',
             ]);
 
             $orgId = $activeOrganization?->id;
@@ -85,6 +92,10 @@ class HandleInertiaRequests extends Middleware
                     ->map(fn ($rows) => $rows->pluck('code')->values()->all())
                 : collect();
 
+            $availablePortals = $portalResolver->availablePortals($user)->all();
+            $activePortal = $portalResolver->activePortalForRequest($request, $user);
+            $impersonationPayload = app(UserImpersonationService::class)->payload($request);
+
             $userPayload = [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -94,6 +105,13 @@ class HandleInertiaRequests extends Middleware
                 'updated_at' => optional($user->updated_at)->toDateTimeString(),
                 'two_factor_enabled' => !blank($user->two_factor_secret),
                 'is_super_admin' => $user->isSuperAdmin(),
+                'primary_portal' => $portalResolver->primaryPortal($user),
+                'active_portal' => $activePortal,
+                'available_portals' => $availablePortals,
+                'portal_switch_urls' => collect($availablePortals)
+                    ->mapWithKeys(fn (string $portal) => [$portal => route('portal.switch', $portal)])
+                    ->all(),
+                'is_impersonated' => (bool) $impersonationPayload,
                 'roles' => $roles,
                 'permissions' => $permissions,
             ];
@@ -125,6 +143,7 @@ class HandleInertiaRequests extends Middleware
                 'roles' => $roles,
                 'permissions' => $permissions,
                 'can' => $can,
+                'impersonation' => $impersonationPayload,
             ],
             'system_settings' => [
                 'system' => [

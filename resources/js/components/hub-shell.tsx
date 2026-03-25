@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { ImpersonationBanner } from '@/components/impersonation-banner';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { Badge } from '@/components/ui/badge';
@@ -165,6 +166,7 @@ export function HubSidebarLayout({
                         breadcrumbs={breadcrumbs}
                         showOrganizationSwitcher={false}
                     />
+                    <ImpersonationBanner />
 
                     <div className="flex-1 space-y-6 px-4 py-4 md:px-6 lg:px-8">
                         <Card className="overflow-hidden border-border/70 bg-background/95 shadow-sm">

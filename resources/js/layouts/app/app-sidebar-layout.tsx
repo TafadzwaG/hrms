@@ -1,6 +1,7 @@
 ﻿import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { ImpersonationBanner } from '@/components/impersonation-banner';
 import type { AppLayoutProps } from '@/types';
 import { RbacSidebar } from '@/lib/app-sidebar-rbac';
 
@@ -18,6 +19,7 @@ export default function AppSidebarLayout({
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.35),rgba(255,255,255,0.05)_38%,rgba(255,255,255,0.12)_70%,rgba(255,255,255,0.02))] dark:bg-[linear-gradient(125deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)_38%,rgba(255,255,255,0.03)_70%,rgba(255,255,255,0.01))]" />
                 <div className="relative z-10">
                     <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                    <ImpersonationBanner />
                     {children}
                 </div>
             </AppContent>
