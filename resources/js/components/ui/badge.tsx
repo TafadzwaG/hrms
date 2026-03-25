@@ -5,18 +5,42 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex items-center justify-center rounded-md border px-2.5 py-0.5 text-[11px] font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none shadow-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,background-color,border-color,box-shadow] overflow-hidden",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+          "badge-tone-strong",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+          "badge-tone-muted",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "badge-tone-danger focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          "badge-tone-neutral bg-transparent text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+        neutral:
+          "badge-tone-neutral",
+        muted:
+          "badge-tone-muted",
+        info:
+          "badge-tone-info",
+        success:
+          "badge-tone-success",
+        warning:
+          "badge-tone-warning",
+        danger:
+          "badge-tone-danger",
+        accent:
+          "badge-tone-accent",
+        chart1:
+          "badge-tone-chart-1",
+        chart2:
+          "badge-tone-chart-2",
+        chart3:
+          "badge-tone-chart-3",
+        chart4:
+          "badge-tone-chart-4",
+        chart5:
+          "badge-tone-chart-5",
       },
     },
     defaultVariants: {

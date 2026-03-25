@@ -1,14 +1,27 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Banknote, Calendar, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Banknote, CalendarDays, CheckCircle2, Clock3, XCircle } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    RecruitmentCandidateSectionHeading,
+    RecruitmentCandidateSummaryCard,
+    candidatePrimaryButtonClassName,
+    candidateSecondaryButtonClassName,
+    formatCandidateDate,
+    formatCandidateLabel,
+    formatCandidateMoney,
+    recruitmentCandidateMutedCardClassName,
+    recruitmentCandidateSectionClassName,
+} from './profile-primitives';
 
 type Candidate = {
     id: number;
     full_name: string;
-    visibility_status: string;
+    profile_visibility_status?: string | null;
+    visibility_status?: string | null;
+    is_public?: boolean;
     listing_activated_at: string | null;
     listing_expires_at: string | null;
 };
@@ -28,47 +41,22 @@ type ListingStatusPageProps = {
     payment: Payment | null;
 };
 
-const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    pending_payment: 'border-transparent bg-amber-100 text-amber-700',
-    expired: 'border-transparent bg-slate-100 text-slate-600',
-    suspended: 'border-transparent bg-red-100 text-red-700',
-    paid: 'border-transparent bg-emerald-100 text-emerald-700',
-    failed: 'border-transparent bg-red-100 text-red-700',
-    pending: 'border-transparent bg-amber-100 text-amber-700',
+const paymentStatusStyles: Record<string, string> = {
+    active: 'badge-tone-success',
+    draft: 'badge-tone-neutral',
+    pending_payment: 'badge-tone-warning',
+    initiated: 'badge-tone-warning',
+    processing: 'badge-tone-warning',
+    paid: 'badge-tone-success',
+    failed: 'badge-tone-danger',
+    cancelled: 'badge-tone-danger',
 };
-
-function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatDate(value: string | null) {
-    if (!value) return '—';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
-function formatMoney(value: string | number | null | undefined) {
-    if (value === null || value === undefined || value === '') return '—';
-    const amount = Number(value);
-    if (Number.isNaN(amount)) return String(value);
-    return amount.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-}
 
 export default function ListingStatus() {
     const { candidate, payment } = usePage<ListingStatusPageProps>().props;
 
-    const isActive = candidate.visibility_status === 'active';
-    const isPending = candidate.visibility_status === 'pending_payment';
+    const visibilityStatus = candidate.profile_visibility_status ?? candidate.visibility_status ?? 'draft';
+    const retryable = visibilityStatus === 'pending_payment' || payment?.status === 'failed';
 
     return (
         <AppLayout
@@ -81,132 +69,112 @@ export default function ListingStatus() {
         >
             <Head title="Listing Status" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                            Listing Status
-                        </h1>
-                        <p className="text-lg text-zinc-500">
-                            Payment result and listing details for {candidate.full_name}.
-                        </p>
-                    </div>
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-black tracking-tighter text-black uppercase">Listing Status</h1>
+                    <p className="text-sm font-bold tracking-wide text-zinc-500">
+                        Review payment outcome and listing visibility using the same profile presentation pattern.
+                    </p>
                 </div>
 
-                <div className="mx-auto max-w-2xl space-y-6">
-                    {/* Payment Result */}
-                    {payment && (
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4">
-                                    {payment.status === 'paid' ? (
-                                        <CheckCircle2 className="h-12 w-12 text-emerald-500" />
-                                    ) : payment.status === 'failed' ? (
-                                        <XCircle className="h-12 w-12 text-red-500" />
-                                    ) : (
-                                        <Clock className="h-12 w-12 text-amber-500" />
-                                    )}
-                                    <div className="space-y-1">
-                                        <p className="text-xl font-bold text-zinc-900">
-                                            {payment.status === 'paid'
-                                                ? 'Payment Successful'
-                                                : payment.status === 'failed'
-                                                  ? 'Payment Failed'
-                                                  : 'Payment Pending'}
-                                        </p>
-                                        <p className="text-sm text-zinc-500">
-                                            {payment.currency} {formatMoney(payment.amount)} via {formatLabel(payment.provider)}
-                                        </p>
-                                        {payment.paid_at && (
-                                            <p className="text-xs text-zinc-400">Paid on {formatDate(payment.paid_at)}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Listing Status */}
-                    <Card className="border-zinc-200 shadow-none">
-                        <CardHeader className="bg-muted/30">
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <Calendar className="h-5 w-5 text-muted-foreground" />
-                                Listing Details
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 p-6">
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Visibility Status</span>
-                                <Badge
-                                    variant="outline"
-                                    className={`${statusStyles[candidate.visibility_status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                >
-                                    {formatLabel(candidate.visibility_status)}
-                                </Badge>
-                            </div>
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Activated At</span>
-                                <span className="font-semibold text-zinc-700">{formatDate(candidate.listing_activated_at)}</span>
-                            </div>
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Expires At</span>
-                                <span className="font-semibold text-zinc-700">{formatDate(candidate.listing_expires_at)}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Payment Details */}
-                    {payment && (
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardHeader className="bg-muted/30">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Banknote className="h-5 w-5 text-muted-foreground" />
-                                    Payment Details
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4 p-6">
-                                <div className="flex justify-between gap-3 text-sm">
-                                    <span className="text-zinc-400">Payment ID</span>
-                                    <span className="font-mono font-semibold text-zinc-700">#{payment.id}</span>
-                                </div>
-                                <div className="flex justify-between gap-3 text-sm">
-                                    <span className="text-zinc-400">Amount</span>
-                                    <span className="font-semibold text-zinc-700">{payment.currency} {formatMoney(payment.amount)}</span>
-                                </div>
-                                <div className="flex justify-between gap-3 text-sm">
-                                    <span className="text-zinc-400">Provider</span>
-                                    <span className="font-semibold text-zinc-700">{formatLabel(payment.provider)}</span>
-                                </div>
-                                <div className="flex justify-between gap-3 text-sm">
-                                    <span className="text-zinc-400">Status</span>
-                                    <Badge
-                                        variant="outline"
-                                        className={`${statusStyles[payment.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                    >
-                                        {formatLabel(payment.status)}
+                <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="space-y-8">
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <RecruitmentCandidateSectionHeading icon={CalendarDays} title="Listing Details" />
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Visibility</span>
+                                    <Badge variant="outline" className={paymentStatusStyles[visibilityStatus] ?? 'badge-tone-neutral'}>
+                                        {formatCandidateLabel(visibilityStatus)}
                                     </Badge>
                                 </div>
-                                <div className="flex justify-between gap-3 text-sm">
-                                    <span className="text-zinc-400">Created</span>
-                                    <span className="font-semibold text-zinc-700">{formatDate(payment.created_at)}</span>
+                                <div className="flex items-center justify-between gap-4 text-sm">
+                                    <span className="text-muted-foreground">Activated At</span>
+                                    <span className="font-semibold text-foreground">{formatCandidateDate(candidate.listing_activated_at)}</span>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                                <div className="flex items-center justify-between gap-4 text-sm">
+                                    <span className="text-muted-foreground">Expires At</span>
+                                    <span className="font-semibold text-foreground">{formatCandidateDate(candidate.listing_expires_at)}</span>
+                                </div>
+                            </div>
+                        </section>
 
-                    <div className="flex justify-center gap-3">
-                        <Link href={`/candidate-profiles/${candidate.id}`}>
-                            <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
-                                View Profile
-                            </Button>
-                        </Link>
-                        {(isPending || (!isActive && payment?.status === 'failed')) && (
-                            <Link href={`/candidate-profiles/${candidate.id}/checkout`}>
-                                <Button variant="outline" className="h-11 border-zinc-200">
-                                    <Banknote className="mr-2 h-5 w-5" /> Retry Payment
-                                </Button>
+                        {payment ? (
+                            <section className={recruitmentCandidateSectionClassName}>
+                                <RecruitmentCandidateSectionHeading icon={Banknote} title="Payment Outcome" />
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-4 rounded-lg border border-border/70 bg-muted/20 p-4">
+                                        {payment.status === 'paid' ? (
+                                            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                                        ) : payment.status === 'failed' ? (
+                                            <XCircle className="h-10 w-10 text-red-500" />
+                                        ) : (
+                                            <Clock3 className="h-10 w-10 text-amber-500" />
+                                        )}
+                                        <div>
+                                            <p className="text-lg font-black tracking-tight text-black uppercase">
+                                                {payment.status === 'paid'
+                                                    ? 'Payment Successful'
+                                                    : payment.status === 'failed'
+                                                      ? 'Payment Failed'
+                                                      : 'Payment Pending'}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {payment.currency} {formatCandidateMoney(payment.amount)} via {formatCandidateLabel(payment.provider)}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 text-sm">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="text-muted-foreground">Payment ID</span>
+                                            <span className="font-semibold text-foreground">#{payment.id}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="text-muted-foreground">Created</span>
+                                            <span className="font-semibold text-foreground">{formatCandidateDate(payment.created_at)}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="text-muted-foreground">Paid</span>
+                                            <span className="font-semibold text-foreground">{formatCandidateDate(payment.paid_at)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        ) : null}
+
+                        <div className="flex flex-wrap gap-3">
+                            <Link href={`/candidate-profiles/${candidate.id}`}>
+                                <Button className={candidatePrimaryButtonClassName}>View Profile</Button>
                             </Link>
-                        )}
+                            {retryable ? (
+                                <Link href={`/candidate-profiles/${candidate.id}/checkout`}>
+                                    <Button type="button" variant="outline" className={candidateSecondaryButtonClassName}>
+                                        Retry Payment
+                                    </Button>
+                                </Link>
+                            ) : null}
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        <RecruitmentCandidateSummaryCard
+                            fullName={candidate.full_name}
+                            headline={formatCandidateLabel(visibilityStatus)}
+                            metrics={[
+                                { label: 'Public', value: candidate.is_public ? 'Yes' : 'No' },
+                                { label: 'Status', value: formatCandidateLabel(visibilityStatus) },
+                            ]}
+                        />
+
+                        <div className={recruitmentCandidateMutedCardClassName}>
+                            <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Status guidance</p>
+                            <ul className="mt-4 space-y-3 text-sm font-medium text-zinc-600">
+                                <li>Paid listings are activated and available to employer search.</li>
+                                <li>Pending listings require payment confirmation before activation.</li>
+                                <li>Failed payments can be retried from the checkout page.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

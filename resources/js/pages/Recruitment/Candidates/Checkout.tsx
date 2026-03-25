@@ -1,84 +1,81 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import type { FormEvent } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Banknote, CheckCircle2, Clock, CreditCard, Loader2, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Banknote, CheckCircle2, CreditCard, ExternalLink, User, XCircle } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    CandidateFormField,
+    RecruitmentCandidateSectionHeading,
+    RecruitmentCandidateSummaryCard,
+    candidatePrimaryButtonClassName,
+    candidateSecondaryButtonClassName,
+    candidateUnderlinedInput,
+    formatCandidateDate,
+    formatCandidateLabel,
+    formatCandidateMoney,
+    recruitmentCandidateMutedCardClassName,
+    recruitmentCandidateSectionClassName,
+} from './profile-primitives';
 
 type Candidate = {
     id: number;
     full_name: string;
-    email: string;
-    headline: string | null;
-    visibility_status: string;
+    email: string | null;
+    profile_visibility_status: string;
+    is_public: boolean;
+    listing_activated_at: string | null;
+    listing_expires_at: string | null;
+};
+
+type Payment = {
+    id: number;
+    amount: string | number;
+    currency: string;
+    status: string;
+    provider: string;
+    provider_reference?: string | null;
+    paid_at: string | null;
+    created_at: string | null;
 };
 
 type CheckoutPageProps = {
     candidate: Candidate;
-    fee: number;
-    currency: string;
-    payment_id?: number | null;
-    payment_status?: string | null;
+    payment: Payment | null;
+    listingFee: {
+        amount: number;
+        currency: string;
+    };
+    providers: string[];
 };
 
-const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    pending_payment: 'border-transparent bg-amber-100 text-amber-700',
-    paid: 'border-transparent bg-emerald-100 text-emerald-700',
-    failed: 'border-transparent bg-red-100 text-red-700',
-    pending: 'border-transparent bg-amber-100 text-amber-700',
+const paymentStatusStyles: Record<string, string> = {
+    active: 'badge-tone-success',
+    draft: 'badge-tone-neutral',
+    pending_payment: 'badge-tone-warning',
+    paid: 'badge-tone-success',
+    initiated: 'badge-tone-warning',
+    processing: 'badge-tone-warning',
+    failed: 'badge-tone-danger',
+    cancelled: 'badge-tone-danger',
 };
-
-function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export default function CandidateCheckout() {
-    const { candidate, fee = 1.0, currency = 'USD', payment_id, payment_status } = usePage<CheckoutPageProps>().props;
+    const { candidate, payment, listingFee, providers } = usePage<CheckoutPageProps>().props;
 
-    const [polling, setPolling] = useState(false);
-    const [currentStatus, setCurrentStatus] = useState(payment_status ?? null);
-
-    const { data, setData, post, processing, errors } = useForm({
-        phone: '',
+    const { data, setData, post, processing } = useForm({
+        provider: providers[0] ?? 'paynow',
+        customer_phone: '',
+        customer_email: candidate.email ?? '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post(`/candidate-profiles/${candidate.id}/checkout`, {
+    const handleSubmit = (event: FormEvent) => {
+        event.preventDefault();
+        post(`/candidate-profiles/${candidate.id}/checkout/initiate`, {
             preserveScroll: true,
-            onSuccess: () => {
-                setPolling(true);
-            },
         });
     };
-
-    useEffect(() => {
-        if (!polling || !payment_id) return;
-
-        const interval = window.setInterval(async () => {
-            try {
-                const response = await fetch(`/candidate-profiles/${candidate.id}/payment-status/${payment_id}`);
-                const result = await response.json();
-
-                if (result.status && result.status !== 'pending') {
-                    setCurrentStatus(result.status);
-                    setPolling(false);
-                }
-            } catch {
-                // Silently retry
-            }
-        }, 3000);
-
-        return () => window.clearInterval(interval);
-    }, [polling, payment_id, candidate.id]);
-
-    const isPaid = currentStatus === 'paid';
-    const isFailed = currentStatus === 'failed';
 
     return (
         <AppLayout
@@ -91,168 +88,132 @@ export default function CandidateCheckout() {
         >
             <Head title="Activate Listing" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                            Activate Listing
-                        </h1>
-                        <p className="text-lg text-zinc-500">
-                            Pay to make your candidate profile visible to employers.
-                        </p>
-                    </div>
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-black tracking-tighter text-black uppercase">Activate Listing</h1>
+                    <p className="text-sm font-bold tracking-wide text-zinc-500">
+                        Use the same candidate profile presentation while handling listing payment and activation.
+                    </p>
                 </div>
 
-                <div className="mx-auto max-w-2xl space-y-6">
-                    {/* Candidate Summary */}
-                    <Card className="border-zinc-200 shadow-none">
-                        <CardHeader className="bg-muted/30">
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <User className="h-5 w-5 text-muted-foreground" />
-                                Candidate Summary
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4 p-6">
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Name</span>
-                                <span className="font-semibold text-zinc-700">{candidate.full_name}</span>
-                            </div>
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Email</span>
-                                <span className="font-semibold text-zinc-700">{candidate.email}</span>
-                            </div>
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Headline</span>
-                                <span className="font-semibold text-zinc-700">{candidate.headline ?? '—'}</span>
-                            </div>
-                            <div className="flex justify-between gap-3 text-sm">
-                                <span className="text-zinc-400">Status</span>
-                                <Badge
-                                    variant="outline"
-                                    className={`${statusStyles[candidate.visibility_status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                >
-                                    {formatLabel(candidate.visibility_status)}
-                                </Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="space-y-8">
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <RecruitmentCandidateSectionHeading icon={CreditCard} title="Listing Fee" kicker="Step 1 of 2" />
 
-                    {/* Fee Display */}
-                    <Card className="border-zinc-200 shadow-none">
-                        <CardHeader className="bg-muted/30">
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <CreditCard className="h-5 w-5 text-muted-foreground" />
-                                Listing Fee
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50/50 p-6">
-                                <div className="space-y-1">
-                                    <p className="text-sm text-zinc-400">Activation Fee</p>
-                                    <p className="text-xs text-zinc-400">One-time payment for listing visibility</p>
-                                </div>
-                                <p className="text-2xl font-semibold text-zinc-900">
-                                    {currency} {fee.toFixed(2)}
+                            <div className="rounded-lg border border-border/70 bg-muted/20 p-6">
+                                <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Activation fee</p>
+                                <p className="mt-3 text-3xl font-black tracking-tight text-black">
+                                    {listingFee.currency} {formatCandidateMoney(listingFee.amount)}
+                                </p>
+                                <p className="mt-2 text-sm text-muted-foreground">
+                                    One payment makes the candidate listing visible to employers.
                                 </p>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </section>
 
-                    {/* Payment Status */}
-                    {currentStatus && (
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4">
-                                    {isPaid ? (
-                                        <>
-                                            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-                                            <div>
-                                                <p className="text-lg font-bold text-emerald-700">Payment Successful</p>
-                                                <p className="text-sm text-zinc-500">Your listing has been activated.</p>
-                                            </div>
-                                        </>
-                                    ) : isFailed ? (
-                                        <>
-                                            <Banknote className="h-10 w-10 text-red-500" />
-                                            <div>
-                                                <p className="text-lg font-bold text-red-700">Payment Failed</p>
-                                                <p className="text-sm text-zinc-500">Please try again.</p>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Clock className="h-10 w-10 text-amber-500" />
-                                            <div>
-                                                <p className="text-lg font-bold text-amber-700">Processing Payment</p>
-                                                <p className="text-sm text-zinc-500">Waiting for confirmation...</p>
-                                            </div>
-                                        </>
-                                    )}
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <RecruitmentCandidateSectionHeading icon={Banknote} title="Payment Details" kicker="Step 2 of 2" />
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <CandidateFormField label="Provider">
+                                        <select value={data.provider} onChange={(event) => setData('provider', event.target.value)} className={candidateUnderlinedInput}>
+                                            {providers.map((provider) => (
+                                                <option key={provider} value={provider}>
+                                                    {formatCandidateLabel(provider)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </CandidateFormField>
+                                    <CandidateFormField label="Customer Email">
+                                        <input type="email" value={data.customer_email} onChange={(event) => setData('customer_email', event.target.value)} className={candidateUnderlinedInput} />
+                                    </CandidateFormField>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
 
-                    {/* Payment Form */}
-                    {!isPaid && (
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardHeader className="bg-muted/30">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Banknote className="h-5 w-5 text-muted-foreground" />
-                                    Pay with Paynow
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-6">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone">Phone Number (Ecocash / OneMoney)</Label>
-                                        <Input
-                                            id="phone"
-                                            className="h-11 border-zinc-200"
-                                            placeholder="e.g. 0771234567"
-                                            value={data.phone}
-                                            onChange={(e) => setData('phone', e.target.value)}
-                                        />
-                                        {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
-                                    </div>
+                                <CandidateFormField label="Phone Number">
+                                    <input value={data.customer_phone} onChange={(event) => setData('customer_phone', event.target.value)} className={candidateUnderlinedInput} placeholder="e.g. 0771234567" />
+                                </CandidateFormField>
 
-                                    <div className="flex items-center gap-3">
-                                        <Button
-                                            type="submit"
-                                            disabled={processing || polling}
-                                            className="h-11 flex-1 rounded-md bg-emerald-600 px-6 text-white shadow-sm transition-all hover:bg-emerald-700"
-                                        >
-                                            {processing || polling ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Banknote className="mr-2 h-5 w-5" /> Pay {currency} {fee.toFixed(2)}
-                                                </>
-                                            )}
+                                <div className="flex flex-wrap gap-3">
+                                    <Button type="submit" disabled={processing} className={candidatePrimaryButtonClassName}>
+                                        <ExternalLink className="mr-2 h-4 w-4" />
+                                        Continue to Payment
+                                    </Button>
+                                    <Link href={`/candidate-profiles/${candidate.id}`}>
+                                        <Button type="button" variant="outline" className={candidateSecondaryButtonClassName}>
+                                            <XCircle className="mr-2 h-4 w-4" />
+                                            Back to Profile
                                         </Button>
-                                        <Link href={`/candidate-profiles/${candidate.id}`}>
-                                            <Button type="button" variant="outline" className="h-11 border-zinc-200">
-                                                <X className="mr-2 h-4 w-4" />
-                                                Cancel
+                                    </Link>
+                                </div>
+                            </form>
+                        </section>
+
+                        {payment ? (
+                            <section className={recruitmentCandidateSectionClassName}>
+                                <RecruitmentCandidateSectionHeading icon={CheckCircle2} title="Latest Payment" />
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Status</span>
+                                        <Badge variant="outline" className={paymentStatusStyles[payment.status] ?? 'badge-tone-neutral'}>
+                                            {formatCandidateLabel(payment.status)}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 text-sm">
+                                        <span className="text-muted-foreground">Amount</span>
+                                        <span className="font-semibold text-foreground">
+                                            {payment.currency} {formatCandidateMoney(payment.amount)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 text-sm">
+                                        <span className="text-muted-foreground">Created</span>
+                                        <span className="font-semibold text-foreground">{formatCandidateDate(payment.created_at)}</span>
+                                    </div>
+                                    <div className="pt-2">
+                                        <Link href={`/candidate-profiles/${candidate.id}/listing-status`}>
+                                            <Button type="button" variant="outline" className={candidateSecondaryButtonClassName}>
+                                                View Listing Status
                                             </Button>
                                         </Link>
                                     </div>
-                                </form>
-                            </CardContent>
-                        </Card>
-                    )}
+                                </div>
+                            </section>
+                        ) : null}
+                    </div>
 
-                    {isPaid && (
-                        <div className="flex justify-center">
-                            <Link href={`/candidate-profiles/${candidate.id}`}>
-                                <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
-                                    View Profile
-                                </Button>
-                            </Link>
+                    <div className="space-y-8">
+                        <RecruitmentCandidateSummaryCard
+                            fullName={candidate.full_name}
+                            headline={formatCandidateLabel(candidate.profile_visibility_status)}
+                            email={candidate.email}
+                            metrics={[
+                                { label: 'Public', value: candidate.is_public ? 'Yes' : 'No' },
+                                { label: 'Status', value: formatCandidateLabel(candidate.profile_visibility_status) },
+                            ]}
+                            footer={
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="text-muted-foreground">Activated</span>
+                                        <span className="font-semibold text-foreground">{formatCandidateDate(candidate.listing_activated_at)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="text-muted-foreground">Expires</span>
+                                        <span className="font-semibold text-foreground">{formatCandidateDate(candidate.listing_expires_at)}</span>
+                                    </div>
+                                </div>
+                            }
+                        />
+
+                        <div className={recruitmentCandidateMutedCardClassName}>
+                            <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">What happens next</p>
+                            <ul className="mt-4 space-y-3 text-sm font-medium text-zinc-600">
+                                <li>The payment service initializes the listing fee transaction.</li>
+                                <li>Once paid, the candidate listing moves into the active state.</li>
+                                <li>You can confirm the result from the listing status page at any time.</li>
+                            </ul>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </AppLayout>

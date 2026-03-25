@@ -7,6 +7,7 @@ use App\Http\Requests\Rbac\UpdateRoleRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Support\Audit\AuditLogger;
+use App\Support\IndexTables\IndexTableSorter;
 use App\Support\Rbac\PermissionCatalogueSynchronizer;
 use App\Support\Rbac\PermissionRegistry;
 use Illuminate\Http\Request;
@@ -23,10 +24,15 @@ class RoleController extends Controller
         $filters = [
             'search' => $request->string('search')->toString(),
         ];
+        $sortMap = [
+            'name' => 'name',
+            'permissions_count' => 'permissions_count',
+            'updated_at' => 'updated_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $query = Role::query()
-            ->withCount(['permissions'])
-            ->orderBy('name');
+            ->withCount(['permissions']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -36,6 +42,8 @@ class RoleController extends Controller
                     ->orWhere('description', 'like', "%{$search}%");
             });
         }
+
+        IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']);
 
         $roles = $query
             ->paginate(12)
@@ -67,7 +75,11 @@ class RoleController extends Controller
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
-            'filters' => $filters,
+            'filters' => [
+                ...$filters,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
+            ],
             'stats' => [
                 'total_roles' => Role::count(),
                 'total_permissions' => Permission::count(),

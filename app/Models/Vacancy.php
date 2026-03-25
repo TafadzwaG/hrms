@@ -52,6 +52,7 @@ class Vacancy extends Model
     ];
 
     protected $fillable = [
+        'organization_id',
         'company_profile_id',
         'title',
         'department',
@@ -80,6 +81,27 @@ class Vacancy extends Model
         'published_at' => 'datetime',
         'closed_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Vacancy $vacancy): void {
+            if (! $vacancy->company_profile_id) {
+                return;
+            }
+
+            if ($vacancy->getAttribute('organization_id') && ! $vacancy->isDirty('company_profile_id')) {
+                return;
+            }
+
+            $organizationId = CompanyProfile::withoutGlobalScopes()
+                ->whereKey($vacancy->company_profile_id)
+                ->value('organization_id');
+
+            if ($organizationId) {
+                $vacancy->setAttribute('organization_id', $organizationId);
+            }
+        });
+    }
 
     public function company(): BelongsTo
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CandidateProfile;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,35 +11,52 @@ class CandidateDirectoryController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $highestEducation = $request->input('highest_education');
-        $yearsExperience = $request->input('years_experience');
-        $skills = $request->input('skills');
+        $search = $request->string('search')->toString();
+        $highestEducation = $request->input('education');
+        $experienceMin = $request->input('experience_min');
+        $experienceMax = $request->input('experience_max');
+        $location = $request->string('location')->toString();
+        $sortMap = [
+            'full_name' => 'full_name',
+            'headline' => 'headline',
+            'location' => 'location',
+            'years_experience' => 'years_experience',
+            'highest_education' => 'highest_education',
+            'listing_activated_at' => 'listing_activated_at',
+            'updated_at' => 'updated_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'listing_activated_at', 'desc');
 
         $candidates = CandidateProfile::query()
             ->where('is_public', true)
             ->where('profile_visibility_status', 'active')
-            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+            ->with(['skills:id,candidate_profile_id,name'])
+            ->when($search !== '', fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('headline', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%");
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhereHas('skills', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
             }))
             ->when($highestEducation, fn ($q) => $q->where('highest_education', $highestEducation))
-            ->when($yearsExperience, fn ($q) => $q->where('years_experience', '>=', (int) $yearsExperience))
-            ->when($skills, fn ($q) => $q->whereHas('skills', fn ($sq) => $sq->where('name', 'like', "%{$skills}%")))
-            ->orderByDesc('listing_activated_at')
+            ->when($experienceMin !== null && $experienceMin !== '', fn ($q) => $q->where('years_experience', '>=', (int) $experienceMin))
+            ->when($experienceMax !== null && $experienceMax !== '', fn ($q) => $q->where('years_experience', '<=', (int) $experienceMax))
+            ->when($location !== '', fn ($q) => $q->where('location', 'like', "%{$location}%"))
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->through(fn (CandidateProfile $candidate) => [
                 'id' => $candidate->id,
                 'full_name' => $candidate->full_name,
                 'headline' => $candidate->headline,
                 'location' => $candidate->location,
-                'city' => $candidate->city,
-                'country' => $candidate->country,
                 'highest_education' => $candidate->highest_education,
                 'years_experience' => $candidate->years_experience,
-                'current_job_title' => $candidate->current_job_title,
                 'listing_activated_at' => optional($candidate->listing_activated_at)->toDateTimeString(),
+                'skills' => $candidate->relationLoaded('skills')
+                    ? $candidate->skills->map(fn ($skill) => [
+                        'id' => $skill->id,
+                        'name' => $skill->name,
+                    ])->values()->all()
+                    : [],
                 'links' => [
                     'show' => "/recruitment/directory/{$candidate->id}",
                 ],
@@ -49,9 +67,12 @@ class CandidateDirectoryController extends Controller
             'candidates' => $candidates,
             'filters' => [
                 'search' => $search,
-                'highest_education' => $highestEducation,
-                'years_experience' => $yearsExperience,
-                'skills' => $skills,
+                'education' => $highestEducation,
+                'experience_min' => $experienceMin,
+                'experience_max' => $experienceMax,
+                'location' => $location,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'educationLevels' => CandidateProfile::EDUCATION_LEVELS,
         ]);

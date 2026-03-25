@@ -5,7 +5,19 @@ import moment from 'moment';
 
 import { DocumentPreviewDialog } from '@/components/document-preview-dialog';
 import InputError from '@/components/input-error';
-import { EmployerHubLayout, EmployerStatusBadge } from './components/hub';
+import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    employerBreadcrumbs,
+    EmployerHubLayout,
+    EmployerStatusBadge,
+} from './components/hub';
 import type {
     Company,
     EmployerCandidateDocument,
@@ -103,11 +115,15 @@ export default function EmployerCandidateProfilePage() {
         <EmployerHubLayout
             title="Candidate Detail"
             active="candidates"
-            subtitle=''
+            subtitle="Review the full applicant profile, supporting documents, and interview schedule."
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs(
+                { title: 'Candidates', href: '/employer/candidates' },
+                candidate.full_name || 'Candidate Detail',
+            )}
         >
-            <div className="w-full px-4 md:px-6">
+            <div className="space-y-6">
                 {/* Profile Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-5">
                     <div className="flex items-center gap-4">
@@ -128,16 +144,16 @@ export default function EmployerCandidateProfilePage() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <Link href="/employer/candidates">
-                            <button className="flex items-center gap-1.5 px-4 py-2 border border-zinc-200 text-black font-bold text-[9px] tracking-widest uppercase hover:bg-zinc-50 transition-colors rounded-sm">
+                        <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 rounded-sm border-zinc-200 text-[9px] font-bold tracking-widest uppercase">
+                            <Link href="/employer/candidates">
                                 <ArrowLeft className="h-3.5 w-3.5" /> Candidates
-                            </button>
-                        </Link>
-                        <Link href="/employer/interviews">
-                            <button className="flex items-center gap-1.5 px-4 py-2 bg-black text-white font-bold text-[9px] tracking-widest uppercase hover:bg-zinc-800 transition-opacity rounded-sm">
+                            </Link>
+                        </Button>
+                        <Button asChild size="sm" className="h-8 gap-1.5 rounded-sm text-[9px] font-bold tracking-widest uppercase">
+                            <Link href="/employer/interviews">
                                 <CalendarIcon className="h-3.5 w-3.5" /> All Interviews
-                            </button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                 </div>
 
@@ -301,19 +317,23 @@ export default function EmployerCandidateProfilePage() {
                                         type="datetime-local" 
                                         value={scheduleForm.data.scheduled_at} 
                                         onChange={(e) => scheduleForm.setData('scheduled_at', e.target.value)} 
-                                        className="w-full bg-white border border-zinc-200 rounded-sm px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-black focus:border-black transition-all" 
+                                        className="w-full rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-black focus:border-black transition-all" 
                                     />
                                 </ScheduleField>
                                 <ScheduleField label="Meeting Type" error={scheduleForm.errors.meeting_type}>
-                                    <select 
-                                        value={scheduleForm.data.meeting_type} 
-                                        onChange={(e) => scheduleForm.setData('meeting_type', e.target.value)} 
-                                        className="w-full bg-white border border-zinc-200 rounded-sm px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-black focus:border-black transition-all"
+                                    <Select
+                                        value={scheduleForm.data.meeting_type}
+                                        onValueChange={(value) => scheduleForm.setData('meeting_type', value)}
                                     >
+                                        <SelectTrigger className="h-8 w-full rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-black shadow-none focus:ring-1 focus:ring-black focus:ring-offset-0">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
                                         {meetingTypes.map((type) => (
-                                            <option key={type} value={type}>{type.replace('_', ' ')}</option>
+                                            <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
                                         ))}
-                                    </select>
+                                        </SelectContent>
+                                    </Select>
                                 </ScheduleField>
                                 <ScheduleField label="Location / Link" error={scheduleForm.errors.location}>
                                     <input 
@@ -321,7 +341,7 @@ export default function EmployerCandidateProfilePage() {
                                         value={scheduleForm.data.location} 
                                         onChange={(e) => scheduleForm.setData('location', e.target.value)} 
                                         placeholder="https://zoom.us/j/..." 
-                                        className="w-full bg-white border border-zinc-200 rounded-sm px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-black focus:border-black transition-all" 
+                                        className="w-full rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-black focus:border-black transition-all" 
                                     />
                                 </ScheduleField>
                                 <ScheduleField label="Notes" error={scheduleForm.errors.instructions}>
@@ -330,16 +350,16 @@ export default function EmployerCandidateProfilePage() {
                                         value={scheduleForm.data.instructions} 
                                         onChange={(e) => scheduleForm.setData('instructions', e.target.value)} 
                                         placeholder="Enter instructions..." 
-                                        className="w-full bg-white border border-zinc-200 rounded-sm px-2.5 py-1.5 text-xs font-medium focus:ring-1 focus:ring-black focus:border-black transition-all resize-none" 
+                                        className="w-full rounded-sm border border-zinc-200 bg-white px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-black focus:border-black transition-all resize-none" 
                                     />
                                 </ScheduleField>
-                                <button 
+                                <Button
                                     type="submit" 
                                     disabled={scheduleForm.processing}
-                                    className="w-full mt-1.5 bg-black text-white py-2.5 rounded-sm font-black text-[9px] tracking-[0.2em] uppercase hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                                    className="mt-1.5 h-8 w-full rounded-sm text-[9px] font-black tracking-[0.2em] uppercase"
                                 >
                                     Confirm Schedule
-                                </button>
+                                </Button>
                             </form>
                         </div>
 

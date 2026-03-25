@@ -54,8 +54,10 @@ const statusStyles: Record<string, string> = {
     pending: 'border-transparent bg-amber-100 text-amber-700',
     suspended: 'border-transparent bg-red-100 text-red-700',
     rejected: 'border-transparent bg-slate-100 text-slate-600',
+    published: 'border-transparent bg-emerald-100 text-emerald-700',
     open: 'border-transparent bg-emerald-100 text-emerald-700',
     closed: 'border-transparent bg-zinc-100 text-zinc-600',
+    archived: 'border-transparent bg-zinc-100 text-zinc-600',
     draft: 'border-transparent bg-zinc-100 text-zinc-600',
 };
 

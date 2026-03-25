@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Benefit;
 use App\Models\BenefitContributionRule;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,17 @@ class BenefitController extends Controller
         $category = $request->input('category');
         $benefitType = $request->input('benefit_type');
         $active = $request->input('active');
+        $sortMap = [
+            'code' => 'code',
+            'name' => 'name',
+            'category' => 'category',
+            'benefit_type' => 'benefit_type',
+            'active' => 'active',
+            'plans_count' => 'plans_count',
+            'enrollments_count' => 'enrollments_count',
+            'updated_at' => 'updated_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'updated_at', 'desc');
 
         $baseQuery = Benefit::query()
             ->withCount(['plans', 'enrollments'])
@@ -30,7 +42,7 @@ class BenefitController extends Controller
             ->when($active !== null && $active !== '', fn ($q) => $q->where('active', (bool) $active));
 
         $benefits = (clone $baseQuery)
-            ->orderByDesc('updated_at')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->through(fn (Benefit $benefit) => $this->mapBenefit($benefit))
             ->withQueryString();
@@ -56,12 +68,17 @@ class BenefitController extends Controller
                 'category' => $category,
                 'benefit_type' => $benefitType,
                 'active' => $active,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'categories' => Benefit::CATEGORIES,
+            'benefit_types' => Benefit::TYPES,
             'types' => Benefit::TYPES,
             'stats' => [
                 'total' => (clone $statsBaseQuery)->count(),
                 'active' => (clone $statsBaseQuery)->where('active', true)->count(),
+                'health' => (int) ($categoryCountsRaw['health'] ?? 0),
+                'retirement' => (int) ($categoryCountsRaw['retirement'] ?? 0),
                 'by_category' => $categoryCountsRaw,
             ],
         ]);

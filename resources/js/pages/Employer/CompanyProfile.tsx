@@ -13,8 +13,15 @@ import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { EmployerHubLayout } from './components/hub';
+import { employerBreadcrumbs, EmployerHubLayout } from './components/hub';
 import type { Company, User } from './dummyData';
 
 type PageProps = {
@@ -44,15 +51,9 @@ export default function EmployerCompanyProfilePage() {
             active="company"
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Company Profile')}
         >
-            <div className="w-full px-4 md:px-6">
-                <header className="mb-6">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Company Profile.</h1>
-                    <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
-                        Configure your organization's public identity, operational details, and billing entities.
-                    </p>
-                </header>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12">
                     {/* Left Column: Form (No background card) */}
                     <section className="space-y-6">
@@ -75,16 +76,20 @@ export default function EmployerCompanyProfilePage() {
                                 </FormField>
 
                                 <FormField label="Industry" error={form.errors.industry}>
-                                    <select 
-                                        value={form.data.industry} 
-                                        onChange={(e) => form.setData('industry', e.target.value)} 
-                                        className={underlinedInput}
+                                    <Select
+                                        value={form.data.industry || '__empty__'}
+                                        onValueChange={(value) => form.setData('industry', value === '__empty__' ? '' : value)}
                                     >
-                                        <option value="">Select industry</option>
+                                        <SelectTrigger className={selectTriggerClass}>
+                                            <SelectValue placeholder="Select industry" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                        <SelectItem value="__empty__">Select industry</SelectItem>
                                         {industries.map((i) => (
-                                            <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>
+                                            <SelectItem key={i} value={i}>{i.replace(/_/g, ' ')}</SelectItem>
                                         ))}
-                                    </select>
+                                        </SelectContent>
+                                    </Select>
                                 </FormField>
 
                                 <FormField label="Registration Number" error={form.errors.registration_number}>
@@ -139,7 +144,7 @@ export default function EmployerCompanyProfilePage() {
                                         value={form.data.description}
                                         onChange={(e) => form.setData('description', e.target.value)}
                                         placeholder="Describe your company mission and vision..."
-                                        className="w-full bg-transparent border-0 border-b border-transparent hover:border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-black placeholder:text-zinc-400 font-semibold text-xs min-h-[100px] resize-none"
+                                        className="w-full bg-transparent border-0 border-b border-transparent hover:border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 text-xs text-black placeholder:text-zinc-400 min-h-[100px] resize-none transition-all"
                                     />
                                 </FormField>
                             </div>
@@ -205,12 +210,12 @@ export default function EmployerCompanyProfilePage() {
             </div>
 
             {/* FAB */}
-            <button className="fixed bottom-8 right-8 w-14 h-14 bg-black text-white rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50 group">
+            <Button type="button" size="icon" className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-xl transition-all hover:scale-105 active:scale-95 z-50 group">
                 <Plus className="h-5 w-5" />
                 <span className="absolute right-full mr-3 bg-black text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                     Post New Job
                 </span>
-            </button>
+            </Button>
         </EmployerHubLayout>
     );
 }
@@ -247,4 +252,6 @@ function getInitials(name?: string | null): string {
 }
 
 const underlinedInput = 
-    "w-full bg-transparent border-0 border-b border-transparent hover:border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-black placeholder:text-zinc-400 font-semibold text-xs";
+    "w-full bg-transparent border-0 border-b border-transparent hover:border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 text-xs text-black placeholder:text-zinc-400 transition-all";
+const selectTriggerClass =
+    "h-auto w-full rounded-none border-0 border-b border-transparent bg-transparent px-0 py-1.5 text-xs text-black shadow-none hover:border-zinc-300 focus:ring-0 focus:ring-offset-0";

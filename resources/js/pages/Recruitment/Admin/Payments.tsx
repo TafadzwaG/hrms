@@ -55,12 +55,15 @@ type PaymentsPageProps = {
         status?: string | null;
         provider?: string | null;
     };
+    statuses: string[];
     providers: string[];
 };
 
 const statusStyles: Record<string, string> = {
     paid: 'border-transparent bg-emerald-100 text-emerald-700',
     pending: 'border-transparent bg-amber-100 text-amber-700',
+    initiated: 'border-transparent bg-blue-100 text-blue-700',
+    processing: 'border-transparent bg-blue-100 text-blue-700',
     failed: 'border-transparent bg-red-100 text-red-700',
     refunded: 'border-transparent bg-slate-100 text-slate-600',
     cancelled: 'border-transparent bg-zinc-100 text-zinc-600',
@@ -95,6 +98,7 @@ export default function AdminPayments() {
     const {
         payments,
         filters,
+        statuses = [],
         providers = [],
     } = usePage<PaymentsPageProps>().props;
 
@@ -231,11 +235,11 @@ export default function AdminPayments() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All statuses</SelectItem>
-                                        <SelectItem value="paid">Paid</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="failed">Failed</SelectItem>
-                                        <SelectItem value="refunded">Refunded</SelectItem>
-                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        {statuses.map((item) => (
+                                            <SelectItem key={item} value={item}>
+                                                {formatLabel(item)}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

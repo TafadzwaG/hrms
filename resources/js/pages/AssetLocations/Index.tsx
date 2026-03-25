@@ -9,6 +9,14 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -21,10 +29,10 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildIndexParams } from '@/lib/index-table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -40,7 +48,6 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type LocationRow = {
     id: number;
@@ -64,7 +71,12 @@ type PaginatedLocations = {
 export default function AssetLocationIndex() {
     const { locations, filters } = usePage<{
         locations: PaginatedLocations;
-        filters: { search?: string; status?: string };
+        filters: {
+            search?: string;
+            status?: string;
+            sort?: string;
+            direction?: 'asc' | 'desc';
+        };
     }>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -75,7 +87,10 @@ export default function AssetLocationIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/asset-locations',
-                { search, status: statusFilter !== 'all' ? statusFilter : undefined },
+                buildIndexParams(filters, {
+                    search,
+                    status: statusFilter !== 'all' ? statusFilter : undefined,
+                }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 250);
@@ -88,14 +103,6 @@ export default function AssetLocationIndex() {
             preserveScroll: true,
             onSuccess: () => setLocationToDelete(null),
         });
-    };
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            '/asset-locations',
-            { page: selectedItem.selected + 1, search },
-            { preserveScroll: true, preserveState: true },
-        );
     };
 
     const activeCount = locations.data.filter((l) => l.is_active).length;
@@ -185,26 +192,24 @@ export default function AssetLocationIndex() {
                 </div>
 
                 {/* Table */}
-                <div className="rounded-lg border border-border bg-background p-5">
+                <IndexTableCard className="rounded-lg p-5">
                     <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="w-[220px] py-4 font-semibold text-foreground">Name</TableHead>
-                                <TableHead className="font-semibold text-foreground">Code</TableHead>
-                                <TableHead className="font-semibold text-foreground">Building</TableHead>
-                                <TableHead className="font-semibold text-foreground">Floor / Room</TableHead>
-                                <TableHead className="font-semibold text-foreground">Status</TableHead>
-                                <TableHead className="text-center font-semibold text-foreground">Assets</TableHead>
-                                <TableHead className="text-right font-semibold text-foreground">Actions</TableHead>
-                            </TableRow>
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <SortableTableHead path="/asset-locations" filters={filters} sortKey="name" className="w-[220px]">Name</SortableTableHead>
+                                <SortableTableHead path="/asset-locations" filters={filters} sortKey="code">Code</SortableTableHead>
+                                <SortableTableHead path="/asset-locations" filters={filters} sortKey="building">Building</SortableTableHead>
+                                <IndexTableHead>Floor / Room</IndexTableHead>
+                                <IndexTableHead>Status</IndexTableHead>
+                                <SortableTableHead path="/asset-locations" filters={filters} sortKey="assets_count" align="center">Assets</SortableTableHead>
+                                <IndexTableHead align="right">Actions</IndexTableHead>
+                            </IndexTableHeaderRow>
                         </TableHeader>
                         <TableBody>
                             {locations.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
-                                        No locations found.
-                                    </TableCell>
-                                </TableRow>
+                                <IndexTableEmptyRow colSpan={7}>
+                                    No locations found.
+                                </IndexTableEmptyRow>
                             ) : (
                                 locations.data.map((loc) => (
                                     <TableRow key={loc.id} className="transition-colors hover:bg-muted/30">
@@ -254,34 +259,13 @@ export default function AssetLocationIndex() {
                         </TableBody>
                     </Table>
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between border-t border-border px-4 py-4">
-                        <p className="text-sm text-muted-foreground">
-                            Showing <span className="font-medium">{locations.data.length}</span> of{' '}
-                            <span className="font-medium text-foreground">{locations.total}</span> locations
-                        </p>
-                        <ReactPaginate
-                            pageCount={locations.last_page}
-                            forcePage={locations.current_page - 1}
-                            onPageChange={handlePageChange}
-                            containerClassName="flex items-center gap-1"
-                            pageLinkClassName="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium hover:bg-muted transition-colors"
-                            activeLinkClassName="bg-black text-white dark:bg-white dark:text-black hover:bg-black/90"
-                            previousLabel={
-                                <span className="mr-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Previous
-                                </span>
-                            }
-                            nextLabel={
-                                <span className="ml-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Next
-                                </span>
-                            }
-                            breakLabel="..."
-                            disabledClassName="opacity-40 cursor-not-allowed"
-                        />
-                    </div>
-                </div>
+                    <IndexTablePagination
+                        pagination={locations}
+                        filters={filters}
+                        path="/asset-locations"
+                        label="locations"
+                    />
+                </IndexTableCard>
             </div>
 
             {/* Delete Dialog */}

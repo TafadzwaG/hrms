@@ -6,6 +6,7 @@ use App\Models\PayrollPeriod;
 use App\Models\PayrollResult;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Support\IndexTables\IndexTableSorter;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,8 +23,25 @@ class PayrollResultController extends Controller
             'pay_point' => ['nullable', 'string', 'max:150'],
             'status' => ['nullable', 'string', 'max:32'],
             'currency' => ['nullable', 'string', 'max:8'],
+            'sort' => ['nullable', 'string', 'max:50'],
+            'direction' => ['nullable', 'string', 'max:4'],
             'page' => ['nullable', 'integer'],
         ]);
+        $sortMap = [
+            'employee' => 'employee_name_snapshot',
+            'period' => fn ($query, $direction) => $query->orderBy(
+                PayrollPeriod::query()
+                    ->select('pay_date')
+                    ->whereColumn('payroll_periods.id', 'payroll_results.payroll_period_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'gross_pay' => 'gross_pay',
+            'total_deductions' => 'total_deductions',
+            'net_pay' => 'net_pay',
+            'status' => 'status',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'period', 'desc');
 
         $query = PayrollResult::query()
             ->with([
@@ -31,14 +49,7 @@ class PayrollResultController extends Controller
                 'run.period:id,code,name,pay_date',
                 'settlements:id,payroll_result_id,currency,settlement_amount,base_amount,exchange_rate,allocation_method,sort_order',
             ])
-            ->withCount('lines')
-            ->orderByDesc(
-                PayrollPeriod::query()
-                    ->select('pay_date')
-                    ->whereColumn('payroll_periods.id', 'payroll_results.payroll_period_id')
-                    ->limit(1)
-            )
-            ->orderByDesc('payroll_results.id');
+            ->withCount('lines');
 
         $query->when($filters['search'] ?? null, function ($builder, string $search): void {
             $builder->where(function ($nested) use ($search): void {
@@ -52,6 +63,8 @@ class PayrollResultController extends Controller
         $query->when($filters['pay_point'] ?? null, fn ($builder, $payPoint) => $builder->where('pay_point_snapshot', $payPoint));
         $query->when($filters['currency'] ?? null, fn ($builder, $currency) => $builder->where('currency_snapshot', strtoupper((string) $currency)));
         $query->when($filters['status'] ?? null, fn ($builder, $status) => $builder->whereHas('run', fn ($runQuery) => $runQuery->where('status', $status)));
+        IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']);
+        $query->orderByDesc('payroll_results.id');
 
         $totalResults = (clone $query)->count();
         $coveredPeriods = (clone $query)->distinct()->count('payroll_period_id');
@@ -118,6 +131,8 @@ class PayrollResultController extends Controller
                 'pay_point' => $filters['pay_point'] ?? '',
                 'status' => $filters['status'] ?? '',
                 'currency' => $filters['currency'] ?? '',
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'periods' => PayrollPeriod::query()
                 ->orderByDesc('period_end')

@@ -11,10 +11,21 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Building2, Save, X } from 'lucide-react';
 
+type CreatePageProps = {
+    options?: {
+        industries?: string[];
+    };
+};
+
+function formatLabel(value: string) {
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function CompanyCreate() {
+    const { options } = usePage<CreatePageProps>().props;
     const { data, setData, post, processing, errors } = useForm({
         company_name: '',
         industry: '',
@@ -80,16 +91,11 @@ export default function CompanyCreate() {
                                         <SelectValue placeholder="Select industry" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="technology">Technology</SelectItem>
-                                        <SelectItem value="finance">Finance</SelectItem>
-                                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                                        <SelectItem value="education">Education</SelectItem>
-                                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                                        <SelectItem value="retail">Retail</SelectItem>
-                                        <SelectItem value="construction">Construction</SelectItem>
-                                        <SelectItem value="mining">Mining</SelectItem>
-                                        <SelectItem value="agriculture">Agriculture</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        {(options?.industries ?? []).map((industry) => (
+                                            <SelectItem key={industry} value={industry}>
+                                                {formatLabel(industry)}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 {errors.industry && <p className="text-sm text-red-500">{errors.industry}</p>}

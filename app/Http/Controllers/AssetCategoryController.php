@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssetCategory;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,19 +14,37 @@ class AssetCategoryController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $sortMap = [
+            'name' => 'name',
+            'code' => 'code',
+            'parent' => fn ($query, $direction) => $query->orderBy(
+                AssetCategory::query()
+                    ->from('asset_categories as parent_categories')
+                    ->select('parent_categories.name')
+                    ->whereColumn('parent_categories.id', 'asset_categories.parent_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'assets_count' => 'assets_count',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $categories = AssetCategory::query()
             ->with('parent:id,name')
             ->withCount('assets')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('code', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->withQueryString();
 
         return Inertia::render('AssetCategories/Index', [
             'categories' => $categories,
-            'filters' => ['search' => $search],
+            'filters' => [
+                'search' => $search,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
+            ],
         ]);
     }
 

@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import { Briefcase, Lightbulb, History } from 'lucide-react';
 
-import { EmployerHubLayout } from './components/hub';
+import { employerBreadcrumbs, EmployerHubLayout } from './components/hub';
 import { VacancyForm } from './components/VacancyForm';
 import type { Company, User, Vacancy } from './dummyData';
 
@@ -30,20 +30,12 @@ export default function EmployerVacancyCreatePage() {
             active="vacancies"
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs(
+                { title: 'Vacancies', href: '/employer/vacancies' },
+                'Post a New Job',
+            )}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Header Section */}
-                <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
-                            Post a New Job.
-                        </h1>
-                        <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
-                            Create a new vacancy using the existing employer dashboard workflow.
-                        </p>
-                    </div>
-                </header>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
                     
                     {/* Left Column: Form Section */}

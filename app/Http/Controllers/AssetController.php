@@ -11,6 +11,7 @@ use App\Models\AssetMaintenanceRecord;
 use App\Models\AssetStatusHistory;
 use App\Models\AssetVendor;
 use App\Models\Employee;
+use App\Support\IndexTables\IndexTableSorter;
 use App\Support\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,48 @@ class AssetController extends Controller
         $status = $request->input('status');
         $categoryId = $request->input('category_id');
         $locationId = $request->input('location_id');
+        $sortMap = [
+            'asset_tag' => 'asset_tag',
+            'name' => 'name',
+            'status' => 'status',
+            'condition' => 'condition',
+            'category' => fn ($query, $direction) => $query->orderBy(
+                AssetCategory::query()
+                    ->select('name')
+                    ->whereColumn('asset_categories.id', 'assets.asset_category_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'location' => fn ($query, $direction) => $query->orderBy(
+                AssetLocation::query()
+                    ->select('name')
+                    ->whereColumn('asset_locations.id', 'assets.asset_location_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'assigned_to' => fn ($query, $direction) => $query
+                ->orderBy(
+                    AssetAssignment::query()
+                        ->select('employees.surname')
+                        ->join('employees', 'employees.id', '=', 'asset_assignments.employee_id')
+                        ->whereColumn('asset_assignments.asset_id', 'assets.id')
+                        ->where('asset_assignments.status', 'active')
+                        ->limit(1),
+                    $direction,
+                )
+                ->orderBy(
+                    AssetAssignment::query()
+                        ->select('employees.first_name')
+                        ->join('employees', 'employees.id', '=', 'asset_assignments.employee_id')
+                        ->whereColumn('asset_assignments.asset_id', 'assets.id')
+                        ->where('asset_assignments.status', 'active')
+                        ->limit(1),
+                    $direction,
+                ),
+            'purchase_price' => 'purchase_price',
+            'updated_at' => 'updated_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'updated_at', 'desc');
 
         $baseQuery = Asset::query()
             ->with([
@@ -44,7 +87,7 @@ class AssetController extends Controller
             ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId));
 
         $assets = (clone $baseQuery)
-            ->orderByDesc('updated_at')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->through(fn (Asset $asset) => $this->mapAsset($asset))
             ->withQueryString();
@@ -76,6 +119,8 @@ class AssetController extends Controller
                 'status' => $status,
                 'category_id' => $categoryId,
                 'location_id' => $locationId,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'statuses' => Asset::STATUSES,
             'categories' => $categories,

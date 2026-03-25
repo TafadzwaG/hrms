@@ -5,6 +5,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveCurrentOrganization;
 use App\Support\Backups\ScheduledBackupDispatcher;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        $middleware->prependToPriorityList(SubstituteBindings::class, ResolveCurrentOrganization::class);
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->call(function (): void {

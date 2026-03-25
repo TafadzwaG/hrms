@@ -20,6 +20,7 @@ import {
 import { RichTextContent } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
 import {
+    employerBreadcrumbs,
     EmployerEmptyState,
     EmployerHubLayout,
     EmployerStatusBadge
@@ -48,37 +49,45 @@ export default function EmployerVacancyShowPage() {
             active="vacancies"
             company={company}
             user={user}
-        >
-            <div className="w-full px-4 md:px-6">
-                {/* Page Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-                    <div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1">{vacancy.title}</h2>
-                        <p className="text-zinc-500 text-xs font-medium">Vacancy overview and application pipeline.</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Link href={`/employer/vacancies/${vacancy.id}/edit`}>
-                            <Button variant="outline" className="px-4 py-2.5 h-auto border-zinc-200 hover:bg-zinc-50 text-black font-bold text-[9px] tracking-widest uppercase transition-all rounded-sm flex items-center gap-1.5">
-                                <Edit2 className="h-3 w-3" /> Edit
-                            </Button>
-                        </Link>
-                        <Button 
-                            onClick={() => router.patch(`/employer/vacancies/${vacancy.id}/status`, { status: vacancy.status_code === 'published' ? 'draft' : 'published' })}
-                            className={`px-4 py-2.5 h-auto font-bold text-[9px] tracking-widest uppercase transition-all rounded-sm flex items-center gap-1.5 ${
-                                vacancy.status_code === 'published' 
-                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' 
-                                : 'bg-emerald-500 text-white hover:bg-emerald-600'
-                            }`}
-                        >
-                            {vacancy.status_code === 'published' ? (
-                                <><EyeOff className="h-3 w-3" /> Unpublish</>
-                            ) : (
-                                <><Eye className="h-3 w-3" /> Publish</>
-                            )}
+            breadcrumbs={employerBreadcrumbs(
+                { title: 'Vacancies', href: '/employer/vacancies' },
+                vacancy.title,
+            )}
+            headerActions={
+                <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/employer/vacancies/${vacancy.id}/edit`}>
+                        <Button variant="outline" className="h-auto rounded-md px-4 py-2.5 text-xs shadow-sm">
+                            <Edit2 className="mr-2 h-3.5 w-3.5" />
+                            Edit
                         </Button>
-                    </div>
+                    </Link>
+                    <Button
+                        onClick={() =>
+                            router.patch(`/employer/vacancies/${vacancy.id}/status`, {
+                                status:
+                                    vacancy.status_code === 'published'
+                                        ? 'draft'
+                                        : 'published',
+                            })
+                        }
+                        className="h-auto rounded-md px-4 py-2.5 text-xs shadow-sm"
+                    >
+                        {vacancy.status_code === 'published' ? (
+                            <>
+                                <EyeOff className="mr-2 h-3.5 w-3.5" />
+                                Unpublish
+                            </>
+                        ) : (
+                            <>
+                                <Eye className="mr-2 h-3.5 w-3.5" />
+                                Publish
+                            </>
+                        )}
+                    </Button>
                 </div>
-
+            }
+        >
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column: Vacancy Details */}
                     <div className="lg:col-span-7 space-y-6">
@@ -228,30 +237,43 @@ export default function EmployerVacancyShowPage() {
                                                 {/* Right: Actions Grid */}
                                                 <div className="lg:w-48 flex flex-col justify-between gap-3 shrink-0">
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <button 
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
                                                             onClick={() => updateStatus(application.id, 'shortlisted')} 
-                                                            className="flex flex-col items-center justify-center gap-1 p-2 border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                            className="h-auto flex-col gap-1 rounded-sm border-blue-200 bg-blue-50 py-2 text-[9px] font-bold uppercase tracking-widest text-blue-600 hover:bg-blue-100 hover:text-blue-700"
                                                         >
                                                             <BookmarkPlus className="h-3.5 w-3.5" /> Shortlist
-                                                        </button>
-                                                        <Link 
-                                                            href={`/employer/candidates/${application.id}#schedule-interview`} 
-                                                            className="flex flex-col items-center justify-center gap-1 p-2 border border-violet-200 text-violet-600 bg-violet-50 hover:bg-violet-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm text-center"
+                                                        </Button>
+                                                        <Button
+                                                            asChild
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-auto flex-col gap-1 rounded-sm border-violet-200 bg-violet-50 py-2 text-[9px] font-bold uppercase tracking-widest text-violet-600 hover:bg-violet-100 hover:text-violet-700"
                                                         >
-                                                            <Calendar className="h-3.5 w-3.5" /> Schedule
-                                                        </Link>
-                                                        <button 
+                                                            <Link href={`/employer/candidates/${application.id}#schedule-interview`}>
+                                                                <Calendar className="h-3.5 w-3.5" /> Schedule
+                                                            </Link>
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
                                                             onClick={() => updateStatus(application.id, 'offered')} 
-                                                            className="flex flex-col items-center justify-center gap-1 p-2 border border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                            className="h-auto flex-col gap-1 rounded-sm border-emerald-200 bg-emerald-50 py-2 text-[9px] font-bold uppercase tracking-widest text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
                                                         >
                                                             <CheckCircle2 className="h-3.5 w-3.5" /> Offer
-                                                        </button>
-                                                        <button 
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
                                                             onClick={() => updateStatus(application.id, 'rejected')} 
-                                                            className="flex flex-col items-center justify-center gap-1 p-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                            className="h-auto flex-col gap-1 rounded-sm border-red-200 bg-red-50 py-2 text-[9px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 hover:text-red-700"
                                                         >
                                                             <XCircle className="h-3.5 w-3.5" /> Reject
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                     <Link href={`/employer/candidates/${application.id}`}>
                                                         <Button className="w-full py-4 h-auto bg-black text-white text-[9px] font-bold uppercase tracking-widest rounded-sm hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 mt-1">
@@ -263,11 +285,11 @@ export default function EmployerVacancyShowPage() {
                                         </div>
                                     ))}
                                     
-                                    <Link href={`/employer/candidates?vacancy_id=${vacancy.id}`} className="block w-full">
-                                        <button className="w-full mt-2 py-3 border border-dashed border-zinc-300 text-zinc-500 hover:text-black hover:border-black text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm bg-zinc-50/50 hover:bg-zinc-50">
+                                    <Button asChild variant="outline" className="mt-2 h-9 w-full rounded-sm border-dashed border-zinc-300 bg-zinc-50/50 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:border-black hover:bg-zinc-50 hover:text-black">
+                                        <Link href={`/employer/candidates?vacancy_id=${vacancy.id}`}>
                                             View Full Pipeline
-                                        </button>
-                                    </Link>
+                                        </Link>
+                                    </Button>
                                 </>
                             ) : (
                                 <EmployerEmptyState message="No applicants yet for this vacancy." />

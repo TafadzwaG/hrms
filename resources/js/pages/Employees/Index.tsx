@@ -11,6 +11,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
+import {
     Card,
     CardContent,
     CardDescription,
@@ -29,13 +36,13 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
+import { buildIndexParams } from '@/lib/index-table';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Eye,
@@ -47,7 +54,6 @@ import {
     ShieldAlert,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type EmployeeRow = {
     id: number;
@@ -86,7 +92,12 @@ type PaginatedEmployees = {
 export default function EmployeeIndex() {
     const { employees, filters, payPoints } = usePage<{
         employees: PaginatedEmployees;
-        filters: { search?: string; pay_point?: string };
+        filters: {
+            search?: string;
+            pay_point?: string;
+            sort?: string;
+            direction?: 'asc' | 'desc';
+        };
         payPoints: string[];
     }>().props;
 
@@ -100,7 +111,10 @@ export default function EmployeeIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/employees',
-                { search, pay_point: payPoint === 'all' ? '' : payPoint },
+                buildIndexParams(filters, {
+                    search,
+                    pay_point: payPoint === 'all' ? '' : payPoint,
+                }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 250);
@@ -115,18 +129,6 @@ export default function EmployeeIndex() {
             preserveScroll: true,
             onSuccess: () => setEmployeeToDelete(null),
         });
-    };
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            '/employees',
-            {
-                page: selectedItem.selected + 1,
-                search,
-                pay_point: payPoint === 'all' ? '' : payPoint,
-            },
-            { preserveScroll: true, preserveState: true },
-        );
     };
 
     const getInitials = (name: string) => {
@@ -237,23 +239,36 @@ export default function EmployeeIndex() {
                     <div className="flex-1 overflow-y-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-b border-border/50 bg-muted/10 hover:bg-transparent">
-                                    <TableHead className="h-12 pl-6 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                <IndexTableHeaderRow>
+                                    <SortableTableHead
+                                        path="/employees"
+                                        filters={filters}
+                                        sortKey="employee"
+                                        className="pl-6"
+                                    >
                                         Employee
-                                    </TableHead>
-                                    <TableHead className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <SortableTableHead
+                                        path="/employees"
+                                        filters={filters}
+                                        sortKey="department"
+                                    >
                                         Assignment
-                                    </TableHead>
-                                    <TableHead className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead>
                                         Contact
-                                    </TableHead>
-                                    <TableHead className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </IndexTableHead>
+                                    <SortableTableHead
+                                        path="/employees"
+                                        filters={filters}
+                                        sortKey="pay_point"
+                                    >
                                         Pay Point
-                                    </TableHead>
-                                    <TableHead className="pr-6 text-right text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead align="right" className="pr-6">
                                         Actions
-                                    </TableHead>
-                                </TableRow>
+                                    </IndexTableHead>
+                                </IndexTableHeaderRow>
                             </TableHeader>
                             <TableBody>
                                 {employees.data.length > 0 ? (
@@ -410,46 +425,20 @@ export default function EmployeeIndex() {
                                         </TableRow>
                                     ))
                                 ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={5}
-                                            className="h-48 text-center text-sm font-medium text-muted-foreground"
-                                        >
-                                            No employees match the current
-                                            filters.
-                                        </TableCell>
-                                    </TableRow>
+                                    <IndexTableEmptyRow colSpan={5}>
+                                        No employees match the current filters.
+                                    </IndexTableEmptyRow>
                                 )}
                             </TableBody>
                         </Table>
                     </div>
 
-                    {/* Pagination */}
-                    {employees.last_page > 1 && (
-                        <div className="flex shrink-0 flex-col items-center justify-between gap-4 border-t border-border/50 bg-muted/5 p-4 sm:flex-row">
-                            <span className="text-xs font-bold text-muted-foreground">
-                                Page {employees.current_page} of{' '}
-                                {employees.last_page}
-                            </span>
-                            <ReactPaginate
-                                pageCount={employees.last_page}
-                                forcePage={employees.current_page - 1}
-                                onPageChange={handlePageChange}
-                                marginPagesDisplayed={1}
-                                pageRangeDisplayed={3}
-                                previousLabel="Previous"
-                                nextLabel="Next"
-                                breakLabel="..."
-                                containerClassName="flex items-center gap-1"
-                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-transparent font-bold hover:bg-muted text-sm shadow-none text-muted-foreground transition-colors"
-                                activeLinkClassName="!bg-foreground text-background font-bold border-foreground hover:!bg-foreground/90 rounded-md"
-                                previousLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-sm font-bold text-foreground transition-colors"
-                                nextLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-sm font-bold text-foreground transition-colors"
-                                breakClassName="flex h-9 w-9 items-center justify-center text-sm font-bold text-muted-foreground"
-                                disabledClassName="opacity-50 pointer-events-none"
-                            />
-                        </div>
-                    )}
+                    <IndexTablePagination
+                        pagination={employees}
+                        filters={filters}
+                        path="/employees"
+                        label="employees"
+                    />
                 </Card>
             </div>
 

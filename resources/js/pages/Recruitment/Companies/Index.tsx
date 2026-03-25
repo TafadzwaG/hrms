@@ -1,3 +1,6 @@
+import type { ComponentProps } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -10,46 +13,43 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { buildIndexParams } from '@/lib/index-table';
 import {
     Building2,
     CheckCircle2,
     Eye,
-    MoreHorizontal,
+    Filter,
     Pencil,
     Plus,
     RotateCcw,
     Search,
+    ShieldAlert,
     Trash2,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type CompanyRow = {
     id: number;
     company_name: string;
     industry: string | null;
-    email: string;
+    email: string | null;
+    phone?: string | null;
     status: string;
     vacancies_count: number;
+    updated_at?: string | null;
+    links?: {
+        show?: string;
+        edit?: string;
+    };
 };
 
 type CompanyStats = {
@@ -73,49 +73,47 @@ type CompaniesPageProps = {
         search?: string | null;
         status?: string | null;
         industry?: string | null;
+        sort?: string | null;
+        direction?: 'asc' | 'desc' | null;
     };
     industries: string[];
+    statuses?: string[];
     stats?: CompanyStats;
 };
 
-const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    pending: 'border-transparent bg-amber-100 text-amber-700',
-    suspended: 'border-transparent bg-red-100 text-red-700',
-    rejected: 'border-transparent bg-slate-100 text-slate-600',
+type BadgeVariant = NonNullable<ComponentProps<typeof Badge>['variant']>;
+
+const statusVariants: Record<string, BadgeVariant> = {
+    active: 'success',
+    pending: 'warning',
+    pending_review: 'warning',
+    suspended: 'danger',
+    rejected: 'secondary',
+    draft: 'secondary',
 };
 
-const industryStyles: Record<string, string> = {
-    technology: 'border-transparent bg-blue-100 text-blue-700',
-    finance: 'border-transparent bg-green-100 text-green-700',
-    healthcare: 'border-transparent bg-teal-100 text-teal-700',
-    education: 'border-transparent bg-orange-100 text-orange-700',
-    manufacturing: 'border-transparent bg-purple-100 text-purple-700',
-    retail: 'border-transparent bg-pink-100 text-pink-700',
-    construction: 'border-transparent bg-amber-100 text-amber-700',
-    mining: 'border-transparent bg-indigo-100 text-indigo-700',
-    agriculture: 'border-transparent bg-lime-100 text-lime-700',
-    other: 'border-transparent bg-zinc-100 text-zinc-600',
+const industryVariants: Record<string, BadgeVariant> = {
+    technology: 'chart1',
+    finance: 'chart2',
+    healthcare: 'chart3',
+    education: 'chart4',
+    manufacturing: 'chart5',
+    retail: 'accent',
+    construction: 'warning',
+    mining: 'info',
+    agriculture: 'success',
+    other: 'secondary',
 };
-
-function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export default function CompaniesIndex() {
-    const {
-        companies,
-        filters,
-        stats,
-        industries = [],
-    } = usePage<CompaniesPageProps>().props;
+    const { companies, filters, industries = [], statuses = [], stats } =
+        usePage<CompaniesPageProps>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? 'all');
     const [industry, setIndustry] = useState(filters.industry ?? 'all');
     const [showFilters, setShowFilters] = useState(false);
     const [companyToDelete, setCompanyToDelete] = useState<CompanyRow | null>(null);
-
     const initialRender = useRef(true);
 
     const computedStats = {
@@ -134,11 +132,11 @@ export default function CompaniesIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/company-profiles',
-                {
-                    search: search || undefined,
-                    status: status !== 'all' ? status : undefined,
-                    industry: industry !== 'all' ? industry : undefined,
-                },
+                buildIndexParams(filters, {
+                    search,
+                    status: status !== 'all' ? status : null,
+                    industry: industry !== 'all' ? industry : null,
+                }),
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -148,7 +146,7 @@ export default function CompaniesIndex() {
         }, 300);
 
         return () => window.clearTimeout(timer);
-    }, [search, status, industry]);
+    }, [filters, industry, search, status]);
 
     const handleResetFilters = () => {
         setSearch('');
@@ -166,222 +164,185 @@ export default function CompaniesIndex() {
         });
     };
 
-    const handlePageChange = ({ selected }: { selected: number }) => {
-        router.get(
-            '/company-profiles',
-            {
-                page: selected + 1,
-                search: search || undefined,
-                status: status !== 'all' ? status : undefined,
-                industry: industry !== 'all' ? industry : undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const perPage = companies.per_page ?? (companies.data.length || 1);
-    const showingFrom =
-        companies.from ??
-        (companies.total === 0 ? 0 : (companies.current_page - 1) * perPage + 1);
-    const showingTo =
-        companies.to ?? Math.min(companies.current_page * perPage, companies.total);
-
     return (
-        <AppLayout
-            breadcrumbs={[
-                { title: 'Recruitment', href: '/recruitment' },
-                { title: 'Companies' },
-            ]}
-        >
+        <AppLayout breadcrumbs={[{ title: 'Recruitment', href: '/recruitment' }, { title: 'Companies' }]}>
             <Head title="Companies" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+                        <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">
                             Companies
                         </h1>
-                        <p className="text-lg text-zinc-500">
-                            Manage company profiles and vacancies.
+                        <p className="text-sm font-medium text-muted-foreground">
+                            Manage company profiles and recruitment readiness from a single directory.
                         </p>
                     </div>
+
                     <Link href="/company-profiles/create">
-                        <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
-                            <Plus className="mr-2 h-5 w-5" /> New Company
+                        <Button className="h-10 rounded-md bg-primary px-5 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-sm hover:bg-primary/90">
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Company
                         </Button>
                     </Link>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {[
-                        { label: 'Total Companies', val: computedStats.total, icon: Building2 },
-                        { label: 'Active', val: computedStats.active, icon: CheckCircle2 },
-                        { label: 'Pending', val: computedStats.pending, icon: Building2 },
-                        { label: 'Suspended', val: computedStats.suspended, icon: Building2 },
-                    ].map((item, index) => (
-                        <Card key={index} className="border-zinc-200 shadow-none">
-                            <CardContent className="flex items-center justify-between p-6">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
-                                        {item.label}
-                                    </p>
-                                    <p className="text-2xl font-semibold text-zinc-900">
-                                        {item.val}
-                                    </p>
-                                </div>
-                                <item.icon className="h-6 w-6 text-zinc-400" />
-                            </CardContent>
-                        </Card>
-                    ))}
+                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                    <StatCard icon={Building2} label="Total Companies" value={computedStats.total} />
+                    <StatCard icon={CheckCircle2} label="Active" value={computedStats.active} />
+                    <StatCard icon={ShieldAlert} label="Pending" value={computedStats.pending} />
+                    <StatCard icon={ShieldAlert} label="Suspended" value={computedStats.suspended} />
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="relative w-full max-w-md">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                            <Input
-                                placeholder="Search by company name or email..."
-                                className="h-11 border-zinc-200 pl-10 focus:ring-zinc-900"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
+                <section className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 border-b border-border/70 pb-5 md:flex-row md:items-end md:justify-between">
+                        <div className="w-full max-w-xl space-y-1.5">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Search
+                            </label>
+                            <div className="flex items-center gap-3 rounded-md border border-border bg-background px-3">
+                                <Search className="h-4 w-4 text-muted-foreground" />
+                                <input
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    placeholder="Search by company name, registration number, or email"
+                                    className="h-10 w-full border-none bg-transparent px-0 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground focus:ring-0"
+                                />
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
-                                variant="outline"
-                                className="h-11 border-zinc-200"
-                                onClick={() => setShowFilters((current) => !current)}
                                 type="button"
+                                variant="outline"
+                                className="h-10 rounded-md border-border"
+                                onClick={() => setShowFilters((current) => !current)}
                             >
-                                <MoreHorizontal className="mr-2 h-4 w-4" /> More Filters
+                                <Filter className="mr-2 h-4 w-4" />
+                                {showFilters ? 'Hide Filters' : 'Show Filters'}
                             </Button>
                             <Button
-                                variant="ghost"
-                                className="h-11 text-zinc-500"
-                                onClick={handleResetFilters}
                                 type="button"
+                                variant="outline"
+                                className="h-10 rounded-md border-border"
+                                onClick={handleResetFilters}
                             >
-                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Reset
                             </Button>
                         </div>
                     </div>
 
-                    {showFilters && (
-                        <div className="grid grid-cols-1 gap-4 rounded-md border border-zinc-200 bg-zinc-50/40 p-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Status</p>
-                                <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All statuses" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All statuses</SelectItem>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="suspended">Suspended</SelectItem>
-                                        <SelectItem value="rejected">Rejected</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Industry</p>
-                                <Select value={industry} onValueChange={setIndustry}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All industries" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All industries</SelectItem>
-                                        {industries.map((ind) => (
-                                            <SelectItem key={ind} value={ind}>
-                                                {formatLabel(ind)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                    {showFilters ? (
+                        <div className="mt-5 grid gap-4 md:grid-cols-2">
+                            <FilterSelect
+                                label="Status"
+                                value={status}
+                                onChange={setStatus}
+                                options={[
+                                    { value: 'all', label: 'All statuses' },
+                                    ...statuses.map((item) => ({
+                                        value: item,
+                                        label: formatLabel(item),
+                                    })),
+                                ]}
+                            />
+                            <FilterSelect
+                                label="Industry"
+                                value={industry}
+                                onChange={setIndustry}
+                                options={[
+                                    { value: 'all', label: 'All industries' },
+                                    ...industries.map((item) => ({
+                                        value: item,
+                                        label: formatLabel(item),
+                                    })),
+                                ]}
+                            />
                         </div>
-                    )}
-                </div>
+                    ) : null}
+                </section>
 
-                {/* Table */}
-                <div className="overflow-hidden rounded-md border border-zinc-200">
+                <IndexTableCard>
                     <Table>
-                        <TableHeader className="bg-zinc-50">
-                            <TableRow>
-                                <TableHead className="font-bold text-zinc-900">Company Name</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Industry</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Email</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Status</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Vacancies</TableHead>
-                                <TableHead className="px-6 text-right font-bold text-zinc-900">Actions</TableHead>
-                            </TableRow>
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <SortableTableHead filters={filters} sortKey="company_name" path="/company-profiles">
+                                    Company
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="industry" path="/company-profiles">
+                                    Industry
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="email" path="/company-profiles">
+                                    Contact
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="status" path="/company-profiles">
+                                    Status
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="vacancies_count" path="/company-profiles">
+                                    Vacancies
+                                </SortableTableHead>
+                                <IndexTableHead align="right">Actions</IndexTableHead>
+                            </IndexTableHeaderRow>
                         </TableHeader>
                         <TableBody>
                             {companies.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center text-zinc-400">
-                                        No companies found.
-                                    </TableCell>
-                                </TableRow>
+                                <IndexTableEmptyRow colSpan={6}>
+                                    No companies found for the current filters.
+                                </IndexTableEmptyRow>
                             ) : (
                                 companies.data.map((company) => (
-                                    <TableRow key={company.id} className="hover:bg-zinc-50/50">
-                                        <TableCell className="font-bold text-zinc-900">
-                                            {company.company_name}
+                                    <TableRow key={company.id} className="border-border/60 hover:bg-muted/20">
+                                        <TableCell className="py-4 align-top">
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-semibold text-foreground">
+                                                    {company.company_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {company.phone || 'No phone recorded'}
+                                                </p>
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-top">
                                             {company.industry ? (
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`${industryStyles[company.industry] ?? industryStyles.other} font-semibold`}
-                                                >
+                                                <Badge variant={industryVariants[company.industry] ?? 'secondary'}>
                                                     {formatLabel(company.industry)}
                                                 </Badge>
                                             ) : (
-                                                <span className="text-zinc-400">—</span>
+                                                <span className="text-sm text-muted-foreground">—</span>
                                             )}
                                         </TableCell>
-                                        <TableCell className="text-zinc-500">
-                                            {company.email}
+                                        <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                            {company.email || 'No email recorded'}
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={`${statusStyles[company.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                            >
+                                        <TableCell className="py-4 align-top">
+                                            <Badge variant={statusVariants[company.status] ?? 'secondary'}>
                                                 {formatLabel(company.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-zinc-700">
+                                        <TableCell className="py-4 align-top text-sm font-semibold text-foreground">
                                             {company.vacancies_count}
                                         </TableCell>
-                                        <TableCell className="px-6 text-right">
+                                        <TableCell className="py-4 text-right align-top">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={`/company-profiles/${company.id}`}>
-                                                        <Eye className="h-4 w-4 text-zinc-400" />
-                                                    </Link>
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={`/company-profiles/${company.id}/edit`}>
-                                                        <Pencil className="h-4 w-4 text-zinc-400" />
-                                                    </Link>
-                                                </Button>
+                                                <Link href={company.links?.show || `/company-profiles/${company.id}`}>
+                                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-md">
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
+                                                <Link href={company.links?.edit || `/company-profiles/${company.id}/edit`}>
+                                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-md">
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                    onClick={() => setCompanyToDelete(company)}
                                                     type="button"
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 rounded-md border-destructive/30 text-destructive hover:bg-destructive/10"
+                                                    onClick={() => setCompanyToDelete(company)}
                                                 >
-                                                    <Trash2 className="h-4 w-4 text-red-400" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -390,66 +351,92 @@ export default function CompaniesIndex() {
                             )}
                         </TableBody>
                     </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-100 pt-6 md:flex-row">
-                    <p className="text-sm font-medium text-zinc-500">
-                        Showing{' '}
-                        <span className="text-zinc-900">
-                            {showingFrom}-{showingTo}
-                        </span>{' '}
-                        of <span className="text-zinc-900">{companies.total}</span> companies
-                    </p>
-                    <ReactPaginate
-                        pageCount={companies.last_page}
-                        forcePage={Math.max((companies.current_page ?? 1) - 1, 0)}
-                        onPageChange={handlePageChange}
-                        containerClassName="flex gap-1"
-                        pageLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold transition-colors hover:bg-zinc-50"
-                        activeLinkClassName="!border-zinc-900 !bg-zinc-900 !text-white"
-                        previousLabel="←"
-                        nextLabel="→"
-                        previousLinkClassName="mr-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        nextLinkClassName="ml-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        disabledClassName="pointer-events-none opacity-30"
-                        breakLabel="..."
-                        breakLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold"
-                        marginPagesDisplayed={1}
-                        pageRangeDisplayed={3}
+                    <IndexTablePagination
+                        pagination={companies}
+                        filters={filters}
+                        path="/company-profiles"
+                        label="companies"
                     />
-                </div>
+                </IndexTableCard>
             </div>
 
-            {/* Delete Alert */}
-            <AlertDialog
-                open={!!companyToDelete}
-                onOpenChange={() => setCompanyToDelete(null)}
-            >
-                <AlertDialogContent className="rounded-none border-zinc-200">
+            <AlertDialog open={!!companyToDelete} onOpenChange={() => setCompanyToDelete(null)}>
+                <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-bold">
-                            Confirm Deletion
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-zinc-500">
-                            You are about to remove{' '}
-                            <span className="font-bold text-zinc-900">
-                                {companyToDelete?.company_name}
-                            </span>
-                            . This action is permanent and cannot be reversed.
+                        <AlertDialogTitle>Delete company profile</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Remove <span className="font-semibold text-foreground">{companyToDelete?.company_name}</span>.
+                            This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="border-zinc-200">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="border-none bg-red-600 text-white hover:bg-red-700"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={handleDeleteCompany}
                         >
-                            Delete Company
+                            Delete company
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </AppLayout>
     );
+}
+
+function StatCard({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: typeof Building2;
+    label: string;
+    value: number;
+}) {
+    return (
+        <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {label}
+                </p>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-2xl font-black tracking-tight text-foreground">{value}</p>
+        </div>
+    );
+}
+
+function FilterSelect({
+    label,
+    value,
+    onChange,
+    options,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{ value: string; label: string }>;
+}) {
+    return (
+        <div className="rounded-lg border border-border bg-muted/20 p-4">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                {label}
+            </label>
+            <select
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="mt-3 w-full cursor-pointer border-none bg-transparent px-0 py-0 text-sm font-semibold text-foreground focus:ring-0"
+            >
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+function formatLabel(value: string) {
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }

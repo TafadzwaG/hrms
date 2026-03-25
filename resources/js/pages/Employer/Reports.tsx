@@ -1,7 +1,9 @@
 import { usePage } from '@inertiajs/react';
 import { BarChart3, Briefcase, FileText, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 import {
+    employerBreadcrumbs,
     EmployerHubLayout,
 } from './components/hub';
 import type { Company, User, Vacancy } from './dummyData';
@@ -33,20 +35,13 @@ export default function EmployerReportsPage() {
             active="reports"
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Reports')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Hero Header Section */}
-                <header className="mb-6">
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1.5">Reports</h2>
-                    <p className="text-sm text-muted-foreground max-w-2xl">
-                        Recruitment reporting based on current company vacancies and applications.
-                    </p>
-                </header>
-
+            <div className="space-y-6">
                 {/* Summary Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                     {/* Card 1: Summary */}
-                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                    <div className="flex flex-col gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                             <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Summary</span>
                             <Briefcase className="h-3.5 w-3.5 text-black" />
@@ -62,7 +57,7 @@ export default function EmployerReportsPage() {
                     </div>
 
                     {/* Card 2: Status Breakdown */}
-                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                    <div className="flex flex-col gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                             <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Status Breakdown</span>
                             <BarChart3 className="h-3.5 w-3.5 text-black" />
@@ -86,7 +81,7 @@ export default function EmployerReportsPage() {
                     </div>
 
                     {/* Card 3: Monthly Trend */}
-                    <div className="bg-white p-5 flex flex-col gap-5 shadow-sm border border-zinc-200 rounded-sm">
+                    <div className="flex flex-col gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
                             <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Monthly Trend</span>
                             <TrendingUp className="h-3.5 w-3.5 text-black" />
@@ -109,7 +104,7 @@ export default function EmployerReportsPage() {
                 </div>
 
                 {/* Vacancy Performance Table Section */}
-                <section className="bg-white border border-zinc-200 shadow-sm rounded-sm overflow-hidden mb-12">
+                <section className="overflow-hidden rounded-lg border border-border/70 bg-background/95 shadow-sm">
                     <div className="px-5 py-4 border-b border-zinc-200 flex items-center gap-2">
                         <FileText className="h-3.5 w-3.5 text-zinc-400" />
                         <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-700">Vacancy Performance</h3>
@@ -162,12 +157,12 @@ export default function EmployerReportsPage() {
                             Showing {vacancyPerformance.length} Vacancies
                         </span>
                         <div className="flex gap-1.5">
-                            <button className="p-1.5 bg-white border border-zinc-200 hover:bg-black hover:text-white hover:border-black transition-colors rounded-sm">
+                            <Button variant="outline" size="icon" className="h-7 w-7 rounded-sm border-zinc-200 bg-white hover:border-black hover:bg-black hover:text-white">
                                 <ChevronLeft className="h-3 w-3" />
-                            </button>
-                            <button className="p-1.5 bg-white border border-zinc-200 hover:bg-black hover:text-white hover:border-black transition-colors rounded-sm">
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-7 w-7 rounded-sm border-zinc-200 bg-white hover:border-black hover:bg-black hover:text-white">
                                 <ChevronRight className="h-3 w-3" />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </section>

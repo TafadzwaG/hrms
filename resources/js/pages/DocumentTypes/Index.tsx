@@ -17,7 +17,6 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 import {
     AlertDialog,
@@ -31,6 +30,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -44,10 +50,10 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildIndexParams } from '@/lib/index-table';
 
 type DocumentType = {
     id: number;
@@ -70,7 +76,12 @@ export default function DocumentTypeIndex() {
     const { documentTypes, filters, sensitivityOptions, stats } = usePage()
         .props as unknown as {
         documentTypes: PaginatedData;
-        filters: { search?: string; sensitivity_level?: string };
+        filters: {
+            search?: string;
+            sensitivity_level?: string;
+            sort?: string;
+            direction?: 'asc' | 'desc';
+        };
         sensitivityOptions: string[];
         stats: {
             total: number;
@@ -99,32 +110,17 @@ export default function DocumentTypeIndex() {
         const timer = setTimeout(() => {
             router.get(
                 basePath,
-                {
+                buildIndexParams(filters, {
                     search,
                     ...(sensitivity !== 'all' && {
                         sensitivity_level: sensitivity,
                     }),
-                },
+                }),
                 { preserveState: true, replace: true },
             );
         }, 300);
         return () => clearTimeout(timer);
     }, [search, sensitivity]);
-
-    // --- Handlers ---
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            basePath,
-            {
-                page: selectedItem.selected + 1,
-                search,
-                ...(sensitivity !== 'all' && {
-                    sensitivity_level: sensitivity,
-                }),
-            },
-            { preserveState: true, preserveScroll: true },
-        );
-    };
 
     const resetFilters = () => {
         setSearch('');
@@ -391,38 +387,32 @@ export default function DocumentTypeIndex() {
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-muted/10 hover:bg-transparent">
-                                    <TableHead className="h-14 w-[160px] pl-6 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                <IndexTableHeaderRow>
+                                    <SortableTableHead path={basePath} filters={filters} sortKey="code" className="w-[160px] pl-6">
                                         Code
-                                    </TableHead>
-                                    <TableHead className="w-[300px] text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <SortableTableHead path={basePath} filters={filters} sortKey="name" className="w-[300px]">
                                         Name
-                                    </TableHead>
-                                    <TableHead className="w-[200px] text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead className="w-[200px]">
                                         Retention Policy
-                                    </TableHead>
-                                    <TableHead className="w-[180px] text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </IndexTableHead>
+                                    <SortableTableHead path={basePath} filters={filters} sortKey="sensitivity_level" className="w-[180px]">
                                         Sensitivity Level
-                                    </TableHead>
-                                    <TableHead className="w-[140px] text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <SortableTableHead path={basePath} filters={filters} sortKey="documents_count" className="w-[140px]">
                                         Linked Docs
-                                    </TableHead>
-                                    <TableHead className="w-[140px] pr-6 text-right text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead align="right" className="w-[140px] pr-6">
                                         Actions
-                                    </TableHead>
-                                </TableRow>
+                                    </IndexTableHead>
+                                </IndexTableHeaderRow>
                             </TableHeader>
                             <TableBody>
                                 {pageData.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="h-48 text-center text-sm font-medium text-muted-foreground"
-                                        >
-                                            No document types found matching
-                                            your search.
-                                        </TableCell>
-                                    </TableRow>
+                                    <IndexTableEmptyRow colSpan={6}>
+                                        No document types found matching your search.
+                                    </IndexTableEmptyRow>
                                 ) : (
                                     pageData.map((record) => (
                                         <TableRow
@@ -527,51 +517,12 @@ export default function DocumentTypeIndex() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
-                    {documentTypes?.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t bg-muted/10 p-4 px-6">
-                            <div className="text-xs font-medium text-muted-foreground">
-                                Showing{' '}
-                                <span className="font-bold text-foreground">
-                                    {(documentTypes.current_page - 1) *
-                                        documentTypes.per_page +
-                                        1}
-                                </span>{' '}
-                                to{' '}
-                                <span className="font-bold text-foreground">
-                                    {Math.min(
-                                        documentTypes.current_page *
-                                            documentTypes.per_page,
-                                        documentTypes.total,
-                                    )}
-                                </span>{' '}
-                                of{' '}
-                                <span className="font-bold text-foreground">
-                                    {documentTypes.total}
-                                </span>{' '}
-                                types
-                            </div>
-                            <ReactPaginate
-                                pageCount={documentTypes.last_page}
-                                forcePage={documentTypes.current_page - 1}
-                                onPageChange={handlePageChange}
-                                marginPagesDisplayed={1}
-                                pageRangeDisplayed={3}
-                                previousLabel={
-                                    <ChevronLeft className="h-4 w-4" />
-                                }
-                                nextLabel={<ChevronRight className="h-4 w-4" />}
-                                breakLabel="..."
-                                containerClassName="flex items-center gap-1"
-                                pageLinkClassName="inline-flex h-8 w-8 items-center justify-center rounded-md border border-transparent bg-transparent font-medium hover:bg-muted text-sm shadow-none text-muted-foreground transition-colors"
-                                activeLinkClassName="!bg-primary text-primary-foreground font-bold border-primary hover:!bg-primary/90 rounded-md"
-                                previousLinkClassName="inline-flex h-8 px-2 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground mr-1 transition-colors"
-                                nextLinkClassName="inline-flex h-8 px-2 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground ml-1 transition-colors"
-                                breakClassName="flex h-8 w-8 items-center justify-center text-sm font-medium text-muted-foreground"
-                                disabledClassName="opacity-50 pointer-events-none"
-                            />
-                        </div>
-                    )}
+                    <IndexTablePagination
+                        pagination={documentTypes}
+                        filters={filters}
+                        path={basePath}
+                        label="types"
+                    />
                 </div>
 
                 {/* Global Delete Confirmation Dialog */}

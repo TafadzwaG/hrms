@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssetVendor;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,19 +14,30 @@ class AssetVendorController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $sortMap = [
+            'name' => 'name',
+            'code' => 'code',
+            'email' => 'email',
+            'assets_count' => 'assets_count',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $vendors = AssetVendor::query()
             ->withCount('assets')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('code', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->withQueryString();
 
         return Inertia::render('AssetVendors/Index', [
             'vendors' => $vendors,
-            'filters' => ['search' => $search],
+            'filters' => [
+                'search' => $search,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
+            ],
         ]);
     }
 

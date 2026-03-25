@@ -15,7 +15,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     CandidateEmptyState,
+    candidateBreadcrumbs,
     CandidateHubLayout,
     formatCandidateDate,
 } from './components/hub';
@@ -82,30 +90,25 @@ export default function CandidateApplicationsPage() {
             active="applications"
             subtitle='Review your current status, interview schedules, and historical submissions.'
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('My Applications')}
         >
-            <div className="w-full px-4 md:px-8">
-                {/* Page Title */}
-                <div className="mb-6">
-                    <h2 className="text-4xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Applications.</h2>
-                    <p className="text-zinc-500 text-sm font-medium max-w-xl">Track and manage your professional journey. </p>
-                </div>
-
+            <div className="space-y-6">
                 {flash?.success && (
-                    <div className="mb-6 flex items-center gap-3 rounded-sm border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 uppercase tracking-widest">
+                    <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 uppercase tracking-widest shadow-sm">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
                         <span>{flash.success}</span>
                     </div>
                 )}
 
                 {flash?.error && (
-                    <div className="mb-6 flex items-center gap-3 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-700 uppercase tracking-widest">
+                    <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-700 uppercase tracking-widest shadow-sm">
                         <XCircle className="h-4 w-4 shrink-0" />
                         <span>{flash.error}</span>
                     </div>
                 )}
 
                 {/* Filter Section */}
-                <section className="bg-zinc-50 p-6 border border-zinc-200 rounded-sm mb-10 shadow-sm">
+                <section className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                         <div className="md:col-span-6">
                             <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-2">Search Keywords</label>
@@ -123,18 +126,22 @@ export default function CandidateApplicationsPage() {
                         
                         <div className="md:col-span-4">
                             <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-2">Filter by Status</label>
-                            <select
-                                defaultValue={filters.status ?? ''}
-                                onChange={(e) => handleFilterChange('status', e.target.value)}
-                                className={underlinedInput}
+                            <Select
+                                value={filters.status || '__all__'}
+                                onValueChange={(value) => handleFilterChange('status', value === '__all__' ? '' : value)}
                             >
-                                <option value="">All statuses</option>
+                                <SelectTrigger className={selectTriggerClass}>
+                                    <SelectValue placeholder="All statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">All statuses</SelectItem>
                                 {statuses.map((status) => (
-                                    <option key={status} value={status}>
+                                    <SelectItem key={status} value={status}>
                                         {status.replace(/_/g, ' ')}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
                         
                         <div className="md:col-span-2">
@@ -159,7 +166,7 @@ export default function CandidateApplicationsPage() {
                                 const styles = getStatusStyles(application.status);
                                 
                                 return (
-                                    <div key={application.id} className={`group bg-white hover:bg-zinc-50 border border-zinc-200 transition-all duration-300 rounded-sm overflow-hidden shadow-sm ${styles.opacity}`}>
+                                    <div key={application.id} className={`group overflow-hidden rounded-lg border border-border/70 bg-background/95 shadow-sm transition-colors hover:border-border hover:bg-muted/10 ${styles.opacity}`}>
                                         <div className={`p-5 border-l-4 ${styles.border}`}>
                                             
                                             {/* Header */}
@@ -174,7 +181,7 @@ export default function CandidateApplicationsPage() {
                                                     <p className="text-sm font-bold text-zinc-500">{application.company_name}</p>
                                                 </div>
                                                 {(application.salary_min || application.salary_max) && (
-                                                    <div className="bg-zinc-100 px-3 py-1.5 rounded-sm border border-zinc-200">
+                                                    <div className="rounded-lg border border-border bg-muted px-3 py-1.5">
                                                         <span className="text-[10px] font-black text-black font-mono tracking-widest uppercase">
                                                             {application.currency ?? 'USD'} {application.salary_min ?? 'N/A'} - {application.salary_max ?? 'N/A'}
                                                         </span>
@@ -213,7 +220,7 @@ export default function CandidateApplicationsPage() {
                                                         )}
                                                         
                                                         {application.resume && (
-                                                            <div className="flex items-center gap-3 bg-zinc-50 p-2.5 rounded-sm border border-zinc-200">
+                                                            <div className="flex items-center gap-3 rounded-lg border border-border/70 bg-muted/20 p-2.5">
                                                                 <FileText className="text-black h-4 w-4" />
                                                                 <div>
                                                                     <p className="text-[11px] font-bold text-black uppercase tracking-wider">{application.resume.file_name}</p>
@@ -231,18 +238,20 @@ export default function CandidateApplicationsPage() {
 
                                             {/* Footer Actions */}
                                             <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
-                                                <button 
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
                                                     onClick={() => setPendingWithdrawId(application.id)}
                                                     disabled={['withdrawn', 'rejected', 'hired'].includes(application.status)}
-                                                    className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 hover:text-black border border-transparent rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="h-8 rounded-md px-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 hover:text-black"
                                                 >
                                                     Withdraw
-                                                </button>
-                                                <Link href={`/candidate/jobs/${application.vacancy_id}`}>
-                                                    <button className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest bg-black text-white rounded-sm hover:bg-zinc-800 transition-all">
+                                                </Button>
+                                                <Button asChild className="h-8 rounded-md px-4 text-[10px] font-bold uppercase tracking-widest">
+                                                    <Link href={`/jobs/${application.vacancy_id}`}>
                                                         View Job
-                                                    </button>
-                                                </Link>
+                                                    </Link>
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -256,7 +265,7 @@ export default function CandidateApplicationsPage() {
 
                 {/* Pagination */}
                 {applications.links && applications.links.length > 3 && (
-                    <nav className="mt-12 flex items-center justify-between border-t border-zinc-200 pt-6 pb-10">
+                    <nav className="flex items-center justify-between border-t border-zinc-200 pt-6">
                         <div className="flex-1 flex justify-start">
                             {applications.links[0].url ? (
                                 <Link href={applications.links[0].url} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 hover:text-black transition-colors">
@@ -332,7 +341,8 @@ export default function CandidateApplicationsPage() {
 }
 
 // Ensure the generic input style matches the dense aesthetic
-const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-2 transition-all text-sm font-semibold text-black placeholder:text-zinc-300 placeholder:font-medium appearance-none outline-none";
+const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-2 transition-all text-sm text-black placeholder:text-zinc-300 appearance-none outline-none";
+const selectTriggerClass = "h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-2 text-sm text-black shadow-none focus:ring-0 focus:ring-offset-0";
 
 /* Optional Interview Card - Currently decoupled in original code but formatted for consistency */
 export function InterviewCard({ interview }: { interview: CandidateInterview }) {
@@ -375,12 +385,12 @@ export function InterviewCard({ interview }: { interview: CandidateInterview }) 
 
             {interview.can_respond && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                    <button onClick={() => respond('accepted')} className="inline-flex items-center gap-1.5 rounded-sm bg-black px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-zinc-800">
+                    <Button onClick={() => respond('accepted')} className="h-8 gap-1.5 rounded-sm px-4 text-[9px] font-bold uppercase tracking-widest">
                         <CheckCircle2 className="h-3 w-3" /> Accept
-                    </button>
-                    <button onClick={() => respond('rejected')} className="inline-flex items-center gap-1.5 rounded-sm border border-red-200 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-red-600 transition-colors hover:bg-red-50">
+                    </Button>
+                    <Button onClick={() => respond('rejected')} variant="outline" className="h-8 gap-1.5 rounded-sm border-red-200 px-4 text-[9px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 hover:text-red-700">
                         <XCircle className="h-3 w-3" /> Decline
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>

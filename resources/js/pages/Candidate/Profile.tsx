@@ -13,9 +13,18 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import InputError from '@/components/input-error';
 import {
+    candidateBreadcrumbs,
     CandidateHubLayout,
     getInitials,
 } from './components/hub';
@@ -118,27 +127,19 @@ export default function CandidateProfilePage() {
     return (
         <CandidateHubLayout
             title="Profile Settings"
+            subtitle="Manage your professional identity and visibility across the recruitment network."
             active="profile"
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('Profile Settings')}
         >
-            <div className="w-full px-4 md:px-6">
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
-                        Profile Settings.
-                    </h1>
-                    <p className="max-w-2xl text-sm font-medium text-zinc-500">
-                        Manage your professional identity and visibility across
-                        the recruitment network.
-                    </p>
-                </div>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[1.1fr_0.9fr]">
                     
                     {/* Left Column: Forms */}
                     <div className="space-y-10">
                         
                         {/* 1. Personal Information Form */}
-                        <section>
+                        <section className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="mb-6 flex items-center gap-2">
                                 <User className="h-5 w-5 text-black" />
                                 <h3 className="text-lg font-bold tracking-tight text-black uppercase">
@@ -185,17 +186,21 @@ export default function CandidateProfilePage() {
                                     />
                                 </FormField>
                                 <FormField label="Gender" error={profileForm.errors.gender}>
-                                    <select
-                                        value={profileForm.data.gender}
-                                        onChange={(e) => profileForm.setData('gender', e.target.value)}
-                                        className={underlinedInput}
+                                    <Select
+                                        value={profileForm.data.gender || '__empty__'}
+                                        onValueChange={(value) => profileForm.setData('gender', value === '__empty__' ? '' : value)}
                                     >
-                                        <option value="">Select gender</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="non-binary">Non-binary</option>
-                                        <option value="prefer_not_to_say">Prefer not to say</option>
-                                    </select>
+                                        <SelectTrigger className={selectTriggerClass}>
+                                            <SelectValue placeholder="Select gender" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="__empty__">Select gender</SelectItem>
+                                            <SelectItem value="male">Male</SelectItem>
+                                            <SelectItem value="female">Female</SelectItem>
+                                            <SelectItem value="non-binary">Non-binary</SelectItem>
+                                            <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </FormField>
                                 <FormField label="Date of Birth" error={profileForm.errors.date_of_birth}>
                                     <input
@@ -214,31 +219,34 @@ export default function CandidateProfilePage() {
                                 </FormField>
                             </div>
 
-                            <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-sm border border-zinc-200 bg-zinc-50 p-5 md:flex-row">
+                            <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-lg border border-border/70 bg-muted/20 p-5 md:flex-row">
                                 <div className="flex w-full items-center gap-5 md:w-auto">
                                     <div className="w-full space-y-1 md:w-auto">
                                         <label className="block text-[10px] font-bold tracking-widest text-zinc-500 uppercase">
                                             Visibility
                                         </label>
-                                        <select
+                                        <Select
                                             value={profileForm.data.profile_visibility_status}
-                                            onChange={(e) => profileForm.setData('profile_visibility_status', e.target.value)}
-                                            className="cursor-pointer border-none bg-transparent p-0 text-sm font-bold focus:ring-0"
+                                            onValueChange={(value) => profileForm.setData('profile_visibility_status', value)}
                                         >
+                                            <SelectTrigger className={inlineSelectTriggerClass}>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
                                             {visibility_statuses.map((status) => (
-                                                <option key={status} value={status}>
+                                                <SelectItem key={status} value={status}>
                                                     {status.replace(/_/g, ' ')}
-                                                </option>
+                                                </SelectItem>
                                             ))}
-                                        </select>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="hidden h-8 w-px bg-zinc-200 md:block"></div>
                                     <label className="group flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="checkbox"
+                                        <Checkbox
                                             checked={profileForm.data.is_public}
-                                            onChange={(e) => profileForm.setData('is_public', e.target.checked)}
-                                            className="h-4 w-4 rounded-none border-black text-black transition-all focus:ring-0"
+                                            onCheckedChange={(value) => profileForm.setData('is_public', value === true)}
+                                            className="h-4 w-4"
                                         />
                                         <span className="text-xs font-bold text-zinc-700">
                                             Public Listing
@@ -256,7 +264,7 @@ export default function CandidateProfilePage() {
                         </section>
 
                         {/* 2. Professional Summary Form */}
-                        <section>
+                        <section className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="mb-6 flex items-center gap-2">
                                 <Briefcase className="h-5 w-5 text-black" />
                                 <h3 className="text-lg font-bold tracking-tight text-black uppercase">
@@ -285,37 +293,45 @@ export default function CandidateProfilePage() {
                                             />
                                         </FormField>
                                         <FormField label="Education" error={summaryForm.errors.highest_education}>
-                                            <select
-                                                value={summaryForm.data.highest_education}
-                                                onChange={(e) => summaryForm.setData('highest_education', e.target.value)}
-                                                className={underlinedInput}
+                                            <Select
+                                                value={summaryForm.data.highest_education || '__empty__'}
+                                                onValueChange={(value) => summaryForm.setData('highest_education', value === '__empty__' ? '' : value)}
                                             >
-                                                <option value="">Select level</option>
+                                                <SelectTrigger className={selectTriggerClass}>
+                                                    <SelectValue placeholder="Select level" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                <SelectItem value="__empty__">Select level</SelectItem>
                                                 {education_levels.map((level) => (
-                                                    <option key={level} value={level}>
+                                                    <SelectItem key={level} value={level}>
                                                         {level.replace(/_/g, ' ')}
-                                                    </option>
+                                                    </SelectItem>
                                                 ))}
-                                            </select>
+                                                </SelectContent>
+                                            </Select>
                                         </FormField>
                                     </div>
                                 </div>
 
                                 <FormField label="Expected Salary (Monthly)" error={summaryForm.errors.expected_salary}>
                                     <div className="flex items-center gap-4 border-b border-zinc-200 pb-1">
-                                        <select
+                                        <Select
                                             value={summaryForm.data.salary_currency}
-                                            onChange={(e) => summaryForm.setData('salary_currency', e.target.value.toUpperCase())}
-                                            className="w-20 border-none bg-transparent px-0 py-1.5 text-sm font-bold focus:ring-0"
+                                            onValueChange={(value) => summaryForm.setData('salary_currency', value.toUpperCase())}
                                         >
-                                            <option value="USD">USD</option>
-                                            <option value="EUR">EUR</option>
-                                            <option value="GBP">GBP</option>
-                                        </select>
+                                            <SelectTrigger className="h-auto w-24 rounded-none border-0 bg-transparent px-0 py-1.5 text-sm font-bold text-black shadow-none focus:ring-0 focus:ring-offset-0">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="USD">USD</SelectItem>
+                                                <SelectItem value="EUR">EUR</SelectItem>
+                                                <SelectItem value="GBP">GBP</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <input
                                             value={summaryForm.data.expected_salary}
                                             onChange={(e) => summaryForm.setData('expected_salary', e.target.value)}
-                                            className="flex-1 border-none bg-transparent px-0 py-1.5 text-sm font-medium outline-none focus:ring-0"
+                                            className="flex-1 border-none bg-transparent px-0 py-1.5 text-sm outline-none focus:ring-0"
                                             placeholder="e.g. 12000"
                                         />
                                     </div>
@@ -345,7 +361,7 @@ export default function CandidateProfilePage() {
                         </section>
 
                         {/* 3. Experience Form */}
-                        <section className="rounded-sm border-2 border-black/5 bg-zinc-50/50 p-6">
+                        <section className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                                 <div className="flex items-center gap-2">
                                     <Briefcase className="h-5 w-5 text-black" />
@@ -397,11 +413,10 @@ export default function CandidateProfilePage() {
                                         </FormField>
                                     </div>
                                     <label className="group flex cursor-pointer items-center gap-2 py-2">
-                                        <input
-                                            type="checkbox"
+                                        <Checkbox
                                             checked={experienceForm.data.currently_working}
-                                            onChange={(e) => experienceForm.setData('currently_working', e.target.checked)}
-                                            className="h-4 w-4 rounded-none border-black text-black transition-all focus:ring-0"
+                                            onCheckedChange={(value) => experienceForm.setData('currently_working', value === true)}
+                                            className="h-4 w-4"
                                         />
                                         <span className="text-xs font-bold text-zinc-700">
                                             I currently work here
@@ -446,7 +461,7 @@ export default function CandidateProfilePage() {
                     <div className="space-y-8">
                         
                         {/* 4. Profile Summary Card (No longer sticky) */}
-                        <div className="border border-zinc-200/50 bg-white p-6 shadow-sm">
+                        <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="mb-8 flex flex-col items-center text-center">
                                 <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-sm bg-black text-2xl font-black text-white">
                                     {getInitials(candidate.full_name)}
@@ -466,7 +481,7 @@ export default function CandidateProfilePage() {
                             </div>
 
                             <div className="mt-8 grid grid-cols-2 gap-3">
-                                <div className="rounded-sm border border-zinc-100 bg-zinc-50 p-3 text-center">
+                                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-center">
                                     <p className="text-xl font-black text-black">
                                         {candidate.years_experience || 0}
                                     </p>
@@ -474,7 +489,7 @@ export default function CandidateProfilePage() {
                                         Years Exp.
                                     </p>
                                 </div>
-                                <div className="rounded-sm border border-zinc-100 bg-zinc-50 p-3 text-center">
+                                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-center">
                                     <p className="text-xl font-black text-black">
                                         {experiences.length}
                                     </p>
@@ -500,7 +515,7 @@ export default function CandidateProfilePage() {
                                 {experiences.map((experience, index) => (
                                     <div
                                         key={experience.id}
-                                        className={`group border bg-white p-5 ${index === 0 ? 'border-zinc-300' : 'border-zinc-100'} rounded-sm transition-all hover:border-black`}
+                                        className={`group rounded-lg border bg-background/95 p-5 shadow-sm transition-colors hover:border-border ${index === 0 ? 'border-border/70' : 'border-border/50'}`}
                                     >
                                         <div className="mb-3 flex items-start justify-between">
                                             <div>
@@ -521,23 +536,27 @@ export default function CandidateProfilePage() {
                                                 </p>
                                             </div>
                                             <div className="flex gap-1 opacity-0 transition-all group-hover:opacity-100">
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => startEditingExperience(experience)}
-                                                    className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-black"
+                                                    className="h-7 w-7 rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-black"
                                                 >
                                                     <Edit2 size={14} />
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() =>
                                                         window.confirm('Delete this experience?') &&
                                                         experienceForm.delete(`/candidate/profile/experiences/${experience.id}`)
                                                     }
-                                                    className="rounded-md p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                                    className="h-7 w-7 rounded-md text-red-400 hover:bg-red-50 hover:text-red-600"
                                                 >
                                                     <Trash2 size={14} />
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
                                         {experience.description && (
@@ -549,7 +568,7 @@ export default function CandidateProfilePage() {
                                 ))}
 
                                 {experiences.length === 0 && (
-                                    <div className="rounded-sm border border-dashed border-zinc-200 bg-zinc-50/50 p-6 text-center">
+                                    <div className="rounded-lg border border-dashed border-border/70 bg-muted/20 p-6 text-center">
                                         <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
                                             No experience records added.
                                         </p>
@@ -557,10 +576,10 @@ export default function CandidateProfilePage() {
                                 )}
                             </div>
 
-                            <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-sm border-2 border-dashed border-zinc-200 py-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase transition-all hover:border-black hover:bg-zinc-50 hover:text-black">
+                            <Button variant="outline" className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg border-dashed border-border/70 text-[10px] font-black tracking-widest text-zinc-400 uppercase hover:border-black hover:bg-zinc-50 hover:text-black">
                                 <Download size={14} />
                                 Download Full Resume (PDF)
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -634,26 +653,30 @@ function MonthYearInput({
                 className={underlinedInput}
             />
 
-            <select
-                value={month}
+            <Select
+                value={month || '__empty__'}
                 disabled={disabled}
-                onChange={(e) => handleMonthChange(e.target.value)}
-                className={underlinedInput}
+                onValueChange={(value) => handleMonthChange(value === '__empty__' ? '' : value)}
             >
-                <option value="">Mo</option>
-                <option value="01">Jan</option>
-                <option value="02">Feb</option>
-                <option value="03">Mar</option>
-                <option value="04">Apr</option>
-                <option value="05">May</option>
-                <option value="06">Jun</option>
-                <option value="07">Jul</option>
-                <option value="08">Aug</option>
-                <option value="09">Sep</option>
-                <option value="10">Oct</option>
-                <option value="11">Nov</option>
-                <option value="12">Dec</option>
-            </select>
+                <SelectTrigger className={monthSelectTriggerClass}>
+                    <SelectValue placeholder="Mo" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="__empty__">Mo</SelectItem>
+                    <SelectItem value="01">Jan</SelectItem>
+                    <SelectItem value="02">Feb</SelectItem>
+                    <SelectItem value="03">Mar</SelectItem>
+                    <SelectItem value="04">Apr</SelectItem>
+                    <SelectItem value="05">May</SelectItem>
+                    <SelectItem value="06">Jun</SelectItem>
+                    <SelectItem value="07">Jul</SelectItem>
+                    <SelectItem value="08">Aug</SelectItem>
+                    <SelectItem value="09">Sep</SelectItem>
+                    <SelectItem value="10">Oct</SelectItem>
+                    <SelectItem value="11">Nov</SelectItem>
+                    <SelectItem value="12">Dec</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     );
 }
@@ -685,4 +708,10 @@ function InfoRow({
 }
 
 const underlinedInput =
-    'w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-sm font-semibold text-black placeholder:text-zinc-300 placeholder:font-medium appearance-none outline-none';
+    'w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-sm text-black placeholder:text-zinc-300 appearance-none outline-none';
+const selectTriggerClass =
+    'h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-sm text-black shadow-none focus:ring-0 focus:ring-offset-0';
+const inlineSelectTriggerClass =
+    'h-auto min-w-[140px] border-0 bg-transparent p-0 text-sm font-bold text-black shadow-none focus:ring-0 focus:ring-offset-0';
+const monthSelectTriggerClass =
+    'h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0';

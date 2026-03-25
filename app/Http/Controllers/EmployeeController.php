@@ -17,6 +17,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\Audit\AuditContext;
 use App\Support\Audit\AuditLogger;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,19 @@ class EmployeeController extends Controller
             'search' => $request->string('search')->toString(),
             'pay_point' => $request->string('pay_point')->toString(),
         ];
+        $sortMap = [
+            'employee' => ['surname', 'first_name'],
+            'department' => fn ($query, $direction) => $query->orderBy(
+                OrgUnit::query()
+                    ->select('name')
+                    ->whereColumn('org_units.id', 'employees.org_unit_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'pay_point' => 'pay_point',
+            'created_at' => 'created_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'employee');
 
         $query = Employee::query()
             ->with([
@@ -44,9 +58,7 @@ class EmployeeController extends Controller
                 'orgUnit:id,name,type',
                 'position:id,name',
                 'location:id,name',
-            ])
-            ->orderBy('surname')
-            ->orderBy('first_name');
+            ]);
 
         if (!empty($filters['search'])) {
             $s = $filters['search'];
@@ -75,6 +87,8 @@ class EmployeeController extends Controller
         if (!empty($filters['pay_point']) && $filters['pay_point'] !== 'all') {
             $query->where('pay_point', $filters['pay_point']);
         }
+
+        IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']);
 
         $employees = $query->paginate(15)->withQueryString()->through(function (Employee $employee) {
             return [
@@ -127,6 +141,8 @@ class EmployeeController extends Controller
             'filters' => [
                 'search' => $filters['search'] ?? '',
                 'pay_point' => $filters['pay_point'] ?: 'all',
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'payPoints' => $payPoints,
         ]);

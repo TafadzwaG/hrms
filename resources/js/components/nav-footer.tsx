@@ -57,7 +57,7 @@ export function NavFooter({
     };
 
     const menuButtonClassName =
-        'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 dark:text-slate-400 dark:hover:text-teal-400 dark:hover:bg-teal-950/20 transition-colors duration-200';
+        'text-sidebar-foreground/75 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent transition-colors duration-200';
 
     return (
         <SidebarGroup

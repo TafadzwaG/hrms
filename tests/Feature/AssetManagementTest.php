@@ -390,6 +390,33 @@ test('cannot delete category with assets', function () {
         ->assertSessionHas('error');
 });
 
+test('asset categories index supports server-side sorting', function () {
+    $user = User::factory()->create();
+    $org = grantAssetPermissions($user, ['assets.categories.view']);
+
+    AssetCategory::withoutGlobalScopes()->create([
+        'organization_id' => $org->id,
+        'name' => 'Alpha Category',
+        'code' => 'AAA-100',
+    ]);
+
+    AssetCategory::withoutGlobalScopes()->create([
+        'organization_id' => $org->id,
+        'name' => 'Zulu Category',
+        'code' => 'ZZZ-900',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/asset-categories?sort=code&direction=desc')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('AssetCategories/Index')
+            ->where('filters.sort', 'code')
+            ->where('filters.direction', 'desc')
+            ->where('categories.data.0.code', 'ZZZ-900')
+        );
+});
+
 // ── Vendors ─────────────────────────────────────────────
 
 test('can create and list vendors', function () {

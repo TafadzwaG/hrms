@@ -16,7 +16,7 @@ import {
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { EmployerHubLayout } from './components/hub';
+import { employerBreadcrumbs, EmployerHubLayout } from './components/hub';
 import type { BillingProfile, Company, Invoice, Subscription, SubscriptionPlan, User } from './dummyData';
 
 type PageProps = {
@@ -46,13 +46,9 @@ export default function EmployerBillingPage() {
             subtitle='Billing and Subscriptions'
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Billing')}
         >
-            <div className="w-full px-4 md:px-6">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Billing</h2>
-                    <p className="text-sm text-muted-foreground">Manage your enterprise subscription, profile details, and review invoice history.</p>
-                </div>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column: Profile & Subscription */}
                     <div className="lg:col-span-5 flex flex-col gap-6">
@@ -147,9 +143,9 @@ export default function EmployerBillingPage() {
                                     </h3>
                                     <p className="text-xs text-muted-foreground mt-1">Download and manage statements.</p>
                                 </div>
-                                <button className="text-[9px] font-black uppercase tracking-widest text-black border-b-2 border-black pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-colors">
+                                <Button variant="ghost" size="sm" className="h-7 px-0 text-[9px] font-black uppercase tracking-widest text-black hover:text-zinc-500">
                                     Export CSV
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="space-y-0">
@@ -193,9 +189,9 @@ export default function EmployerBillingPage() {
                                         <p className="text-xs font-black uppercase tracking-tight text-black">Financial Statement</p>
                                         <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">Request a custom report for accounting.</p>
                                     </div>
-                                    <button className="ml-auto text-[9px] font-black tracking-widest uppercase underline decoration-2 underline-offset-4 hover:text-zinc-500 transition-colors">
+                                    <Button variant="ghost" size="sm" className="ml-auto h-7 px-0 text-[9px] font-black uppercase tracking-widest hover:text-zinc-500">
                                         Request
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </section>

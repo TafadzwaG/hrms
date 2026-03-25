@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import admin from './admin'
 /**
 * @see \App\Http\Controllers\RecruitmentDashboardController::__invoke
  * @see app/Http/Controllers/RecruitmentDashboardController.php:16
@@ -79,6 +80,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     dashboard.form = dashboardForm
 const recruitment = {
     dashboard: Object.assign(dashboard, dashboard),
+admin: Object.assign(admin, admin),
 }
 
 export default recruitment

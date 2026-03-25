@@ -1,6 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, Users, Calendar, BarChart3, Verified, Info } from 'lucide-react';
-import { EmployerHubLayout, EmployerPrimaryButton } from './components/hub';
+import { Briefcase, Users, Calendar, BarChart3, Verified, Info, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    employerBreadcrumbs,
+    EmployerHubLayout,
+    EmployerMetricCard,
+    EmployerPrimaryButton,
+} from './components/hub';
 import type { Company, Metrics, RecentApplication, RecommendedTalent, User, Vacancy } from './dummyData';
 
 type PageProps = {
@@ -36,22 +42,17 @@ export default function EmployerDashboard() {
             active="dashboard"
             company={company}
             user={user}
-            headerActions={<EmployerPrimaryButton href="/employer/vacancies/create">Post a New Job</EmployerPrimaryButton>}
+            headerActions={
+                <EmployerPrimaryButton href="/employer/vacancies/create">
+                    <Plus className="h-4 w-4" />
+                    Post a New Job
+                </EmployerPrimaryButton>
+            }
+            breadcrumbs={employerBreadcrumbs()}
         >
-            <div className="w-full px-4 md:px-8">
-                {/* Hero Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                    <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="px-2 py-0.5 bg-zinc-200 text-[10px] font-bold tracking-widest uppercase rounded">Verified Employer</span>
-                        </div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Employer Hub</h2>
-                        <p className="text-sm text-muted-foreground">Overview of your current hiring activity</p>
-                    </div>
-                </div>
-
+            <div className="space-y-8">
                 {/* KPI Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <KpiCard 
                         icon={<Briefcase size={20} />} 
                         label="Active Vacancies" 
@@ -70,22 +71,23 @@ export default function EmployerDashboard() {
                         value={interviewCount} 
                         sub="Currently Scheduled" 
                     />
-                    <div className="bg-white p-6 border border-zinc-200/50 flex flex-col justify-between group hover:bg-zinc-50 transition-all duration-300">
-                        <div className="flex justify-between items-start mb-4">
-                            <BarChart3 className="text-zinc-400 group-hover:text-black transition-colors" size={20} />
-                            <div className="w-12 h-1 bg-zinc-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-black" style={{ width: '92%' }}></div>
+                    <div className="flex items-start justify-between gap-3 rounded-lg border border-border/70 bg-background/95 p-3.5 shadow-sm transition-colors hover:border-border hover:bg-muted/10">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                                <BarChart3 className="h-3 w-3" />
+                                Profile Health
                             </div>
+                            <div className="text-xl font-semibold leading-none tracking-tight">92%</div>
+                            <div className="text-[11px] leading-4 text-muted-foreground">Company completeness</div>
                         </div>
-                        <div>
-                            <p className="text-2xl font-semibold tracking-tight">92%</p>
-                            <p className="text-sm font-medium text-zinc-500">Profile Health</p>
+                        <div className="rounded-md bg-muted p-2 text-muted-foreground">
+                            <BarChart3 className="h-4 w-4" />
                         </div>
                     </div>
                 </div>
 
                 {/* Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                     {/* Left Column */}
                     <div className="lg:col-span-8 space-y-8">
                         {/* Active Requisitions */}
@@ -94,10 +96,10 @@ export default function EmployerDashboard() {
                                 <h3 className="text-base font-semibold tracking-tight text-foreground">Active Requisitions</h3>
                                 <Link href="/employer/vacancies" className="text-sm font-semibold text-zinc-500 hover:text-black transition-colors">View All</Link>
                             </div>
-                            <div className="bg-white overflow-hidden border border-zinc-200/50 rounded-sm">
+                            <div className="overflow-hidden rounded-lg border border-border/70 bg-background/95 shadow-sm">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-zinc-50 border-b border-zinc-200">
+                                        <tr className="border-b border-zinc-200 bg-muted/20">
                                             <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500">Job Title</th>
                                             <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500">Department</th>
                                             <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500 text-center">Applicants</th>
@@ -105,7 +107,7 @@ export default function EmployerDashboard() {
                                             <th className="py-3 px-6 text-xs font-medium uppercase tracking-widest text-zinc-500 text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-100">
+                                    <tbody className="divide-y divide-border/60">
                                         {vacancies.map((vacancy) => (
                                             <tr key={vacancy.id} className="hover:bg-zinc-50 transition-colors group">
                                                 <td className="py-4 px-6">
@@ -138,7 +140,7 @@ export default function EmployerDashboard() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {recentApplications.slice(0, 4).map((app, idx) => (
-                                    <div key={app.id} className="bg-white p-5 border border-zinc-200/50 hover:border-black transition-all">
+                                    <div key={app.id} className="rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm transition-colors hover:border-border hover:bg-muted/10">
                                         <div className="flex gap-4 items-start mb-4">
                                             <div className={`h-12 w-12 flex items-center justify-center font-bold text-lg shrink-0 ${idx % 2 === 0 ? 'bg-black text-white' : 'bg-zinc-200 text-zinc-700'}`}>
                                                 {getInitials(app.candidate_name)}
@@ -170,10 +172,10 @@ export default function EmployerDashboard() {
                                             </div>
                                         ) : null}
                                         <div className="flex gap-2">
-                                            <button className="flex-1 bg-black text-white py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-800 transition-colors">Shortlist</button>
-                                            <Link href={`/employer/candidates/${app.id}`} className="flex-1">
-                                                <button className="w-full bg-zinc-100 py-2 text-[11px] uppercase tracking-wider font-bold rounded hover:bg-zinc-200 text-zinc-700 transition-colors">Profile</button>
-                                            </Link>
+                                            <Button className="h-8 flex-1 rounded text-[11px] font-bold uppercase tracking-wider">Shortlist</Button>
+                                            <Button asChild variant="outline" className="h-8 flex-1 rounded border-zinc-200 text-[11px] font-bold uppercase tracking-wider text-zinc-700 hover:bg-zinc-200">
+                                                <Link href={`/employer/candidates/${app.id}`}>Profile</Link>
+                                            </Button>
                                         </div>
                                     </div>
                                 ))}
@@ -184,7 +186,7 @@ export default function EmployerDashboard() {
                     {/* Right Column */}
                     <div className="lg:col-span-4 space-y-8">
                         {/* Hiring Progress */}
-                        <div className="bg-white p-6 border border-zinc-200/50 rounded-sm">
+                        <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-8">Hiring Progress</h3>
                             
                             <div className="flex flex-col items-center mb-10">
@@ -207,7 +209,7 @@ export default function EmployerDashboard() {
                         </div>
 
                         {/* Talent Matches */}
-                        <div className="bg-white p-6 border border-zinc-200/50 rounded-sm">
+                        <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-6">Talent Matches</h3>
                             <div className="space-y-6">
                                 {recommendedTalent.slice(0, 3).map((talent) => (
@@ -226,7 +228,7 @@ export default function EmployerDashboard() {
                                                 {talent.match_score ? (
                                                     <span className="inline-flex bg-zinc-100 px-2 py-0.5 text-[9px] font-bold rounded">{talent.match_score}% Match</span>
                                                 ) : null}
-                                                <button className="mt-2 block text-[10px] font-bold text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">Invite</button>
+                                                <Button variant="ghost" size="sm" className="mt-2 h-7 px-0 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-black">Invite</Button>
                                             </div>
                                         </div>
                                         {talent.match?.vacancy_title ? (
@@ -247,11 +249,11 @@ export default function EmployerDashboard() {
                                     </div>
                                 ))}
                             </div>
-                            <Link href="/employer/candidates">
-                                <button className="w-full mt-8 py-3 text-[10px] uppercase tracking-widest font-bold text-zinc-500 bg-zinc-50 hover:bg-zinc-100 transition-colors">
+                            <Button asChild variant="outline" className="mt-8 h-9 w-full border-zinc-200 bg-zinc-50 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:bg-zinc-100">
+                                <Link href="/employer/candidates">
                                     Find More Matches
-                                </button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
 
                         {/* Company Account Summary */}
@@ -272,11 +274,11 @@ export default function EmployerDashboard() {
                                 </div>
                                 <p className="text-[10px] font-bold uppercase tracking-tighter">{billingSummary?.subscription?.seats ?? 1} Active Admins</p>
                             </div>
-                            <Link href="/employer/billing">
-                                <button className="w-full bg-white text-black py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                            <Button asChild variant="secondary" className="h-9 w-full rounded-sm bg-white text-xs font-bold uppercase tracking-widest text-black hover:bg-zinc-200">
+                                <Link href="/employer/billing">
                                     Manage Subscription
-                                </button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -288,18 +290,7 @@ export default function EmployerDashboard() {
 /* --- Subcomponents --- */
 
 function KpiCard({ icon, label, value, sub }: { icon: any, label: string, value: string | number, sub: string }) {
-    return (
-        <div className="bg-white p-6 border border-zinc-200/50 flex flex-col justify-between group hover:bg-zinc-50 transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
-                <span className="text-zinc-400 group-hover:text-black transition-colors">{icon}</span>
-                <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">{sub}</span>
-            </div>
-            <div>
-                <p className="text-2xl font-semibold tracking-tight">{value}</p>
-                <p className="text-sm font-medium text-zinc-500">{label}</p>
-            </div>
-        </div>
-    );
+    return <EmployerMetricCard icon={icon} label={label} value={value} helper={sub} />;
 }
 
 function ProgressBar({ label, value }: { label: string, value: number }) {

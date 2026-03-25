@@ -141,13 +141,20 @@ export const uiBadgeBase =
     'inline-flex items-center rounded-sm border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest';
 
 /** Default / neutral badge. */
-export const uiBadgeNeutral = `${uiBadgeBase} bg-zinc-100 text-zinc-600 border-zinc-200`;
+export const uiBadgeNeutral = `${uiBadgeBase} badge-tone-neutral`;
 
-/** Primary / active badge (black). */
-export const uiBadgePrimary = `${uiBadgeBase} bg-zinc-900 text-white border-zinc-900`;
+/** Primary / active badge. */
+export const uiBadgePrimary = `${uiBadgeBase} badge-tone-chart-1`;
 
 /** Subtle / muted badge. */
-export const uiBadgeMuted = `${uiBadgeBase} bg-zinc-50 text-zinc-500 border-zinc-200`;
+export const uiBadgeMuted = `${uiBadgeBase} badge-tone-muted`;
+
+/** Semantic badge tones aligned to the chart palette. */
+export const uiBadgeInfo = `${uiBadgeBase} badge-tone-info`;
+export const uiBadgeSuccess = `${uiBadgeBase} badge-tone-success`;
+export const uiBadgeWarning = `${uiBadgeBase} badge-tone-warning`;
+export const uiBadgeDanger = `${uiBadgeBase} badge-tone-danger`;
+export const uiBadgeAccent = `${uiBadgeBase} badge-tone-accent`;
 
 // ---------------------------------------------------------------------------
 // Empty states
@@ -208,3 +215,4 @@ export const uiStatusColors: Record<string, string> = {
 export function getStatusClass(status: string): string {
     return uiStatusColors[status.toLowerCase()] ?? uiBadgeNeutral;
 }
+

@@ -267,7 +267,7 @@ function activityDotClass(status: string | null) {
         case 'running':
             return 'bg-amber-500';
         default:
-            return 'bg-zinc-400';
+            return 'bg-muted-foreground/60';
     }
 }
 
@@ -570,7 +570,7 @@ export default function SystemSettingsIndex() {
         >
             <Head title="System Settings" />
 
-            <div className="min-h-[calc(100vh-64px)] w-full bg-slate-50">
+            <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10">
                 <div className="w-full px-4 py-6 md:px-6 md:py-8 lg:px-10 xl:px-12">
                     <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
@@ -580,7 +580,7 @@ export default function SystemSettingsIndex() {
                                 </h1>
                                 <Badge
                                     variant="secondary"
-                                    className="rounded-full border border-border/70 bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-800 shadow-none"
+                                    className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-semibold text-foreground shadow-none"
                                 >
                                     <Shield className="mr-1.5 h-3.5 w-3.5" />
                                     Admin control

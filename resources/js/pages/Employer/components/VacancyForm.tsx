@@ -4,6 +4,13 @@ import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
 import { RichTextEditor } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import type { Vacancy } from '../dummyData';
 
 type VacancyFormProps = {
@@ -67,46 +74,58 @@ export function VacancyForm({ vacancy, options, action, method, submitLabel }: V
                 </FormField>
 
                 <FormField label="Category" error={form.errors.category}>
-                    <select 
-                        value={form.data.category} 
-                        onChange={(event) => form.setData('category', event.target.value)} 
-                        className={underlinedInput}
+                    <Select
+                        value={form.data.category || '__empty__'}
+                        onValueChange={(value) => form.setData('category', value === '__empty__' ? '' : value)}
                     >
-                        <option value="">Select category</option>
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="__empty__">Select category</SelectItem>
                         {options.categories.map((category) => (
-                            <option key={category} value={category}>
+                            <SelectItem key={category} value={category}>
                                 {category.replace(/_/g, ' ')}
-                            </option>
+                            </SelectItem>
                         ))}
-                    </select>
+                        </SelectContent>
+                    </Select>
                 </FormField>
 
                 <FormField label="Employment Type" error={form.errors.employment_type}>
-                    <select 
-                        value={form.data.employment_type} 
-                        onChange={(event) => form.setData('employment_type', event.target.value)} 
-                        className={underlinedInput}
+                    <Select
+                        value={form.data.employment_type}
+                        onValueChange={(value) => form.setData('employment_type', value)}
                     >
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
                         {options.employment_types.map((type) => (
-                            <option key={type} value={type}>
+                            <SelectItem key={type} value={type}>
                                 {type.replace(/_/g, ' ')}
-                            </option>
+                            </SelectItem>
                         ))}
-                    </select>
+                        </SelectContent>
+                    </Select>
                 </FormField>
 
                 <FormField label="Work Mode" error={form.errors.work_mode}>
-                    <select 
-                        value={form.data.work_mode} 
-                        onChange={(event) => form.setData('work_mode', event.target.value)} 
-                        className={underlinedInput}
+                    <Select
+                        value={form.data.work_mode}
+                        onValueChange={(value) => form.setData('work_mode', value)}
                     >
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
                         {options.work_modes.map((mode) => (
-                            <option key={mode} value={mode}>
+                            <SelectItem key={mode} value={mode}>
                                 {mode.replace(/_/g, ' ')}
-                            </option>
+                            </SelectItem>
                         ))}
-                    </select>
+                        </SelectContent>
+                    </Select>
                 </FormField>
 
                 <FormField label="Location" error={form.errors.location}>
@@ -211,4 +230,6 @@ function FormField({
 }
 
 const underlinedInput = 
-    "w-full bg-transparent border-0 border-b border-zinc-200/50 focus:ring-0 focus:border-black px-0 py-2 transition-all text-black placeholder:text-zinc-300 font-medium text-sm outline-none appearance-none";
+    "w-full bg-transparent border-0 border-b border-zinc-200/50 focus:ring-0 focus:border-black px-0 py-2 text-sm text-black placeholder:text-zinc-300 outline-none appearance-none transition-all";
+const selectTriggerClass =
+    "h-auto w-full rounded-none border-0 border-b border-zinc-200/50 bg-transparent px-0 py-2 text-sm text-black shadow-none focus:ring-0 focus:ring-offset-0";

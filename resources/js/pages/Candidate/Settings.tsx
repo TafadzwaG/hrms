@@ -13,7 +13,8 @@ import {
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { CandidateHubLayout } from './components/hub';
+import { Checkbox } from '@/components/ui/checkbox';
+import { candidateBreadcrumbs, CandidateHubLayout } from './components/hub';
 import type { CandidateSettings, CandidateUser } from './dummyData';
 
 type PageProps = {
@@ -65,21 +66,11 @@ export default function CandidateSettingsPage() {
             active="settings"
             subtitle='Configure your account.'
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('Settings')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Page Header (Asymmetric Layout) */}
-                <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Account Configuration.</h1>
-                        <p className="text-zinc-500 font-medium text-sm max-w-lg">Manage your discovery preferences and notification architecture.</p>
-                    </div>
-                    <div className="text-left md:text-right">
-                        <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-zinc-400 px-2 py-1 border border-zinc-200 rounded-sm">Node_ID: 0x82f1a</span>
-                    </div>
-                </div>
-
+            <div className="space-y-6">
                 {/* Main Preferences Card */}
-                <div className="bg-white shadow-sm rounded-sm overflow-hidden border border-zinc-200">
+                <div className="overflow-hidden rounded-lg border border-border/70 bg-background/95 shadow-sm">
                     <div className="p-6 border-b border-zinc-200">
                         <div className="flex items-center gap-2 mb-8">
                             <Settings className="text-black h-4 w-4" />
@@ -113,19 +104,13 @@ export default function CandidateSettingsPage() {
                     </div>
 
                     {/* Work Modes Section */}
-                    <div className="p-6 bg-zinc-50 border-b border-zinc-200">
+                    <div className="border-b border-zinc-200 bg-muted/20 p-6">
                         <h3 className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 mb-4">Preferred Work Modes</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             {workModes.map((mode) => {
                                 const isChecked = form.data.preferred_work_modes.includes(mode);
                                 return (
                                     <label key={mode} className="relative cursor-pointer block">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only" 
-                                            checked={isChecked}
-                                            onChange={() => toggleWorkMode(mode)}
-                                        />
                                         <div className={`flex items-center justify-between px-4 py-3 border rounded-sm transition-all duration-200 ${getModeStyles(mode, isChecked)}`}>
                                             <div className="flex items-center gap-2.5">
                                                 {getModeIcon(mode)}
@@ -133,7 +118,11 @@ export default function CandidateSettingsPage() {
                                                     {mode.replace(/_/g, ' ')}
                                                 </span>
                                             </div>
-                                            <CheckCircle2 className={`h-4 w-4 transition-opacity ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
+                                            <Checkbox
+                                                checked={isChecked}
+                                                onCheckedChange={() => toggleWorkMode(mode)}
+                                                className={isChecked ? 'border-white data-[state=checked]:border-white data-[state=checked]:bg-white data-[state=checked]:text-black' : ''}
+                                            />
                                         </div>
                                     </label>
                                 );
@@ -154,15 +143,15 @@ export default function CandidateSettingsPage() {
                 </div>
 
                 {/* Bento-style utility bits */}
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-zinc-50 p-5 border border-zinc-200 rounded-sm flex gap-3 items-start">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                         <Info className="text-zinc-400 h-4 w-4 shrink-0 mt-0.5" />
                         <div>
                             <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-black">System Integrity</h4>
                             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">Changes are synced across all active sessions in real-time. Last updated recently.</p>
                         </div>
                     </div>
-                    <div className="bg-zinc-50 p-5 border border-zinc-200 rounded-sm flex gap-3 items-start">
+                    <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                         <ShieldCheck className="text-zinc-400 h-4 w-4 shrink-0 mt-0.5" />
                         <div>
                             <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-black">Privacy Protocol</h4>
@@ -200,16 +189,11 @@ function CustomToggleRow({
                     <p className="text-zinc-500 text-xs mt-1 max-w-md">{description}</p>
                 </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer pt-0.5 shrink-0">
-                <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
-                    checked={checked}
-                    onChange={(e) => onChange(e.target.checked)}
-                />
-                {/* Changed peer-checked:bg-black to peer-checked:bg-emerald-500 */}
-                <div className="w-9 h-5 bg-zinc-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 transition-colors"></div>
-            </label>
+            <Checkbox
+                checked={checked}
+                onCheckedChange={(value) => onChange(value === true)}
+                className="mt-0.5 shrink-0"
+            />
         </div>
     );
 }

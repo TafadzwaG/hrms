@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AttendanceRecord;
 use App\Models\CandidateProfile;
+use App\Models\CompanyProfile;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Employee;
@@ -20,6 +21,7 @@ use App\Models\Position;
 use App\Models\Role;
 use App\Models\Timesheet;
 use App\Models\User;
+use App\Models\Vacancy;
 use App\Models\WorkflowDefinition;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -663,6 +665,8 @@ class DashboardController extends Controller
         $candidateStatus = $this->countBy(CandidateProfile::query(), 'status');
         $candidateStage = $this->countBy(CandidateProfile::query(), 'stage');
         $activeCandidates = $candidateStatus['ACTIVE'] ?? 0;
+        $companyStatus = $this->countBy(CompanyProfile::query(), 'status');
+        $activeEmployers = $companyStatus['active'] ?? 0;
 
         $recentCandidates = CandidateProfile::query()
             ->with('requisition:requisition_code,title')
@@ -673,8 +677,22 @@ class DashboardController extends Controller
                 $candidate->full_name,
                 $candidate->requisition?->title ?? ($candidate->requisition_code ?: 'Unlinked candidate'),
                 $candidate->email ?: 'Email not provided',
-                '/candidates/'.$candidate->id,
+                '/candidate-profiles/'.$candidate->id,
                 $this->humanize($candidate->stage)
+            ))
+            ->all();
+
+        $recentEmployers = CompanyProfile::query()
+            ->withCount('vacancies')
+            ->orderByDesc('updated_at')
+            ->limit(5)
+            ->get()
+            ->map(fn (CompanyProfile $company) => $this->record(
+                $company->company_name,
+                $company->industry ? $this->humanize($company->industry) : 'Employer profile',
+                number_format((int) ($company->vacancies_count ?? 0)).' vacancies posted',
+                '/company-profiles/'.$company->id,
+                $this->humanize($company->status)
             ))
             ->all();
 
@@ -774,7 +792,7 @@ class DashboardController extends Controller
                 'candidate_profiles',
                 'Candidate profiles',
                 'talent',
-                '/candidates',
+                '/candidate-profiles',
                 CandidateProfile::count(),
                 sprintf('%s active candidates, %s already hired', number_format($activeCandidates), number_format($candidateStatus['HIRED'] ?? 0)),
                 [
@@ -784,6 +802,25 @@ class DashboardController extends Controller
                 ],
                 $this->asBreakdown($candidateStage),
                 $recentCandidates
+            ),
+            'company_profiles' => $this->moduleDetail(
+                'company_profiles',
+                'Employer profiles',
+                'talent',
+                '/company-profiles',
+                CompanyProfile::count(),
+                sprintf(
+                    '%s active employers, %s under review',
+                    number_format($activeEmployers),
+                    number_format($companyStatus['pending_review'] ?? 0)
+                ),
+                [
+                    number_format($companyStatus['suspended'] ?? 0).' employer accounts suspended',
+                    number_format(Vacancy::query()->count()).' vacancies linked to employer profiles',
+                    number_format($companyStatus['rejected'] ?? 0).' employers rejected during review',
+                ],
+                $this->asBreakdown($companyStatus),
+                $recentEmployers
             ),
             'onboarding_tasks' => $this->moduleDetail(
                 'onboarding_tasks',
@@ -854,7 +891,8 @@ class DashboardController extends Controller
                 'module_keys' => array_keys($modules),
                 'metrics' => [
                     $this->metric('open_requisitions', 'Open requisitions', $openRequisitions, 'Roles still open for hiring', '/job-requisitions'),
-                    $this->metric('active_candidates', 'Active candidates', $activeCandidates, 'Candidates still progressing through hiring', '/candidates'),
+                    $this->metric('active_candidates', 'Active candidates', $activeCandidates, 'Candidates still progressing through hiring', '/candidate-profiles'),
+                    $this->metric('active_employers', 'Active employers', $activeEmployers, 'Employers currently approved to recruit', '/company-profiles'),
                     $this->metric('overdue_onboarding', 'Overdue onboarding', $overdueOnboardingTasks, 'Tasks past due and not marked done', '/onboarding-tasks'),
                     $this->metric('reviews_in_flight', 'Reviews in flight', $reviewsInFlight, 'Planned or in-review performance cycles', '/performance-reviews'),
                 ],
@@ -886,6 +924,16 @@ class DashboardController extends Controller
                         'description' => 'Most recent requisitions added to the hiring queue.',
                         'items' => $recentRequisitions,
                     ],
+                    'candidate_watch' => [
+                        'title' => 'Candidate watch',
+                        'description' => 'Recent candidate profiles linked to the recruitment admin list.',
+                        'items' => $recentCandidates,
+                    ],
+                    'employer_watch' => [
+                        'title' => 'Employer watch',
+                        'description' => 'Recent employer profiles linked to recruitment admin.',
+                        'items' => $recentEmployers,
+                    ],
                     'onboarding_watch' => [
                         'title' => 'Lifecycle watch',
                         'description' => 'Near-term onboarding and offboarding tasks requiring coordination.',
@@ -895,6 +943,7 @@ class DashboardController extends Controller
                 'meta' => [
                     'open_requisitions' => $openRequisitions,
                     'active_candidates' => $activeCandidates,
+                    'active_employers' => $activeEmployers,
                     'overdue_onboarding_tasks' => $overdueOnboardingTasks,
                     'blocked_offboarding_tasks' => $blockedOffboardingTasks,
                     'overdue_lifecycle_tasks' => $overdueOnboardingTasks + $blockedOffboardingTasks,

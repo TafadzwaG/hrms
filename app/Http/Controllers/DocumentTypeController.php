@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentType;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,12 +16,19 @@ class DocumentTypeController extends Controller
     {
         $search = trim((string) $request->input('search', ''));
         $sensitivity = (string) $request->input('sensitivity_level', 'all');
+        $sortMap = [
+            'name' => 'name',
+            'code' => 'code',
+            'sensitivity_level' => 'sensitivity_level',
+            'documents_count' => 'documents_count',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $documentTypes = DocumentType::query()
             ->withCount('documents')
             ->search($search)
             ->sensitivity($sensitivity)
-            ->orderBy('name')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(10)
             ->withQueryString();
 
@@ -31,6 +39,8 @@ class DocumentTypeController extends Controller
             'filters' => [
                 'search' => $search,
                 'sensitivity_level' => $sensitivity,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'sensitivityOptions' => $this->sensitivityOptions(),
             'stats' => [

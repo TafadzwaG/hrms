@@ -79,7 +79,7 @@ export default function EmployerRegister() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12 font-sans">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12 font-sans">
             <Head
                 title={
                     setupMode
@@ -89,16 +89,16 @@ export default function EmployerRegister() {
             />
 
             <div className="mb-8 flex flex-col items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
-                    <AppLogoIcon className="h-6 w-6 fill-white" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground">
+                    <AppLogoIcon className="h-6 w-6 fill-background" />
                 </div>
                 <div className="text-center">
-                    <h1 className="text-xl font-bold text-slate-900">
+                    <h1 className="text-xl font-bold text-foreground">
                         {setupMode
                             ? 'Complete your company profile'
                             : 'Register your company'}
                     </h1>
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-muted-foreground">
                         {setupMode
                             ? 'Finish setting up the Employer Hub'
                             : 'Join the HRX Employer Network'}
@@ -109,42 +109,42 @@ export default function EmployerRegister() {
             <div className="mb-8 flex items-center gap-0">
                 <div className="flex flex-col items-center">
                     <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${step >= 1 ? 'bg-slate-900 text-white' : 'border-2 border-slate-300 text-slate-400'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${step >= 1 ? 'bg-foreground text-background' : 'border-2 border-border text-muted-foreground'}`}
                     >
                         1
                     </div>
-                    <span className="mt-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+                    <span className="mt-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Account
                     </span>
                 </div>
                 <div
-                    className={`mx-3 mt-[-14px] h-0.5 w-16 transition-colors ${step >= 2 ? 'bg-slate-900' : 'bg-slate-200'}`}
+                    className={`mx-3 mt-[-14px] h-0.5 w-16 transition-colors ${step >= 2 ? 'bg-foreground' : 'bg-border'}`}
                 />
                 <div className="flex flex-col items-center">
                     <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${step >= 2 ? 'bg-slate-900 text-white' : 'border-2 border-slate-300 text-slate-400'}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${step >= 2 ? 'bg-foreground text-background' : 'border-2 border-border text-muted-foreground'}`}
                     >
                         2
                     </div>
-                    <span className="mt-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+                    <span className="mt-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                         Company
                     </span>
                 </div>
             </div>
 
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-10">
                 <form onSubmit={submit} className="flex flex-col gap-5">
                     {step === 1 && (
                         <>
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="name"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Your Full Name
                                 </Label>
                                 <div className="relative">
-                                    <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="name"
                                         type="text"
@@ -165,12 +165,12 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="email"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Work Email
                                 </Label>
                                 <div className="relative">
-                                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="email"
                                         type="email"
@@ -192,12 +192,12 @@ export default function EmployerRegister() {
                                     <div className="grid gap-2">
                                         <Label
                                             htmlFor="password"
-                                            className="text-slate-700"
+                                            className="text-foreground"
                                         >
                                             Password
                                         </Label>
                                         <div className="relative">
-                                            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 id="password"
                                                 type="password"
@@ -217,12 +217,12 @@ export default function EmployerRegister() {
                                     <div className="grid gap-2">
                                         <Label
                                             htmlFor="password_confirmation"
-                                            className="text-slate-700"
+                                            className="text-foreground"
                                         >
                                             Confirm Password
                                         </Label>
                                         <div className="relative">
-                                            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 id="password_confirmation"
                                                 type="password"
@@ -264,12 +264,12 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="company_name"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Company Name
                                 </Label>
                                 <div className="relative">
-                                    <Building2 className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Building2 className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="company_name"
                                         type="text"
@@ -291,7 +291,7 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="industry"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Industry
                                 </Label>
@@ -320,7 +320,7 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="registration_number"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Registration Number
                                 </Label>
@@ -343,12 +343,12 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="company_email"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Company Email
                                 </Label>
                                 <div className="relative">
-                                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="company_email"
                                         type="email"
@@ -369,7 +369,7 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="company_phone"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Company Phone
                                 </Label>
@@ -391,12 +391,12 @@ export default function EmployerRegister() {
                             <div className="grid gap-2">
                                 <Label
                                     htmlFor="website"
-                                    className="text-slate-700"
+                                    className="text-foreground"
                                 >
                                     Website
                                 </Label>
                                 <div className="relative">
-                                    <Globe className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <Globe className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="website"
                                         type="url"
@@ -427,7 +427,7 @@ export default function EmployerRegister() {
                                 <button
                                     type="button"
                                     onClick={() => setStep(1)}
-                                    className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
+                                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                                 >
                                     Back
                                 </button>
@@ -440,10 +440,10 @@ export default function EmployerRegister() {
                     <>
                         <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-slate-200" />
+                                <div className="w-full border-t border-border" />
                             </div>
                             <div className="relative flex justify-center text-xs">
-                                <span className="bg-white px-3 tracking-wide text-slate-400 uppercase">
+                                <span className="bg-card px-3 tracking-wide text-muted-foreground uppercase">
                                     Or continue with
                                 </span>
                             </div>
@@ -451,7 +451,7 @@ export default function EmployerRegister() {
 
                         <button
                             type="button"
-                            className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                            className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted/50"
                         >
                             Sign up with Google
                         </button>
@@ -460,11 +460,11 @@ export default function EmployerRegister() {
             </div>
 
             {!setupMode && (
-                <p className="mt-6 text-center text-sm text-slate-500">
+                <p className="mt-6 text-center text-sm text-muted-foreground">
                     Already have an account?{' '}
                     <Link
                         href="/employer/login"
-                        className="font-semibold text-slate-900 hover:underline"
+                        className="font-semibold text-foreground hover:underline"
                     >
                         Log in
                     </Link>

@@ -2,7 +2,11 @@ import { Link, usePage } from '@inertiajs/react';
 import { Briefcase, Lightbulb, HelpCircle, History, ArrowLeft, Activity } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { EmployerHubLayout, EmployerStatusBadge } from './components/hub';
+import {
+    employerBreadcrumbs,
+    EmployerHubLayout,
+    EmployerStatusBadge,
+} from './components/hub';
 import { VacancyForm } from './components/VacancyForm';
 import type { Company, User, Vacancy } from './dummyData';
 
@@ -28,23 +32,21 @@ export default function EmployerVacancyEditPage() {
             active="vacancies"
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs(
+                { title: 'Vacancies', href: '/employer/vacancies' },
+                { title: vacancy.title, href: `/employer/vacancies/${vacancy.id}` },
+                'Edit Vacancy',
+            )}
+            headerActions={
+                <Link href={`/employer/vacancies/${vacancy.id}`}>
+                    <Button className="h-auto rounded-md px-4 py-2.5 text-xs shadow-sm">
+                        <ArrowLeft className="mr-2 h-3.5 w-3.5" />
+                        Back to vacancy
+                    </Button>
+                </Link>
+            }
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Header Section aligned with dense aesthetic */}
-                <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Edit Vacancy.</h1>
-                        <p className="text-zinc-500 max-w-2xl text-xs font-medium tracking-tight">
-                            Update vacancy content without changing the current dashboard structure.
-                        </p>
-                    </div>
-                    <Link href={`/employer/vacancies/${vacancy.id}`}>
-                        <Button className="bg-black hover:bg-zinc-800 text-white text-[9px] font-bold uppercase tracking-widest px-4 py-2.5 h-auto rounded-sm flex items-center gap-1.5 transition-colors">
-                            <ArrowLeft className="h-3.5 w-3.5" /> Back to Vacancy
-                        </Button>
-                    </Link>
-                </header>
-
+            <div className="space-y-6">
                 {/* Main Grid - Preserving original layout structure */}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
                     

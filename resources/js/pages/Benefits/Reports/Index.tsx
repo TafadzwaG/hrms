@@ -1,3 +1,4 @@
+import type { ElementType } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,7 +27,7 @@ type ReportConfig = {
     key: string;
     title: string;
     description: string;
-    icon: React.ElementType;
+    icon: ElementType;
     endpoint: string;
 };
 
@@ -108,27 +109,27 @@ export default function BenefitsReports() {
         >
             <Head title="Benefits Reports" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
                 <div className="space-y-1">
-                    <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+                    <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">
                         Benefits Reports
                     </h1>
-                    <p className="text-lg text-zinc-500">
+                    <p className="text-sm font-medium text-muted-foreground">
                         Generate and download benefits management reports.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {reports.map((report) => (
-                        <Card key={report.key} className="border-zinc-200 shadow-sm transition-all hover:shadow-md">
-                            <CardHeader className="bg-muted/30">
-                                <CardTitle className="flex items-center gap-2 text-lg">
+                        <Card key={report.key} className="border-border bg-background shadow-sm transition-shadow hover:shadow-md">
+                            <CardHeader className="border-b border-border/70 bg-muted/10">
+                                <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
                                     <report.icon className="h-5 w-5 text-muted-foreground" />
                                     {report.title}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4 p-6">
-                                <p className="text-sm text-zinc-500 leading-relaxed">
+                                <p className="text-sm leading-relaxed text-muted-foreground">
                                     {report.description}
                                 </p>
                                 <div className="flex items-center gap-3">
@@ -138,7 +139,7 @@ export default function BenefitsReports() {
                                             setFormats((prev) => ({ ...prev, [report.key]: v }))
                                         }
                                     >
-                                        <SelectTrigger className="h-9 w-24 border-zinc-200">
+                                        <SelectTrigger className="h-9 w-24 border-border bg-background">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>

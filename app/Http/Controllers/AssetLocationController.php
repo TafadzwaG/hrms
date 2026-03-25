@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssetLocation;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,19 +14,30 @@ class AssetLocationController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $sortMap = [
+            'name' => 'name',
+            'code' => 'code',
+            'building' => 'building',
+            'assets_count' => 'assets_count',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $locations = AssetLocation::query()
             ->withCount('assets')
             ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('code', 'like', "%{$search}%")
                 ->orWhere('building', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->withQueryString();
 
         return Inertia::render('AssetLocations/Index', [
             'locations' => $locations,
-            'filters' => ['search' => $search],
+            'filters' => [
+                'search' => $search,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
+            ],
         ]);
     }
 

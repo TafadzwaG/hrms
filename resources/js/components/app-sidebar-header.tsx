@@ -1,12 +1,18 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { DashboardThemeToggle } from '@/components/dashboard-theme-toggle';
 import { OrganizationSwitcher } from '@/components/organization-switcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import type { ReactNode } from 'react';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
+    rightSlot,
+    showOrganizationSwitcher = true,
 }: {
     breadcrumbs?: BreadcrumbItemType[];
+    rightSlot?: ReactNode;
+    showOrganizationSwitcher?: boolean;
 }) {
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/40 bg-background/70 px-6 backdrop-blur-sm transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
@@ -15,8 +21,12 @@ export function AppSidebarHeader({
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            <div className="ml-auto">
-                <OrganizationSwitcher />
+            <div className="ml-auto flex items-center gap-2">
+                {showOrganizationSwitcher ? (
+                    <OrganizationSwitcher />
+                ) : null}
+                {rightSlot}
+                <DashboardThemeToggle />
             </div>
         </header>
     );

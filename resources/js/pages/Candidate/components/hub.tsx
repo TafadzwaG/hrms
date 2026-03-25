@@ -1,61 +1,79 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { HubSidebarLayout, type HubNavGroup } from '@/components/hub-shell';
+import type { BreadcrumbItem, NavItem } from '@/types';
+import {
+    Activity,
     Bell,
     Briefcase,
     FileText,
+    Gauge,
     GraduationCap,
     LayoutDashboard,
-    LogOut,
-    Menu,
     Search,
     Settings,
     ShieldCheck,
+    Sparkles,
     User,
     Wrench,
-    X,
     Zap,
 } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-import { Button } from '@/components/ui/button';
 import type { CandidateUser } from '../dummyData';
 
 export const candidateStatusColor: Record<string, string> = {
-    submitted: 'bg-zinc-100 text-zinc-600 border-zinc-200',
-    shortlisted: 'bg-zinc-200 text-black border-zinc-300',
-    interview: 'bg-zinc-800 text-white border-black',
-    offered: 'bg-zinc-900 text-white border-black',
-    hired: 'bg-black text-white border-black',
-    rejected: 'bg-white text-zinc-400 border-zinc-200',
-    withdrawn: 'bg-white text-zinc-400 border-zinc-200',
-    under_review: 'bg-zinc-100 text-zinc-600 border-zinc-200',
+    submitted: 'border-border bg-muted text-muted-foreground',
+    shortlisted: 'border-border bg-muted text-foreground',
+    interview: 'border-primary/40 bg-primary text-primary-foreground',
+    offered: 'border-primary/40 bg-primary text-primary-foreground',
+    hired: 'border-primary/40 bg-primary text-primary-foreground',
+    rejected: 'border-border bg-background text-muted-foreground',
+    withdrawn: 'border-border bg-background text-muted-foreground',
+    under_review: 'border-border bg-muted text-muted-foreground',
 };
 
 export const candidateVisibilityColor: Record<string, string> = {
-    active: 'bg-black text-white border-black',
-    draft: 'bg-zinc-100 text-zinc-500 border-zinc-200',
-    expired: 'bg-zinc-100 text-zinc-400 border-zinc-200',
-    pending_payment: 'bg-zinc-200 text-zinc-700 border-zinc-300',
+    active: 'border-primary/40 bg-primary text-primary-foreground',
+    draft: 'border-border bg-muted text-muted-foreground',
+    expired: 'border-border bg-muted text-muted-foreground',
+    pending_payment: 'border-border bg-muted text-foreground',
 };
 
 export const candidateSkillLevelColor: Record<string, string> = {
-    beginner: 'bg-zinc-50 text-zinc-500',
-    intermediate: 'bg-zinc-100 text-zinc-600',
-    advanced: 'bg-zinc-200 text-zinc-800',
-    expert: 'bg-black text-white',
+    beginner: 'bg-muted text-muted-foreground',
+    intermediate: 'bg-muted text-foreground',
+    advanced: 'bg-secondary text-secondary-foreground',
+    expert: 'bg-primary text-primary-foreground',
 };
 
 type CandidateHubLayoutProps = {
     title: string;
     subtitle?: string;
-    active: 'dashboard' | 'applications' | 'jobs' | 'profile' | 'documents' | 'education' | 'skills' | 'settings';
+    active:
+        | 'dashboard'
+        | 'applications'
+        | 'jobs'
+        | 'profile'
+        | 'documents'
+        | 'education'
+        | 'skills'
+        | 'settings';
     candidate: CandidateUser;
     completeness?: number;
     children: ReactNode;
     headerActions?: ReactNode;
+    breadcrumbs: BreadcrumbItem[];
 };
 
-const candidateLinks = {
+export const candidateLinks = {
     dashboard: '/candidate/dashboard',
     applications: '/candidate/applications',
     jobs: '/candidate/jobs',
@@ -64,7 +82,27 @@ const candidateLinks = {
     education: '/candidate/education',
     skills: '/candidate/skills',
     settings: '/candidate/settings',
-};
+} as const;
+
+export function candidateBreadcrumbs(
+    ...items: Array<string | BreadcrumbItem>
+): BreadcrumbItem[] {
+    const root: BreadcrumbItem = {
+        title: 'Dashboard',
+        href: candidateLinks.dashboard,
+    };
+
+    if (items.length === 0) {
+        return [root];
+    }
+
+    return [
+        root,
+        ...items.map((item) =>
+            typeof item === 'string' ? { title: item } : item,
+        ),
+    ];
+}
 
 export function CandidateHubLayout({
     title,
@@ -74,200 +112,143 @@ export function CandidateHubLayout({
     completeness,
     children,
     headerActions,
+    breadcrumbs,
 }: CandidateHubLayoutProps) {
-    const [mobileNavOpen, setMobileNavOpen] = useState(false);
+    const primaryItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: candidateLinks.dashboard,
+            icon: LayoutDashboard,
+        },
+        {
+            title: 'My Applications',
+            href: candidateLinks.applications,
+            icon: Briefcase,
+        },
+        {
+            title: 'Browse Jobs',
+            href: candidateLinks.jobs,
+            icon: Search,
+        },
+    ];
 
-    const handleLogout = () => router.post('/logout');
-    const closeMobileNav = () => setMobileNavOpen(false);
+    const secondaryGroups: HubNavGroup[] = [
+        {
+            title: 'Profile',
+            icon: User,
+            items: [
+                {
+                    title: 'My Profile',
+                    href: candidateLinks.profile,
+                    icon: User,
+                },
+                {
+                    title: 'Documents',
+                    href: candidateLinks.documents,
+                    icon: FileText,
+                },
+            ],
+        },
+        {
+            title: 'Career',
+            icon: GraduationCap,
+            items: [
+                {
+                    title: 'Education',
+                    href: candidateLinks.education,
+                    icon: GraduationCap,
+                },
+                {
+                    title: 'Skills',
+                    href: candidateLinks.skills,
+                    icon: Wrench,
+                },
+                {
+                    title: 'Settings',
+                    href: candidateLinks.settings,
+                    icon: Settings,
+                },
+            ],
+        },
+    ];
 
     return (
-        <div className="flex h-screen overflow-hidden bg-[#f9f9f9] font-['Inter'] antialiased text-zinc-950">
-            <Head title={`${title} - Candidate Hub`} />
+        <HubSidebarLayout
+            headTitle={`${title} - Candidate Hub`}
+            title={title}
+            subtitle={subtitle}
+            breadcrumbs={breadcrumbs}
+            badge="Candidate hub"
+            heroMeta={
+                <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                        variant="outline"
+                        className="h-7 rounded-md border border-border bg-background px-2.5 text-[11px] text-muted-foreground shadow-none"
+                    >
+                        <User className="mr-1.5 h-3.5 w-3.5" />
+                        Workspace
+                    </Badge>
 
-            <aside className="hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 lg:flex z-50">
-                <div className="px-5 py-6">
-                    <Link href="/" className="flex items-center gap-2">
-                        <Zap className="h-6 w-6 text-black" fill="currentColor" />
-                        <span className="text-xl font-black uppercase tracking-tighter text-black">HRX Hub</span>
-                    </Link>
-                </div>
-
-                <CandidateSidebarContent active={active} candidate={candidate} onLogout={handleLogout} />
-            </aside>
-
-            {mobileNavOpen ? (
-                <div className="fixed inset-0 z-50 lg:hidden">
-                    <button
-                        type="button"
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                        onClick={closeMobileNav}
-                        aria-label="Close navigation"
-                    />
-
-                    <aside className="relative flex h-full w-72 flex-col border-r border-zinc-200 bg-white shadow-2xl">
-                        <div className="flex items-center justify-between border-b border-zinc-100 p-6">
-                            <Link href="/" className="flex items-center gap-2" onClick={closeMobileNav}>
-                                <Zap className="h-5 w-5 text-black" fill="currentColor" />
-                                <span className="text-lg font-black uppercase tracking-tighter text-black">HRX Hub</span>
-                            </Link>
-
-                            <Button type="button" variant="ghost" size="icon" onClick={closeMobileNav}>
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-
-                        <CandidateSidebarContent active={active} candidate={candidate} onNavigate={closeMobileNav} onLogout={handleLogout} />
-                    </aside>
-                </div>
-            ) : null}
-
-            <main className="flex flex-1 flex-col overflow-hidden">
-                <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white/80 px-5 backdrop-blur-md lg:px-8">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="lg:hidden"
-                            onClick={() => setMobileNavOpen(true)}
-                            aria-label="Open navigation"
+                    {candidate.is_verified ? (
+                        <Badge
+                            variant="outline"
+                            className="h-7 rounded-md border border-border bg-background px-2.5 text-[11px] text-muted-foreground shadow-none"
                         >
-                            <Menu className="h-5 w-5" />
-                        </Button>
+                            <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+                            Verified
+                        </Badge>
+                    ) : null}
 
-                        <div className="hidden md:block">
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-2xl font-semibold tracking-tight text-black">{title}</h1>
-                                {candidate.is_verified ? (
-                                    <span className="flex items-center gap-1 rounded border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-                                        <ShieldCheck className="h-3 w-3" />
-                                        Verified
-                                    </span>
-                                ) : null}
+                    {candidate.headline ? (
+                        <Badge
+                            variant="outline"
+                            className="h-7 max-w-[220px] rounded-md border border-border bg-background px-2.5 text-[11px] text-muted-foreground shadow-none"
+                        >
+                            <Sparkles className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{candidate.headline}</span>
+                        </Badge>
+                    ) : null}
+
+                    {typeof completeness === 'number' ? (
+                        <div className="flex h-7 items-center gap-2 rounded-md border border-border/70 bg-muted/20 px-2.5">
+                            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                                Profile
+                            </span>
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className="h-full rounded-full bg-primary transition-all"
+                                    style={{ width: `${completeness}%` }}
+                                />
                             </div>
-                            {subtitle ? <p className="text-xs font-medium text-zinc-500">{subtitle}</p> : null}
+                            <span className="text-[11px] font-semibold text-foreground">
+                                {completeness}%
+                            </span>
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="relative hidden sm:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                            <input
-                                className="w-64 rounded-md border-none bg-zinc-100 py-1.5 pl-9 pr-4 text-sm outline-none placeholder:text-zinc-400 focus:ring-1 focus:ring-black"
-                                placeholder="Search jobs, companies..."
-                            />
-                        </div>
-
-                        {completeness !== undefined ? (
-                            <div className="hidden items-center gap-3 sm:flex">
-                                <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-400">Profile</span>
-                                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200">
-                                    <div className="h-full bg-black transition-all duration-500" style={{ width: `${completeness}%` }} />
-                                </div>
-                                <span className="font-mono text-xs font-bold text-black">{completeness}%</span>
-                            </div>
-                        ) : null}
-
-                        <Button type="button" variant="ghost" size="icon" className="text-zinc-400 hover:text-black">
-                            <Bell className="h-5 w-5" />
-                        </Button>
-                        <Button type="button" variant="ghost" size="icon" className="hidden sm:inline-flex text-zinc-400 hover:text-black">
-                            <Settings className="h-5 w-5" />
-                        </Button>
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-black">
-                            {getInitials(candidate.full_name)}
-                        </div>
-                        {headerActions}
-                    </div>
-                </header>
-
-                <div className="no-scrollbar flex-1 overflow-y-auto p-4 md:p-8">{children}</div>
-            </main>
-        </div>
-    );
-}
-
-function CandidateSidebarContent({
-    active,
-    candidate,
-    onNavigate,
-    onLogout,
-}: {
-    active: CandidateHubLayoutProps['active'];
-    candidate: CandidateUser;
-    onNavigate?: (() => void) | undefined;
-    onLogout: () => void;
-}) {
-    return (
-        <div className="flex h-full flex-col justify-between">
-            <div className="space-y-6">
-                <div>
-                    <h3 className="mb-3 px-6 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Candidate Hub</h3>
-                    <nav className="space-y-1 px-3">
-                        <CandidateSidebarLink href={candidateLinks.dashboard} icon={<LayoutDashboard size={18} />} label="Dashboard" active={active === 'dashboard'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.applications} icon={<Briefcase size={18} />} label="My Applications" active={active === 'applications'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.jobs} icon={<Search size={18} />} label="Browse Jobs" active={active === 'jobs'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.profile} icon={<User size={18} />} label="My Profile" active={active === 'profile'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.documents} icon={<FileText size={18} />} label="Documents" active={active === 'documents'} onNavigate={onNavigate} />
-                    </nav>
+                    ) : null}
                 </div>
-
-                <div>
-                    <h3 className="mb-3 px-6 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Career</h3>
-                    <nav className="space-y-1 px-3">
-                        <CandidateSidebarLink href={candidateLinks.education} icon={<GraduationCap size={18} />} label="Education" active={active === 'education'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.skills} icon={<Wrench size={18} />} label="Skills" active={active === 'skills'} onNavigate={onNavigate} />
-                        <CandidateSidebarLink href={candidateLinks.settings} icon={<Settings size={18} />} label="Settings" active={active === 'settings'} onNavigate={onNavigate} />
-                    </nav>
-                </div>
-            </div>
-
-            <div className="mt-auto border-t border-zinc-200 p-4">
-                <div className="mb-4 flex items-center gap-3 px-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-bold text-black">
-                        {getInitials(candidate.full_name)}
-                    </div>
-                    <div className="min-w-0">
-                        <span className="block truncate text-xs font-semibold text-foreground">{candidate.full_name || 'Candidate'}</span>
-                        <span className="block truncate text-[10px] text-zinc-500">{candidate.email}</span>
-                    </div>
-                </div>
-                <button
-                    onClick={onLogout}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:text-red-600"
-                >
-                    <LogOut size={18} />
-                    <span>Sign Out</span>
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function CandidateSidebarLink({
-    href,
-    icon,
-    label,
-    active = false,
-    onNavigate,
-}: {
-    href: string;
-    icon: ReactNode;
-    label: string;
-    active?: boolean;
-    onNavigate?: (() => void) | undefined;
-}) {
-    return (
-        <Link
-            href={href}
-            onClick={onNavigate}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 active:scale-95 ${
-                active ? 'rounded-none border-r-2 border-black bg-zinc-200 text-black' : 'text-zinc-500 hover:bg-zinc-200/50 hover:text-black'
-            }`}
+            }
+            headerActions={headerActions}
+            brand={{
+                title: 'HRX Hub',
+                subtitle: 'Candidate workspace',
+                href: candidateLinks.dashboard,
+                mark: <Zap className="h-4 w-4" fill="currentColor" />,
+            }}
+            navLabel="Candidate Hub"
+            primaryItems={primaryItems}
+            secondaryGroups={secondaryGroups}
+            identity={{
+                name: candidate.full_name || 'Candidate',
+                secondary: candidate.email || 'No email provided',
+                initials: getInitials(candidate.full_name),
+                tertiary: candidate.headline ? (
+                    <p className="truncate">{candidate.headline}</p>
+                ) : null,
+            }}
         >
-            {icon}
-            <span>{label}</span>
-        </Link>
+            {children}
+        </HubSidebarLayout>
     );
 }
 
@@ -275,24 +256,39 @@ export function CandidateSectionCard({
     title,
     icon,
     action,
+    description,
     children,
+    className,
 }: {
     title: string;
     icon?: ReactNode;
     action?: ReactNode;
+    description?: string;
     children: ReactNode;
+    className?: string;
 }) {
     return (
-        <section className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between border-b border-zinc-200 pb-3">
-                <div className="flex items-center gap-2">
-                    {icon ? <span className="text-zinc-400">{icon}</span> : null}
-                    <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">{title}</h3>
+        <Card className={className ?? 'border-border/70 bg-background/95 shadow-sm'}>
+            <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 px-4 py-3">
+                <div className="space-y-0.5">
+                    <CardTitle className="flex items-center gap-2 text-sm font-semibold leading-none">
+                        {icon ? (
+                            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                {icon}
+                            </span>
+                        ) : null}
+                        <span>{title}</span>
+                    </CardTitle>
+                    {description ? (
+                        <CardDescription className="pl-9 text-[11px] leading-4">
+                            {description}
+                        </CardDescription>
+                    ) : null}
                 </div>
                 {action}
-            </div>
-            <div>{children}</div>
-        </section>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 pt-0">{children}</CardContent>
+        </Card>
     );
 }
 
@@ -306,13 +302,24 @@ export function CandidateInfoField({
     icon?: ReactNode;
 }) {
     return (
-        <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-zinc-200 bg-white text-zinc-600">
-                {icon}
-            </div>
-            <div>
-                <p className="mb-1.5 text-xs font-medium uppercase leading-none tracking-widest text-zinc-400">{label}</p>
-                <div className="text-sm font-semibold text-foreground">{value ?? <span className="font-medium italic text-zinc-400">Not provided</span>}</div>
+        <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-muted/10 px-2.5 py-2 transition-colors hover:bg-muted/20">
+            {icon && (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground shadow-sm ring-1 ring-border/50">
+                    {icon}
+                </div>
+            )}
+
+            <div className="flex min-w-0 flex-col">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    {label}
+                </span>
+                <div className="truncate text-[13px] font-medium leading-tight text-foreground">
+                    {value ?? (
+                        <span className="text-[11px] font-normal italic text-muted-foreground/60">
+                            Not provided
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -320,10 +327,50 @@ export function CandidateInfoField({
 
 export function CandidateEmptyState({ message }: { message: string }) {
     return (
-        <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 py-12 text-center">
-            <Briefcase className="mx-auto mb-4 h-10 w-10 text-zinc-300" />
-            <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">{message}</p>
-        </div>
+        <Card className="border-dashed border-border/70 bg-background/80 shadow-sm">
+            <CardContent className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <Bell className="h-4 w-4" />
+                </div>
+                <p className="max-w-lg text-sm leading-5 text-muted-foreground">
+                    {message}
+                </p>
+            </CardContent>
+        </Card>
+    );
+}
+
+export function CandidateMetricCard({
+    icon,
+    label,
+    value,
+    helper,
+}: {
+    icon: ReactNode;
+    label: string;
+    value: string | number;
+    helper: string;
+}) {
+    return (
+        <Card className="border-border/70 bg-background/95 shadow-sm">
+            <CardContent className="flex items-start justify-between gap-3 p-3.5">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                        <Activity className="h-3 w-3" />
+                        {label}
+                    </div>
+                    <div className="text-xl font-semibold leading-none tracking-tight text-foreground">
+                        {value}
+                    </div>
+                    <div className="text-[11px] leading-4 text-muted-foreground">
+                        {helper}
+                    </div>
+                </div>
+                <div className="rounded-md bg-muted p-2 text-muted-foreground">
+                    {icon}
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -350,4 +397,24 @@ export function getInitials(name?: string | null): string {
         .join('')
         .substring(0, 2)
         .toUpperCase();
+}
+
+export function CandidateGhostActionButton({
+    children,
+    className,
+    ...props
+}: ComponentProps<typeof Button>) {
+    return (
+        <Button
+            variant="outline"
+            size="sm"
+            className={
+                className ??
+                'h-7 border-border/70 bg-background px-2.5 text-[11px] font-medium text-foreground shadow-sm hover:bg-muted'
+            }
+            {...props}
+        >
+            {children}
+        </Button>
+    );
 }

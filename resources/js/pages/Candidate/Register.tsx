@@ -109,16 +109,16 @@ export default function CandidateRegister() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-12 font-sans">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12 font-sans">
             <Head title={setupMode ? 'Complete Candidate Setup' : 'Create Account - Candidate Hub'} />
 
             <div className="mb-8 flex flex-col items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900">
-                    <AppLogoIcon className="h-6 w-6 fill-white" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground">
+                    <AppLogoIcon className="h-6 w-6 fill-background" />
                 </div>
                 <div className="text-center">
-                    <h1 className="text-xl font-bold text-slate-900">{setupMode ? 'Complete your candidate profile' : 'Create your account'}</h1>
-                    <p className="mt-1 text-sm text-slate-500">{setupMode ? 'Finish setting up the Candidate Hub' : 'Join the HRX Candidate Hub'}</p>
+                    <h1 className="text-xl font-bold text-foreground">{setupMode ? 'Complete your candidate profile' : 'Create your account'}</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">{setupMode ? 'Finish setting up the Candidate Hub' : 'Join the HRX Candidate Hub'}</p>
                 </div>
             </div>
 
@@ -130,36 +130,36 @@ export default function CandidateRegister() {
                     return (
                         <div key={label} className="flex items-center">
                             <div className="flex flex-col items-center">
-                                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${isActive ? 'bg-slate-900 text-white' : 'border-2 border-slate-300 text-slate-400'}`}>
+                                <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${isActive ? 'bg-foreground text-background' : 'border-2 border-border text-muted-foreground'}`}>
                                     {stepNumber}
                                 </div>
-                                <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+                                <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
                             </div>
                             {index < STEPS.length - 1 ? (
-                                <div className={`mx-3 mt-[-14px] h-0.5 w-16 sm:w-24 transition-colors ${step > stepNumber ? 'bg-slate-900' : 'bg-slate-200'}`} />
+                                <div className={`mx-3 mt-[-14px] h-0.5 w-16 sm:w-24 transition-colors ${step > stepNumber ? 'bg-foreground' : 'bg-border'}`} />
                             ) : null}
                         </div>
                     );
                 })}
             </div>
 
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-10">
                 <form onSubmit={submit} className="flex flex-col gap-5">
                     {step === 1 ? (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name" className="text-slate-700">
+                                <Label htmlFor="name" className="text-foreground">
                                     Full Name
                                 </Label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input id="name" type="text" placeholder="John Doe" value={data.name} onChange={(event) => setData('name', event.target.value)} className="pl-10" required autoFocus />
                                 </div>
                                 <InputError message={errors.name} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email" className="text-slate-700">
+                                <Label htmlFor="email" className="text-foreground">
                                     Email Address
                                 </Label>
                                 <Input id="email" type="email" placeholder="john@example.com" value={data.email} onChange={(event) => setData('email', event.target.value)} required />
@@ -169,14 +169,14 @@ export default function CandidateRegister() {
                             {!setupMode ? (
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="password" className="text-slate-700">
+                                        <Label htmlFor="password" className="text-foreground">
                                             Password
                                         </Label>
                                         <Input id="password" type="password" placeholder="********" value={data.password} onChange={(event) => setData('password', event.target.value)} required />
                                         <InputError message={errors.password} />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="password_confirmation" className="text-slate-700">
+                                        <Label htmlFor="password_confirmation" className="text-foreground">
                                             Confirm Password
                                         </Label>
                                         <Input id="password_confirmation" type="password" placeholder="********" value={data.password_confirmation} onChange={(event) => setData('password_confirmation', event.target.value)} required />
@@ -195,7 +195,7 @@ export default function CandidateRegister() {
                     {step === 2 ? (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="headline" className="text-slate-700">
+                                <Label htmlFor="headline" className="text-foreground">
                                     Headline
                                 </Label>
                                 <Input id="headline" type="text" placeholder="e.g. Senior Software Engineer" value={data.headline} onChange={(event) => setData('headline', event.target.value)} autoFocus />
@@ -203,7 +203,7 @@ export default function CandidateRegister() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="phone" className="text-slate-700">
+                                <Label htmlFor="phone" className="text-foreground">
                                     Phone
                                 </Label>
                                 <Input id="phone" type="tel" placeholder="+263 7x xxx xxxx" value={data.phone} onChange={(event) => setData('phone', event.target.value)} />
@@ -211,7 +211,7 @@ export default function CandidateRegister() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location" className="text-slate-700">
+                                <Label htmlFor="location" className="text-foreground">
                                     Location
                                 </Label>
                                 <Input id="location" type="text" placeholder="e.g. Harare" value={data.location} onChange={(event) => setData('location', event.target.value)} />
@@ -219,7 +219,7 @@ export default function CandidateRegister() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="years_experience" className="text-slate-700">
+                                <Label htmlFor="years_experience" className="text-foreground">
                                     Years of Experience
                                 </Label>
                                 <Input id="years_experience" type="number" min="0" max="50" placeholder="0" value={data.years_experience} onChange={(event) => setData('years_experience', event.target.value)} />
@@ -227,7 +227,7 @@ export default function CandidateRegister() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="highest_education" className="text-slate-700">
+                                <Label htmlFor="highest_education" className="text-foreground">
                                     Highest Education
                                 </Label>
                                 <select id="highest_education" value={data.highest_education} onChange={(event) => setData('highest_education', event.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -241,7 +241,7 @@ export default function CandidateRegister() {
                             </div>
 
                             <div className="mt-2 flex items-center gap-3">
-                                <button type="button" onClick={() => setStep(1)} className="flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
+                                <button type="button" onClick={() => setStep(1)} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                                     <ArrowLeft className="mr-1 h-4 w-4" />
                                     Back
                                 </button>
@@ -256,7 +256,7 @@ export default function CandidateRegister() {
                     {step === 3 ? (
                         <>
                             <div
-                                className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 p-8 text-center transition-colors hover:border-slate-400"
+                                className="cursor-pointer rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-foreground"
                                 onDragOver={(event) => event.preventDefault()}
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
@@ -264,8 +264,8 @@ export default function CandidateRegister() {
                                 {cvFile ? (
                                     <div className="flex flex-col items-center gap-2">
                                         <FileText className="h-10 w-10 text-slate-500" />
-                                        <p className="text-sm font-medium text-slate-700">{cvFile.name}</p>
-                                        <p className="text-xs text-slate-400">{(cvFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                        <p className="text-sm font-medium text-foreground">{cvFile.name}</p>
+                                        <p className="text-xs text-muted-foreground">{(cvFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                                         <button
                                             type="button"
                                             onClick={(event) => {
@@ -279,9 +279,9 @@ export default function CandidateRegister() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center gap-2">
-                                        <Upload className="h-10 w-10 text-slate-400" />
-                                        <p className="text-sm font-medium text-slate-600">Drag and drop your CV here, or click to browse</p>
-                                        <p className="text-xs text-slate-400">PDF, DOC, DOCX (max 5MB)</p>
+                                        <Upload className="h-10 w-10 text-muted-foreground" />
+                                        <p className="text-sm font-medium text-foreground">Drag and drop your CV here, or click to browse</p>
+                                        <p className="text-xs text-muted-foreground">PDF, DOC, DOCX (max 5MB)</p>
                                     </div>
                                 )}
                                 <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={(event) => handleFileChange(event.target.files?.[0] ?? null)} />
@@ -289,7 +289,7 @@ export default function CandidateRegister() {
                             {cvError ? <p className="text-sm text-red-600">{cvError}</p> : null}
 
                             <div className="mt-2 flex items-center gap-3">
-                                <button type="button" onClick={() => setStep(2)} className="flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
+                                <button type="button" onClick={() => setStep(2)} className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                                     <ArrowLeft className="mr-1 h-4 w-4" />
                                     Back
                                 </button>
@@ -299,7 +299,7 @@ export default function CandidateRegister() {
                                 </Button>
                             </div>
 
-                            <button type="button" onClick={submit as never} className="text-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-700">
+                            <button type="button" onClick={submit as never} className="text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
                                 Skip for now
                             </button>
                         </>
@@ -311,23 +311,23 @@ export default function CandidateRegister() {
                 <div className="mt-6 w-full max-w-md">
                     <div className="relative my-4">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-200" />
+                            <div className="w-full border-t border-border" />
                         </div>
                         <div className="relative flex justify-center">
-                            <span className="bg-slate-50 px-3 text-xs font-medium uppercase tracking-wider text-slate-400">Or continue with</span>
+                            <span className="bg-background px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Or continue with</span>
                         </div>
                     </div>
 
-                    <Button type="button" variant="outline" className="w-full border-slate-200 py-5 font-medium text-slate-700 hover:bg-white">
+                    <Button type="button" variant="outline" className="w-full border-border py-5 font-medium text-foreground hover:bg-muted/50">
                         Sign up with Google
                     </Button>
                 </div>
             ) : null}
 
             {!setupMode ? (
-                <p className="mt-6 text-sm text-slate-500">
+                <p className="mt-6 text-sm text-muted-foreground">
                     Already have an account?{' '}
-                    <Link href="/candidate/login" className="font-semibold text-slate-900 hover:underline">
+                    <Link href="/candidate/login" className="font-semibold text-foreground hover:underline">
                         Log in
                     </Link>
                 </p>

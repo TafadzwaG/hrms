@@ -4,10 +4,19 @@ import { useMemo, useState, type ReactNode } from 'react';
 
 import { DocumentPreviewDialog } from '@/components/document-preview-dialog';
 import InputError from '@/components/input-error';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
     CandidateEmptyState,
+    candidateBreadcrumbs,
     CandidateHubLayout,
     formatCandidateDate,
 } from './components/hub';
@@ -54,21 +63,17 @@ export default function CandidateDocumentsPage() {
     return (
         <CandidateHubLayout
             title="Documents"
+            subtitle="Upload resumes, portfolios, and supporting documents."
             active="documents"
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('Documents')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Page Title */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Documents.</h1>
-                    <p className="text-zinc-500 max-w-xl text-sm font-medium">Upload resumes, portfolios, and supporting documents.</p>
-                </div>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Left Column: Upload Section */}
                     <div className="lg:col-span-5 space-y-6">
-                        <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-sm shadow-sm">
+                        <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 pb-3">
                                 <Upload className="h-4 w-4 text-black" />
                                 <h2 className="text-sm font-bold tracking-tight text-black uppercase">Upload Document</h2>
@@ -77,12 +82,12 @@ export default function CandidateDocumentsPage() {
                             <form className="space-y-5">
                                 {/* File Input Styled for Archive Look */}
                                 <FormField label="Select File" error={form.errors.document}>
-                                    <div className="border-2 border-dashed border-zinc-300 bg-white rounded-sm p-5 flex flex-col items-center justify-center text-center hover:bg-zinc-50 hover:border-black transition-all cursor-pointer relative group">
-                                        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                    <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 p-5 text-center transition-all hover:border-foreground/30 hover:bg-muted/30 group">
+                                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm transition-transform group-hover:scale-110">
                                             <Upload className="h-3.5 w-3.5 text-black" />
                                         </div>
                                         <span className="text-xs font-bold text-black block mb-0.5">Choose a file</span>
-                                        <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">PDF, DOCX (Max 10MB)</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">PDF, DOCX (Max 10MB)</span>
                                         <input 
                                             type="file" 
                                             onChange={(event) => form.setData('document', event.target.files?.[0] ?? null)} 
@@ -97,17 +102,21 @@ export default function CandidateDocumentsPage() {
                                 </FormField>
 
                                 <FormField label="Document Type" error={form.errors.document_type}>
-                                    <select 
-                                        value={form.data.document_type} 
-                                        onChange={(event) => form.setData('document_type', event.target.value)} 
-                                        className={underlinedInput}
+                                    <Select
+                                        value={form.data.document_type}
+                                        onValueChange={(value) => form.setData('document_type', value)}
                                     >
+                                        <SelectTrigger className={selectTriggerClass}>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
                                         {documentTypes.map((type) => (
-                                            <option key={type} value={type}>
+                                            <SelectItem key={type} value={type}>
                                                 {type.replace(/_/g, ' ')}
-                                            </option>
+                                            </SelectItem>
                                         ))}
-                                    </select>
+                                        </SelectContent>
+                                    </Select>
                                 </FormField>
 
                                 <FormField label="Description" error={form.errors.description}>
@@ -115,17 +124,16 @@ export default function CandidateDocumentsPage() {
                                         rows={2}
                                         value={form.data.description}
                                         onChange={(event) => form.setData('description', event.target.value)}
-                                        className="w-full bg-transparent border-0 border-b border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none resize-none"
+                                        className="w-full bg-transparent border-0 border-b border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs text-black placeholder:text-zinc-400 appearance-none outline-none resize-none"
                                         placeholder="Briefly describe this version..."
                                     />
                                 </FormField>
 
                                 <label className="flex items-center gap-2 py-1 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={form.data.is_primary}
-                                        onChange={(event) => form.setData('is_primary', event.target.checked)}
-                                        className="h-3.5 w-3.5 rounded-none border-zinc-300 text-black focus:ring-black transition-all cursor-pointer"
+                                        onCheckedChange={(value) => form.setData('is_primary', value === true)}
+                                        className="h-3.5 w-3.5"
                                     />
                                     <span className="text-xs font-bold text-zinc-700 group-hover:text-black">Set as primary document</span>
                                 </label>
@@ -157,7 +165,7 @@ export default function CandidateDocumentsPage() {
                         {documents.length > 0 ? (
                             <div className="space-y-3">
                                 {documents.map((document) => (
-                                    <div key={document.id} className="bg-white p-5 flex flex-col sm:flex-row items-start gap-4 group relative shadow-sm border border-zinc-200 hover:border-black transition-all rounded-sm">
+                                    <div key={document.id} className="group relative flex flex-col items-start gap-4 rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm transition-colors hover:border-border hover:bg-muted/10 sm:flex-row">
                                         <div className="w-10 h-10 bg-zinc-100 flex items-center justify-center rounded-sm shrink-0">
                                             <FileText className="text-black h-5 w-5" />
                                         </div>
@@ -196,10 +204,12 @@ export default function CandidateDocumentsPage() {
 
                                             {/* Actions Row */}
                                             <div className="mt-3 pt-3 border-t border-zinc-100 flex flex-wrap items-center gap-3">
-                                                <button 
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => togglePreview(document.id)}
-                                                    className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors ${
+                                                    className={`h-7 gap-1 px-2 text-[9px] font-bold uppercase tracking-widest ${
                                                         activeDocument?.id === document.id && previewOpen
                                                             ? 'text-black'
                                                             : 'text-zinc-500 hover:text-black'
@@ -207,29 +217,35 @@ export default function CandidateDocumentsPage() {
                                                 >
                                                     <FileText className="h-3 w-3" />
                                                     {activeDocument?.id === document.id && previewOpen ? 'Close Preview' : 'Open Preview'}
-                                                </button>
+                                                </Button>
 
                                                 {!document.is_primary ? (
-                                                    <button 
+                                                    <Button
                                                         type="button"
+                                                        variant="ghost"
+                                                        size="sm"
                                                         onClick={() => form.put(`/candidate/documents/${document.id}/primary`, { preserveScroll: true })}
-                                                        className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors"
+                                                        className="h-7 gap-1 px-2 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-black"
                                                     >
                                                         <Star className="h-3 w-3" /> Set Primary
-                                                    </button>
+                                                    </Button>
                                                 ) : null}
                                                 
-                                                <a href={document.download_url} className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
-                                                    <Download className="h-3 w-3" /> Download
-                                                </a>
+                                                <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2 text-[9px] font-bold uppercase tracking-widest text-zinc-500 hover:text-black">
+                                                    <a href={document.download_url}>
+                                                        <Download className="h-3 w-3" /> Download
+                                                    </a>
+                                                </Button>
                                                 
-                                                <button 
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => window.confirm('Delete this document?') && form.delete(`/candidate/documents/${document.id}`, { preserveScroll: true })}
-                                                    className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors ml-auto sm:ml-0"
+                                                    className="ml-auto h-7 gap-1 px-2 text-[9px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700 sm:ml-0"
                                                 >
                                                     <Trash2 className="h-3 w-3" /> Delete
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -258,4 +274,5 @@ function FormField({ label, error, children, className }: { label: string; error
     );
 }
 
-const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none";
+const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-300 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs text-black placeholder:text-zinc-400 appearance-none outline-none";
+const selectTriggerClass = "h-auto w-full rounded-none border-0 border-b border-zinc-300 bg-transparent px-0 py-1.5 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0";

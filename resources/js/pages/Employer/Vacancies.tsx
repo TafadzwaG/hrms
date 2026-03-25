@@ -19,11 +19,22 @@ import {
     XCircle,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 import { richTextToPlainText } from '@/components/rich-text';
+import { Button } from '@/components/ui/button';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    employerBreadcrumbs,
     EmployerEmptyState,
     EmployerHubLayout,
+    EmployerPrimaryButton,
 } from './components/hub';
 import type { Company, User, Vacancy } from './dummyData';
 
@@ -41,6 +52,7 @@ type PageProps = {
 export default function EmployerVacanciesPage() {
     const { company, vacancies, filters, options } = usePage<PageProps>().props;
     const user = usePage<{ user?: User }>().props.user ?? { name: 'employer user', email: company.email ?? '' };
+    const [statusFilter, setStatusFilter] = useState(filters.status || '__all__');
 
     const updateStatus = (vacancyId: number, status: string) => {
         router.patch(`/employer/vacancies/${vacancyId}/status`, { status }, { preserveScroll: true });
@@ -53,23 +65,17 @@ export default function EmployerVacanciesPage() {
             active="vacancies"
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Vacancies')}
+            headerActions={
+                <EmployerPrimaryButton href="/employer/vacancies/create">
+                    <Plus className="h-4 w-4" />
+                    Post a New Job
+                </EmployerPrimaryButton>
+            }
         >
-            <div className="w-full px-4 md:px-6">
-                {/* compact header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-                    <div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">Vacancies</h2>
-                        <p className="mt-1.5 text-sm text-muted-foreground">Manage creation, publishing, and lifecycle.</p>
-                    </div>
-                    <Link href="/employer/vacancies/create">
-                        <button className="bg-black text-white px-5 py-2.5 rounded-sm font-bold text-[10px] tracking-widest uppercase flex items-center gap-2 hover:bg-zinc-800 transition-all active:scale-[0.98]">
-                            <Plus className="h-3.5 w-3.5" /> post a new job
-                        </button>
-                    </Link>
-                </div>
-
+            <div className="space-y-6">
                 {/* filter section */}
-                <section className="bg-zinc-50 border border-zinc-200 rounded-sm p-4 mb-6 flex flex-wrap items-end gap-3 shadow-sm">
+                <form method="get" action="/employer/vacancies" className="flex flex-wrap items-end gap-3 rounded-lg border border-border/70 bg-background/95 p-4 shadow-sm">
                     <div className="flex-1 min-w-[200px] space-y-1.5">
                         <label className="block text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1">Search</label>
                         <div className="relative group">
@@ -85,17 +91,23 @@ export default function EmployerVacanciesPage() {
                     </div>
                     <div className="w-40 space-y-1.5">
                         <label className="block text-xs font-medium uppercase tracking-widest text-zinc-500 ml-1">Status</label>
-                        <select name="status" defaultValue={filters.status} className="w-full bg-white border border-zinc-200 rounded-sm px-3 py-2 text-xs focus:border-black focus:ring-0 appearance-none font-medium">
-                            <option value="">all statuses</option>
+                        <input type="hidden" name="status" value={statusFilter === '__all__' ? '' : statusFilter} />
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="h-8 w-full rounded-sm border border-zinc-200 bg-white px-3 py-2 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0">
+                                <SelectValue placeholder="all statuses" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            <SelectItem value="__all__">all statuses</SelectItem>
                             {options.statuses.map((status) => (
-                                <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
+                                <SelectItem key={status} value={status}>{status.replace(/_/g, ' ')}</SelectItem>
                             ))}
-                        </select>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <button className="bg-zinc-900 text-white px-6 py-2 rounded-sm font-black text-[9px] uppercase tracking-widest h-[34px] hover:bg-black transition-colors">
+                    <Button type="submit" className="h-[34px] rounded-sm px-6 text-[9px] font-black uppercase tracking-widest">
                         apply
-                    </button>
-                </section>
+                    </Button>
+                </form>
 
                 {/* vacancy list */}
                 <div className="space-y-4">
@@ -163,7 +175,7 @@ export default function EmployerVacanciesPage() {
                 </div>
 
                 {/* pagination */}
-                <div className="mt-10 flex items-center justify-between border-t border-zinc-100 pt-6 mb-10">
+                <div className="flex items-center justify-between border-t border-zinc-100 pt-6">
                     <p className="text-xs font-medium text-muted-foreground">
                         Showing {vacancies.data.length} vacancies
                     </p>
@@ -220,13 +232,16 @@ const ActionIconLink = ({ href, icon, title }: { href: string; icon: ReactNode; 
 );
 
 const ActionIconButton = ({ onClick, icon, title, variant = 'default' }: { onClick: () => void; icon: ReactNode; title: string; variant?: 'default' | 'danger' }) => (
-    <button 
+    <Button
+        type="button"
+        variant="ghost"
+        size="icon"
         onClick={onClick} 
-        className={`p-1.5 rounded-sm transition-colors ${variant === 'danger' ? 'text-zinc-300 hover:text-red-600 hover:bg-red-50' : 'text-zinc-400 hover:text-black hover:bg-zinc-100'}`} 
+        className={`h-7 w-7 rounded-sm ${variant === 'danger' ? 'text-zinc-300 hover:text-red-600 hover:bg-red-50' : 'text-zinc-400 hover:text-black hover:bg-zinc-100'}`} 
         title={title}
     >
         {icon}
-    </button>
+    </Button>
 );
 
 function getStatusStyles(code: string): string {

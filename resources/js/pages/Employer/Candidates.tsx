@@ -1,4 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { 
     Briefcase, 
     Calendar, 
@@ -16,6 +17,14 @@ import {
 
 import { Button } from '@/components/ui/button';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    employerBreadcrumbs,
     EmployerEmptyState,
     EmployerHubLayout,
     EmployerStatusBadge
@@ -40,6 +49,8 @@ type PageProps = {
 export default function EmployerCandidatesPage() {
     const { company, applications, filters, statuses, vacancies } = usePage<PageProps>().props;
     const user = usePage<{ user?: User }>().props.user ?? { name: 'Employer User', email: company.email ?? '' };
+    const [statusFilter, setStatusFilter] = useState(filters.status ?? '__all__');
+    const [vacancyFilter, setVacancyFilter] = useState(filters.vacancy_id?.toString() ?? '__all__');
 
     const updateStatus = (applicationId: number, status: string) => {
         router.patch(`/employer/applications/${applicationId}/status`, { status }, { preserveScroll: true });
@@ -52,18 +63,11 @@ export default function EmployerCandidatesPage() {
             subtitle='Candidate listings'
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Candidates')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Header Section */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Candidates.</h1>
-                    <p className="text-zinc-500 font-medium text-xs max-w-2xl">
-                        Review, manage, and process applications across all your active job listings in one central archive.
-                    </p>
-                </div>
-
+            <div className="space-y-6">
                 {/* Filter Applicants Section */}
-                <section className="mb-8 p-5 bg-zinc-50 border border-zinc-200 rounded-sm shadow-sm">
+                <section className="rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                     <form method="get" action="/employer/candidates" className="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
                         <div className="flex flex-col gap-1.5 md:col-span-4">
                             <label className="text-[9px] uppercase font-bold tracking-[0.2em] text-zinc-500">Search Candidates</label>
@@ -79,25 +83,37 @@ export default function EmployerCandidatesPage() {
                         </div>
                         <div className="flex flex-col gap-1.5 md:col-span-3">
                             <label className="text-[9px] uppercase font-bold tracking-[0.2em] text-zinc-500">Status</label>
-                            <select name="status" defaultValue={filters.status ?? ''} className={underlinedInput}>
-                                <option value="">All Statuses</option>
+                            <input type="hidden" name="status" value={statusFilter === '__all__' ? '' : statusFilter} />
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className={selectTriggerClass}>
+                                    <SelectValue placeholder="All Statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="__all__">All Statuses</SelectItem>
                                 {statuses.map((status) => (
-                                    <option key={status} value={status}>
+                                    <SelectItem key={status} value={status}>
                                         {status.replace(/_/g, ' ')}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="flex flex-col gap-1.5 md:col-span-3">
                             <label className="text-[9px] uppercase font-bold tracking-[0.2em] text-zinc-500">Vacancy</label>
-                            <select name="vacancy_id" defaultValue={filters.vacancy_id?.toString() ?? ''} className={underlinedInput}>
-                                <option value="">All Vacancies</option>
+                            <input type="hidden" name="vacancy_id" value={vacancyFilter === '__all__' ? '' : vacancyFilter} />
+                            <Select value={vacancyFilter} onValueChange={setVacancyFilter}>
+                                <SelectTrigger className={selectTriggerClass}>
+                                    <SelectValue placeholder="All Vacancies" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="__all__">All Vacancies</SelectItem>
                                 {vacancies.map((vacancy) => (
-                                    <option key={vacancy.id} value={vacancy.id}>
+                                    <SelectItem key={vacancy.id} value={String(vacancy.id)}>
                                         {vacancy.title}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="md:col-span-2">
                             <Button type="submit" className="w-full py-4 h-auto bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-sm hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5">
@@ -197,30 +213,43 @@ export default function EmployerCandidatesPage() {
                                         {/* Right: Actions Grid */}
                                         <div className="lg:w-64 flex flex-col justify-end gap-3 lg:border-l lg:border-zinc-100 lg:pl-5">
                                             <div className="grid grid-cols-2 gap-2">
-                                                <button 
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => updateStatus(application.id, 'shortlisted')} 
-                                                    className="flex flex-col items-center justify-center gap-1 p-2 border border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                    className="h-auto flex-col gap-1 rounded-sm border-blue-200 bg-blue-50 py-2 text-[9px] font-bold uppercase tracking-widest text-blue-600 hover:bg-blue-100 hover:text-blue-700"
                                                 >
                                                     <BookmarkPlus className="h-4 w-4" /> Shortlist
-                                                </button>
-                                                <Link 
-                                                    href={`/employer/candidates/${application.id}#schedule-interview`} 
-                                                    className="flex flex-col items-center justify-center gap-1 p-2 border border-violet-200 text-violet-600 bg-violet-50 hover:bg-violet-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm text-center"
+                                                </Button>
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-auto flex-col gap-1 rounded-sm border-violet-200 bg-violet-50 py-2 text-[9px] font-bold uppercase tracking-widest text-violet-600 hover:bg-violet-100 hover:text-violet-700"
                                                 >
-                                                    <Calendar className="h-4 w-4" /> Schedule
-                                                </Link>
-                                                <button 
+                                                    <Link href={`/employer/candidates/${application.id}#schedule-interview`}>
+                                                        <Calendar className="h-4 w-4" /> Schedule
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => updateStatus(application.id, 'offered')} 
-                                                    className="flex flex-col items-center justify-center gap-1 p-2 border border-emerald-200 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                    className="h-auto flex-col gap-1 rounded-sm border-emerald-200 bg-emerald-50 py-2 text-[9px] font-bold uppercase tracking-widest text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700"
                                                 >
                                                     <CheckCircle2 className="h-4 w-4" /> Offer
-                                                </button>
-                                                <button 
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
                                                     onClick={() => updateStatus(application.id, 'rejected')} 
-                                                    className="flex flex-col items-center justify-center gap-1 p-2 border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 text-[9px] font-bold uppercase tracking-widest transition-all rounded-sm"
+                                                    className="h-auto flex-col gap-1 rounded-sm border-red-200 bg-red-50 py-2 text-[9px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 hover:text-red-700"
                                                 >
                                                     <XCircle className="h-4 w-4" /> Reject
-                                                </button>
+                                                </Button>
                                             </div>
                                             <Link href={`/employer/candidates/${application.id}`}>
                                                 <Button className="w-full py-4 h-auto bg-black text-white text-[9px] font-bold uppercase tracking-widest rounded-sm hover:bg-zinc-800 transition-all flex items-center justify-center gap-1.5 mt-1">
@@ -275,4 +304,5 @@ export default function EmployerCandidatesPage() {
     );
 }
 
-const underlinedInput = "w-full appearance-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs font-semibold text-black outline-none transition-all placeholder:font-medium placeholder:text-zinc-400 focus:border-black focus:ring-0";
+const underlinedInput = "w-full appearance-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black outline-none transition-all placeholder:text-zinc-400 focus:border-black focus:ring-0";
+const selectTriggerClass = "h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0";

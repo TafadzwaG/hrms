@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanyProfile;
 use App\Models\Vacancy;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,13 +20,32 @@ class VacancyController extends Controller
         $category = $request->input('category');
         $employmentType = $request->input('employment_type');
         $workMode = $request->input('work_mode');
+        $sortMap = [
+            'title' => 'title',
+            'company' => fn ($query, $direction) => $query->orderBy(
+                CompanyProfile::query()
+                    ->select('company_name')
+                    ->whereColumn('company_profiles.id', 'vacancies.company_profile_id')
+                    ->limit(1),
+                $direction,
+            ),
+            'category' => 'category',
+            'employment_type' => 'employment_type',
+            'work_mode' => 'work_mode',
+            'location' => 'location',
+            'application_deadline' => 'application_deadline',
+            'status' => 'status',
+            'applications_count' => 'applications_count',
+            'updated_at' => 'updated_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'updated_at', 'desc');
 
         $baseQuery = Vacancy::query()
-            ->with(['company:id,name'])
+            ->with(['company:id,company_name'])
             ->withCount(['applications'])
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhereHas('company', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('company', fn ($cq) => $cq->where('company_name', 'like', "%{$search}%"));
             }))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($category, fn ($q) => $q->where('category', $category))
@@ -33,7 +53,7 @@ class VacancyController extends Controller
             ->when($workMode, fn ($q) => $q->where('work_mode', $workMode));
 
         $vacancies = (clone $baseQuery)
-            ->orderByDesc('updated_at')
+            ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(25)
             ->through(fn (Vacancy $vacancy) => $this->mapVacancy($vacancy))
             ->withQueryString();
@@ -41,7 +61,7 @@ class VacancyController extends Controller
         $statsBaseQuery = Vacancy::query()
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhereHas('company', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('company', fn ($cq) => $cq->where('company_name', 'like', "%{$search}%"));
             }))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($category, fn ($q) => $q->where('category', $category))
@@ -56,6 +76,8 @@ class VacancyController extends Controller
                 'category' => $category,
                 'employment_type' => $employmentType,
                 'work_mode' => $workMode,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
             'statuses' => Vacancy::STATUSES,
             'categories' => Vacancy::CATEGORIES,
@@ -100,7 +122,7 @@ class VacancyController extends Controller
     public function show(Vacancy $vacancy)
     {
         $vacancy->load([
-            'company:id,name,industry,city,country',
+            'company:id,company_name,industry,city,country',
             'applications.candidate',
             'createdBy:id,name',
             'updatedBy:id,name',
@@ -209,7 +231,8 @@ class VacancyController extends Controller
             'title' => $vacancy->title,
             'company' => $vacancy->company ? [
                 'id' => $vacancy->company->id,
-                'name' => $vacancy->company->name,
+                'name' => $vacancy->company->company_name,
+                'company_name' => $vacancy->company->company_name,
             ] : null,
             'category' => $vacancy->category,
             'employment_type' => $vacancy->employment_type,

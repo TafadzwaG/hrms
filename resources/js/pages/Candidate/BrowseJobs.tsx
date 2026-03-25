@@ -6,9 +6,17 @@ import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
 import { richTextToPlainText } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
     CandidateEmptyState,
+    candidateBreadcrumbs,
     CandidateHubLayout,
 } from './components/hub';
 import type { CandidateDocument, CandidateRecommendedVacancy, CandidateUser } from './dummyData';
@@ -33,6 +41,9 @@ type PageProps = {
 export default function BrowseJobsPage() {
     const { candidate, vacancies, filters, options, resumes } = usePage<PageProps>().props;
     const [selectedVacancy, setSelectedVacancy] = useState<number | null>(null);
+    const [categoryFilter, setCategoryFilter] = useState(filters.category || '__all__');
+    const [employmentTypeFilter, setEmploymentTypeFilter] = useState(filters.employment_type || '__all__');
+    const [workModeFilter, setWorkModeFilter] = useState(filters.work_mode || '__all__');
     
     const { data, setData, post, processing, errors, reset } = useForm({
         resume_id: resumes.find((resume) => resume.is_primary)?.id?.toString() ?? '',
@@ -52,18 +63,14 @@ export default function BrowseJobsPage() {
     return (
         <CandidateHubLayout
             title="Browse Jobs"
+            subtitle="Explore published vacancies and apply with your saved documents."
             active="jobs"
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('Browse Jobs')}
         >
-            <div className="w-full px-4 md:px-8">
-                {/* Hero / Header */}
-                <section className="mb-6">
-                    <h1 className="text-4xl font-black tracking-tighter text-black leading-none uppercase mb-2">Explore Vacancies.</h1>
-                    <p className="text-zinc-500 text-sm font-medium tracking-tight">Explore published vacancies and apply with your saved documents.</p>
-                </section>
-
+            <div className="space-y-6">
                 {/* Search Vacancies Filters */}
-                <section className="bg-zinc-50 p-6 border border-zinc-200 rounded-sm mb-8 shadow-sm">
+                <section className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                     <form method="get" action="/candidate/jobs" className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                         <div className="md:col-span-4">
                             <FormField label="Search Keywords">
@@ -81,40 +88,58 @@ export default function BrowseJobsPage() {
                         
                         <div className="md:col-span-2">
                             <FormField label="Category">
-                                <select name="category" defaultValue={filters.category} className={underlinedInput}>
-                                    <option value="">All Categories</option>
+                                <input type="hidden" name="category" value={categoryFilter === '__all__' ? '' : categoryFilter} />
+                                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                    <SelectTrigger className={selectTriggerClass}>
+                                        <SelectValue placeholder="All Categories" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                    <SelectItem value="__all__">All Categories</SelectItem>
                                     {options.categories.map((category) => (
-                                        <option key={category} value={category}>
+                                        <SelectItem key={category} value={category}>
                                             {category.replace(/_/g, ' ')}
-                                        </option>
+                                        </SelectItem>
                                     ))}
-                                </select>
+                                    </SelectContent>
+                                </Select>
                             </FormField>
                         </div>
                         
                         <div className="md:col-span-2">
                             <FormField label="Employment Type">
-                                <select name="employment_type" defaultValue={filters.employment_type} className={underlinedInput}>
-                                    <option value="">All Types</option>
+                                <input type="hidden" name="employment_type" value={employmentTypeFilter === '__all__' ? '' : employmentTypeFilter} />
+                                <Select value={employmentTypeFilter} onValueChange={setEmploymentTypeFilter}>
+                                    <SelectTrigger className={selectTriggerClass}>
+                                        <SelectValue placeholder="All Types" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                    <SelectItem value="__all__">All Types</SelectItem>
                                     {options.employment_types.map((type) => (
-                                        <option key={type} value={type}>
+                                        <SelectItem key={type} value={type}>
                                             {type.replace(/_/g, ' ')}
-                                        </option>
+                                        </SelectItem>
                                     ))}
-                                </select>
+                                    </SelectContent>
+                                </Select>
                             </FormField>
                         </div>
 
                         <div className="md:col-span-2">
                             <FormField label="Work Mode">
-                                <select name="work_mode" defaultValue={filters.work_mode} className={underlinedInput}>
-                                    <option value="">All Modes</option>
+                                <input type="hidden" name="work_mode" value={workModeFilter === '__all__' ? '' : workModeFilter} />
+                                <Select value={workModeFilter} onValueChange={setWorkModeFilter}>
+                                    <SelectTrigger className={selectTriggerClass}>
+                                        <SelectValue placeholder="All Modes" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                    <SelectItem value="__all__">All Modes</SelectItem>
                                     {options.work_modes.map((mode) => (
-                                        <option key={mode} value={mode}>
+                                        <SelectItem key={mode} value={mode}>
                                             {mode.replace(/_/g, ' ')}
-                                        </option>
+                                        </SelectItem>
                                     ))}
-                                </select>
+                                    </SelectContent>
+                                </Select>
                             </FormField>
                         </div>
 
@@ -127,10 +152,10 @@ export default function BrowseJobsPage() {
                 </section>
 
                 {/* Job Listings Grid */}
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     {vacancies.length > 0 ? (
                         vacancies.map((vacancy) => (
-                            <div key={vacancy.id} className="bg-white p-6 border border-zinc-200 hover:border-black transition-all group flex flex-col justify-between shadow-sm hover:shadow-md rounded-sm">
+                            <div key={vacancy.id} className="group flex flex-col justify-between rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm transition-colors hover:border-border hover:bg-muted/10">
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1">
@@ -139,12 +164,12 @@ export default function BrowseJobsPage() {
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
                                             {vacancy.match ? (
-                                                <div className="rounded-sm border border-black bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white">
+                                                <div className="rounded-md border border-primary/40 bg-primary px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-primary-foreground">
                                                     {vacancy.match.score}% {vacancy.match.label}
                                                 </div>
                                             ) : null}
                                             {vacancy.has_applied ? (
-                                                <span className="px-2 py-0.5 bg-zinc-100 text-zinc-600 text-[9px] font-bold uppercase tracking-widest border border-zinc-200 rounded-sm">
+                                                <span className="rounded-md border border-border bg-muted px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                                                     Applied
                                                 </span>
                                             ) : null}
@@ -172,17 +197,17 @@ export default function BrowseJobsPage() {
                                         )}
                                     </div>
                                     
-                                    <p className="text-xs leading-relaxed text-zinc-600 line-clamp-3">
+                                    <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3">
                                         {richTextToPlainText(vacancy.description)}
                                     </p>
 
                                     {vacancy.match ? (
-                                        <div className="rounded-sm border border-zinc-200 bg-zinc-50 p-3 mt-4">
-                                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2">Why this fits</p>
+                                        <div className="mt-4 rounded-lg border border-border/70 bg-muted/20 p-3">
+                                            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Why this fits</p>
                                             <ul className="space-y-1.5">
                                                 {vacancy.match.reasons.slice(0, 2).map((reason) => (
-                                                    <li key={reason} className="flex items-start gap-2 text-[11px] leading-relaxed text-zinc-600">
-                                                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-black" />
+                                                    <li key={reason} className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
+                                                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-primary" />
                                                         <span>{reason}</span>
                                                     </li>
                                                 ))}
@@ -193,22 +218,26 @@ export default function BrowseJobsPage() {
 
                                 {/* Inline Application Form */}
                                 {!vacancy.has_applied && selectedVacancy === vacancy.id && (
-                                    <div className="mt-6 pt-6 border-t border-zinc-200 space-y-5">
+                                    <div className="mt-6 space-y-5 border-t border-zinc-200 pt-6">
                                         <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-black">Quick Application</h4>
                                         <div className="space-y-5">
                                             <FormField label="Select Resume" error={errors.resume_id}>
-                                                <select 
-                                                    value={data.resume_id} 
-                                                    onChange={(e) => setData('resume_id', e.target.value)} 
-                                                    className={underlinedInput}
+                                                <Select
+                                                    value={data.resume_id || '__empty__'}
+                                                    onValueChange={(value) => setData('resume_id', value === '__empty__' ? '' : value)}
                                                 >
-                                                    <option value="">Select a document</option>
+                                                    <SelectTrigger className={selectTriggerClass}>
+                                                        <SelectValue placeholder="Select a document" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                    <SelectItem value="__empty__">Select a document</SelectItem>
                                                     {resumes.map((resume) => (
-                                                        <option key={resume.id} value={resume.id}>
+                                                        <SelectItem key={resume.id} value={String(resume.id)}>
                                                             {resume.file_name} {resume.is_primary ? '(Primary)' : ''}
-                                                        </option>
+                                                        </SelectItem>
                                                     ))}
-                                                </select>
+                                                    </SelectContent>
+                                                </Select>
                                                 {resumes.length === 0 && (
                                                     <Link href="/candidate/documents" className="text-[10px] font-bold text-zinc-400 hover:text-black uppercase tracking-widest mt-2 inline-block transition-colors">
                                                         + Upload New Document
@@ -293,4 +322,5 @@ function FormField({ label, error, children }: { label: string; error?: string; 
     );
 }
 
-const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-2 transition-all text-sm font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none";
+const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-2 transition-all text-sm text-black placeholder:text-zinc-400 appearance-none outline-none";
+const selectTriggerClass = "h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-2 text-sm text-black shadow-none focus:ring-0 focus:ring-offset-0";

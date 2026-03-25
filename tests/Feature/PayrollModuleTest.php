@@ -324,6 +324,97 @@ test('payroll results index renders and remains tenant scoped', function () {
         );
 });
 
+test('payroll results index supports server-side sorting', function () {
+    $organization = payrollOrganization('Sorted Results Tenant', 'SRT');
+    $user = payrollUserWithPermissions($organization, ['payroll.view']);
+
+    $period = PayrollPeriod::query()->create([
+        'organization_id' => $organization->id,
+        'code' => 'PAY-SORT-01',
+        'name' => 'Sorted Results Payroll',
+        'frequency' => 'MONTHLY',
+        'period_start' => now()->startOfMonth()->toDateString(),
+        'period_end' => now()->endOfMonth()->toDateString(),
+        'pay_date' => now()->endOfMonth()->toDateString(),
+        'currency' => 'USD',
+        'status' => 'PROCESSED',
+    ]);
+
+    $employeeA = payrollEmployee($organization, 'SRT-001', 'Alpha');
+    $employeeB = payrollEmployee($organization, 'SRT-002', 'Zulu');
+
+    $run = \App\Models\PayrollRun::query()->create([
+        'organization_id' => $organization->id,
+        'payroll_period_id' => $period->id,
+        'run_number' => 1,
+        'status' => 'PROCESSED',
+        'employee_count' => 2,
+        'gross_total' => 3000,
+        'taxable_total' => 3000,
+        'deduction_total' => 600,
+        'net_total' => 2400,
+    ]);
+
+    PayrollResult::query()->create([
+        'organization_id' => $organization->id,
+        'payroll_run_id' => $run->id,
+        'payroll_period_id' => $period->id,
+        'employee_id' => $employeeA->id,
+        'staff_number_snapshot' => $employeeA->staff_number,
+        'employee_name_snapshot' => 'Alpha Employee',
+        'department_snapshot' => 'Finance',
+        'position_snapshot' => 'Analyst',
+        'pay_point_snapshot' => 'Alpha Point',
+        'currency_snapshot' => 'USD',
+        'basic_salary_snapshot' => 1100,
+        'gross_pay' => 1300,
+        'pre_tax_deductions' => 0,
+        'taxable_income' => 1300,
+        'tax_amount' => 100,
+        'statutory_deductions' => 50,
+        'voluntary_deductions' => 50,
+        'total_deductions' => 200,
+        'net_pay' => 1100,
+        'status' => 'PROCESSED',
+        'snapshot' => [],
+    ]);
+
+    PayrollResult::query()->create([
+        'organization_id' => $organization->id,
+        'payroll_run_id' => $run->id,
+        'payroll_period_id' => $period->id,
+        'employee_id' => $employeeB->id,
+        'staff_number_snapshot' => $employeeB->staff_number,
+        'employee_name_snapshot' => 'Zulu Employee',
+        'department_snapshot' => 'Operations',
+        'position_snapshot' => 'Supervisor',
+        'pay_point_snapshot' => 'Zulu Point',
+        'currency_snapshot' => 'USD',
+        'basic_salary_snapshot' => 1300,
+        'gross_pay' => 1700,
+        'pre_tax_deductions' => 0,
+        'taxable_income' => 1700,
+        'tax_amount' => 200,
+        'statutory_deductions' => 50,
+        'voluntary_deductions' => 50,
+        'total_deductions' => 300,
+        'net_pay' => 1400,
+        'status' => 'PROCESSED',
+        'snapshot' => [],
+    ]);
+
+    $this->actingAs($user);
+
+    $this->get('/payroll/results?sort=net_pay&direction=desc')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Payroll/Results/Index')
+            ->where('filters.sort', 'net_pay')
+            ->where('filters.direction', 'desc')
+            ->where('results.data.0.employee.staff_number', 'SRT-002')
+        );
+});
+
 test('payroll processing supports usd fixed settlement with zig remainder', function () {
     $organization = payrollOrganization('Settlement Tenant', 'SET');
     $user = payrollUserWithPermissions($organization, [

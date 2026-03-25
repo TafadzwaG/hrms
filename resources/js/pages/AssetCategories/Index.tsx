@@ -12,10 +12,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
+import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
@@ -26,6 +33,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { buildIndexParams } from '@/lib/index-table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -42,7 +50,6 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type CategoryRow = {
     id: number;
@@ -63,7 +70,7 @@ type PaginatedCategories = {
 export default function AssetCategoryIndex() {
     const { categories, filters } = usePage<{
         categories: PaginatedCategories;
-        filters: { search?: string };
+        filters: { search?: string; sort?: string; direction?: 'asc' | 'desc' };
     }>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -74,7 +81,7 @@ export default function AssetCategoryIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/asset-categories',
-                { search },
+                buildIndexParams(filters, { search }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 250);
@@ -87,14 +94,6 @@ export default function AssetCategoryIndex() {
             preserveScroll: true,
             onSuccess: () => setCategoryToDelete(null),
         });
-    };
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            '/asset-categories',
-            { page: selectedItem.selected + 1, search },
-            { preserveScroll: true, preserveState: true },
-        );
     };
 
     return (
@@ -209,42 +208,50 @@ export default function AssetCategoryIndex() {
                 </div>
 
                 {/* Table Section */}
-                <div
-                    className="rounded-lg border border-border bg-background"
-                    style={{
-                        padding: '20px',
-                    }}
-                >
+                <IndexTableCard className="rounded-lg p-5">
                     <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="w-[300px] py-4 font-semibold text-foreground">
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <SortableTableHead
+                                    path="/asset-categories"
+                                    filters={filters}
+                                    sortKey="name"
+                                    className="w-[300px]"
+                                >
                                     Name
-                                </TableHead>
-                                <TableHead className="font-semibold text-foreground">
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    path="/asset-categories"
+                                    filters={filters}
+                                    sortKey="code"
+                                >
                                     Code
-                                </TableHead>
-                                <TableHead className="font-semibold text-foreground">
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    path="/asset-categories"
+                                    filters={filters}
+                                    sortKey="parent"
+                                >
                                     Parent
-                                </TableHead>
-                                <TableHead className="text-center font-semibold text-foreground">
+                                </SortableTableHead>
+                                <SortableTableHead
+                                    path="/asset-categories"
+                                    filters={filters}
+                                    sortKey="assets_count"
+                                    align="center"
+                                >
                                     Assets Count
-                                </TableHead>
-                                <TableHead className="text-right font-semibold text-foreground">
+                                </SortableTableHead>
+                                <IndexTableHead align="right">
                                     Actions
-                                </TableHead>
-                            </TableRow>
+                                </IndexTableHead>
+                            </IndexTableHeaderRow>
                         </TableHeader>
                         <TableBody>
                             {categories.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={5}
-                                        className="h-48 text-center text-muted-foreground"
-                                    >
-                                        No categories found.
-                                    </TableCell>
-                                </TableRow>
+                                <IndexTableEmptyRow colSpan={5}>
+                                    No categories found.
+                                </IndexTableEmptyRow>
                             ) : (
                                 categories.data.map((cat) => (
                                     <TableRow
@@ -305,37 +312,13 @@ export default function AssetCategoryIndex() {
                         </TableBody>
                     </Table>
 
-                    {/* Pagination Footer */}
-                    <div className="flex items-center justify-between border-t border-border px-4 py-4">
-                        <p className="text-sm text-muted-foreground">
-                            Showing <span className="font-medium">1-10</span> of{' '}
-                            <span className="font-medium text-foreground">
-                                {categories.total}
-                            </span>{' '}
-                            categories
-                        </p>
-                        <ReactPaginate
-                            pageCount={categories.last_page}
-                            forcePage={categories.current_page - 1}
-                            onPageChange={handlePageChange}
-                            containerClassName="flex items-center gap-1"
-                            pageLinkClassName="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium hover:bg-muted transition-colors"
-                            activeLinkClassName="bg-black text-white dark:bg-white dark:text-black hover:bg-black/90"
-                            previousLabel={
-                                <span className="mr-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Previous
-                                </span>
-                            }
-                            nextLabel={
-                                <span className="ml-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Next
-                                </span>
-                            }
-                            breakLabel="..."
-                            disabledClassName="opacity-40 cursor-not-allowed"
-                        />
-                    </div>
-                </div>
+                    <IndexTablePagination
+                        pagination={categories}
+                        filters={filters}
+                        path="/asset-categories"
+                        label="categories"
+                    />
+                </IndexTableCard>
             </div>
 
             {/* Delete Dialog */}

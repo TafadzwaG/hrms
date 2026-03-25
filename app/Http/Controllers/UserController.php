@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Audit\AuditLogger;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -25,10 +26,16 @@ class UserController extends Controller
             'search' => $request->string('search')->toString(),
             'role_id' => $request->string('role_id')->toString(),
         ];
+        $sortMap = [
+            'name' => 'name',
+            'email' => 'email',
+            'email_verified_at' => 'email_verified_at',
+            'created_at' => 'created_at',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'name');
 
         $query = $this->visibleUsersQuery()
-            ->with(['roles:id,code,name,description', 'employee:id,user_id,staff_number,first_name,surname'])
-            ->orderBy('name');
+            ->with(['roles:id,code,name,description', 'employee:id,user_id,staff_number,first_name,surname']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -47,6 +54,8 @@ class UserController extends Controller
             $query->whereIn('users.id', $this->effectiveRoleUserIds($roleId));
         }
 
+        IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']);
+
         $users = $query
             ->paginate(15)
             ->withQueryString()
@@ -54,7 +63,11 @@ class UserController extends Controller
 
         return Inertia::render('Users/Index', [
             'users' => $users,
-            'filters' => $filters,
+            'filters' => [
+                ...$filters,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
+            ],
             'roles' => $this->availableRoles(),
             'meta' => $this->userMeta(),
         ]);

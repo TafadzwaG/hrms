@@ -5,7 +5,14 @@ import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { CandidateHubLayout } from './components/hub';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { candidateBreadcrumbs, CandidateHubLayout } from './components/hub';
 import type { CandidateEducation, CandidateUser } from './dummyData';
 
 type PageProps = {
@@ -60,19 +67,14 @@ export default function CandidateEducationPage() {
             active="education"
             subtitle='Academic Qualifications'
             candidate={candidate}
+            breadcrumbs={candidateBreadcrumbs('Education')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Page Title */}
-                <div className="mb-6">
-                    <h1 className="text-4xl font-black tracking-tighter leading-none text-black mb-2 uppercase">Education.</h1>
-                    <p className="text-zinc-500 text-sm font-medium max-w-xl">Manage your academic history and certifications.</p>
-                </div>
-
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Left Column: Form */}
                     <div className="lg:col-span-5 space-y-6">
-                        <div className="bg-zinc-50 border border-zinc-200 p-6 rounded-sm shadow-sm">
+                        <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="flex items-center gap-2 mb-6 border-b border-zinc-200 pb-3">
                                 <GraduationCap className="h-4 w-4 text-black" />
                                 <h3 className="text-sm font-bold tracking-tight text-black uppercase">
@@ -183,7 +185,10 @@ export default function CandidateEducationPage() {
                                                     )}
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                                                    <button 
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => {
                                                             setEditingEducationId(education.id);
                                                             form.setData({
@@ -195,16 +200,19 @@ export default function CandidateEducationPage() {
                                                                 grade: education.grade ?? '',
                                                             });
                                                         }}
-                                                        className="p-1.5 text-zinc-400 hover:text-black transition-colors rounded-sm hover:bg-zinc-100"
+                                                        className="h-7 w-7 rounded-sm text-zinc-400 hover:bg-zinc-100 hover:text-black"
                                                     >
                                                         <Edit2 size={14} />
-                                                    </button>
-                                                    <button 
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => window.confirm('Delete this education record?') && form.delete(`/candidate/education/${education.id}`, { preserveScroll: true })}
-                                                        className="p-1.5 text-red-400 hover:text-red-600 transition-colors rounded-sm hover:bg-red-50"
+                                                        className="h-7 w-7 rounded-sm text-red-400 hover:bg-red-50 hover:text-red-600"
                                                     >
                                                         <Trash2 size={14} />
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </div>
                                             
@@ -297,26 +305,30 @@ function MonthYearInput({
                 className={underlinedInput}
             />
 
-            <select
-                value={month}
+            <Select
+                value={month || '__empty__'}
                 disabled={disabled}
-                onChange={(e) => handleMonthChange(e.target.value)}
-                className={underlinedInput}
+                onValueChange={(value) => handleMonthChange(value === '__empty__' ? '' : value)}
             >
-                <option value="">Mo</option>
-                <option value="01">Jan</option>
-                <option value="02">Feb</option>
-                <option value="03">Mar</option>
-                <option value="04">Apr</option>
-                <option value="05">May</option>
-                <option value="06">Jun</option>
-                <option value="07">Jul</option>
-                <option value="08">Aug</option>
-                <option value="09">Sep</option>
-                <option value="10">Oct</option>
-                <option value="11">Nov</option>
-                <option value="12">Dec</option>
-            </select>
+                <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="Mo" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="__empty__">Mo</SelectItem>
+                    <SelectItem value="01">Jan</SelectItem>
+                    <SelectItem value="02">Feb</SelectItem>
+                    <SelectItem value="03">Mar</SelectItem>
+                    <SelectItem value="04">Apr</SelectItem>
+                    <SelectItem value="05">May</SelectItem>
+                    <SelectItem value="06">Jun</SelectItem>
+                    <SelectItem value="07">Jul</SelectItem>
+                    <SelectItem value="08">Aug</SelectItem>
+                    <SelectItem value="09">Sep</SelectItem>
+                    <SelectItem value="10">Oct</SelectItem>
+                    <SelectItem value="11">Nov</SelectItem>
+                    <SelectItem value="12">Dec</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     );
 }
@@ -328,4 +340,5 @@ function formatRange(start?: string | null, end?: string | null): string {
     return `${startLabel} — ${endLabel}`;
 }
 
-const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs font-semibold text-black placeholder:text-zinc-400 appearance-none outline-none";
+const underlinedInput = "w-full bg-transparent border-0 border-b border-zinc-200 focus:ring-0 focus:border-black px-0 py-1.5 transition-all text-xs text-black placeholder:text-zinc-400 appearance-none outline-none";
+const selectTriggerClass = "h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0";

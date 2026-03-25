@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WorkflowDefinition;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -19,6 +20,15 @@ class WorkflowDefinitionController extends Controller
     public function index(Request $request)
     {
         $search = $request->string('search')->toString();
+        $sortMap = [
+            'name' => 'name',
+            'request_type' => 'request_type',
+            'sla_hours' => 'sla_hours',
+            'status' => 'status',
+            'created_at' => 'created_at',
+            'id' => 'id',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'id', 'desc');
 
         $query = WorkflowDefinition::query();
 
@@ -36,7 +46,7 @@ class WorkflowDefinitionController extends Controller
         }
 
         $records = $query
-            ->orderByDesc('id')
+            ->tap(fn ($builder) => IndexTableSorter::apply($builder, $sortMap, $sorting['sort'], $sorting['direction']))
             ->paginate(12)
             ->withQueryString();
 
@@ -45,6 +55,8 @@ class WorkflowDefinitionController extends Controller
             'records' => $records,
             'filters' => [
                 'search' => $search,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
         ]);
     }

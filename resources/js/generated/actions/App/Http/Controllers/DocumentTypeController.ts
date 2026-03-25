@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DocumentTypeController::index
- * @see app/Http/Controllers/DocumentTypeController.php:14
+ * @see app/Http/Controllers/DocumentTypeController.php:15
  * @route '/document-types'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DocumentTypeController::create
- * @see app/Http/Controllers/DocumentTypeController.php:45
+ * @see app/Http/Controllers/DocumentTypeController.php:55
  * @route '/document-types/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::store
- * @see app/Http/Controllers/DocumentTypeController.php:52
+ * @see app/Http/Controllers/DocumentTypeController.php:62
  * @route '/document-types'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::store
- * @see app/Http/Controllers/DocumentTypeController.php:52
+ * @see app/Http/Controllers/DocumentTypeController.php:62
  * @route '/document-types'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::store
- * @see app/Http/Controllers/DocumentTypeController.php:52
+ * @see app/Http/Controllers/DocumentTypeController.php:62
  * @route '/document-types'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::store
- * @see app/Http/Controllers/DocumentTypeController.php:52
+ * @see app/Http/Controllers/DocumentTypeController.php:62
  * @route '/document-types'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::store
- * @see app/Http/Controllers/DocumentTypeController.php:52
+ * @see app/Http/Controllers/DocumentTypeController.php:62
  * @route '/document-types'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
 export const show = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
 show.url = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -255,7 +255,7 @@ show.url = (args: { document_type: string | number } | [document_type: string | 
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
 show.get = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +264,7 @@ show.get = (args: { document_type: string | number } | [document_type: string | 
 })
 /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
 show.head = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -274,7 +274,7 @@ show.head = (args: { document_type: string | number } | [document_type: string |
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
     const showForm = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -284,7 +284,7 @@ show.head = (args: { document_type: string | number } | [document_type: string |
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
         showForm.get = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ show.head = (args: { document_type: string | number } | [document_type: string |
         })
             /**
 * @see \App\Http\Controllers\DocumentTypeController::show
- * @see app/Http/Controllers/DocumentTypeController.php:63
+ * @see app/Http/Controllers/DocumentTypeController.php:73
  * @route '/document-types/{document_type}'
  */
         showForm.head = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -309,7 +309,7 @@ show.head = (args: { document_type: string | number } | [document_type: string |
     show.form = showForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
 export const edit = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
 edit.url = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +352,7 @@ edit.url = (args: { document_type: string | number } | [document_type: string | 
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
 edit.get = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +361,7 @@ edit.get = (args: { document_type: string | number } | [document_type: string | 
 })
 /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
 edit.head = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +371,7 @@ edit.head = (args: { document_type: string | number } | [document_type: string |
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
     const editForm = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { document_type: string | number } | [document_type: string |
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
         editForm.get = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +390,7 @@ edit.head = (args: { document_type: string | number } | [document_type: string |
         })
             /**
 * @see \App\Http\Controllers\DocumentTypeController::edit
- * @see app/Http/Controllers/DocumentTypeController.php:73
+ * @see app/Http/Controllers/DocumentTypeController.php:83
  * @route '/document-types/{document_type}/edit'
  */
         editForm.head = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ edit.head = (args: { document_type: string | number } | [document_type: string |
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
 export const update = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
 update.url = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { document_type: string | number } | [document_type: string 
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
 update.put = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -458,7 +458,7 @@ update.put = (args: { document_type: string | number } | [document_type: string 
 })
 /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
 update.patch = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -468,7 +468,7 @@ update.patch = (args: { document_type: string | number } | [document_type: strin
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
     const updateForm = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { document_type: string | number } | [document_type: strin
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
         updateForm.put = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { document_type: string | number } | [document_type: strin
         })
             /**
 * @see \App\Http\Controllers\DocumentTypeController::update
- * @see app/Http/Controllers/DocumentTypeController.php:84
+ * @see app/Http/Controllers/DocumentTypeController.php:94
  * @route '/document-types/{document_type}'
  */
         updateForm.patch = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -513,7 +513,7 @@ update.patch = (args: { document_type: string | number } | [document_type: strin
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\DocumentTypeController::destroy
- * @see app/Http/Controllers/DocumentTypeController.php:95
+ * @see app/Http/Controllers/DocumentTypeController.php:105
  * @route '/document-types/{document_type}'
  */
 export const destroy = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -528,7 +528,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::destroy
- * @see app/Http/Controllers/DocumentTypeController.php:95
+ * @see app/Http/Controllers/DocumentTypeController.php:105
  * @route '/document-types/{document_type}'
  */
 destroy.url = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -556,7 +556,7 @@ destroy.url = (args: { document_type: string | number } | [document_type: string
 
 /**
 * @see \App\Http\Controllers\DocumentTypeController::destroy
- * @see app/Http/Controllers/DocumentTypeController.php:95
+ * @see app/Http/Controllers/DocumentTypeController.php:105
  * @route '/document-types/{document_type}'
  */
 destroy.delete = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -566,7 +566,7 @@ destroy.delete = (args: { document_type: string | number } | [document_type: str
 
     /**
 * @see \App\Http\Controllers\DocumentTypeController::destroy
- * @see app/Http/Controllers/DocumentTypeController.php:95
+ * @see app/Http/Controllers/DocumentTypeController.php:105
  * @route '/document-types/{document_type}'
  */
     const destroyForm = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ destroy.delete = (args: { document_type: string | number } | [document_type: str
 
             /**
 * @see \App\Http\Controllers\DocumentTypeController::destroy
- * @see app/Http/Controllers/DocumentTypeController.php:95
+ * @see app/Http/Controllers/DocumentTypeController.php:105
  * @route '/document-types/{document_type}'
  */
         destroyForm.delete = (args: { document_type: string | number } | [document_type: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

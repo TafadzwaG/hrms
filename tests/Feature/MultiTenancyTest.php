@@ -136,6 +136,47 @@ test('switching organizations changes the visible employee list', function () {
         );
 });
 
+test('employees index supports server-side sorting', function () {
+    $organization = createOrganizationRecord('Sortable Employees', 'SORTEMP');
+    $user = User::factory()->create();
+
+    assignTenantRole($user, $organization, ['employees.view']);
+
+    DB::table('employees')->insert([
+        [
+            'organization_id' => $organization->id,
+            'staff_number' => 'EMP-001',
+            'first_name' => 'Alpha',
+            'surname' => 'Sorter',
+            'pay_point' => 'Alpha Point',
+            'status' => 'ACTIVE',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'organization_id' => $organization->id,
+            'staff_number' => 'EMP-002',
+            'first_name' => 'Zulu',
+            'surname' => 'Sorter',
+            'pay_point' => 'Zulu Point',
+            'status' => 'ACTIVE',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
+    $this->actingAs($user);
+
+    $this->get('/employees?sort=pay_point&direction=desc')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Employees/Index')
+            ->where('filters.sort', 'pay_point')
+            ->where('filters.direction', 'desc')
+            ->where('employees.data.0.pay_point', 'Zulu Point')
+        );
+});
+
 test('users cannot open an employee record from another organization by url', function () {
     $organizationA = createOrganizationRecord('Alpha Labs', 'ALPHA');
     $organizationB = createOrganizationRecord('Beta Labs', 'BETA');
@@ -170,6 +211,50 @@ test('role summaries are scoped to the active organization', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Roles/Index')
             ->where('stats.users_with_roles', 1)
+        );
+});
+
+test('roles index supports server-side sorting', function () {
+    $organization = createOrganizationRecord('Sortable Roles', 'SORTROLE');
+    $viewer = User::factory()->create();
+
+    assignTenantRole($viewer, $organization, ['roles.view']);
+
+    $lowRole = Role::query()->create([
+        'code' => 'LOW_SORT_ROLE',
+        'name' => 'Low Sort Role',
+        'description' => 'Role with limited coverage.',
+    ]);
+    $highRole = Role::query()->create([
+        'code' => 'HIGH_SORT_ROLE',
+        'name' => 'High Sort Role',
+        'description' => 'Role with broad coverage.',
+    ]);
+
+    $lowPermission = Permission::query()->firstOrCreate(
+        ['name' => 'roles.low.sort'],
+        ['module' => 'roles', 'label' => 'Low Sort', 'description' => 'Low sort permission.'],
+    );
+
+    $highPermissions = collect(range(1, 4))->map(function (int $index) {
+        return Permission::query()->firstOrCreate(
+            ['name' => "roles.high.sort.{$index}"],
+            ['module' => 'roles', 'label' => "High Sort {$index}", 'description' => 'High sort permission.'],
+        )->id;
+    })->all();
+
+    $lowRole->permissions()->sync([$lowPermission->id]);
+    $highRole->permissions()->sync($highPermissions);
+
+    $this->actingAs($viewer);
+
+    $this->get('/roles?sort=permissions_count&direction=desc')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Roles/Index')
+            ->where('filters.sort', 'permissions_count')
+            ->where('filters.direction', 'desc')
+            ->where('roles.data.0.code', 'HIGH_SORT_ROLE')
         );
 });
 

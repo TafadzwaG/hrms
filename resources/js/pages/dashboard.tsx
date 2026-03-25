@@ -176,6 +176,7 @@ const metricIconMap: Record<string, LucideIcon> = {
     payroll_exports: Folder,
     open_requisitions: Briefcase,
     active_candidates: User,
+    active_employers: Building2,
     overdue_onboarding: AlertTriangle,
     reviews_in_flight: UserRoundCheckIcon,
     users: User,
@@ -195,6 +196,7 @@ const moduleIconMap: Record<string, LucideIcon> = {
     payroll_exports: Folder,
     job_requisitions: Briefcase,
     candidate_profiles: User,
+    company_profiles: Building2,
     onboarding_tasks: Users,
     offboarding_tasks: AlertTriangle,
     performance_reviews: UserRoundCheckIcon,
@@ -246,30 +248,30 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="min-h-[calc(100vh-64px)] space-y-5 px-4 py-4 md:px-6 lg:px-8">
+            <div className="min-h-[calc(100vh-64px)] space-y-5 px-4 py-4 md:px-6 lg:px-8" data-dashboard-scope>
                 <Card className="overflow-hidden border-border/70 bg-background/95 shadow-sm">
-                    <CardContent className="flex flex-col gap-5 p-5 lg:flex-row lg:items-end lg:justify-between lg:p-6">
-                        <div className="space-y-3">
-                            <Badge className="w-fit rounded-md border border-border bg-muted px-3 py-1 text-muted-foreground shadow-none">
+                    <CardContent className="flex items-center justify-between gap-4 p-3.5">
+                        <div className="flex min-w-0 items-center gap-3">
+                            <Badge className="shrink-0 rounded-md border border-border bg-muted px-2.5 py-0.5 text-[10px] text-muted-foreground shadow-none">
                                 HRMS command centre
                             </Badge>
-                            <div className="space-y-2">
-                                <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                            <div className="min-w-0">
+                                <h1 className="truncate text-base font-semibold tracking-tight text-foreground">
                                     Welcome back, {firstName}.
                                 </h1>
-                                <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
-                                    This dashboard consolidates workforce, operations, talent, and governance metrics across every active module in your HRMS.
+                                <p className="truncate text-[11px] text-muted-foreground">
+                                    Workforce, operations, talent, and governance metrics across every active module.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs font-medium">
+                        <div className="flex shrink-0 items-center gap-3">
+                            <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-[10px] font-medium">
                                 Updated {generatedAt}
                             </Badge>
-                            <Button variant="outline" className="shadow-sm" onClick={() => router.reload()}>
-                                <RefreshCcw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
-                                Refresh data
+                            <Button variant="outline" size="sm" className="shadow-sm" onClick={() => router.reload()}>
+                                <RefreshCcw className={cn('mr-2 h-3.5 w-3.5', isLoading && 'animate-spin')} />
+                                Refresh
                             </Button>
                         </div>
                     </CardContent>
@@ -407,9 +409,10 @@ export default function Dashboard() {
                                     <BreakdownChartCard chart={dashboard.sections.talent.charts.performance_ratings} />
                                     <BreakdownChartCard chart={dashboard.sections.talent.charts.learning_categories} />
                                 </div>
-                                <div className="grid gap-4 xl:grid-cols-2">
-                                    <RecordListCard block={dashboard.sections.talent.lists.requisition_watch} />
-                                    <RecordListCard block={dashboard.sections.talent.lists.onboarding_watch} />
+                                <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+                                    {Object.values(dashboard.sections.talent.lists).map((block) => (
+                                        <RecordListCard key={block.title} block={block} />
+                                    ))}
                                 </div>
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                                     {moduleGroups.talent.map((module) => (
@@ -458,31 +461,34 @@ function SectionMetrics({ metrics }: { metrics: Metric[] }) {
     return (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {metrics.map((metric) => (
-                <MetricCard key={metric.key} metric={metric} compact />
+                <MetricCard key={metric.key} metric={metric} />
             ))}
         </div>
     );
 }
 
-function MetricCard({ metric, compact = false }: { metric: Metric; compact?: boolean }) {
+function MetricCard({ metric }: { metric: Metric }) {
     const Icon = metricIconMap[metric.key] || LayoutGrid;
 
     return (
         <Card className="border-border/70 bg-background/95 shadow-sm">
-            <CardContent className={cn('flex items-start justify-between gap-4 p-6', compact && 'p-5')}>
-                <div className="space-y-2">
-                    <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">{metric.label}</div>
-                    <div className="text-3xl font-semibold tracking-tight text-foreground">{formatMetricValue(metric.value, metric.format)}</div>
-                    <div className="text-sm leading-6 text-muted-foreground">{metric.helper}</div>
+            <CardContent className="flex items-start justify-between gap-3 p-3.5">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                        <Activity className="h-3 w-3" />
+                        {metric.label}
+                    </div>
+                    <div className="text-xl font-semibold leading-none tracking-tight text-foreground">{formatMetricValue(metric.value, metric.format)}</div>
+                    <div className="text-[11px] leading-4 text-muted-foreground">{metric.helper}</div>
                     {metric.href ? (
-                        <Link href={metric.href} className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline">
+                        <Link href={metric.href} className="inline-flex items-center gap-1 text-[10px] font-medium text-foreground hover:underline">
                             Open module
-                            <ArrowUpRight className="h-3.5 w-3.5" />
+                            <ArrowUpRight className="h-3 w-3" />
                         </Link>
                     ) : null}
                 </div>
-                <div className="rounded-lg bg-muted p-3 text-muted-foreground">
-                    <Icon className="h-5 w-5" />
+                <div className="rounded-md bg-muted p-2 text-muted-foreground">
+                    <Icon className="h-4 w-4" />
                 </div>
             </CardContent>
         </Card>
@@ -637,14 +643,20 @@ function BreakdownBars({ data, compact = false }: { data: BreakdownPoint[]; comp
 
     return (
         <div className={cn('space-y-4', compact && 'space-y-3')}>
-            {data.map((item) => (
+            {data.map((item, index) => (
                 <div key={item.label} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-3 text-sm">
                         <span className="truncate text-foreground">{item.label}</span>
                         <span className="shrink-0 text-muted-foreground">{formatNumber(item.value)}</span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-foreground/80" style={{ width: `${Math.max((item.value / max) * 100, 4)}%` }} />
+                        <div
+                            className="h-full rounded-full"
+                            style={{
+                                width: `${Math.max((item.value / max) * 100, 4)}%`,
+                                backgroundColor: chartTone(index),
+                            }}
+                        />
                     </div>
                 </div>
             ))}
@@ -672,16 +684,32 @@ function SeriesBars({ data, variant }: { data: SeriesPoint[]; variant: 'dual' | 
 }
 
 function Bar({ height, tone }: { height: number; tone: 'primary' | 'secondary' | 'tertiary' }) {
-    return <div className={cn('w-3 rounded-t-full', tone === 'primary' && 'bg-foreground', tone === 'secondary' && 'bg-zinc-400', tone === 'tertiary' && 'bg-zinc-300')} style={{ height: `${Math.max(height, 6)}%` }} />;
+    const color = {
+        primary: chartTone(0),
+        secondary: chartTone(1),
+        tertiary: chartTone(2),
+    }[tone];
+
+    return <div className="w-3 rounded-t-full" style={{ height: `${Math.max(height, 6)}%`, backgroundColor: color }} />;
 }
 
 function LegendPill({ label, tone }: { label: string; tone: 'primary' | 'secondary' | 'tertiary' }) {
+    const color = {
+        primary: chartTone(0),
+        secondary: chartTone(1),
+        tertiary: chartTone(2),
+    }[tone];
+
     return (
         <div className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-1">
-            <span className={cn('h-2 w-2 rounded-full', tone === 'primary' && 'bg-foreground', tone === 'secondary' && 'bg-zinc-400', tone === 'tertiary' && 'bg-zinc-300')} />
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
             {label}
         </div>
     );
+}
+
+function chartTone(index: number) {
+    return `var(--chart-${(index % 5) + 1})`;
 }
 
 function DashboardSkeleton() {

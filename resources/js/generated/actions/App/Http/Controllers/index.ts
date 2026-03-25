@@ -59,6 +59,7 @@ import DocumentTypeController from './DocumentTypeController'
 import DocumentController from './DocumentController'
 import Reports from './Reports'
 import RecruitmentDashboardController from './RecruitmentDashboardController'
+import RecruitmentAdminPaymentsController from './RecruitmentAdminPaymentsController'
 import CandidateResumeController from './CandidateResumeController'
 import CandidateCheckoutController from './CandidateCheckoutController'
 import CompanyProfileController from './CompanyProfileController'
@@ -129,6 +130,7 @@ DocumentTypeController: Object.assign(DocumentTypeController, DocumentTypeContro
 DocumentController: Object.assign(DocumentController, DocumentController),
 Reports: Object.assign(Reports, Reports),
 RecruitmentDashboardController: Object.assign(RecruitmentDashboardController, RecruitmentDashboardController),
+RecruitmentAdminPaymentsController: Object.assign(RecruitmentAdminPaymentsController, RecruitmentAdminPaymentsController),
 CandidateResumeController: Object.assign(CandidateResumeController, CandidateResumeController),
 CandidateCheckoutController: Object.assign(CandidateCheckoutController, CandidateCheckoutController),
 CompanyProfileController: Object.assign(CompanyProfileController, CompanyProfileController),

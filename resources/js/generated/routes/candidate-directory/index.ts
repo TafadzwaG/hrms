@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\CandidateDirectoryController::index
- * @see app/Http/Controllers/CandidateDirectoryController.php:11
+ * @see app/Http/Controllers/CandidateDirectoryController.php:12
  * @route '/candidate-directory'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
 export const show = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
 show.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -127,7 +127,7 @@ show.url = (args: { candidate: number | { id: number } } | [candidate: number | 
 
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
 show.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -136,7 +136,7 @@ show.get = (args: { candidate: number | { id: number } } | [candidate: number | 
 })
 /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
 show.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -146,7 +146,7 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
 
     /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
     const showForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -156,7 +156,7 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
 
             /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
         showForm.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -165,7 +165,7 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
         })
             /**
 * @see \App\Http\Controllers\CandidateDirectoryController::show
- * @see app/Http/Controllers/CandidateDirectoryController.php:60
+ * @see app/Http/Controllers/CandidateDirectoryController.php:81
  * @route '/candidate-directory/{candidate}'
  */
         showForm.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

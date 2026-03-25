@@ -2,6 +2,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
+import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -23,12 +30,12 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
 import { API } from '@/config';
 import AppLayout from '@/layouts/app-layout';
+import { buildIndexParams } from '@/lib/index-table';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     CheckCircle2,
@@ -47,7 +54,6 @@ import {
 } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type RoleItem = { id: number; code: string; name: string };
 type UserItem = {
@@ -90,7 +96,7 @@ export default function UsersIndex() {
         const timer = setTimeout(() => {
             router.get(
                 PATHS.index,
-                { search, role_id: roleId },
+                buildIndexParams(filters, { search, role_id: roleId }),
                 { preserveState: true, replace: true },
             );
         }, 300);
@@ -101,14 +107,6 @@ export default function UsersIndex() {
         setSearch('');
         setRoleId('');
         router.get(PATHS.index, {}, { preserveState: true, replace: true });
-    };
-
-    const handlePageChange = (selected: { selected: number }) => {
-        router.get(
-            PATHS.index,
-            { page: selected.selected + 1, search, role_id: roleId },
-            { preserveState: true },
-        );
     };
 
     // --- Delete Handlers ---
@@ -365,29 +363,46 @@ export default function UsersIndex() {
                     <div className="flex-1 overflow-y-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-muted/10 hover:bg-transparent">
-                                    <TableHead className="h-12 pl-6 text-xs font-bold text-muted-foreground">
+                                <IndexTableHeaderRow>
+                                    <SortableTableHead
+                                        path={PATHS.index}
+                                        filters={filters}
+                                        sortKey="name"
+                                        className="pl-6"
+                                    >
                                         Name
-                                    </TableHead>
-                                    <TableHead className="text-xs font-bold text-muted-foreground">
+                                    </SortableTableHead>
+                                    <SortableTableHead
+                                        path={PATHS.index}
+                                        filters={filters}
+                                        sortKey="email"
+                                    >
                                         Email
-                                    </TableHead>
-                                    <TableHead className="text-xs font-bold text-muted-foreground">
+                                    </SortableTableHead>
+                                    <IndexTableHead>
                                         Roles
-                                    </TableHead>
-                                    <TableHead className="text-xs font-bold text-muted-foreground">
+                                    </IndexTableHead>
+                                    <IndexTableHead>
                                         Employee #
-                                    </TableHead>
-                                    <TableHead className="text-xs font-bold text-muted-foreground">
+                                    </IndexTableHead>
+                                    <SortableTableHead
+                                        path={PATHS.index}
+                                        filters={filters}
+                                        sortKey="email_verified_at"
+                                    >
                                         Status
-                                    </TableHead>
-                                    <TableHead className="text-xs font-bold text-muted-foreground">
+                                    </SortableTableHead>
+                                    <SortableTableHead
+                                        path={PATHS.index}
+                                        filters={filters}
+                                        sortKey="created_at"
+                                    >
                                         Created
-                                    </TableHead>
-                                    <TableHead className="pr-6 text-right text-xs font-bold text-muted-foreground">
+                                    </SortableTableHead>
+                                    <IndexTableHead align="right" className="pr-6">
                                         Actions
-                                    </TableHead>
-                                </TableRow>
+                                    </IndexTableHead>
+                                </IndexTableHeaderRow>
                             </TableHeader>
                             <TableBody>
                                 {pageData.length > 0 ? (
@@ -518,52 +533,20 @@ export default function UsersIndex() {
                                         </TableRow>
                                     ))
                                 ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={7}
-                                            className="h-48 text-center text-sm font-medium text-muted-foreground"
-                                        >
-                                            No users found. Try adjusting your
-                                            filters.
-                                        </TableCell>
-                                    </TableRow>
+                                    <IndexTableEmptyRow colSpan={7}>
+                                        No users found. Try adjusting your filters.
+                                    </IndexTableEmptyRow>
                                 )}
                             </TableBody>
                         </Table>
                     </div>
 
-                    {/* Pagination */}
-                    {users?.last_page > 1 && (
-                        <div className="flex shrink-0 items-center justify-between border-t border-border/50 bg-muted/5 p-4">
-                            <span className="text-sm font-medium text-muted-foreground">
-                                Showing{' '}
-                                {(users.current_page - 1) * users.per_page + 1}{' '}
-                                to{' '}
-                                {Math.min(
-                                    users.current_page * users.per_page,
-                                    users.total,
-                                )}{' '}
-                                of {users.total.toLocaleString()} results
-                            </span>
-                            <ReactPaginate
-                                pageCount={users.last_page}
-                                forcePage={users.current_page - 1}
-                                onPageChange={handlePageChange}
-                                marginPagesDisplayed={1}
-                                pageRangeDisplayed={3}
-                                previousLabel="Previous"
-                                nextLabel="Next"
-                                breakLabel="..."
-                                containerClassName="flex items-center gap-1"
-                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-transparent font-bold hover:bg-muted text-sm shadow-none text-muted-foreground transition-colors"
-                                activeLinkClassName="!bg-foreground text-background font-bold border-foreground hover:!bg-foreground/90 rounded-md"
-                                previousLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-sm font-bold text-foreground transition-colors"
-                                nextLinkClassName="inline-flex h-9 px-4 items-center justify-center rounded-md border border-border bg-background hover:bg-muted text-sm font-bold text-foreground transition-colors"
-                                breakClassName="flex h-9 w-9 items-center justify-center text-sm font-bold text-muted-foreground"
-                                disabledClassName="opacity-50 pointer-events-none"
-                            />
-                        </div>
-                    )}
+                    <IndexTablePagination
+                        pagination={users}
+                        filters={filters}
+                        path={PATHS.index}
+                        label="results"
+                    />
                 </Card>
             </div>
 

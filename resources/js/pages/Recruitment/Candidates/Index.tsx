@@ -1,3 +1,20 @@
+import type { ComponentProps } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    CheckCircle2,
+    Eye,
+    Filter,
+    GraduationCap,
+    Pencil,
+    Plus,
+    RotateCcw,
+    Search,
+    Trash2,
+    Users,
+    UserCheck,
+} from 'lucide-react';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -10,51 +27,48 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHeaderRow,
+    IndexTableHead,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
+import { buildIndexParams } from '@/lib/index-table';
+import AppLayout from '@/layouts/app-layout';
 import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-    CheckCircle2,
-    Eye,
-    GraduationCap,
-    MoreHorizontal,
-    Pencil,
-    Plus,
-    RotateCcw,
-    Search,
-    Trash2,
-    Users,
-    UserCheck,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import ReactPaginate from 'react-paginate';
+    formatCandidateDate,
+    formatCandidateLabel,
+    recruitmentCandidateMutedCardClassName,
+    recruitmentCandidateSectionClassName,
+} from './profile-primitives';
 
 type CandidateRow = {
     id: number;
     full_name: string;
     email: string;
+    phone?: string | null;
     headline: string | null;
+    location?: string | null;
     visibility_status: string;
     is_public: boolean;
-    listing_activated_at: string | null;
-    gender: string | null;
     highest_education: string | null;
+    years_experience?: number | null;
+    applications_count?: number;
+    resumes_count?: number;
+    listing_activated_at: string | null;
+    links?: {
+        show?: string;
+        edit?: string;
+    };
 };
 
 type CandidateStats = {
@@ -63,6 +77,8 @@ type CandidateStats = {
     public: number;
     draft: number;
 };
+
+type SortDirection = 'asc' | 'desc';
 
 type CandidatesPageProps = {
     candidates: {
@@ -79,39 +95,28 @@ type CandidatesPageProps = {
         visibility_status?: string | null;
         gender?: string | null;
         education?: string | null;
+        sort?: string | null;
+        direction?: SortDirection | null;
+        page?: number | null;
     };
     stats?: CandidateStats;
+    visibilityStatuses?: string[];
+    educationLevels?: string[];
 };
 
-const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    pending_payment: 'border-transparent bg-amber-100 text-amber-700',
-    expired: 'border-transparent bg-slate-100 text-slate-600',
-    suspended: 'border-transparent bg-red-100 text-red-700',
+type BadgeVariant = NonNullable<ComponentProps<typeof Badge>['variant']>;
+
+const statusVariants: Record<string, BadgeVariant> = {
+    active: 'success',
+    draft: 'secondary',
+    pending_payment: 'warning',
+    expired: 'muted',
+    suspended: 'danger',
 };
-
-function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatDate(value: string | null) {
-    if (!value) return '—';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
 
 export default function CandidatesIndex() {
-    const {
-        candidates,
-        filters,
-        stats,
-    } = usePage<CandidatesPageProps>().props;
+    const { candidates, filters, stats, visibilityStatuses = [], educationLevels = [] } =
+        usePage<CandidatesPageProps>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [visibilityStatus, setVisibilityStatus] = useState(filters.visibility_status ?? 'all');
@@ -119,7 +124,6 @@ export default function CandidatesIndex() {
     const [education, setEducation] = useState(filters.education ?? 'all');
     const [showFilters, setShowFilters] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<CandidateRow | null>(null);
-
     const initialRender = useRef(true);
 
     const computedStats = {
@@ -138,12 +142,12 @@ export default function CandidatesIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/candidate-profiles',
-                {
-                    search: search || undefined,
-                    visibility_status: visibilityStatus !== 'all' ? visibilityStatus : undefined,
-                    gender: gender !== 'all' ? gender : undefined,
-                    education: education !== 'all' ? education : undefined,
-                },
+                buildIndexParams(filters, {
+                    search,
+                    visibility_status: visibilityStatus !== 'all' ? visibilityStatus : null,
+                    gender: gender !== 'all' ? gender : null,
+                    education: education !== 'all' ? education : null,
+                }),
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -153,7 +157,7 @@ export default function CandidatesIndex() {
         }, 300);
 
         return () => window.clearTimeout(timer);
-    }, [search, visibilityStatus, gender, education]);
+    }, [education, filters, gender, search, visibilityStatus]);
 
     const handleResetFilters = () => {
         setSearch('');
@@ -164,37 +168,15 @@ export default function CandidatesIndex() {
     };
 
     const handleDeleteCandidate = () => {
-        if (!candidateToDelete) return;
+        if (!candidateToDelete) {
+            return;
+        }
 
         router.delete(`/candidate-profiles/${candidateToDelete.id}`, {
             preserveScroll: true,
             onSuccess: () => setCandidateToDelete(null),
         });
     };
-
-    const handlePageChange = ({ selected }: { selected: number }) => {
-        router.get(
-            '/candidate-profiles',
-            {
-                page: selected + 1,
-                search: search || undefined,
-                visibility_status: visibilityStatus !== 'all' ? visibilityStatus : undefined,
-                gender: gender !== 'all' ? gender : undefined,
-                education: education !== 'all' ? education : undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const perPage = candidates.per_page ?? (candidates.data.length || 1);
-    const showingFrom =
-        candidates.from ??
-        (candidates.total === 0 ? 0 : (candidates.current_page - 1) * perPage + 1);
-    const showingTo =
-        candidates.to ?? Math.min(candidates.current_page * perPage, candidates.total);
 
     return (
         <AppLayout
@@ -205,274 +187,412 @@ export default function CandidatesIndex() {
         >
             <Head title="Candidates" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+                        <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">
                             Candidates
                         </h1>
-                        <p className="text-lg text-zinc-500">
-                            Manage candidate profiles and listings.
+                        <p className="text-sm font-medium text-muted-foreground">
+                            Manage candidate profiles and listings using the same information rhythm as the self-service profile pages.
                         </p>
                     </div>
                     <Link href="/candidate-profiles/create">
-                        <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
-                            <Plus className="mr-2 h-5 w-5" /> New Candidate
+                        <Button className="h-auto rounded-md bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-sm transition-all hover:bg-primary/90">
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Candidate
                         </Button>
                     </Link>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {[
-                        { label: 'Total Candidates', val: computedStats.total, icon: Users },
-                        { label: 'Active', val: computedStats.active, icon: CheckCircle2 },
-                        { label: 'Public', val: computedStats.public, icon: UserCheck },
-                        { label: 'Draft', val: computedStats.draft, icon: GraduationCap },
-                    ].map((item, index) => (
-                        <Card key={index} className="border-zinc-200 shadow-none">
-                            <CardContent className="flex items-center justify-between p-6">
+                <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1.1fr_0.9fr]">
+                    <div className="space-y-8">
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
-                                        {item.label}
+                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                        Search & Filter
                                     </p>
-                                    <p className="text-2xl font-semibold text-zinc-900">
-                                        {item.val}
-                                    </p>
+                                    <h2 className="text-lg font-bold tracking-tight text-foreground uppercase">
+                                        Candidate Directory
+                                    </h2>
                                 </div>
-                                <item.icon className="h-6 w-6 text-zinc-400" />
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="rounded-md border-border"
+                                    onClick={() => setShowFilters((current) => !current)}
+                                >
+                                    <Filter className="mr-2 h-4 w-4" />
+                                    {showFilters ? 'Hide Filters' : 'Show Filters'}
+                                </Button>
+                            </div>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="relative w-full max-w-md">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                            <Input
-                                placeholder="Search by name or email..."
-                                className="h-11 border-zinc-200 pl-10 focus:ring-zinc-900"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
+                            <div className="grid grid-cols-1 gap-5 border-b border-border/70 pb-6 md:grid-cols-[1fr_auto] md:items-end">
+                                <div className="space-y-1.5">
+                                    <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                        Search
+                                    </label>
+                                    <div className="flex items-center gap-3 border-b border-border px-0 py-2">
+                                        <Search className="h-4 w-4 text-muted-foreground" />
+                                        <input
+                                            value={search}
+                                            onChange={(event) => setSearch(event.target.value)}
+                                            className="w-full border-none bg-transparent px-0 py-0 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground focus:ring-0"
+                                            placeholder="Search by name, email, headline, or location"
+                                        />
+                                    </div>
+                                </div>
 
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                className="h-11 border-zinc-200"
-                                onClick={() => setShowFilters((current) => !current)}
-                                type="button"
-                            >
-                                <MoreHorizontal className="mr-2 h-4 w-4" /> More Filters
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className="h-11 text-zinc-500"
-                                onClick={handleResetFilters}
-                                type="button"
-                            >
-                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                            </Button>
-                        </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="rounded-md border-border"
+                                    onClick={handleResetFilters}
+                                >
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Reset
+                                </Button>
+                            </div>
+
+                            {showFilters ? (
+                                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <SelectCard
+                                        label="Visibility"
+                                        value={visibilityStatus}
+                                        onChange={setVisibilityStatus}
+                                        options={[
+                                            { value: 'all', label: 'All statuses' },
+                                            ...visibilityStatuses.map((status) => ({
+                                                value: status,
+                                                label: formatCandidateLabel(status),
+                                            })),
+                                        ]}
+                                    />
+                                    <SelectCard
+                                        label="Gender"
+                                        value={gender}
+                                        onChange={setGender}
+                                        options={[
+                                            { value: 'all', label: 'All genders' },
+                                            { value: 'male', label: 'Male' },
+                                            { value: 'female', label: 'Female' },
+                                            { value: 'other', label: 'Other' },
+                                            { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+                                        ]}
+                                    />
+                                    <SelectCard
+                                        label="Education"
+                                        value={education}
+                                        onChange={setEducation}
+                                        options={[
+                                            { value: 'all', label: 'All levels' },
+                                            ...educationLevels.map((level) => ({
+                                                value: level,
+                                                label: formatCandidateLabel(level),
+                                            })),
+                                        ]}
+                                    />
+                                </div>
+                            ) : null}
+                        </section>
+
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                        Talent pool
+                                    </p>
+                                    <h2 className="text-lg font-bold tracking-tight text-foreground uppercase">
+                                        Profiles
+                                    </h2>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {candidates.total} candidate{candidates.total === 1 ? '' : 's'} in view
+                                </p>
+                            </div>
+
+                            <IndexTableCard>
+                                <Table>
+                                    <TableHeader>
+                                        <IndexTableHeaderRow>
+                                            <SortableTableHead filters={filters} sortKey="full_name" path="/candidate-profiles">
+                                                Candidate
+                                            </SortableTableHead>
+                                            <SortableTableHead filters={filters} sortKey="headline" path="/candidate-profiles">
+                                                Headline
+                                            </SortableTableHead>
+                                            <SortableTableHead filters={filters} sortKey="profile_visibility_status" path="/candidate-profiles">
+                                                Visibility
+                                            </SortableTableHead>
+                                            <SortableTableHead filters={filters} sortKey="highest_education" path="/candidate-profiles">
+                                                Education
+                                            </SortableTableHead>
+                                            <SortableTableHead filters={filters} sortKey="listing_activated_at" path="/candidate-profiles">
+                                                Activated
+                                            </SortableTableHead>
+                                            <IndexTableHead align="right">Actions</IndexTableHead>
+                                        </IndexTableHeaderRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {candidates.data.length === 0 ? (
+                                            <IndexTableEmptyRow colSpan={6}>
+                                                No candidate profiles match the current filters.
+                                            </IndexTableEmptyRow>
+                                        ) : (
+                                            candidates.data.map((candidate) => (
+                                                <TableRow key={candidate.id} className="border-border/60 hover:bg-muted/20">
+                                                    <TableCell className="py-4 align-top">
+                                                        <div className="space-y-1">
+                                                            <p className="text-sm font-semibold text-foreground">
+                                                                {candidate.full_name}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {candidate.email}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2 pt-1">
+                                                                <Badge variant={candidate.is_public ? 'success' : 'secondary'}>
+                                                                    {candidate.is_public ? 'Public' : 'Private'}
+                                                                </Badge>
+                                                                {candidate.applications_count ? (
+                                                                    <Badge variant="info">
+                                                                        {candidate.applications_count} applications
+                                                                    </Badge>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                                        <div className="space-y-1">
+                                                            <p>{candidate.headline || 'No headline set'}</p>
+                                                            <p className="text-xs">
+                                                                {candidate.location || 'Location not set'}
+                                                            </p>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="py-4 align-top">
+                                                        <StatusBadge status={candidate.visibility_status} />
+                                                    </TableCell>
+                                                    <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                                        {candidate.highest_education
+                                                            ? formatCandidateLabel(candidate.highest_education)
+                                                            : '—'}
+                                                    </TableCell>
+                                                    <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                                        {formatCandidateDate(candidate.listing_activated_at)}
+                                                    </TableCell>
+                                                    <TableCell className="py-4 text-right align-top">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Link href={candidate.links?.show || `/candidate-profiles/${candidate.id}`}>
+                                                                <Button variant="outline" size="icon" className="h-8 w-8 rounded-md">
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Button>
+                                                            </Link>
+                                                            <Link href={candidate.links?.edit || `/candidate-profiles/${candidate.id}/edit`}>
+                                                                <Button variant="outline" size="icon" className="h-8 w-8 rounded-md">
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                            </Link>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-md border-destructive/30 text-destructive hover:bg-destructive/10"
+                                                                onClick={() => setCandidateToDelete(candidate)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                                <IndexTablePagination
+                                    pagination={candidates}
+                                    filters={filters}
+                                    path="/candidate-profiles"
+                                    label="candidates"
+                                />
+                            </IndexTableCard>
+                        </section>
                     </div>
-
-                    {showFilters && (
-                        <div className="grid grid-cols-1 gap-4 rounded-md border border-zinc-200 bg-zinc-50/40 p-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Visibility Status</p>
-                                <Select value={visibilityStatus} onValueChange={setVisibilityStatus}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All statuses" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All statuses</SelectItem>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="pending_payment">Pending Payment</SelectItem>
-                                        <SelectItem value="expired">Expired</SelectItem>
-                                        <SelectItem value="suspended">Suspended</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                    <div className="space-y-8">
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <div className="mb-6 flex items-center gap-2">
+                                <Users className="h-5 w-5 text-foreground" />
+                                <h2 className="text-lg font-bold tracking-tight text-foreground uppercase">
+                                    Talent Pool Summary
+                                </h2>
                             </div>
 
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Gender</p>
-                                <Select value={gender} onValueChange={setGender}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All genders" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All genders</SelectItem>
-                                        <SelectItem value="male">Male</SelectItem>
-                                        <SelectItem value="female">Female</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="grid grid-cols-2 gap-3">
+                                <StatCard
+                                    icon={Users}
+                                    label="Total"
+                                    value={computedStats.total}
+                                />
+                                <StatCard
+                                    icon={CheckCircle2}
+                                    label="Active"
+                                    value={computedStats.active}
+                                />
+                                <StatCard
+                                    icon={UserCheck}
+                                    label="Public"
+                                    value={computedStats.public}
+                                />
+                                <StatCard
+                                    icon={GraduationCap}
+                                    label="Draft"
+                                    value={computedStats.draft}
+                                />
+                            </div>
+                        </section>
+
+                        <section className={recruitmentCandidateSectionClassName}>
+                            <div className="mb-6 flex items-center gap-2">
+                                <Filter className="h-5 w-5 text-foreground" />
+                                <h2 className="text-lg font-bold tracking-tight text-foreground uppercase">
+                                    Filter Snapshot
+                                </h2>
                             </div>
 
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Education</p>
-                                <Select value={education} onValueChange={setEducation}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All levels" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All levels</SelectItem>
-                                        <SelectItem value="high_school">High School</SelectItem>
-                                        <SelectItem value="diploma">Diploma</SelectItem>
-                                        <SelectItem value="bachelors">Bachelors</SelectItem>
-                                        <SelectItem value="masters">Masters</SelectItem>
-                                        <SelectItem value="doctorate">Doctorate</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="space-y-3">
+                                <SnapshotRow label="Search" value={search || 'All candidates'} />
+                                <SnapshotRow
+                                    label="Visibility"
+                                    value={
+                                        visibilityStatus === 'all'
+                                            ? 'All statuses'
+                                            : formatCandidateLabel(visibilityStatus)
+                                    }
+                                />
+                                <SnapshotRow
+                                    label="Gender"
+                                    value={
+                                        gender === 'all' ? 'All genders' : formatCandidateLabel(gender)
+                                    }
+                                />
+                                <SnapshotRow
+                                    label="Education"
+                                    value={
+                                        education === 'all'
+                                            ? 'All levels'
+                                            : formatCandidateLabel(education)
+                                    }
+                                />
                             </div>
-                        </div>
-                    )}
-                </div>
+                        </section>
 
-                {/* Table */}
-                <div className="overflow-hidden rounded-md border border-zinc-200">
-                    <Table>
-                        <TableHeader className="bg-zinc-50">
-                            <TableRow>
-                                <TableHead className="font-bold text-zinc-900">Name</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Email</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Headline</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Visibility</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Public</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Activated</TableHead>
-                                <TableHead className="px-6 text-right font-bold text-zinc-900">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {candidates.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="py-8 text-center text-zinc-400">
-                                        No candidates found.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                candidates.data.map((candidate) => (
-                                    <TableRow key={candidate.id} className="hover:bg-zinc-50/50">
-                                        <TableCell className="font-bold text-zinc-900">
-                                            {candidate.full_name}
-                                        </TableCell>
-                                        <TableCell className="text-zinc-500">
-                                            {candidate.email}
-                                        </TableCell>
-                                        <TableCell className="max-w-[200px] truncate text-zinc-500">
-                                            {candidate.headline ?? '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={`${statusStyles[candidate.visibility_status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                            >
-                                                {formatLabel(candidate.visibility_status)}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={`${candidate.is_public ? 'border-transparent bg-emerald-100 text-emerald-700' : 'border-transparent bg-zinc-100 text-zinc-600'} font-semibold`}
-                                            >
-                                                {candidate.is_public ? 'Yes' : 'No'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-zinc-500">
-                                            {formatDate(candidate.listing_activated_at)}
-                                        </TableCell>
-                                        <TableCell className="px-6 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={`/candidate-profiles/${candidate.id}`}>
-                                                        <Eye className="h-4 w-4 text-zinc-400" />
-                                                    </Link>
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={`/candidate-profiles/${candidate.id}/edit`}>
-                                                        <Pencil className="h-4 w-4 text-zinc-400" />
-                                                    </Link>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8"
-                                                    onClick={() => setCandidateToDelete(candidate)}
-                                                    type="button"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-400" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-100 pt-6 md:flex-row">
-                    <p className="text-sm font-medium text-zinc-500">
-                        Showing{' '}
-                        <span className="text-zinc-900">
-                            {showingFrom}-{showingTo}
-                        </span>{' '}
-                        of <span className="text-zinc-900">{candidates.total}</span> candidates
-                    </p>
-                    <ReactPaginate
-                        pageCount={candidates.last_page}
-                        forcePage={Math.max((candidates.current_page ?? 1) - 1, 0)}
-                        onPageChange={handlePageChange}
-                        containerClassName="flex gap-1"
-                        pageLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold transition-colors hover:bg-zinc-50"
-                        activeLinkClassName="!border-zinc-900 !bg-zinc-900 !text-white"
-                        previousLabel="←"
-                        nextLabel="→"
-                        previousLinkClassName="mr-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        nextLinkClassName="ml-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        disabledClassName="pointer-events-none opacity-30"
-                        breakLabel="..."
-                        breakLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold"
-                        marginPagesDisplayed={1}
-                        pageRangeDisplayed={3}
-                    />
+                        <section className={recruitmentCandidateMutedCardClassName}>
+                            <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                Admin guidance
+                            </p>
+                            <ul className="mt-4 space-y-3 text-sm font-medium text-foreground/80">
+                                <li>Open a profile to manage resume uploads, skills, education, and experience.</li>
+                                <li>Use sorting to review the most recently activated or updated candidate records.</li>
+                                <li>Public and active profiles are the candidates currently visible to employers.</li>
+                            </ul>
+                        </section>
+                    </div>
                 </div>
             </div>
 
-            {/* Delete Alert */}
-            <AlertDialog
-                open={!!candidateToDelete}
-                onOpenChange={() => setCandidateToDelete(null)}
-            >
-                <AlertDialogContent className="rounded-none border-zinc-200">
+            <AlertDialog open={!!candidateToDelete} onOpenChange={() => setCandidateToDelete(null)}>
+                <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-bold">
-                            Confirm Deletion
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-zinc-500">
-                            You are about to remove{' '}
-                            <span className="font-bold text-zinc-900">
+                        <AlertDialogTitle>Delete candidate profile</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Remove{' '}
+                            <span className="font-semibold text-foreground">
                                 {candidateToDelete?.full_name}
-                            </span>
-                            . This action is permanent and cannot be reversed.
+                            </span>{' '}
+                            from recruitment administration. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="border-zinc-200">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="border-none bg-red-600 text-white hover:bg-red-700"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={handleDeleteCandidate}
                         >
-                            Delete Candidate
+                            Delete candidate
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </AppLayout>
+    );
+}
+
+function StatusBadge({ status }: { status: string }) {
+    return (
+        <Badge variant={statusVariants[status] ?? 'secondary'}>
+            {formatCandidateLabel(status)}
+        </Badge>
+    );
+}
+
+function SelectCard({
+    label,
+    value,
+    onChange,
+    options,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{ value: string; label: string }>;
+}) {
+    return (
+        <div className={recruitmentCandidateMutedCardClassName}>
+            <label className="block text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                {label}
+            </label>
+            <select
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="mt-3 w-full cursor-pointer border-none bg-transparent px-0 py-0 text-sm font-semibold text-foreground focus:ring-0"
+            >
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+function StatCard({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: typeof Users;
+    label: string;
+    value: number;
+}) {
+    return (
+        <div className={recruitmentCandidateMutedCardClassName}>
+            <div className="mb-4 flex items-center justify-between">
+                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                    {label}
+                </p>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-2xl font-black tracking-tight text-foreground">{value}</p>
+        </div>
+    );
+}
+
+function SnapshotRow({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-start justify-between gap-4 border-b border-border/60 pb-3 text-sm last:border-none last:pb-0">
+            <span className="font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+            <span className="text-right font-semibold text-foreground">{value}</span>
+        </div>
     );
 }

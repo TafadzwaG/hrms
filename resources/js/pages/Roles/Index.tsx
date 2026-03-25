@@ -1,10 +1,12 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { IndexTableEmptyRow, IndexTableHead, IndexTableHeaderRow, SortableTableHead } from '@/components/index-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { buildIndexParams } from '@/lib/index-table';
 import { roleBadgeClass, useAuthorization } from '@/lib/authorization';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowRight, Pencil, Search, ShieldCheck, Trash2, Users } from 'lucide-react';
@@ -41,7 +43,7 @@ type Stats = {
 export default function RolesIndex() {
     const { roles, filters, stats, usersByRole } = usePage<{
         roles: PaginatedRoles;
-        filters: { search?: string };
+        filters: { search?: string; sort?: string; direction?: 'asc' | 'desc' };
         stats: Stats;
         usersByRole: Array<{ id: number; code: string; name: string; users_count: number }>;
     }>().props;
@@ -51,7 +53,7 @@ export default function RolesIndex() {
 
     useEffect(() => {
         const timer = window.setTimeout(() => {
-            router.get('/roles', { search }, { preserveState: true, replace: true, preserveScroll: true });
+            router.get('/roles', buildIndexParams(filters, { search }), { preserveState: true, replace: true, preserveScroll: true });
         }, 250);
 
         return () => window.clearTimeout(timer);
@@ -119,12 +121,12 @@ export default function RolesIndex() {
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>Coverage</TableHead>
-                                        <TableHead>Users</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
+                                    <IndexTableHeaderRow>
+                                        <SortableTableHead path="/roles" filters={filters} sortKey="name">Role</SortableTableHead>
+                                        <SortableTableHead path="/roles" filters={filters} sortKey="permissions_count">Coverage</SortableTableHead>
+                                        <IndexTableHead>Users</IndexTableHead>
+                                        <IndexTableHead align="right">Actions</IndexTableHead>
+                                    </IndexTableHeaderRow>
                                 </TableHeader>
                                 <TableBody>
                                     {roles.data.map((role) => (
@@ -169,11 +171,9 @@ export default function RolesIndex() {
                                         </TableRow>
                                     ))}
                                     {roles.data.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
-                                                No roles match the current search.
-                                            </TableCell>
-                                        </TableRow>
+                                        <IndexTableEmptyRow colSpan={4}>
+                                            No roles match the current search.
+                                        </IndexTableEmptyRow>
                                     ) : null}
                                 </TableBody>
                             </Table>
@@ -239,4 +239,3 @@ function StatCard({ title, value, description, icon }: { title: string; value: n
         </Card>
     );
 }
-

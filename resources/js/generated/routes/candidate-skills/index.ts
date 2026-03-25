@@ -1,10 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\CandidateProfileController::store
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:238
  * @route '/candidate-profiles/{candidate}/skills'
  */
-export const store = (args: { candidate: string | number } | [candidate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const store = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
@@ -16,14 +16,17 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::store
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:238
  * @route '/candidate-profiles/{candidate}/skills'
  */
-store.url = (args: { candidate: string | number } | [candidate: string | number ] | string | number, options?: RouteQueryOptions) => {
+store.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { candidate: args }
     }
 
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { candidate: args.id }
+        }
     
     if (Array.isArray(args)) {
         args = {
@@ -34,7 +37,9 @@ store.url = (args: { candidate: string | number } | [candidate: string | number 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: args.candidate,
+                        candidate: typeof args.candidate === 'object'
+                ? args.candidate.id
+                : args.candidate,
                 }
 
     return store.definition.url
@@ -44,30 +49,30 @@ store.url = (args: { candidate: string | number } | [candidate: string | number 
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::store
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:238
  * @route '/candidate-profiles/{candidate}/skills'
  */
-store.post = (args: { candidate: string | number } | [candidate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+store.post = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: store.url(args, options),
     method: 'post',
 })
 
     /**
 * @see \App\Http\Controllers\CandidateProfileController::store
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:238
  * @route '/candidate-profiles/{candidate}/skills'
  */
-    const storeForm = (args: { candidate: string | number } | [candidate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const storeForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: store.url(args, options),
         method: 'post',
     })
 
             /**
 * @see \App\Http\Controllers\CandidateProfileController::store
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:238
  * @route '/candidate-profiles/{candidate}/skills'
  */
-        storeForm.post = (args: { candidate: string | number } | [candidate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        storeForm.post = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: store.url(args, options),
             method: 'post',
         })
@@ -75,10 +80,10 @@ store.post = (args: { candidate: string | number } | [candidate: string | number
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:245
  * @route '/candidate-profiles/{candidate}/skills/{skill}'
  */
-export const destroy = (args: { candidate: string | number, skill: string | number } | [candidate: string | number, skill: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { candidate: number | { id: number }, skill: number | { id: number } } | [candidate: number | { id: number }, skill: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -90,10 +95,10 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:245
  * @route '/candidate-profiles/{candidate}/skills/{skill}'
  */
-destroy.url = (args: { candidate: string | number, skill: string | number } | [candidate: string | number, skill: string | number ], options?: RouteQueryOptions) => {
+destroy.url = (args: { candidate: number | { id: number }, skill: number | { id: number } } | [candidate: number | { id: number }, skill: number | { id: number } ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
                     candidate: args[0],
@@ -104,8 +109,12 @@ destroy.url = (args: { candidate: string | number, skill: string | number } | [c
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: args.candidate,
-                                skill: args.skill,
+                        candidate: typeof args.candidate === 'object'
+                ? args.candidate.id
+                : args.candidate,
+                                skill: typeof args.skill === 'object'
+                ? args.skill.id
+                : args.skill,
                 }
 
     return destroy.definition.url
@@ -116,20 +125,20 @@ destroy.url = (args: { candidate: string | number, skill: string | number } | [c
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:245
  * @route '/candidate-profiles/{candidate}/skills/{skill}'
  */
-destroy.delete = (args: { candidate: string | number, skill: string | number } | [candidate: string | number, skill: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { candidate: number | { id: number }, skill: number | { id: number } } | [candidate: number | { id: number }, skill: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
     /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:245
  * @route '/candidate-profiles/{candidate}/skills/{skill}'
  */
-    const destroyForm = (args: { candidate: string | number, skill: string | number } | [candidate: string | number, skill: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { candidate: number | { id: number }, skill: number | { id: number } } | [candidate: number | { id: number }, skill: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -141,10 +150,10 @@ destroy.delete = (args: { candidate: string | number, skill: string | number } |
 
             /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
- * @see app/Http/Controllers/CandidateProfileController.php:0
+ * @see app/Http/Controllers/CandidateProfileController.php:245
  * @route '/candidate-profiles/{candidate}/skills/{skill}'
  */
-        destroyForm.delete = (args: { candidate: string | number, skill: string | number } | [candidate: string | number, skill: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { candidate: number | { id: number }, skill: number | { id: number } } | [candidate: number | { id: number }, skill: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

@@ -1,4 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { 
     ArrowLeft, 
     ArrowRight, 
@@ -13,7 +14,19 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { EmployerEmptyState, EmployerHubLayout, EmployerStatusBadge } from './components/hub';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    employerBreadcrumbs,
+    EmployerEmptyState,
+    EmployerHubLayout,
+    EmployerStatusBadge,
+} from './components/hub';
 import type { Company, EmployerInterview, User } from './dummyData';
 
 type PageProps = {
@@ -31,10 +44,13 @@ type PageProps = {
 };
 
 const underlinedInput =
-    'w-full appearance-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs font-semibold text-black outline-none transition-all placeholder:font-medium placeholder:text-zinc-400 focus:border-black focus:ring-0';
+    'w-full appearance-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black outline-none transition-all placeholder:text-zinc-400 focus:border-black focus:ring-0';
+const selectTriggerClass =
+    'h-auto w-full rounded-none border-0 border-b border-zinc-200 bg-transparent px-0 py-1.5 text-xs text-black shadow-none focus:ring-0 focus:ring-offset-0';
 
 export default function EmployerInterviewsPage() {
     const { company, user, interviews, filters, statuses } = usePage<PageProps>().props;
+    const [statusFilter, setStatusFilter] = useState(filters.status ?? '__all__');
 
     const updateInterview = (interviewId: number, status: 'cancelled' | 'completed') => {
         if(window.confirm(`Are you sure you want to mark this interview as ${status}?`)) {
@@ -49,18 +65,11 @@ export default function EmployerInterviewsPage() {
             subtitle='Manage interviews'
             company={company}
             user={user}
+            breadcrumbs={employerBreadcrumbs('Interviews')}
         >
-            <div className="w-full px-4 md:px-6">
-                {/* Page Title */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Interviews.</h1>
-                    <p className="max-w-2xl text-xs font-medium text-zinc-500">
-                        Manage interview schedules, candidate responses, and the active interview calendar.
-                    </p>
-                </div>
-
+            <div className="space-y-6">
                 {/* Filter Section */}
-                <section className="mb-8 rounded-sm border border-zinc-200 bg-zinc-50 p-5 shadow-sm">
+                <section className="rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm">
                     <form method="get" action="/employer/interviews" className="grid grid-cols-1 items-end gap-5 md:grid-cols-12">
                         <div className="md:col-span-5">
                             <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">Search</label>
@@ -77,14 +86,20 @@ export default function EmployerInterviewsPage() {
 
                         <div className="md:col-span-4">
                             <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">Status</label>
-                            <select name="status" defaultValue={filters.status ?? ''} className={underlinedInput}>
-                                <option value="">All statuses</option>
+                            <input type="hidden" name="status" value={statusFilter === '__all__' ? '' : statusFilter} />
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className={selectTriggerClass}>
+                                    <SelectValue placeholder="All statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="__all__">All statuses</SelectItem>
                                 {statuses.map((status) => (
-                                    <option key={status} value={status}>
+                                    <SelectItem key={status} value={status}>
                                         {status.replace(/_/g, ' ')}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="md:col-span-3">
@@ -99,7 +114,7 @@ export default function EmployerInterviewsPage() {
                 {interviews.data.length > 0 ? (
                     <div className="space-y-4">
                         {interviews.data.map((interview) => (
-                            <div key={interview.id} className="rounded-sm border border-zinc-200 bg-white p-5 transition-all hover:border-black shadow-sm relative overflow-hidden group">
+                            <div key={interview.id} className="group relative overflow-hidden rounded-lg border border-border/70 bg-background/95 p-5 shadow-sm transition-colors hover:border-border hover:bg-muted/10">
                                 {/* Subtle left border accent indicating status */}
                                 <div className={`absolute top-0 left-0 w-1 h-full transition-colors ${
                                     interview.status === 'completed' ? 'bg-emerald-500' : 

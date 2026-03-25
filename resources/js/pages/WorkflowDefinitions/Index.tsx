@@ -16,7 +16,6 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 import {
     AlertDialog,
@@ -31,6 +30,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -44,10 +50,10 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildIndexParams } from '@/lib/index-table';
 
 type WorkflowRecord = {
     id: number;
@@ -72,7 +78,7 @@ export default function WorkflowDefinitionsIndex() {
     const { module, records, filters } = usePage().props as unknown as {
         module: any;
         records: PaginatedData;
-        filters: { search?: string };
+        filters: { search?: string; sort?: string; direction?: 'asc' | 'desc' };
     };
 
     const [search, setSearch] = useState(filters?.search || '');
@@ -92,20 +98,12 @@ export default function WorkflowDefinitionsIndex() {
             // Include status/type in query if your backend gets updated to support them
             router.get(
                 basePath,
-                { search },
+                buildIndexParams(filters, { search }),
                 { preserveState: true, replace: true },
             );
         }, 300);
         return () => clearTimeout(timer);
     }, [search]);
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            basePath,
-            { page: selectedItem.selected + 1, search },
-            { preserveState: true, preserveScroll: true },
-        );
-    };
 
     const confirmDelete = () => {
         if (!recordToDelete) return;
@@ -350,38 +348,52 @@ export default function WorkflowDefinitionsIndex() {
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-muted/30 hover:bg-transparent">
-                                    <TableHead className="h-12 w-[300px] pl-6 text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                <IndexTableHeaderRow>
+                                    <SortableTableHead
+                                        path={basePath}
+                                        filters={filters}
+                                        sortKey="name"
+                                        className="w-[300px] pl-6"
+                                    >
                                         Workflow Name
-                                    </TableHead>
-                                    <TableHead className="w-[160px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <SortableTableHead
+                                        path={basePath}
+                                        filters={filters}
+                                        sortKey="request_type"
+                                        className="w-[160px]"
+                                    >
                                         Request Type
-                                    </TableHead>
-                                    <TableHead className="w-[140px] text-center text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead align="center" className="w-[140px]">
                                         Steps
-                                    </TableHead>
-                                    <TableHead className="w-[160px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    </IndexTableHead>
+                                    <SortableTableHead
+                                        path={basePath}
+                                        filters={filters}
+                                        sortKey="sla_hours"
+                                        className="w-[160px]"
+                                    >
                                         SLA Hours
-                                    </TableHead>
-                                    <TableHead className="w-[140px] text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <SortableTableHead
+                                        path={basePath}
+                                        filters={filters}
+                                        sortKey="status"
+                                        className="w-[140px]"
+                                    >
                                         Status
-                                    </TableHead>
-                                    <TableHead className="w-[140px] pr-6 text-right text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+                                    </SortableTableHead>
+                                    <IndexTableHead align="right" className="w-[140px] pr-6">
                                         Actions
-                                    </TableHead>
-                                </TableRow>
+                                    </IndexTableHead>
+                                </IndexTableHeaderRow>
                             </TableHeader>
                             <TableBody>
                                 {pageData.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={6}
-                                            className="h-48 text-center text-muted-foreground"
-                                        >
-                                            No workflow definitions found
-                                            matching your search.
-                                        </TableCell>
-                                    </TableRow>
+                                    <IndexTableEmptyRow colSpan={6}>
+                                        No workflow definitions found matching your search.
+                                    </IndexTableEmptyRow>
                                 ) : (
                                     pageData.map((record) => (
                                         <TableRow
@@ -525,56 +537,12 @@ export default function WorkflowDefinitionsIndex() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
-                    {records?.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t bg-muted/10 p-4">
-                            <div className="pl-2 text-sm font-medium text-muted-foreground">
-                                Showing{' '}
-                                <span className="font-bold text-foreground">
-                                    {(records.current_page - 1) *
-                                        records.per_page +
-                                        1}
-                                </span>{' '}
-                                to{' '}
-                                <span className="font-bold text-foreground">
-                                    {Math.min(
-                                        records.current_page * records.per_page,
-                                        records.total,
-                                    )}
-                                </span>{' '}
-                                of{' '}
-                                <span className="font-bold text-foreground">
-                                    {records.total}
-                                </span>{' '}
-                                results
-                            </div>
-                            <ReactPaginate
-                                pageCount={records.last_page}
-                                forcePage={records.current_page - 1}
-                                onPageChange={handlePageChange}
-                                marginPagesDisplayed={1}
-                                pageRangeDisplayed={3}
-                                previousLabel={
-                                    <span className="flex items-center text-sm font-medium">
-                                        Previous
-                                    </span>
-                                }
-                                nextLabel={
-                                    <span className="flex items-center text-sm font-medium">
-                                        Next
-                                    </span>
-                                }
-                                breakLabel="..."
-                                containerClassName="flex items-center gap-1"
-                                pageLinkClassName="inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent bg-transparent font-medium hover:bg-muted text-sm shadow-none text-muted-foreground"
-                                activeLinkClassName="!bg-primary text-primary-foreground font-bold border-primary hover:!bg-primary/90 rounded-md"
-                                previousLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground mr-2"
-                                nextLinkClassName="inline-flex h-9 px-3 items-center justify-center rounded-md border border-transparent bg-transparent hover:bg-muted text-sm font-medium text-muted-foreground ml-2"
-                                breakClassName="flex h-9 w-9 items-center justify-center text-sm font-medium text-muted-foreground"
-                                disabledClassName="opacity-50 pointer-events-none"
-                            />
-                        </div>
-                    )}
+                    <IndexTablePagination
+                        pagination={records}
+                        filters={filters}
+                        path={basePath}
+                        label="results"
+                    />
                 </div>
             </div>
         </AppLayout>

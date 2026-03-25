@@ -79,6 +79,7 @@ use App\Http\Controllers\VacancyController;
 use App\Http\Controllers\VacancyApplicationController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\RecruitmentDashboardController;
+use App\Http\Controllers\RecruitmentAdminPaymentsController;
 use App\Http\Controllers\Reports\RecruitmentReportController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\MarketplaceController;
@@ -1205,8 +1206,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:recruitment.view')
         ->name('recruitment.dashboard');
 
+    Route::get('/recruitment/admin/payments', [RecruitmentAdminPaymentsController::class, 'index'])
+        ->middleware('permission:recruitment.reports.view')
+        ->name('recruitment.admin.payments');
+
     // ── Candidate Profiles ──────────────────────────────────────
     Route::resource('candidate-profiles', CandidateProfileController::class)
+        ->parameters(['candidate-profiles' => 'candidate'])
         ->middlewareFor(['index', 'show'], 'permission:recruitment.candidates.manage')
         ->middlewareFor(['create', 'store'], 'permission:recruitment.candidates.manage')
         ->middlewareFor(['edit', 'update'], 'permission:recruitment.candidates.manage')
@@ -1256,6 +1262,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ── Company Profiles ────────────────────────────────────────
     Route::resource('company-profiles', CompanyProfileController::class)
+        ->parameters(['company-profiles' => 'company'])
         ->middlewareFor(['index', 'show'], 'permission:recruitment.companies.manage')
         ->middlewareFor(['create', 'store'], 'permission:recruitment.companies.manage')
         ->middlewareFor(['edit', 'update'], 'permission:recruitment.companies.manage')

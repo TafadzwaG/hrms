@@ -3,8 +3,6 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
     CalendarDays,
-    ChevronLeft,
-    ChevronRight,
     Edit3,
     Eye,
     Plus,
@@ -14,10 +12,18 @@ import {
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
 
+import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { buildIndexParams } from '@/lib/index-table';
 import {
     Select,
     SelectContent,
@@ -29,7 +35,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
@@ -75,6 +80,8 @@ type PageProps = {
     records: PaginatedRecords;
     filters: {
         search?: string;
+        sort?: string;
+        direction?: 'asc' | 'desc';
     };
 };
 
@@ -91,7 +98,7 @@ export default function AttendanceRecordsIndex() {
         const timer = setTimeout(() => {
             router.get(
                 `${API}/${module.slug}`,
-                { search },
+                buildIndexParams(filters, { search }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 300);
@@ -241,7 +248,7 @@ export default function AttendanceRecordsIndex() {
 
         if (value.includes('late')) {
             return (
-                <Badge className="border-amber-200 bg-amber-100 text-amber-800 hover:bg-amber-100">
+                <Badge variant="warning">
                     Late Arrival
                 </Badge>
             );
@@ -249,7 +256,7 @@ export default function AttendanceRecordsIndex() {
 
         if (value.includes('missing')) {
             return (
-                <Badge className="border-rose-200 bg-rose-100 text-rose-800 hover:bg-rose-100">
+                <Badge variant="danger">
                     Missing Clock Out
                 </Badge>
             );
@@ -257,14 +264,14 @@ export default function AttendanceRecordsIndex() {
 
         if (value.includes('over')) {
             return (
-                <Badge className="border-blue-200 bg-blue-100 text-blue-800 hover:bg-blue-100">
+                <Badge variant="info">
                     Overtime
                 </Badge>
             );
         }
 
         return (
-            <Badge className="border-emerald-200 bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+            <Badge variant="success">
                 Regular
             </Badge>
         );
@@ -349,25 +356,13 @@ export default function AttendanceRecordsIndex() {
         router.visit(`${API}/${module.slug}/${record.id}`);
     };
 
-    const handlePageChange = (page: number) => {
-        router.get(
-            `${API}/${module.slug}`,
-            { page, search },
-            { preserveState: true, preserveScroll: true },
-        );
-    };
-
-    const footerFrom = useMemo(() => {
-        if (records.from) return records.from;
-        return pageData.length > 0
-            ? (records.current_page - 1) * records.per_page + 1
-            : 0;
-    }, [records, pageData.length]);
-
-    const footerTo = useMemo(() => {
-        if (records.to) return records.to;
-        return pageData.length > 0 ? footerFrom + pageData.length - 1 : 0;
-    }, [records, footerFrom, pageData.length]);
+    const tableFilters = useMemo(
+        () => ({
+            ...filters,
+            search,
+        }),
+        [filters, search],
+    );
 
     return (
         <AppLayout
@@ -377,7 +372,7 @@ export default function AttendanceRecordsIndex() {
         >
             <Head title="Attendance Records" />
 
-            <div className="min-h-[calc(100vh-64px)] w-full bg-background p-4 md:p-8">
+            <div className="min-h-[calc(100vh-64px)] w-full bg-muted/10 p-4 md:p-8">
                 <div className="w-full">
                     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -404,10 +399,10 @@ export default function AttendanceRecordsIndex() {
                     <div className="mb-6 flex flex-wrap items-center gap-3">
                         <Button
                             variant="outline"
-                            className="h-10 justify-between gap-2 border-slate-200 bg-white font-medium"
+                            className="h-10 justify-between gap-2 font-medium shadow-sm"
                         >
                             <span className="flex items-center gap-2">
-                                <CalendarDays className="h-4 w-4 text-slate-500" />
+                                <CalendarDays className="h-4 w-4 text-muted-foreground" />
                                 Date Range: Oct 1 - Oct 31
                             </span>
                         </Button>
@@ -416,7 +411,7 @@ export default function AttendanceRecordsIndex() {
                             value={exceptionFilter}
                             onValueChange={setExceptionFilter}
                         >
-                            <SelectTrigger className="h-10 w-[180px] border-slate-200 bg-white font-medium">
+                            <SelectTrigger className="h-10 w-[180px] bg-background font-medium shadow-sm">
                                 <SelectValue placeholder="Exception: All" />
                             </SelectTrigger>
                             <SelectContent>
@@ -440,7 +435,7 @@ export default function AttendanceRecordsIndex() {
                             value={departmentFilter}
                             onValueChange={setDepartmentFilter}
                         >
-                            <SelectTrigger className="h-10 w-[220px] border-slate-200 bg-white font-medium">
+                            <SelectTrigger className="h-10 w-[220px] bg-background font-medium shadow-sm">
                                 <SelectValue placeholder="Department: Engineering" />
                             </SelectTrigger>
                             <SelectContent>
@@ -459,7 +454,7 @@ export default function AttendanceRecordsIndex() {
                             </SelectContent>
                         </Select>
 
-                        <div className="hidden h-6 w-px bg-slate-200 md:block" />
+                        <div className="hidden h-6 w-px bg-border md:block" />
 
                         <Button
                             variant="link"
@@ -474,56 +469,82 @@ export default function AttendanceRecordsIndex() {
 
                         <div className="ml-auto w-full max-w-64 sm:w-auto">
                             <div className="relative">
-                                <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search records..."
-                                    className="h-10 border-slate-200 bg-slate-50 pl-9"
+                                    className="h-10 bg-background pl-9 shadow-sm"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <Card className="overflow-hidden border-slate-200 bg-white shadow-sm">
+                    <IndexTableCard className="overflow-hidden">
                         <div className="overflow-x-auto">
                             <Table className="min-w-[1100px]">
                                 <TableHeader>
-                                    <TableRow className="bg-slate-50 hover:bg-slate-50">
-                                        <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                    <IndexTableHeaderRow>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="employee"
+                                            className="px-6 py-4"
+                                        >
                                             Employee
-                                        </TableHead>
-                                        <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="work_date"
+                                            className="px-6 py-4"
+                                        >
                                             Date
-                                        </TableHead>
-                                        <TableHead className="w-36 px-4 py-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="clock_in"
+                                            className="w-36 px-4 py-4"
+                                        >
                                             Clock In
-                                        </TableHead>
-                                        <TableHead className="w-36 px-4 py-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="clock_out"
+                                            className="w-36 px-4 py-4"
+                                        >
                                             Clock Out
-                                        </TableHead>
-                                        <TableHead className="w-28 px-4 py-4 text-center text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="minutes_worked"
+                                            className="w-28 px-4 py-4"
+                                            align="center"
+                                        >
                                             Mins Worked
-                                        </TableHead>
-                                        <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <SortableTableHead
+                                            path={`${API}/${module.slug}`}
+                                            filters={tableFilters}
+                                            sortKey="exception_status"
+                                            className="px-6 py-4"
+                                        >
                                             Status
-                                        </TableHead>
-                                        <TableHead className="px-6 py-4 text-right text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        </SortableTableHead>
+                                        <IndexTableHead align="right" className="px-6 py-4">
                                             Actions
-                                        </TableHead>
-                                    </TableRow>
+                                        </IndexTableHead>
+                                    </IndexTableHeaderRow>
                                 </TableHeader>
 
                                 <TableBody>
                                     {pageData.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={7}
-                                                className="h-40 text-center text-muted-foreground"
-                                            >
-                                                No attendance records found.
-                                            </TableCell>
-                                        </TableRow>
+                                        <IndexTableEmptyRow colSpan={7}>
+                                            No attendance records found.
+                                        </IndexTableEmptyRow>
                                     ) : (
                                         pageData.map((record) => {
                                             const name =
@@ -537,7 +558,7 @@ export default function AttendanceRecordsIndex() {
                                             return (
                                                 <TableRow
                                                     key={record.id}
-                                                    className="transition-colors hover:bg-slate-50/50"
+                                                    className="transition-colors hover:bg-muted/30"
                                                 >
                                                     <TableCell className="px-6 py-3 whitespace-nowrap">
                                                         <div className="flex items-center gap-3">
@@ -547,10 +568,10 @@ export default function AttendanceRecordsIndex() {
                                                                 )}
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-semibold text-slate-900">
+                                                                <span className="text-sm font-semibold text-foreground">
                                                                     {name}
                                                                 </span>
-                                                                <span className="text-[10px] text-slate-400">
+                                                                <span className="text-[10px] text-muted-foreground">
                                                                     {
                                                                         staffNumber
                                                                     }
@@ -559,7 +580,7 @@ export default function AttendanceRecordsIndex() {
                                                         </div>
                                                     </TableCell>
 
-                                                    <TableCell className="px-6 py-3 text-sm whitespace-nowrap text-slate-600">
+                                                    <TableCell className="px-6 py-3 text-sm whitespace-nowrap text-muted-foreground">
                                                         {formatDate(
                                                             getAttendanceDate(
                                                                 record,
@@ -586,7 +607,7 @@ export default function AttendanceRecordsIndex() {
                                                             disabled={
                                                                 !isEditing
                                                             }
-                                                            className="h-9 border-slate-200 bg-white text-center text-sm font-medium text-slate-700"
+                                                            className="h-9 border-border/50 bg-background text-center text-sm font-medium text-foreground"
                                                         />
                                                     </TableCell>
 
@@ -621,8 +642,8 @@ export default function AttendanceRecordsIndex() {
                                                                     .includes(
                                                                         'missing',
                                                                     )
-                                                                    ? 'border-rose-300 bg-rose-50 text-rose-500'
-                                                                    : 'border-slate-200 bg-white text-slate-700'
+                                                                    ? 'border-destructive/40 bg-destructive/5 text-destructive'
+                                                                    : 'border-border/50 bg-background text-foreground'
                                                             }`}
                                                         />
                                                     </TableCell>
@@ -636,7 +657,7 @@ export default function AttendanceRecordsIndex() {
                                                                     'minutes_worked',
                                                                 ) ?? '--',
                                                             )}
-                                                            className="h-9 border-slate-200 bg-slate-50 text-center text-sm text-slate-600"
+                                                            className="h-9 border-border/50 bg-muted/20 text-center text-sm text-muted-foreground"
                                                         />
                                                     </TableCell>
 
@@ -681,7 +702,7 @@ export default function AttendanceRecordsIndex() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-8 w-8 text-slate-400 hover:text-slate-700"
+                                                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                                                                 onClick={() =>
                                                                     startEdit(
                                                                         record,
@@ -702,59 +723,16 @@ export default function AttendanceRecordsIndex() {
                                 </TableBody>
                             </Table>
                         </div>
-                    </Card>
+                        <IndexTablePagination
+                            pagination={records}
+                            filters={tableFilters}
+                            path={`${API}/${module.slug}`}
+                            label="records"
+                        />
+                    </IndexTableCard>
 
-                    <div className="flex items-center justify-between px-2 py-6">
-                        <p className="hidden text-sm text-slate-500 sm:block">
-                            Showing{' '}
-                            <span className="font-semibold">{footerFrom}</span>{' '}
-                            to <span className="font-semibold">{footerTo}</span>{' '}
-                            of{' '}
-                            <span className="font-semibold">
-                                {records.total}
-                            </span>{' '}
-                            records
-                        </p>
-
-                        <div className="flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 border-slate-200"
-                                disabled={(records.current_page ?? 1) <= 1}
-                                onClick={() =>
-                                    handlePageChange(records.current_page - 1)
-                                }
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                                className="h-9 w-9 bg-primary text-sm font-bold text-white hover:bg-primary/90"
-                                size="icon"
-                            >
-                                {records.current_page}
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-sm font-medium text-slate-600"
-                                disabled={
-                                    (records.current_page ?? 1) >=
-                                    (records.last_page ?? 1)
-                                }
-                                onClick={() =>
-                                    handlePageChange(records.current_page + 1)
-                                }
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-
-                    <footer className="mt-6 border-t border-slate-200 bg-white px-10 py-6 text-center">
-                        <p className="text-sm text-slate-500">
+                    <footer className="mt-6 border-t border-border/50 bg-background px-10 py-6 text-center">
+                        <p className="text-sm text-muted-foreground">
                             © 2023 Providence HRMS. All rights reserved.
                         </p>
                     </footer>

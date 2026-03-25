@@ -9,6 +9,14 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -21,10 +29,10 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildIndexParams } from '@/lib/index-table';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -40,7 +48,6 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type VendorRow = {
     id: number;
@@ -64,7 +71,7 @@ type PaginatedVendors = {
 export default function AssetVendorIndex() {
     const { vendors, filters } = usePage<{
         vendors: PaginatedVendors;
-        filters: { search?: string };
+        filters: { search?: string; sort?: string; direction?: 'asc' | 'desc' };
     }>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -75,7 +82,7 @@ export default function AssetVendorIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/asset-vendors',
-                { search },
+                buildIndexParams(filters, { search }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 250);
@@ -88,14 +95,6 @@ export default function AssetVendorIndex() {
             preserveScroll: true,
             onSuccess: () => setVendorToDelete(null),
         });
-    };
-
-    const handlePageChange = (selectedItem: { selected: number }) => {
-        router.get(
-            '/asset-vendors',
-            { page: selectedItem.selected + 1, search },
-            { preserveScroll: true, preserveState: true },
-        );
     };
 
     const activeCount = vendors.data.filter((v) => v.is_active).length;
@@ -189,27 +188,25 @@ export default function AssetVendorIndex() {
                 </div>
 
                 {/* Table */}
-                <div className="rounded-lg border border-border bg-background p-5">
+                <IndexTableCard className="rounded-lg p-5">
                     <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow>
-                                <TableHead className="w-[220px] py-4 font-semibold text-foreground">Name</TableHead>
-                                <TableHead className="font-semibold text-foreground">Code</TableHead>
-                                <TableHead className="font-semibold text-foreground">Contact Person</TableHead>
-                                <TableHead className="font-semibold text-foreground">Email</TableHead>
-                                <TableHead className="font-semibold text-foreground">Phone</TableHead>
-                                <TableHead className="font-semibold text-foreground">Status</TableHead>
-                                <TableHead className="text-center font-semibold text-foreground">Assets</TableHead>
-                                <TableHead className="text-right font-semibold text-foreground">Actions</TableHead>
-                            </TableRow>
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <SortableTableHead path="/asset-vendors" filters={filters} sortKey="name" className="w-[220px]">Name</SortableTableHead>
+                                <SortableTableHead path="/asset-vendors" filters={filters} sortKey="code">Code</SortableTableHead>
+                                <IndexTableHead>Contact Person</IndexTableHead>
+                                <SortableTableHead path="/asset-vendors" filters={filters} sortKey="email">Email</SortableTableHead>
+                                <IndexTableHead>Phone</IndexTableHead>
+                                <IndexTableHead>Status</IndexTableHead>
+                                <SortableTableHead path="/asset-vendors" filters={filters} sortKey="assets_count" align="center">Assets</SortableTableHead>
+                                <IndexTableHead align="right">Actions</IndexTableHead>
+                            </IndexTableHeaderRow>
                         </TableHeader>
                         <TableBody>
                             {displayed.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
-                                        No vendors found.
-                                    </TableCell>
-                                </TableRow>
+                                <IndexTableEmptyRow colSpan={8}>
+                                    No vendors found.
+                                </IndexTableEmptyRow>
                             ) : (
                                 displayed.map((vendor) => (
                                     <TableRow key={vendor.id} className="transition-colors hover:bg-muted/30">
@@ -258,34 +255,13 @@ export default function AssetVendorIndex() {
                         </TableBody>
                     </Table>
 
-                    {/* Pagination */}
-                    <div className="flex items-center justify-between border-t border-border px-4 py-4">
-                        <p className="text-sm text-muted-foreground">
-                            Showing <span className="font-medium">{displayed.length}</span> of{' '}
-                            <span className="font-medium text-foreground">{vendors.total}</span> vendors
-                        </p>
-                        <ReactPaginate
-                            pageCount={vendors.last_page}
-                            forcePage={vendors.current_page - 1}
-                            onPageChange={handlePageChange}
-                            containerClassName="flex items-center gap-1"
-                            pageLinkClassName="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium hover:bg-muted transition-colors"
-                            activeLinkClassName="bg-black text-white dark:bg-white dark:text-black hover:bg-black/90"
-                            previousLabel={
-                                <span className="mr-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Previous
-                                </span>
-                            }
-                            nextLabel={
-                                <span className="ml-1 flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-muted">
-                                    Next
-                                </span>
-                            }
-                            breakLabel="..."
-                            disabledClassName="opacity-40 cursor-not-allowed"
-                        />
-                    </div>
-                </div>
+                    <IndexTablePagination
+                        pagination={vendors}
+                        filters={filters}
+                        path="/asset-vendors"
+                        label="vendors"
+                    />
+                </IndexTableCard>
             </div>
 
             {/* Delete Dialog */}

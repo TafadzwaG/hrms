@@ -1,27 +1,28 @@
 import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export const candidateUnderlinedInput =
-    'w-full appearance-none border-0 border-b border-zinc-200/50 bg-transparent px-0 py-2 text-sm font-medium text-black outline-none transition-all placeholder:text-zinc-300 focus:border-black focus:ring-0 rounded-none';
+    'w-full appearance-none border-0 border-b border-border bg-transparent px-0 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-foreground focus:ring-0 rounded-none';
 
 export const candidateTextAreaClassName =
-    'min-h-[110px] w-full rounded-sm border border-zinc-200 bg-transparent p-3 text-sm text-black transition-all placeholder:text-zinc-300 focus:border-black focus:ring-0';
+    'min-h-[110px] w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground transition-all placeholder:text-muted-foreground focus:border-foreground focus:ring-0';
 
 export const candidateFileInputClassName =
-    'w-full rounded-sm border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-600 file:mr-4 file:border-0 file:bg-black file:px-3 file:py-1.5 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:text-white hover:file:bg-zinc-800';
+    'w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-muted-foreground file:mr-4 file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:text-primary-foreground hover:file:bg-primary/90';
 
 export const candidatePrimaryButtonClassName =
-    'h-auto rounded-md bg-black px-6 py-5 text-sm font-bold tracking-tight text-white transition-all hover:bg-zinc-800 active:scale-95';
+    'h-auto rounded-md bg-primary px-6 py-5 text-sm font-bold tracking-tight text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95';
 
 export const candidateSecondaryButtonClassName =
-    'h-auto rounded-md border border-zinc-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-700 transition-all hover:bg-zinc-50 active:scale-95';
+    'h-auto rounded-md border border-border bg-background px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground shadow-sm transition-all hover:bg-muted active:scale-95';
 
 export const candidateNeutralButtonClassName =
-    'h-auto rounded-md bg-zinc-100 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-700 transition-all hover:bg-zinc-200 active:scale-95';
+    'h-auto rounded-md bg-muted px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground transition-all hover:bg-muted/80 active:scale-95';
 
 export const candidatePaginationLinkClassName =
-    'rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-black';
+    'rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
 
 export function CandidateFormField({
     label,
@@ -36,7 +37,7 @@ export function CandidateFormField({
 }) {
     return (
         <div className={`space-y-1.5 ${className ?? ''}`}>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500">{label}</label>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</label>
             {children}
             <InputError message={error} />
         </div>
@@ -55,16 +56,15 @@ export function CandidateToggleRow({
     onChange: (checked: boolean) => void;
 }) {
     return (
-        <label className="flex items-start justify-between gap-4 border-b border-zinc-100 py-4 last:border-0 first:pt-0 last:pb-0">
+        <label className="flex items-start justify-between gap-4 border-b border-border/60 py-4 last:border-0 first:pt-0 last:pb-0">
             <div>
-                <p className="text-sm font-semibold text-black">{label}</p>
-                <p className="mt-1 text-sm text-zinc-500">{description}</p>
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             </div>
-            <input
-                type="checkbox"
+            <Checkbox
                 checked={checked}
-                onChange={(event) => onChange(event.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-zinc-300 text-black focus:ring-black"
+                onCheckedChange={(value) => onChange(value === true)}
+                className="mt-1"
             />
         </label>
     );
@@ -80,12 +80,11 @@ export function CandidateCheckboxPill({
     onChange: () => void;
 }) {
     return (
-        <label className="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
-            <input
-                type="checkbox"
+        <label className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted">
+            <Checkbox
                 checked={checked}
-                onChange={onChange}
-                className="h-4 w-4 rounded border-zinc-300 text-black focus:ring-black"
+                onCheckedChange={() => onChange()}
+                className="h-4 w-4"
             />
             {label}
         </label>

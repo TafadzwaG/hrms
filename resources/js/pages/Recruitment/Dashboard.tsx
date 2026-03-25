@@ -18,16 +18,25 @@ import {
     Building2,
     ClipboardList,
     Plus,
-    Users,
     UserSearch,
+    Users,
 } from 'lucide-react';
 
 type RecentActivity = {
-    id: number;
+    id: string;
     type: string;
     description: string;
     user: string;
     created_at: string | null;
+    href?: string | null;
+};
+
+type SummaryItem = {
+    id: number;
+    title: string;
+    subtitle: string;
+    meta: string;
+    href: string;
 };
 
 type DashboardStats = {
@@ -41,24 +50,29 @@ type DashboardStats = {
 type DashboardProps = {
     stats: DashboardStats;
     recent_activities: RecentActivity[];
+    recent_candidates: SummaryItem[];
+    recent_employers: SummaryItem[];
+    recent_vacancies: SummaryItem[];
+    recent_payments: SummaryItem[];
 };
 
 const activityStyles: Record<string, string> = {
-    candidate: 'border-transparent bg-blue-100 text-blue-700',
-    company: 'border-transparent bg-purple-100 text-purple-700',
-    vacancy: 'border-transparent bg-green-100 text-green-700',
-    application: 'border-transparent bg-orange-100 text-orange-700',
-    payment: 'border-transparent bg-emerald-100 text-emerald-700',
+    candidate: 'badge-tone-info',
+    company: 'badge-tone-accent',
+    vacancy: 'badge-tone-success',
+    application: 'badge-tone-warning',
+    payment: 'badge-tone-chart-3',
 };
 
 function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function formatMoney(value: string | number | null | undefined) {
     if (value === null || value === undefined || value === '') return '—';
     const amount = Number(value);
     if (Number.isNaN(amount)) return String(value);
+
     return amount.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -67,13 +81,69 @@ function formatMoney(value: string | number | null | undefined) {
 
 function formatDate(value: string | null) {
     if (!value) return '—';
+
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
+
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
     });
+}
+
+function SummaryListCard({
+    title,
+    description,
+    items,
+    href,
+}: {
+    title: string;
+    description: string;
+    items: SummaryItem[];
+    href: string;
+}) {
+    return (
+        <Card className="border-border/70 shadow-sm">
+            <CardHeader className="bg-muted/20">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                        <CardTitle>{title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{description}</p>
+                    </div>
+                    <Link href={href}>
+                        <Button variant="ghost" size="sm">
+                            View all
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </Link>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-3 p-5">
+                {items.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-border/60 px-4 py-8 text-center text-sm text-muted-foreground">
+                        No records available.
+                    </div>
+                ) : (
+                    items.map((item) => (
+                        <Link
+                            key={item.id}
+                            href={item.href}
+                            className="block rounded-lg border border-border/60 bg-background px-4 py-3 transition-colors hover:bg-muted/20"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                    <div className="text-sm font-semibold text-foreground">{item.title}</div>
+                                    <div className="text-xs text-muted-foreground">{item.subtitle}</div>
+                                </div>
+                                <span className="text-[11px] font-medium text-muted-foreground">{item.meta}</span>
+                            </div>
+                        </Link>
+                    ))
+                )}
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function RecruitmentDashboard() {
@@ -86,6 +156,10 @@ export default function RecruitmentDashboard() {
             revenue: 0,
         },
         recent_activities = [],
+        recent_candidates = [],
+        recent_employers = [],
+        recent_vacancies = [],
+        recent_payments = [],
     } = usePage<DashboardProps>().props;
 
     return (
@@ -97,187 +171,194 @@ export default function RecruitmentDashboard() {
         >
             <Head title="Recruitment Dashboard" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                            Recruitment Dashboard
-                        </h1>
-                        <p className="text-lg text-zinc-500">
-                            Overview of candidates, companies, vacancies, and applications.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Link href="/candidate-profiles/create">
-                            <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
-                                <Plus className="mr-2 h-5 w-5" /> Add Candidate
-                            </Button>
-                        </Link>
-                        <Link href="/company-profiles/create">
-                            <Button variant="outline" className="h-11 border-zinc-200">
-                                <Building2 className="mr-2 h-5 w-5" /> Add Company
-                            </Button>
-                        </Link>
-                        <Link href="/vacancies/create">
-                            <Button variant="outline" className="h-11 border-zinc-200">
-                                <Briefcase className="mr-2 h-5 w-5" /> Post Vacancy
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <Card className="border-border/70 shadow-sm">
+                    <CardContent className="flex flex-col gap-4 p-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="space-y-2">
+                            <Badge variant="outline" className="rounded-full px-3 py-1">
+                                Recruitment admin
+                            </Badge>
+                            <div className="space-y-1">
+                                <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                                    Recruitment Dashboard
+                                </h1>
+                                <p className="max-w-3xl text-sm text-muted-foreground md:text-base">
+                                    Monitor candidate listings, employer profiles, vacancies, applications, and recruitment revenue from one admin surface.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            <Link href="/candidate-profiles/create">
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Candidate
+                                </Button>
+                            </Link>
+                            <Link href="/company-profiles/create">
+                                <Button variant="outline">
+                                    <Building2 className="mr-2 h-4 w-4" />
+                                    Add Employer
+                                </Button>
+                            </Link>
+                            <Link href="/vacancies/create">
+                                <Button variant="outline">
+                                    <Briefcase className="mr-2 h-4 w-4" />
+                                    Post Vacancy
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
                     {[
-                        {
-                            label: 'Active Candidates',
-                            val: stats.active_candidates,
-                            icon: Users,
-                        },
-                        {
-                            label: 'Companies',
-                            val: stats.companies,
-                            icon: Building2,
-                        },
-                        {
-                            label: 'Open Vacancies',
-                            val: stats.vacancies,
-                            icon: Briefcase,
-                        },
-                        {
-                            label: 'Applications',
-                            val: stats.applications,
-                            icon: ClipboardList,
-                        },
-                        {
-                            label: 'Total Revenue',
-                            val: formatMoney(stats.revenue),
-                            icon: Banknote,
-                            isMoney: true,
-                        },
-                    ].map((item, index) => (
-                        <Card key={index} className="border-zinc-200 shadow-none">
+                        { label: 'Active Candidates', value: stats.active_candidates, icon: Users },
+                        { label: 'Employers', value: stats.companies, icon: Building2 },
+                        { label: 'Published Vacancies', value: stats.vacancies, icon: Briefcase },
+                        { label: 'Applications', value: stats.applications, icon: ClipboardList },
+                        { label: 'Revenue', value: formatMoney(stats.revenue), icon: Banknote },
+                    ].map((item) => (
+                        <Card key={item.label} className="border-border/70 shadow-sm">
                             <CardContent className="flex items-center justify-between p-6">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
+                                    <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
                                         {item.label}
                                     </p>
-                                    <p className="text-2xl font-semibold text-zinc-900">
-                                        {item.val}
-                                    </p>
+                                    <p className="text-2xl font-semibold text-foreground">{item.value}</p>
                                 </div>
-                                <item.icon className="h-6 w-6 text-zinc-400" />
+                                <item.icon className="h-6 w-6 text-muted-foreground" />
                             </CardContent>
                         </Card>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                    {/* Recent Activity */}
-                    <div className="lg:col-span-2">
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardHeader className="bg-muted/30">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <ClipboardList className="h-5 w-5 text-muted-foreground" />
-                                        Recent Activity
-                                    </CardTitle>
-                                    <Link href="/candidate-profiles">
-                                        <Button variant="ghost" size="sm">
-                                            View All <ArrowRight className="ml-1 h-4 w-4" />
-                                        </Button>
-                                    </Link>
+                <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+                    <Card className="border-border/70 shadow-sm">
+                        <CardHeader className="bg-muted/20">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="space-y-1">
+                                    <CardTitle>Recent activity</CardTitle>
+                                    <p className="text-sm text-muted-foreground">
+                                        Latest candidate, employer, vacancy, application, and payment updates.
+                                    </p>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader className="bg-zinc-50">
+                                <Link href="/candidate-profiles">
+                                    <Button variant="ghost" size="sm">
+                                        View lists
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader className="bg-muted/10">
+                                    <TableRow>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead>User</TableHead>
+                                        <TableHead>Date</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recent_activities.length === 0 ? (
                                         <TableRow>
-                                            <TableHead className="font-bold text-zinc-900">Type</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">Description</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">User</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">Date</TableHead>
+                                            <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                                                No recent activity found.
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {recent_activities.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={4} className="py-8 text-center text-zinc-400">
-                                                    No recent activity found.
+                                    ) : (
+                                        recent_activities.map((activity) => (
+                                            <TableRow key={activity.id}>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={activityStyles[activity.type] ?? 'badge-tone-muted'}>
+                                                        {formatLabel(activity.type)}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground">
+                                                    {activity.description}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {activity.user}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {formatDate(activity.created_at)}
                                                 </TableCell>
                                             </TableRow>
-                                        ) : (
-                                            recent_activities.map((activity) => (
-                                                <TableRow key={activity.id} className="hover:bg-zinc-50/50">
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={`${activityStyles[activity.type] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
-                                                        >
-                                                            {formatLabel(activity.type)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="font-medium text-zinc-700">
-                                                        {activity.description}
-                                                    </TableCell>
-                                                    <TableCell className="text-zinc-500">
-                                                        {activity.user}
-                                                    </TableCell>
-                                                    <TableCell className="text-zinc-500">
-                                                        {formatDate(activity.created_at)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    </div>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
 
-                    {/* Quick Actions */}
-                    <div>
-                        <Card className="border-zinc-200 shadow-none">
-                            <CardHeader className="bg-muted/30">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <UserSearch className="h-5 w-5 text-muted-foreground" />
-                                    Quick Actions
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3 p-6">
-                                <Link href="/candidate-profiles/create" className="block">
-                                    <Button variant="outline" className="h-12 w-full justify-start border-zinc-200">
-                                        <Users className="mr-3 h-5 w-5 text-blue-500" />
-                                        Register New Candidate
-                                    </Button>
-                                </Link>
-                                <Link href="/company-profiles/create" className="block">
-                                    <Button variant="outline" className="h-12 w-full justify-start border-zinc-200">
-                                        <Building2 className="mr-3 h-5 w-5 text-purple-500" />
-                                        Add New Company
-                                    </Button>
-                                </Link>
-                                <Link href="/vacancies/create" className="block">
-                                    <Button variant="outline" className="h-12 w-full justify-start border-zinc-200">
-                                        <Briefcase className="mr-3 h-5 w-5 text-green-500" />
-                                        Post New Vacancy
-                                    </Button>
-                                </Link>
-                                <Link href="/recruitment/directory" className="block">
-                                    <Button variant="outline" className="h-12 w-full justify-start border-zinc-200">
-                                        <UserSearch className="mr-3 h-5 w-5 text-orange-500" />
-                                        Browse Candidate Directory
-                                    </Button>
-                                </Link>
-                                <Link href="/recruitment/admin/payments" className="block">
-                                    <Button variant="outline" className="h-12 w-full justify-start border-zinc-200">
-                                        <Banknote className="mr-3 h-5 w-5 text-emerald-500" />
-                                        View Payments
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card className="border-border/70 shadow-sm">
+                        <CardHeader className="bg-muted/20">
+                            <CardTitle className="flex items-center gap-2">
+                                <UserSearch className="h-5 w-5 text-muted-foreground" />
+                                Quick Actions
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 p-6">
+                            <Link href="/candidate-profiles" className="block">
+                                <Button variant="outline" className="h-11 w-full justify-start">
+                                    <Users className="mr-3 h-4 w-4" />
+                                    Manage Candidates
+                                </Button>
+                            </Link>
+                            <Link href="/company-profiles" className="block">
+                                <Button variant="outline" className="h-11 w-full justify-start">
+                                    <Building2 className="mr-3 h-4 w-4" />
+                                    Manage Employers
+                                </Button>
+                            </Link>
+                            <Link href="/vacancies" className="block">
+                                <Button variant="outline" className="h-11 w-full justify-start">
+                                    <Briefcase className="mr-3 h-4 w-4" />
+                                    Manage Vacancies
+                                </Button>
+                            </Link>
+                            <Link href="/vacancy-applications" className="block">
+                                <Button variant="outline" className="h-11 w-full justify-start">
+                                    <ClipboardList className="mr-3 h-4 w-4" />
+                                    Review Applications
+                                </Button>
+                            </Link>
+                            <Link href="/recruitment/admin/payments" className="block">
+                                <Button variant="outline" className="h-11 w-full justify-start">
+                                    <Banknote className="mr-3 h-4 w-4" />
+                                    Review Payments
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                    <SummaryListCard
+                        title="Candidates"
+                        description="Recently updated candidate listings."
+                        items={recent_candidates}
+                        href="/candidate-profiles"
+                    />
+                    <SummaryListCard
+                        title="Employers"
+                        description="Recently updated employer profiles."
+                        items={recent_employers}
+                        href="/company-profiles"
+                    />
+                    <SummaryListCard
+                        title="Vacancies"
+                        description="Latest vacancies in the admin pipeline."
+                        items={recent_vacancies}
+                        href="/vacancies"
+                    />
+                    <SummaryListCard
+                        title="Payments"
+                        description="Recent recruitment payments and listing fees."
+                        items={recent_payments}
+                        href="/recruitment/admin/payments"
+                    />
                 </div>
             </div>
         </AppLayout>

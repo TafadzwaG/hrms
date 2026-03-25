@@ -28,10 +28,17 @@ type Company = {
 
 type EditPageProps = {
     company: Company;
+    options?: {
+        industries?: string[];
+    };
 };
 
+function formatLabel(value: string) {
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function CompanyEdit() {
-    const { company } = usePage<EditPageProps>().props;
+    const { company, options } = usePage<EditPageProps>().props;
 
     const { data, setData, put, processing, errors } = useForm({
         company_name: company.company_name ?? '',
@@ -99,16 +106,11 @@ export default function CompanyEdit() {
                                         <SelectValue placeholder="Select industry" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="technology">Technology</SelectItem>
-                                        <SelectItem value="finance">Finance</SelectItem>
-                                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                                        <SelectItem value="education">Education</SelectItem>
-                                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                                        <SelectItem value="retail">Retail</SelectItem>
-                                        <SelectItem value="construction">Construction</SelectItem>
-                                        <SelectItem value="mining">Mining</SelectItem>
-                                        <SelectItem value="agriculture">Agriculture</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        {(options?.industries ?? []).map((industry) => (
+                                            <SelectItem key={industry} value={industry}>
+                                                {formatLabel(industry)}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 {errors.industry && <p className="text-sm text-red-500">{errors.industry}</p>}

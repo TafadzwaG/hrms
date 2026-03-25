@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceRecord;
+use App\Models\Employee;
+use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -19,6 +21,29 @@ class AttendanceRecordController extends Controller
     public function index(Request $request)
     {
         $search = $request->string('search')->toString();
+        $sortMap = [
+            'employee' => fn ($query, $direction) => $query
+                ->orderBy(
+                    Employee::query()
+                        ->select('surname')
+                        ->whereColumn('employees.id', 'attendance_records.employee_id')
+                        ->limit(1),
+                    $direction,
+                )
+                ->orderBy(
+                    Employee::query()
+                        ->select('first_name')
+                        ->whereColumn('employees.id', 'attendance_records.employee_id')
+                        ->limit(1),
+                    $direction,
+                ),
+            'work_date' => 'work_date',
+            'clock_in' => 'clock_in',
+            'clock_out' => 'clock_out',
+            'minutes_worked' => 'minutes_worked',
+            'exception_status' => 'exception_status',
+        ];
+        $sorting = IndexTableSorter::resolve($request, $sortMap, 'work_date', 'desc');
 
         $query = AttendanceRecord::query()
             ->with(['employee']);
@@ -43,7 +68,7 @@ class AttendanceRecordController extends Controller
         }
 
         $records = $query
-            ->orderByDesc('work_date')
+            ->tap(fn ($builder) => IndexTableSorter::apply($builder, $sortMap, $sorting['sort'], $sorting['direction']))
             ->orderByDesc('id')
             ->paginate(12)
             ->withQueryString();
@@ -61,6 +86,8 @@ class AttendanceRecordController extends Controller
             'records' => $records,
             'filters' => [
                 'search' => $search,
+                'sort' => $sorting['sort'],
+                'direction' => $sorting['direction'],
             ],
         ]);
     }

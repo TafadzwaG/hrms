@@ -1,6 +1,15 @@
+import { useEffect, useRef, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+    SortableTableHead,
+} from '@/components/index-table';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -9,33 +18,39 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { buildIndexParams } from '@/lib/index-table';
 import {
     Eye,
-    GraduationCap,
     MapPin,
     MoreHorizontal,
     RotateCcw,
     Search,
-    Tags,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
-type CandidateCard = {
+type CandidateSkill = {
+    id: number;
+    name: string;
+};
+
+type CandidateRow = {
     id: number;
     full_name: string;
     headline: string | null;
     location: string | null;
     years_experience: number | null;
     highest_education: string | null;
-    skills: { id: number; name: string }[];
+    listing_activated_at?: string | null;
+    skills: CandidateSkill[];
+    links: {
+        show: string;
+    };
 };
 
 type DirectoryPageProps = {
     candidates: {
-        data: CandidateCard[];
+        data: CandidateRow[];
         total: number;
         current_page: number;
         last_page: number;
@@ -49,15 +64,14 @@ type DirectoryPageProps = {
         experience_min?: string | null;
         experience_max?: string | null;
         location?: string | null;
+        sort?: string | null;
+        direction?: 'asc' | 'desc' | null;
     };
+    educationLevels?: string[];
 };
 
-function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 export default function DirectoryIndex() {
-    const { candidates, filters } = usePage<DirectoryPageProps>().props;
+    const { candidates, filters, educationLevels = [] } = usePage<DirectoryPageProps>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [education, setEducation] = useState(filters.education ?? 'all');
@@ -65,7 +79,6 @@ export default function DirectoryIndex() {
     const [experienceMax, setExperienceMax] = useState(filters.experience_max ?? '');
     const [location, setLocation] = useState(filters.location ?? '');
     const [showFilters, setShowFilters] = useState(false);
-
     const initialRender = useRef(true);
 
     useEffect(() => {
@@ -77,13 +90,13 @@ export default function DirectoryIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/recruitment/directory',
-                {
-                    search: search || undefined,
-                    education: education !== 'all' ? education : undefined,
-                    experience_min: experienceMin || undefined,
-                    experience_max: experienceMax || undefined,
-                    location: location || undefined,
-                },
+                buildIndexParams(filters, {
+                    search,
+                    education: education !== 'all' ? education : null,
+                    experience_min: experienceMin || null,
+                    experience_max: experienceMax || null,
+                    location: location || null,
+                }),
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -93,7 +106,7 @@ export default function DirectoryIndex() {
         }, 300);
 
         return () => window.clearTimeout(timer);
-    }, [search, education, experienceMin, experienceMax, location]);
+    }, [education, experienceMax, experienceMin, filters, location, search]);
 
     const handleResetFilters = () => {
         setSearch('');
@@ -104,31 +117,6 @@ export default function DirectoryIndex() {
         setShowFilters(false);
     };
 
-    const handlePageChange = ({ selected }: { selected: number }) => {
-        router.get(
-            '/recruitment/directory',
-            {
-                page: selected + 1,
-                search: search || undefined,
-                education: education !== 'all' ? education : undefined,
-                experience_min: experienceMin || undefined,
-                experience_max: experienceMax || undefined,
-                location: location || undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const perPage = candidates.per_page ?? (candidates.data.length || 1);
-    const showingFrom =
-        candidates.from ??
-        (candidates.total === 0 ? 0 : (candidates.current_page - 1) * perPage + 1);
-    const showingTo =
-        candidates.to ?? Math.min(candidates.current_page * perPage, candidates.total);
-
     return (
         <AppLayout
             breadcrumbs={[
@@ -138,209 +126,285 @@ export default function DirectoryIndex() {
         >
             <Head title="Candidate Directory" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                    <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
-                            Candidate Directory
-                        </h1>
-                        <p className="text-lg text-zinc-500">
-                            Browse active paid candidate profiles.
-                        </p>
-                    </div>
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">
+                        Candidate Directory
+                    </h1>
+                    <p className="text-sm font-medium text-muted-foreground">
+                        Review active public candidate profiles and sort them by location, experience, and education.
+                    </p>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="relative w-full max-w-md">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                            <Input
-                                placeholder="Search by name, headline, or skills..."
-                                className="h-11 border-zinc-200 pl-10 focus:ring-zinc-900"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                <section className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 border-b border-border/70 pb-5 md:flex-row md:items-end md:justify-between">
+                        <div className="w-full max-w-xl space-y-1.5">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Search
+                            </label>
+                            <div className="flex items-center gap-3 rounded-md border border-border bg-background px-3">
+                                <Search className="h-4 w-4 text-muted-foreground" />
+                                <input
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    placeholder="Search by candidate name, headline, location, or skills"
+                                    className="h-10 w-full border-none bg-transparent px-0 text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground focus:ring-0"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-10 rounded-md border-border"
+                                onClick={() => setShowFilters((current) => !current)}
+                            >
+                                <MoreHorizontal className="mr-2 h-4 w-4" />
+                                {showFilters ? 'Hide Filters' : 'Show Filters'}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-10 rounded-md border-border"
+                                onClick={handleResetFilters}
+                            >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Reset
+                            </Button>
+                        </div>
+                    </div>
+
+                    {showFilters ? (
+                        <div className="mt-5 grid gap-4 md:grid-cols-4">
+                            <FilterSelect
+                                label="Education"
+                                value={education}
+                                onChange={setEducation}
+                                options={[
+                                    { value: 'all', label: 'All levels' },
+                                    ...educationLevels.map((item) => ({
+                                        value: item,
+                                        label: formatLabel(item),
+                                    })),
+                                ]}
+                            />
+                            <FilterInput
+                                label="Minimum Experience"
+                                value={experienceMin}
+                                onChange={setExperienceMin}
+                                placeholder="0"
+                                type="number"
+                            />
+                            <FilterInput
+                                label="Maximum Experience"
+                                value={experienceMax}
+                                onChange={setExperienceMax}
+                                placeholder="20"
+                                type="number"
+                            />
+                            <FilterInput
+                                label="Location"
+                                value={location}
+                                onChange={setLocation}
+                                placeholder="Filter by location"
                             />
                         </div>
+                    ) : null}
+                </section>
 
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                className="h-11 border-zinc-200"
-                                onClick={() => setShowFilters((current) => !current)}
-                                type="button"
-                            >
-                                <MoreHorizontal className="mr-2 h-4 w-4" /> More Filters
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className="h-11 text-zinc-500"
-                                onClick={handleResetFilters}
-                                type="button"
-                            >
-                                <RotateCcw className="mr-2 h-4 w-4" /> Reset
-                            </Button>
-                        </div>
-                    </div>
-
-                    {showFilters && (
-                        <div className="grid grid-cols-1 gap-4 rounded-md border border-zinc-200 bg-zinc-50/40 p-4 md:grid-cols-4">
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Education</p>
-                                <Select value={education} onValueChange={setEducation}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
-                                        <SelectValue placeholder="All levels" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All levels</SelectItem>
-                                        <SelectItem value="high_school">High School</SelectItem>
-                                        <SelectItem value="diploma">Diploma</SelectItem>
-                                        <SelectItem value="bachelors">Bachelors</SelectItem>
-                                        <SelectItem value="masters">Masters</SelectItem>
-                                        <SelectItem value="doctorate">Doctorate</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Min Experience (years)</p>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    className="h-11 border-zinc-200 bg-white"
-                                    value={experienceMin}
-                                    onChange={(e) => setExperienceMin(e.target.value)}
-                                    placeholder="0"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Max Experience (years)</p>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    className="h-11 border-zinc-200 bg-white"
-                                    value={experienceMax}
-                                    onChange={(e) => setExperienceMax(e.target.value)}
-                                    placeholder="50"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Location</p>
-                                <Input
-                                    className="h-11 border-zinc-200 bg-white"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    placeholder="Filter by location"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Candidate Grid */}
-                {candidates.data.length === 0 ? (
-                    <div className="py-16 text-center">
-                        <p className="text-lg text-zinc-400">No candidates found matching your criteria.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {candidates.data.map((candidate) => (
-                            <Card
-                                key={candidate.id}
-                                className="group relative overflow-hidden border-zinc-200 shadow-sm transition-all hover:shadow-md"
-                            >
-                                <CardContent className="space-y-4 p-6">
-                                    <div className="space-y-1">
-                                        <h3 className="text-xl font-bold text-zinc-900 transition-colors group-hover:text-zinc-600">
-                                            {candidate.full_name}
-                                        </h3>
-                                        <p className="text-sm text-zinc-500 line-clamp-2">
-                                            {candidate.headline ?? 'No headline'}
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        {candidate.location && (
-                                            <div className="flex items-center gap-2 text-sm text-zinc-500">
-                                                <MapPin className="h-3.5 w-3.5" />
-                                                {candidate.location}
+                <IndexTableCard>
+                    <Table>
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <SortableTableHead filters={filters} sortKey="full_name" path="/recruitment/directory">
+                                    Candidate
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="headline" path="/recruitment/directory">
+                                    Headline
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="location" path="/recruitment/directory">
+                                    Location
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="years_experience" path="/recruitment/directory" align="center">
+                                    Experience
+                                </SortableTableHead>
+                                <SortableTableHead filters={filters} sortKey="highest_education" path="/recruitment/directory">
+                                    Education
+                                </SortableTableHead>
+                                <IndexTableHead>Skills</IndexTableHead>
+                                <SortableTableHead filters={filters} sortKey="listing_activated_at" path="/recruitment/directory">
+                                    Activated
+                                </SortableTableHead>
+                                <IndexTableHead align="right">Actions</IndexTableHead>
+                            </IndexTableHeaderRow>
+                        </TableHeader>
+                        <TableBody>
+                            {candidates.data.length === 0 ? (
+                                <IndexTableEmptyRow colSpan={8}>
+                                    No candidates found for the current filters.
+                                </IndexTableEmptyRow>
+                            ) : (
+                                candidates.data.map((candidate) => (
+                                    <TableRow key={candidate.id} className="border-border/60 hover:bg-muted/20">
+                                        <TableCell className="py-4 align-top">
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-semibold text-foreground">
+                                                    {candidate.full_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Candidate #{candidate.id}
+                                                </p>
                                             </div>
-                                        )}
-                                        {candidate.years_experience != null && (
-                                            <div className="flex items-center gap-2 text-sm text-zinc-500">
-                                                <GraduationCap className="h-3.5 w-3.5" />
-                                                {candidate.years_experience} years experience
-                                            </div>
-                                        )}
-                                        {candidate.highest_education && (
-                                            <Badge variant="outline" className="border-transparent bg-blue-100 text-blue-700 text-xs font-semibold">
-                                                {formatLabel(candidate.highest_education)}
-                                            </Badge>
-                                        )}
-                                    </div>
-
-                                    {(candidate.skills ?? []).length > 0 && (
-                                        <div className="flex flex-wrap gap-1.5 border-t border-zinc-100 pt-3">
-                                            {candidate.skills.slice(0, 4).map((skill) => (
-                                                <span
-                                                    key={skill.id}
-                                                    className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs font-medium text-zinc-600"
-                                                >
-                                                    <Tags className="h-2.5 w-2.5" />
-                                                    {skill.name}
+                                        </TableCell>
+                                        <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                            {candidate.headline || 'No headline provided'}
+                                        </TableCell>
+                                        <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                            {candidate.location ? (
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <MapPin className="h-3.5 w-3.5" />
+                                                    {candidate.location}
                                                 </span>
-                                            ))}
-                                            {candidate.skills.length > 4 && (
-                                                <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
-                                                    +{candidate.skills.length - 4}
-                                                </span>
+                                            ) : (
+                                                '—'
                                             )}
-                                        </div>
-                                    )}
-
-                                    <div className="border-t border-dashed border-zinc-200 pt-4">
-                                        <Link href={`/recruitment/directory/${candidate.id}`}>
-                                            <Button variant="outline" className="h-9 w-full border-zinc-200 text-sm">
-                                                <Eye className="mr-2 h-4 w-4" /> View Profile
+                                        </TableCell>
+                                        <TableCell className="py-4 text-center align-top text-sm font-semibold text-foreground">
+                                            {candidate.years_experience !== null && candidate.years_experience !== undefined
+                                                ? `${candidate.years_experience} yrs`
+                                                : '—'}
+                                        </TableCell>
+                                        <TableCell className="py-4 align-top">
+                                            {candidate.highest_education ? (
+                                                <Badge variant="chart4">
+                                                    {formatLabel(candidate.highest_education)}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">—</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="py-4 align-top">
+                                            {candidate.skills.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {candidate.skills.slice(0, 3).map((skill) => (
+                                                        <Badge key={skill.id} variant="secondary">
+                                                            {skill.name}
+                                                        </Badge>
+                                                    ))}
+                                                    {candidate.skills.length > 3 ? (
+                                                        <Badge variant="outline">
+                                                            +{candidate.skills.length - 3} more
+                                                        </Badge>
+                                                    ) : null}
+                                                </div>
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">No listed skills</span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="py-4 align-top text-sm text-muted-foreground">
+                                            {formatDate(candidate.listing_activated_at)}
+                                        </TableCell>
+                                        <TableCell className="py-4 text-right align-top">
+                                            <Button variant="outline" className="h-8 rounded-md border-border" asChild>
+                                                <Link href={candidate.links.show}>
+                                                    <Eye className="mr-2 h-4 w-4" />
+                                                    View Profile
+                                                </Link>
                                             </Button>
-                                        </Link>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
 
-                {/* Pagination */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-100 pt-6 md:flex-row">
-                    <p className="text-sm font-medium text-zinc-500">
-                        Showing{' '}
-                        <span className="text-zinc-900">
-                            {showingFrom}-{showingTo}
-                        </span>{' '}
-                        of <span className="text-zinc-900">{candidates.total}</span> candidates
-                    </p>
-                    <ReactPaginate
-                        pageCount={candidates.last_page}
-                        forcePage={Math.max((candidates.current_page ?? 1) - 1, 0)}
-                        onPageChange={handlePageChange}
-                        containerClassName="flex gap-1"
-                        pageLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold transition-colors hover:bg-zinc-50"
-                        activeLinkClassName="!border-zinc-900 !bg-zinc-900 !text-white"
-                        previousLabel="←"
-                        nextLabel="→"
-                        previousLinkClassName="mr-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        nextLinkClassName="ml-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        disabledClassName="pointer-events-none opacity-30"
-                        breakLabel="..."
-                        breakLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold"
-                        marginPagesDisplayed={1}
-                        pageRangeDisplayed={3}
+                    <IndexTablePagination
+                        pagination={candidates}
+                        filters={filters}
+                        path="/recruitment/directory"
+                        label="candidates"
                     />
-                </div>
+                </IndexTableCard>
             </div>
         </AppLayout>
     );
+}
+
+function FilterSelect({
+    label,
+    value,
+    onChange,
+    options,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{ value: string; label: string }>;
+}) {
+    return (
+        <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                {label}
+            </label>
+            <Select value={value} onValueChange={onChange}>
+                <SelectTrigger className="h-10 border-border bg-background">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
+}
+
+function FilterInput({
+    label,
+    value,
+    onChange,
+    placeholder,
+    type = 'text',
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    type?: string;
+}) {
+    return (
+        <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                {label}
+            </label>
+            <Input
+                type={type}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                placeholder={placeholder}
+                className="h-10 border-border bg-background"
+            />
+        </div>
+    );
+}
+
+function formatLabel(value: string) {
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatDate(value?: string | null) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
 }

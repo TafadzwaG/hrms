@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::index
- * @see app/Http/Controllers/WorkflowDefinitionController.php:19
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:20
  * @route '/workflows'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::create
- * @see app/Http/Controllers/WorkflowDefinitionController.php:52
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:64
  * @route '/workflows/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::store
- * @see app/Http/Controllers/WorkflowDefinitionController.php:60
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:72
  * @route '/workflows'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::store
- * @see app/Http/Controllers/WorkflowDefinitionController.php:60
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:72
  * @route '/workflows'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::store
- * @see app/Http/Controllers/WorkflowDefinitionController.php:60
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:72
  * @route '/workflows'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::store
- * @see app/Http/Controllers/WorkflowDefinitionController.php:60
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:72
  * @route '/workflows'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::store
- * @see app/Http/Controllers/WorkflowDefinitionController.php:60
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:72
  * @route '/workflows'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
 export const show = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
 show.url = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -255,7 +255,7 @@ show.url = (args: { workflow: string | number } | [workflow: string | number ] |
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
 show.get = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +264,7 @@ show.get = (args: { workflow: string | number } | [workflow: string | number ] |
 })
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
 show.head = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -274,7 +274,7 @@ show.head = (args: { workflow: string | number } | [workflow: string | number ] 
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
     const showForm = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -284,7 +284,7 @@ show.head = (args: { workflow: string | number } | [workflow: string | number ] 
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
         showForm.get = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ show.head = (args: { workflow: string | number } | [workflow: string | number ] 
         })
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::show
- * @see app/Http/Controllers/WorkflowDefinitionController.php:71
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:83
  * @route '/workflows/{workflow}'
  */
         showForm.head = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -309,7 +309,7 @@ show.head = (args: { workflow: string | number } | [workflow: string | number ] 
     show.form = showForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
 export const edit = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
 edit.url = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +352,7 @@ edit.url = (args: { workflow: string | number } | [workflow: string | number ] |
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
 edit.get = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +361,7 @@ edit.get = (args: { workflow: string | number } | [workflow: string | number ] |
 })
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
 edit.head = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +371,7 @@ edit.head = (args: { workflow: string | number } | [workflow: string | number ] 
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
     const editForm = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { workflow: string | number } | [workflow: string | number ] 
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
         editForm.get = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +390,7 @@ edit.head = (args: { workflow: string | number } | [workflow: string | number ] 
         })
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::edit
- * @see app/Http/Controllers/WorkflowDefinitionController.php:81
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:93
  * @route '/workflows/{workflow}/edit'
  */
         editForm.head = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ edit.head = (args: { workflow: string | number } | [workflow: string | number ] 
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
 export const update = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
 update.url = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { workflow: string | number } | [workflow: string | number ]
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
 update.put = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -458,7 +458,7 @@ update.put = (args: { workflow: string | number } | [workflow: string | number ]
 })
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
 update.patch = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -468,7 +468,7 @@ update.patch = (args: { workflow: string | number } | [workflow: string | number
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
     const updateForm = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { workflow: string | number } | [workflow: string | number
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
         updateForm.put = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { workflow: string | number } | [workflow: string | number
         })
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::update
- * @see app/Http/Controllers/WorkflowDefinitionController.php:91
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:103
  * @route '/workflows/{workflow}'
  */
         updateForm.patch = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -513,7 +513,7 @@ update.patch = (args: { workflow: string | number } | [workflow: string | number
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::destroy
- * @see app/Http/Controllers/WorkflowDefinitionController.php:105
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:117
  * @route '/workflows/{workflow}'
  */
 export const destroy = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -528,7 +528,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::destroy
- * @see app/Http/Controllers/WorkflowDefinitionController.php:105
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:117
  * @route '/workflows/{workflow}'
  */
 destroy.url = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -556,7 +556,7 @@ destroy.url = (args: { workflow: string | number } | [workflow: string | number 
 
 /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::destroy
- * @see app/Http/Controllers/WorkflowDefinitionController.php:105
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:117
  * @route '/workflows/{workflow}'
  */
 destroy.delete = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -566,7 +566,7 @@ destroy.delete = (args: { workflow: string | number } | [workflow: string | numb
 
     /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::destroy
- * @see app/Http/Controllers/WorkflowDefinitionController.php:105
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:117
  * @route '/workflows/{workflow}'
  */
     const destroyForm = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ destroy.delete = (args: { workflow: string | number } | [workflow: string | numb
 
             /**
 * @see \App\Http\Controllers\WorkflowDefinitionController::destroy
- * @see app/Http/Controllers/WorkflowDefinitionController.php:105
+ * @see app/Http/Controllers/WorkflowDefinitionController.php:117
  * @route '/workflows/{workflow}'
  */
         destroyForm.delete = (args: { workflow: string | number } | [workflow: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
