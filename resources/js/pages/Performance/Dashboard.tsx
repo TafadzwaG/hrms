@@ -245,7 +245,7 @@ export default function PerformanceDashboard() {
                         label="Average Score"
                         value={
                             metrics.average_score > 0
-                                ? metrics.average_score.toFixed(1)
+                                ? Number(metrics.average_score).toFixed(1)
                                 : '—'
                         }
                         sub="Out of 5.0"
@@ -497,7 +497,7 @@ export default function PerformanceDashboard() {
                                     </p>
                                 </div>
                                 <p className="text-2xl font-semibold text-foreground">
-                                    {avg > 0 ? avg.toFixed(1) : '—'}
+                                    {Number(avg) > 0 ? Number(avg).toFixed(1) : '—'}
                                     <span className="ml-1 text-sm font-normal text-muted-foreground">
                                         / 5.0
                                     </span>

@@ -213,66 +213,61 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-export const show = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/company-profiles/{company}',
+    url: '/company-profiles/{company_profile}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-show.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { company: args }
+        args = { company_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { company: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    company: args[0],
+                    company_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        company: typeof args.company === 'object'
-                ? args.company.id
-                : args.company,
+                        company_profile: args.company_profile,
                 }
 
     return show.definition.url
-            .replace('{company}', parsedArgs.company.toString())
+            .replace('{company_profile}', parsedArgs.company_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-show.get = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-show.head = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -280,9 +275,9 @@ show.head = (args: { company: number | { id: number } } | [company: number | { i
     /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-    const showForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
@@ -290,18 +285,18 @@ show.head = (args: { company: number | { id: number } } | [company: number | { i
             /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-        showForm.get = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CompanyProfileController::show
  * @see app/Http/Controllers/CompanyProfileController.php:105
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-        showForm.head = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -315,66 +310,61 @@ show.head = (args: { company: number | { id: number } } | [company: number | { i
 /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-export const edit = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 
 edit.definition = {
     methods: ["get","head"],
-    url: '/company-profiles/{company}/edit',
+    url: '/company-profiles/{company_profile}/edit',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-edit.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { company: args }
+        args = { company_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { company: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    company: args[0],
+                    company_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        company: typeof args.company === 'object'
-                ? args.company.id
-                : args.company,
+                        company_profile: args.company_profile,
                 }
 
     return edit.definition.url
-            .replace('{company}', parsedArgs.company.toString())
+            .replace('{company_profile}', parsedArgs.company_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-edit.get = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-edit.head = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -382,9 +372,9 @@ edit.head = (args: { company: number | { id: number } } | [company: number | { i
     /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-    const editForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
@@ -392,18 +382,18 @@ edit.head = (args: { company: number | { id: number } } | [company: number | { i
             /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-        editForm.get = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CompanyProfileController::edit
  * @see app/Http/Controllers/CompanyProfileController.php:119
- * @route '/company-profiles/{company}/edit'
+ * @route '/company-profiles/{company_profile}/edit'
  */
-        editForm.head = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -417,66 +407,61 @@ edit.head = (args: { company: number | { id: number } } | [company: number | { i
 /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-export const update = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 update.definition = {
     methods: ["put","patch"],
-    url: '/company-profiles/{company}',
+    url: '/company-profiles/{company_profile}',
 } satisfies RouteDefinition<["put","patch"]>
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-update.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { company: args }
+        args = { company_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { company: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    company: args[0],
+                    company_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        company: typeof args.company === 'object'
-                ? args.company.id
-                : args.company,
+                        company_profile: args.company_profile,
                 }
 
     return update.definition.url
-            .replace('{company}', parsedArgs.company.toString())
+            .replace('{company_profile}', parsedArgs.company_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-update.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-update.patch = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -484,9 +469,9 @@ update.patch = (args: { company: number | { id: number } } | [company: number | 
     /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-    const updateForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -499,9 +484,9 @@ update.patch = (args: { company: number | { id: number } } | [company: number | 
             /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-        updateForm.put = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -513,9 +498,9 @@ update.patch = (args: { company: number | { id: number } } | [company: number | 
             /**
 * @see \App\Http\Controllers\CompanyProfileController::update
  * @see app/Http/Controllers/CompanyProfileController.php:127
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-        updateForm.patch = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.patch = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PATCH',
@@ -529,57 +514,52 @@ update.patch = (args: { company: number | { id: number } } | [company: number | 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::destroy
  * @see app/Http/Controllers/CompanyProfileController.php:142
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-export const destroy = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/company-profiles/{company}',
+    url: '/company-profiles/{company_profile}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::destroy
  * @see app/Http/Controllers/CompanyProfileController.php:142
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-destroy.url = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { company: args }
+        args = { company_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { company: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    company: args[0],
+                    company_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        company: typeof args.company === 'object'
-                ? args.company.id
-                : args.company,
+                        company_profile: args.company_profile,
                 }
 
     return destroy.definition.url
-            .replace('{company}', parsedArgs.company.toString())
+            .replace('{company_profile}', parsedArgs.company_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CompanyProfileController::destroy
  * @see app/Http/Controllers/CompanyProfileController.php:142
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-destroy.delete = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -587,9 +567,9 @@ destroy.delete = (args: { company: number | { id: number } } | [company: number 
     /**
 * @see \App\Http\Controllers\CompanyProfileController::destroy
  * @see app/Http/Controllers/CompanyProfileController.php:142
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-    const destroyForm = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -602,9 +582,9 @@ destroy.delete = (args: { company: number | { id: number } } | [company: number 
             /**
 * @see \App\Http\Controllers\CompanyProfileController::destroy
  * @see app/Http/Controllers/CompanyProfileController.php:142
- * @route '/company-profiles/{company}'
+ * @route '/company-profiles/{company_profile}'
  */
-        destroyForm.delete = (args: { company: number | { id: number } } | [company: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { company_profile: string | number } | [company_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

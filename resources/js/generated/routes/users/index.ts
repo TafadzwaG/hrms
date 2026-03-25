@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
-import impersonation from './impersonation'
 import roles from './roles'
 /**
 * @see \App\Http\Controllers\PasswordResetController::sendPasswordResetLink
@@ -698,7 +697,6 @@ destroy.delete = (args: { user: number | { id: number } } | [user: number | { id
     destroy.form = destroyForm
 const users = {
     sendPasswordResetLink: Object.assign(sendPasswordResetLink, sendPasswordResetLink),
-impersonation: Object.assign(impersonation, impersonation),
 roles: Object.assign(roles, roles),
 index: Object.assign(index, index),
 create: Object.assign(create, create),

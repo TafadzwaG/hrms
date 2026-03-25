@@ -69,7 +69,7 @@ class PerformanceImprovementPlanController extends Controller
         $plan = PerformanceImprovementPlan::create($validated);
 
         return redirect()
-            ->route('performance-improvement-plans.show', $plan)
+            ->route('improvement-plans.show', $plan)
             ->with('success', 'Performance improvement plan created successfully.');
     }
 
@@ -110,7 +110,7 @@ class PerformanceImprovementPlanController extends Controller
         $performanceImprovementPlan->update($validated);
 
         return redirect()
-            ->route('performance-improvement-plans.show', $performanceImprovementPlan)
+            ->route('improvement-plans.show', $performanceImprovementPlan)
             ->with('success', 'Performance improvement plan updated successfully.');
     }
 
@@ -119,7 +119,7 @@ class PerformanceImprovementPlanController extends Controller
         $performanceImprovementPlan->delete();
 
         return redirect()
-            ->route('performance-improvement-plans.index')
+            ->route('improvement-plans.index')
             ->with('success', 'Performance improvement plan deleted successfully.');
     }
 

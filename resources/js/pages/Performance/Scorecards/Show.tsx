@@ -8,6 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import {
     Select,
     SelectContent,
@@ -15,31 +16,35 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
-    CheckCircle,
+    CalendarClock,
+    CalendarRange,
+    CheckCircle2,
+    ClipboardList,
+    Eye,
     FileText,
-    MessageSquare,
+    Gauge,
+    Layers3,
+    MessageSquareText,
+    NotebookPen,
     Pencil,
+    PieChart,
     Send,
+    ShieldCheck,
+    Sparkles,
+    Star,
     Target,
+    TimerReset,
     Upload,
-    User,
+    UserRound,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 
 type ScorecardItem = {
     id: number;
@@ -112,48 +117,169 @@ const perspectiveLabels: Record<string, string> = {
     learning_and_growth: 'Learning & Growth',
 };
 
-function formatStatus(status: string) {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+function formatLabel(value: string) {
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function statusBadgeClass(status: string) {
+function formatDate(value: string | null | undefined) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(date);
+}
+
+function formatDateTime(value: string | null | undefined) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    }).format(date);
+}
+
+function getStatusVariant(status: string): 'default' | 'secondary' | 'outline' {
     switch (status) {
-        case 'draft':
-            return 'bg-gray-50 text-gray-600 border-gray-200';
-        case 'self_assessment_pending':
-            return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-        case 'self_assessment_submitted':
-            return 'bg-blue-50 text-blue-600 border-blue-200';
-        case 'manager_review_pending':
-            return 'bg-orange-50 text-orange-600 border-orange-200';
-        case 'manager_reviewed':
-            return 'bg-indigo-50 text-indigo-600 border-indigo-200';
-        case 'hr_moderation_pending':
-            return 'bg-purple-50 text-purple-600 border-purple-200';
         case 'finalized':
-            return 'bg-emerald-50 text-emerald-600 border-emerald-200';
-        case 'archived':
-            return 'bg-gray-50 text-gray-600 border-gray-200';
+        case 'manager_reviewed':
+        case 'self_assessment_submitted':
+            return 'default';
+        case 'self_assessment_pending':
+        case 'manager_review_pending':
+        case 'hr_moderation_pending':
+            return 'secondary';
         default:
-            return 'bg-gray-50 text-gray-600 border-gray-200';
+            return 'outline';
     }
 }
 
-function ratingBadgeClass(rating: string) {
+function getRatingVariant(rating: string): 'default' | 'secondary' | 'outline' {
     switch (rating?.toLowerCase()) {
         case 'outstanding':
-            return 'bg-emerald-50 text-emerald-600 border-emerald-200';
         case 'very good':
-            return 'bg-blue-50 text-blue-600 border-blue-200';
+            return 'default';
         case 'good':
-            return 'bg-teal-50 text-teal-600 border-teal-200';
         case 'needs improvement':
-            return 'bg-amber-50 text-amber-600 border-amber-200';
-        case 'unsatisfactory':
-            return 'bg-red-50 text-red-600 border-red-200';
+            return 'secondary';
         default:
-            return 'bg-gray-50 text-gray-600 border-gray-200';
+            return 'outline';
     }
+}
+
+function hasProgress(item: ScorecardItem) {
+    return (
+        item.self_score != null ||
+        item.manager_score != null ||
+        item.final_score != null ||
+        item.actual_value != null
+    );
+}
+
+function MiniDonut({
+    value,
+    size = 72,
+    stroke = 10,
+    centerLabel,
+}: {
+    value: number;
+    size?: number;
+    stroke?: number;
+    centerLabel?: string;
+}) {
+    const clamped = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));
+    const radius = 50 - stroke / 2;
+    const circumference = 2 * Math.PI * radius;
+    const dash = (clamped / 100) * circumference;
+
+    return (
+        <div className="relative shrink-0" style={{ width: size, height: size }}>
+            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    strokeWidth={stroke}
+                    style={{ stroke: 'hsl(var(--muted))' }}
+                />
+                <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    strokeWidth={stroke}
+                    strokeLinecap="round"
+                    strokeDasharray={`${dash} ${circumference}`}
+                    style={{
+                        stroke: 'hsl(var(--foreground))',
+                        transition: 'stroke-dasharray 0.35s ease',
+                    }}
+                />
+            </svg>
+
+            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold">
+                {centerLabel ?? `${Math.round(clamped)}%`}
+            </div>
+        </div>
+    );
+}
+
+function MetricCard({
+    icon,
+    label,
+    value,
+    helper,
+    extra,
+}: {
+    icon: ReactNode;
+    label: string;
+    value: ReactNode;
+    helper: string;
+    extra?: ReactNode;
+}) {
+    return (
+        <Card>
+            <CardContent className="flex items-start gap-4 p-5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted">
+                    {icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {label}
+                    </p>
+                    <div className="mt-1 text-lg font-semibold tracking-tight">{value}</div>
+                    <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
+                    {extra && <div className="mt-3">{extra}</div>}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function DetailStat({
+    label,
+    value,
+}: {
+    label: string;
+    value: ReactNode;
+}) {
+    return (
+        <div className="space-y-1 rounded-lg border p-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+            <div className="text-sm font-medium">{value}</div>
+        </div>
+    );
 }
 
 export default function ScorecardShow() {
@@ -172,13 +298,41 @@ export default function ScorecardShow() {
         commentTypes: string[];
     }>().props;
 
-    const [activePerspective, setActivePerspective] = useState(perspectives[0] ?? 'financial');
+    const perspectiveOptions = perspectives.filter((p) => p.trim() !== '');
+    const commentTypeOptions =
+        commentTypes.filter((ct) => ct.trim() !== '')?.length > 0
+            ? commentTypes.filter((ct) => ct.trim() !== '')
+            : ['general'];
 
-    // Comment form
+    const [activePerspective, setActivePerspective] = useState(
+        perspectiveOptions[0] ?? 'financial',
+    );
+
     const commentForm = useForm({
-        comment_type: commentTypes[0] ?? 'general',
+        comment_type: commentTypeOptions[0],
         content: '',
     });
+
+    const evidenceForm = useForm({
+        title: '',
+        description: '',
+        file: null as File | null,
+    });
+
+    const completedItems = useMemo(
+        () => scorecard.items.filter((item) => hasProgress(item)).length,
+        [scorecard.items],
+    );
+
+    const completionPercent = scorecard.items.length
+        ? (completedItems / scorecard.items.length) * 100
+        : 0;
+
+    const activePerspectiveItems = scorecard.items.filter(
+        (item) => item.perspective === activePerspective,
+    );
+
+    const activeBreakdown = perspectiveBreakdown[activePerspective];
 
     const handleCommentSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -187,13 +341,6 @@ export default function ScorecardShow() {
             onSuccess: () => commentForm.reset('content'),
         });
     };
-
-    // Evidence form
-    const evidenceForm = useForm({
-        title: '',
-        description: '',
-        file: null as File | null,
-    });
 
     const handleEvidenceSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -204,16 +351,15 @@ export default function ScorecardShow() {
         });
     };
 
-    // Workflow actions
     const handleWorkflowAction = (action: string) => {
-        router.post(`/employee-scorecards/${scorecard.id}/${action}`, {}, {
-            preserveScroll: true,
-        });
+        router.post(
+            `/employee-scorecards/${scorecard.id}/${action}`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
-
-    const perspectiveItems = scorecard.items.filter(
-        (item) => item.perspective === activePerspective,
-    );
 
     return (
         <AppLayout
@@ -225,539 +371,1018 @@ export default function ScorecardShow() {
         >
             <Head title={`Scorecard - ${scorecard.employee.full_name}`} />
 
-            <div className="mx-auto w-full space-y-6 p-4 md:p-6">
-                {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link href="/employee-scorecards">
-                            <Button variant="ghost" size="icon">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                        </Link>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-bold tracking-tight">
-                                    {scorecard.employee.full_name}
-                                </h1>
-                                <Badge variant="outline" className={statusBadgeClass(scorecard.status)}>
-                                    {formatStatus(scorecard.status)}
-                                </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {scorecard.cycle.title} &mdash; {scorecard.employee.staff_number}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {scorecard.status === 'self_assessment_pending' && (
-                            <Button onClick={() => handleWorkflowAction('submit-self-assessment')}>
-                                <Send className="mr-2 h-4 w-4" />
-                                Submit Self-Assessment
-                            </Button>
-                        )}
-                        {scorecard.status === 'manager_review_pending' && (
-                            <Button onClick={() => handleWorkflowAction('submit-manager-review')}>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Submit Manager Review
-                            </Button>
-                        )}
-                        {scorecard.status === 'hr_moderation_pending' && (
-                            <Button onClick={() => handleWorkflowAction('finalize')}>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Finalize
-                            </Button>
-                        )}
-                        <Link href={`/employee-scorecards/${scorecard.id}/edit`}>
-                            <Button variant="outline">
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
+            <div className="w-full space-y-6 p-4 md:p-6">
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Link href="/employee-scorecards">
+                                        <Button variant="outline" size="icon">
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
 
-                {/* Tabs */}
-                <Tabs defaultValue="overview">
-                    <TabsList>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Sparkles className="h-4 w-4" />
+                                        <span>Employee Scorecard Workspace</span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <h1 className="text-3xl font-semibold tracking-tight">
+                                            {scorecard.employee.full_name}
+                                        </h1>
+                                        <Badge variant={getStatusVariant(scorecard.status)}>
+                                            {formatLabel(scorecard.status)}
+                                        </Badge>
+                                        {scorecard.overall_rating && (
+                                            <Badge variant={getRatingVariant(scorecard.overall_rating)}>
+                                                {scorecard.overall_rating}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                            <UserRound className="h-4 w-4" />
+                                            <span>{scorecard.employee.staff_number}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CalendarRange className="h-4 w-4" />
+                                            <span>{scorecard.cycle.title}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <CalendarClock className="h-4 w-4" />
+                                            <span>
+                                                {formatDate(scorecard.cycle.start_date)} —{' '}
+                                                {formatDate(scorecard.cycle.end_date)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                {scorecard.status === 'self_assessment_pending' && (
+                                    <Button
+                                        onClick={() =>
+                                            handleWorkflowAction('submit-self-assessment')
+                                        }
+                                    >
+                                        <Send className="mr-2 h-4 w-4" />
+                                        Submit Self-Assessment
+                                    </Button>
+                                )}
+
+                                {scorecard.status === 'manager_review_pending' && (
+                                    <Button
+                                        onClick={() =>
+                                            handleWorkflowAction('submit-manager-review')
+                                        }
+                                    >
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                        Submit Manager Review
+                                    </Button>
+                                )}
+
+                                {scorecard.status === 'hr_moderation_pending' && (
+                                    <Button onClick={() => handleWorkflowAction('finalize')}>
+                                        <ShieldCheck className="mr-2 h-4 w-4" />
+                                        Finalize Scorecard
+                                    </Button>
+                                )}
+
+                                <Link href={`/employee-scorecards/${scorecard.id}/edit`}>
+                                    <Button variant="outline">
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit Scorecard
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+
+                        <Separator className="my-6" />
+
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <MetricCard
+                                icon={<Gauge className="h-4 w-4" />}
+                                label="Overall Score"
+                                value={
+                                    scorecard.overall_score != null
+                                        ? Number(scorecard.overall_score).toFixed(1)
+                                        : '—'
+                                }
+                                helper="Final rolled-up score"
+                            />
+
+                            <MetricCard
+                                icon={<PieChart className="h-4 w-4" />}
+                                label="Completion"
+                                value={`${completedItems}/${scorecard.items.length}`}
+                                helper="Items with activity or scoring"
+                                extra={<MiniDonut value={completionPercent} size={62} />}
+                            />
+
+                            <MetricCard
+                                icon={<ClipboardList className="h-4 w-4" />}
+                                label="Evidence"
+                                value={scorecard.evidence.length}
+                                helper="Attached supporting records"
+                            />
+
+                            <MetricCard
+                                icon={<MessageSquareText className="h-4 w-4" />}
+                                label="Comments"
+                                value={scorecard.comments.length}
+                                helper="Discussion and review notes"
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Tabs defaultValue="overview" className="space-y-6">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="perspectives">Perspectives</TabsTrigger>
                         <TabsTrigger value="evidence">Evidence</TabsTrigger>
                         <TabsTrigger value="comments">Comments</TabsTrigger>
                     </TabsList>
 
-                    {/* Overview Tab */}
                     <TabsContent value="overview" className="space-y-6">
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Employee</CardTitle>
-                                    <User className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-lg font-semibold">{scorecard.employee.full_name}</div>
-                                    <p className="text-xs font-mono text-muted-foreground">{scorecard.employee.staff_number}</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Cycle</CardTitle>
-                                    <Target className="h-4 w-4 text-muted-foreground" />
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-lg font-semibold">{scorecard.cycle.title}</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {scorecard.cycle.start_date} &mdash; {scorecard.cycle.end_date}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Overall Score</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">
-                                        {scorecard.overall_score != null ? scorecard.overall_score.toFixed(1) : '--'}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-sm font-medium">Rating</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    {scorecard.overall_rating ? (
-                                        <Badge variant="outline" className={ratingBadgeClass(scorecard.overall_rating)}>
-                                            {scorecard.overall_rating}
-                                        </Badge>
-                                    ) : (
-                                        <span className="text-sm text-muted-foreground">Not yet rated</span>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <div className="grid gap-6 xl:grid-cols-12">
+                            <div className="space-y-6 xl:col-span-8">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Layers3 className="h-4 w-4" />
+                                            Perspective Balance
+                                        </CardTitle>
+                                        <CardDescription>
+                                            A quick visual read of KPI weight distribution and progress
+                                            by balanced scorecard perspective.
+                                        </CardDescription>
+                                    </CardHeader>
 
-                        {/* Perspective Summary */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Perspective Summary</CardTitle>
-                                <CardDescription>
-                                    Balanced scorecard breakdown by perspective.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Perspective</TableHead>
-                                                <TableHead>KPIs</TableHead>
-                                                <TableHead>Total Weight</TableHead>
-                                                <TableHead>Average Score</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {perspectives.map((p) => {
-                                                const bd = perspectiveBreakdown[p];
-                                                return (
-                                                    <TableRow key={p}>
-                                                        <TableCell className="font-medium">
-                                                            {perspectiveLabels[p] ?? formatStatus(p)}
-                                                        </TableCell>
-                                                        <TableCell>{bd?.items_count ?? 0}</TableCell>
-                                                        <TableCell>{bd?.total_weight ?? 0}%</TableCell>
-                                                        <TableCell>
-                                                            {bd?.average_score != null
-                                                                ? bd.average_score.toFixed(1)
-                                                                : '--'}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
+                                    <CardContent className="grid gap-4 md:grid-cols-2">
+                                        {perspectiveOptions.map((perspective) => {
+                                            const breakdown = perspectiveBreakdown[perspective];
+                                            const items = scorecard.items.filter(
+                                                (item) => item.perspective === perspective,
+                                            );
+                                            const completed = items.filter((item) =>
+                                                hasProgress(item),
+                                            ).length;
+                                            const progressPercent = items.length
+                                                ? (completed / items.length) * 100
+                                                : 0;
+
+                                            return (
+                                                <Card key={perspective}>
+                                                    <CardContent className="p-5">
+                                                        <div className="flex items-start justify-between gap-4">
+                                                            <div>
+                                                                <p className="text-sm font-semibold">
+                                                                    {perspectiveLabels[perspective] ??
+                                                                        formatLabel(perspective)}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {breakdown?.items_count ?? 0} KPI
+                                                                    item
+                                                                    {(breakdown?.items_count ?? 0) === 1
+                                                                        ? ''
+                                                                        : 's'}
+                                                                </p>
+                                                            </div>
+
+                                                            <Badge variant="outline">
+                                                                {breakdown?.total_weight ?? 0}% weight
+                                                            </Badge>
+                                                        </div>
+
+                                                        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                                                            <div className="flex items-center gap-4">
+                                                                <MiniDonut
+                                                                    value={
+                                                                        breakdown?.total_weight ?? 0
+                                                                    }
+                                                                    size={66}
+                                                                />
+                                                                <div>
+                                                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                                        Weight
+                                                                    </p>
+                                                                    <p className="text-sm font-medium">
+                                                                        {breakdown?.total_weight ?? 0}%
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-4">
+                                                                <MiniDonut
+                                                                    value={progressPercent}
+                                                                    size={66}
+                                                                />
+                                                                <div>
+                                                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                                        Progress
+                                                                    </p>
+                                                                    <p className="text-sm font-medium">
+                                                                        {completed}/{items.length || 0}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <Separator className="my-4" />
+
+                                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                                            <div>
+                                                                <p className="text-muted-foreground">
+                                                                    Avg Score
+                                                                </p>
+                                                                <p className="font-medium">
+                                                                    {breakdown?.average_score != null
+                                                                        ? Number(
+                                                                              breakdown.average_score,
+                                                                          ).toFixed(1)
+                                                                        : '—'}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-muted-foreground">
+                                                                    Perspective
+                                                                </p>
+                                                                <p className="font-medium">
+                                                                    {perspectiveLabels[perspective] ??
+                                                                        formatLabel(perspective)}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            );
+                                        })}
+                                    </CardContent>
+                                </Card>
+
+                                {scorecard.notes && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <NotebookPen className="h-4 w-4" />
+                                                Notes
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                                                {scorecard.notes}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {scorecard.improvement_plan && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Target className="h-4 w-4" />
+                                                Performance Improvement Plan
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Structured follow-up actions tied to this review.
+                                            </CardDescription>
+                                        </CardHeader>
+
+                                        <CardContent className="grid gap-4 md:grid-cols-2">
+                                            <DetailStat
+                                                label="Plan Title"
+                                                value={scorecard.improvement_plan.title}
+                                            />
+                                            <DetailStat
+                                                label="Status"
+                                                value={formatLabel(
+                                                    scorecard.improvement_plan.status,
+                                                )}
+                                            />
+
+                                            <div className="md:col-span-2">
+                                                <DetailStat
+                                                    label="Description"
+                                                    value={
+                                                        scorecard.improvement_plan.description ||
+                                                        'No description provided.'
+                                                    }
+                                                />
+                                            </div>
+
+                                            <DetailStat
+                                                label="Start Date"
+                                                value={formatDate(
+                                                    scorecard.improvement_plan.start_date,
+                                                )}
+                                            />
+                                            <DetailStat
+                                                label="End Date"
+                                                value={formatDate(
+                                                    scorecard.improvement_plan.end_date,
+                                                )}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
+
+                            <div className="space-y-6 xl:col-span-4">
+                                <div className="space-y-6 xl:sticky xl:top-6">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Sparkles className="h-4 w-4" />
+                                                Snapshot
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Compact view of this scorecard at a glance.
+                                            </CardDescription>
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-4">
+                                            <div className="space-y-1">
+                                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                    Employee
+                                                </p>
+                                                <p className="text-sm font-medium">
+                                                    {scorecard.employee.full_name}
+                                                </p>
+                                                <p className="font-mono text-xs text-muted-foreground">
+                                                    {scorecard.employee.staff_number}
+                                                </p>
+                                            </div>
+
+                                            <Separator />
+
+                                            <div className="space-y-1">
+                                                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                    Cycle
+                                                </p>
+                                                <p className="text-sm font-medium">
+                                                    {scorecard.cycle.title}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {formatDate(scorecard.cycle.start_date)} —{' '}
+                                                    {formatDate(scorecard.cycle.end_date)}
+                                                </p>
+                                            </div>
+
+                                            <Separator />
+
+                                            <div className="grid gap-3">
+                                                <DetailStat
+                                                    label="Status"
+                                                    value={
+                                                        <Badge
+                                                            variant={getStatusVariant(
+                                                                scorecard.status,
+                                                            )}
+                                                        >
+                                                            {formatLabel(scorecard.status)}
+                                                        </Badge>
+                                                    }
+                                                />
+
+                                                <DetailStat
+                                                    label="Overall Rating"
+                                                    value={
+                                                        scorecard.overall_rating ? (
+                                                            <Badge
+                                                                variant={getRatingVariant(
+                                                                    scorecard.overall_rating,
+                                                                )}
+                                                            >
+                                                                {scorecard.overall_rating}
+                                                            </Badge>
+                                                        ) : (
+                                                            'Not yet rated'
+                                                        )
+                                                    }
+                                                />
+
+                                                <DetailStat
+                                                    label="Created"
+                                                    value={formatDateTime(scorecard.created_at)}
+                                                />
+
+                                                <DetailStat
+                                                    label="Last Updated"
+                                                    value={formatDateTime(scorecard.updated_at)}
+                                                />
+
+                                                <DetailStat
+                                                    label="Finalized"
+                                                    value={formatDateTime(scorecard.finalized_at)}
+                                                />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <TimerReset className="h-4 w-4" />
+                                                Quick Actions
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Continue the review workflow from here.
+                                            </CardDescription>
+                                        </CardHeader>
+
+                                        <CardContent className="flex flex-col gap-3">
+                                            {scorecard.status === 'self_assessment_pending' && (
+                                                <Button
+                                                    onClick={() =>
+                                                        handleWorkflowAction(
+                                                            'submit-self-assessment',
+                                                        )
+                                                    }
+                                                >
+                                                    <Send className="mr-2 h-4 w-4" />
+                                                    Submit Self-Assessment
+                                                </Button>
+                                            )}
+
+                                            {scorecard.status === 'manager_review_pending' && (
+                                                <Button
+                                                    onClick={() =>
+                                                        handleWorkflowAction(
+                                                            'submit-manager-review',
+                                                        )
+                                                    }
+                                                >
+                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                    Submit Manager Review
+                                                </Button>
+                                            )}
+
+                                            {scorecard.status === 'hr_moderation_pending' && (
+                                                <Button
+                                                    onClick={() =>
+                                                        handleWorkflowAction('finalize')
+                                                    }
+                                                >
+                                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                                    Finalize Scorecard
+                                                </Button>
+                                            )}
+
+                                            <Link
+                                                href={`/employee-scorecards/${scorecard.id}/edit`}
+                                                className="w-full"
+                                            >
+                                                <Button variant="outline" className="w-full">
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit Scorecard
+                                                </Button>
+                                            </Link>
+
+                                            <Link
+                                                href="/employee-scorecards"
+                                                className="w-full"
+                                            >
+                                                <Button variant="outline" className="w-full">
+                                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                                    Back to Scorecards
+                                                </Button>
+                                            </Link>
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Additional Info */}
-                        {scorecard.notes && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Notes</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                        {scorecard.notes}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Improvement Plan */}
-                        {scorecard.improvement_plan && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Performance Improvement Plan</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    <div>
-                                        <span className="text-sm font-medium">Title:</span>{' '}
-                                        <span className="text-sm">{scorecard.improvement_plan.title}</span>
-                                    </div>
-                                    {scorecard.improvement_plan.description && (
-                                        <div>
-                                            <span className="text-sm font-medium">Description:</span>{' '}
-                                            <span className="text-sm text-muted-foreground">
-                                                {scorecard.improvement_plan.description}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <div className="flex items-center gap-4 text-sm">
-                                        <span>
-                                            <span className="font-medium">Status:</span>{' '}
-                                            {formatStatus(scorecard.improvement_plan.status)}
-                                        </span>
-                                        {scorecard.improvement_plan.start_date && (
-                                            <span>
-                                                <span className="font-medium">Period:</span>{' '}
-                                                {scorecard.improvement_plan.start_date} &mdash; {scorecard.improvement_plan.end_date}
-                                            </span>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                            </div>
+                        </div>
                     </TabsContent>
 
-                    {/* Perspectives Tab */}
                     <TabsContent value="perspectives" className="space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>KPI Items by Perspective</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <PieChart className="h-4 w-4" />
+                                    KPI Items by Perspective
+                                </CardTitle>
                                 <CardDescription>
-                                    Review individual KPIs grouped by balanced scorecard perspective.
+                                    Switch between perspectives to review KPI cards, targets, scores,
+                                    and supporting notes.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                {/* Perspective Sub-Tabs */}
+
+                            <CardContent className="space-y-6">
                                 <Tabs value={activePerspective} onValueChange={setActivePerspective}>
-                                    <TabsList>
-                                        {perspectives.map((p) => (
-                                            <TabsTrigger key={p} value={p}>
-                                                {perspectiveLabels[p] ?? formatStatus(p)}
+                                    <TabsList className="grid w-full grid-cols-2 xl:grid-cols-4">
+                                        {perspectiveOptions.map((perspective) => (
+                                            <TabsTrigger key={perspective} value={perspective}>
+                                                {perspectiveLabels[perspective] ??
+                                                    formatLabel(perspective)}
                                             </TabsTrigger>
                                         ))}
                                     </TabsList>
 
-                                    {perspectives.map((p) => (
-                                        <TabsContent key={p} value={p}>
-                                            {scorecard.items.filter((item) => item.perspective === p).length === 0 ? (
-                                                <div className="flex flex-col items-center justify-center py-12 text-center">
-                                                    <Target className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                                    <h3 className="mb-1 text-lg font-semibold">No KPIs</h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        No KPI items have been added for this perspective.
+                                    <TabsContent
+                                        value={activePerspective}
+                                        className="mt-6 space-y-6"
+                                    >
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <Card>
+                                                <CardContent className="flex items-center gap-4 p-5">
+                                                    <MiniDonut
+                                                        value={activeBreakdown?.total_weight ?? 0}
+                                                    />
+                                                    <div>
+                                                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                            Weight
+                                                        </p>
+                                                        <p className="text-lg font-semibold">
+                                                            {activeBreakdown?.total_weight ?? 0}%
+                                                        </p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+
+                                            <Card>
+                                                <CardContent className="flex items-center gap-4 p-5">
+                                                    <MiniDonut
+                                                        value={
+                                                            activePerspectiveItems.length
+                                                                ? (activePerspectiveItems.filter(
+                                                                      (item) =>
+                                                                          hasProgress(item),
+                                                                  ).length /
+                                                                      activePerspectiveItems.length) *
+                                                                  100
+                                                                : 0
+                                                        }
+                                                    />
+                                                    <div>
+                                                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                            Progress
+                                                        </p>
+                                                        <p className="text-lg font-semibold">
+                                                            {
+                                                                activePerspectiveItems.filter((item) =>
+                                                                    hasProgress(item),
+                                                                ).length
+                                                            }
+                                                            /{activePerspectiveItems.length}
+                                                        </p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+
+                                            <Card>
+                                                <CardContent className="p-5">
+                                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                        Average Score
                                                     </p>
-                                                </div>
-                                            ) : (
-                                                <div className="overflow-x-auto">
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow>
-                                                                <TableHead>KPI</TableHead>
-                                                                <TableHead>Target Type</TableHead>
-                                                                <TableHead>Target</TableHead>
-                                                                <TableHead>Actual</TableHead>
-                                                                <TableHead>Weight</TableHead>
-                                                                <TableHead>Self Score</TableHead>
-                                                                <TableHead>Manager Score</TableHead>
-                                                                <TableHead>Final Score</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {scorecard.items
-                                                                .filter((item) => item.perspective === p)
-                                                                .map((item) => (
-                                                                    <TableRow key={item.id}>
-                                                                        <TableCell>
-                                                                            <div className="font-medium">{item.kpi_name}</div>
-                                                                            {item.description && (
-                                                                                <div className="text-xs text-muted-foreground mt-0.5">
-                                                                                    {item.description}
-                                                                                </div>
-                                                                            )}
-                                                                        </TableCell>
-                                                                        <TableCell className="text-sm">
-                                                                            {formatStatus(item.target_type)}
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            {item.target_value != null ? item.target_value : '--'}
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            {item.actual_value != null ? item.actual_value : '--'}
-                                                                        </TableCell>
-                                                                        <TableCell>{item.weight}%</TableCell>
-                                                                        <TableCell>
-                                                                            {item.self_score != null ? item.self_score.toFixed(1) : '--'}
-                                                                        </TableCell>
-                                                                        <TableCell>
-                                                                            {item.manager_score != null ? item.manager_score.toFixed(1) : '--'}
-                                                                        </TableCell>
-                                                                        <TableCell className="font-semibold">
-                                                                            {item.final_score != null ? item.final_score.toFixed(1) : '--'}
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-                                    ))}
+                                                    <p className="mt-1 text-lg font-semibold">
+                                                        {activeBreakdown?.average_score != null
+                                                            ? Number(
+                                                                  activeBreakdown.average_score,
+                                                              ).toFixed(1)
+                                                            : '—'}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-muted-foreground">
+                                                        Across this perspective
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+
+                                        {activePerspectiveItems.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed px-6 py-14 text-center">
+                                                <Target className="mb-4 h-12 w-12 text-muted-foreground" />
+                                                <h3 className="text-lg font-semibold">No KPIs</h3>
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    No KPI items have been added for this perspective.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid gap-4 xl:grid-cols-2">
+                                                {activePerspectiveItems.map((item) => (
+                                                    <Card key={item.id}>
+                                                        <CardHeader className="pb-4">
+                                                            <div className="flex items-start justify-between gap-4">
+                                                                <div className="space-y-1">
+                                                                    <CardTitle className="text-base">
+                                                                        {item.kpi_name}
+                                                                    </CardTitle>
+                                                                    <CardDescription>
+                                                                        {item.description ||
+                                                                            'No KPI description provided.'}
+                                                                    </CardDescription>
+                                                                </div>
+
+                                                                <MiniDonut
+                                                                    value={item.weight}
+                                                                    size={60}
+                                                                />
+                                                            </div>
+                                                        </CardHeader>
+
+                                                        <CardContent className="space-y-4">
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <Badge variant="outline">
+                                                                    {formatLabel(item.target_type)}
+                                                                </Badge>
+                                                                <Badge variant="secondary">
+                                                                    {item.weight}% weight
+                                                                </Badge>
+                                                            </div>
+
+                                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                                <DetailStat
+                                                                    label="Target"
+                                                                    value={
+                                                                        item.target_value != null
+                                                                            ? item.target_value
+                                                                            : '—'
+                                                                    }
+                                                                />
+                                                                <DetailStat
+                                                                    label="Actual"
+                                                                    value={
+                                                                        item.actual_value != null
+                                                                            ? item.actual_value
+                                                                            : '—'
+                                                                    }
+                                                                />
+                                                                <DetailStat
+                                                                    label="Self Score"
+                                                                    value={
+                                                                        item.self_score != null
+                                                                            ? Number(
+                                                                                  item.self_score,
+                                                                              ).toFixed(1)
+                                                                            : '—'
+                                                                    }
+                                                                />
+                                                                <DetailStat
+                                                                    label="Manager Score"
+                                                                    value={
+                                                                        item.manager_score != null
+                                                                            ? Number(
+                                                                                  item.manager_score,
+                                                                              ).toFixed(1)
+                                                                            : '—'
+                                                                    }
+                                                                />
+                                                                <div className="sm:col-span-2">
+                                                                    <DetailStat
+                                                                        label="Final Score"
+                                                                        value={
+                                                                            item.final_score != null
+                                                                                ? Number(
+                                                                                      item.final_score,
+                                                                                  ).toFixed(1)
+                                                                                : '—'
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            {item.comments && (
+                                                                <>
+                                                                    <Separator />
+                                                                    <div className="space-y-1">
+                                                                        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                                            Reviewer Notes
+                                                                        </p>
+                                                                        <p className="text-sm text-muted-foreground">
+                                                                            {item.comments}
+                                                                        </p>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </TabsContent>
                                 </Tabs>
                             </CardContent>
                         </Card>
                     </TabsContent>
 
-                    {/* Evidence Tab */}
                     <TabsContent value="evidence" className="space-y-6">
-                        {/* Upload Form */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Upload Evidence</CardTitle>
-                                <CardDescription>
-                                    Attach supporting documents for this scorecard.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleEvidenceSubmit} className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div>
-                                            <label className="mb-2 block text-sm leading-none font-medium">
-                                                Title<span className="ml-1 text-destructive">*</span>
-                                            </label>
-                                            <Input
-                                                value={evidenceForm.data.title}
-                                                onChange={(e) => evidenceForm.setData('title', e.target.value)}
-                                                placeholder="Evidence title"
-                                            />
-                                            {evidenceForm.errors.title && (
-                                                <p className="mt-1.5 text-sm font-medium text-destructive">
-                                                    {evidenceForm.errors.title}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label className="mb-2 block text-sm leading-none font-medium">
-                                                File
-                                            </label>
-                                            <Input
-                                                type="file"
-                                                onChange={(e) =>
-                                                    evidenceForm.setData('file', e.target.files?.[0] ?? null)
-                                                }
-                                            />
-                                            {evidenceForm.errors.file && (
-                                                <p className="mt-1.5 text-sm font-medium text-destructive">
-                                                    {evidenceForm.errors.file}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="mb-2 block text-sm leading-none font-medium">
-                                            Description
-                                        </label>
-                                        <Textarea
-                                            value={evidenceForm.data.description}
-                                            onChange={(e) => evidenceForm.setData('description', e.target.value)}
-                                            rows={2}
-                                            placeholder="Brief description of this evidence..."
-                                        />
-                                        {evidenceForm.errors.description && (
-                                            <p className="mt-1.5 text-sm font-medium text-destructive">
-                                                {evidenceForm.errors.description}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Button type="submit" disabled={evidenceForm.processing}>
-                                            <Upload className="mr-2 h-4 w-4" />
-                                            {evidenceForm.processing ? 'Uploading...' : 'Upload Evidence'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                        <div className="grid gap-6 xl:grid-cols-12">
+                            <div className="xl:col-span-5">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Upload className="h-4 w-4" />
+                                            Upload Evidence
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Attach documents or supporting files for this scorecard.
+                                        </CardDescription>
+                                    </CardHeader>
 
-                        {/* Evidence List */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Evidence Documents</CardTitle>
-                                <CardDescription>
-                                    {scorecard.evidence.length} document{scorecard.evidence.length !== 1 ? 's' : ''} attached
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {scorecard.evidence.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                        <h3 className="mb-1 text-lg font-semibold">No evidence uploaded</h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Upload supporting documents using the form above.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Title</TableHead>
-                                                    <TableHead>Description</TableHead>
-                                                    <TableHead>Date</TableHead>
-                                                    <TableHead className="text-right">Actions</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {scorecard.evidence.map((ev) => (
-                                                    <TableRow key={ev.id}>
-                                                        <TableCell className="font-medium">{ev.title}</TableCell>
-                                                        <TableCell className="text-sm text-muted-foreground">
-                                                            {ev.description || '--'}
-                                                        </TableCell>
-                                                        <TableCell className="text-sm text-muted-foreground">
-                                                            {ev.created_at}
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            {ev.file_path && (
+                                    <CardContent>
+                                        <form onSubmit={handleEvidenceSubmit} className="space-y-4">
+                                            <div>
+                                                <label className="mb-2 block text-sm font-medium">
+                                                    Title
+                                                    <span className="ml-1 text-destructive">*</span>
+                                                </label>
+                                                <Input
+                                                    value={evidenceForm.data.title}
+                                                    onChange={(e) =>
+                                                        evidenceForm.setData(
+                                                            'title',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="Evidence title"
+                                                />
+                                                {evidenceForm.errors.title && (
+                                                    <p className="mt-1.5 text-sm font-medium text-destructive">
+                                                        {evidenceForm.errors.title}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="mb-2 block text-sm font-medium">
+                                                    File
+                                                </label>
+                                                <Input
+                                                    type="file"
+                                                    onChange={(e) =>
+                                                        evidenceForm.setData(
+                                                            'file',
+                                                            e.target.files?.[0] ?? null,
+                                                        )
+                                                    }
+                                                />
+                                                {evidenceForm.errors.file && (
+                                                    <p className="mt-1.5 text-sm font-medium text-destructive">
+                                                        {evidenceForm.errors.file}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="mb-2 block text-sm font-medium">
+                                                    Description
+                                                </label>
+                                                <Textarea
+                                                    value={evidenceForm.data.description}
+                                                    onChange={(e) =>
+                                                        evidenceForm.setData(
+                                                            'description',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    rows={4}
+                                                    placeholder="Brief description of this evidence..."
+                                                />
+                                                {evidenceForm.errors.description && (
+                                                    <p className="mt-1.5 text-sm font-medium text-destructive">
+                                                        {evidenceForm.errors.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    type="submit"
+                                                    disabled={evidenceForm.processing}
+                                                >
+                                                    <Upload className="mr-2 h-4 w-4" />
+                                                    {evidenceForm.processing
+                                                        ? 'Uploading...'
+                                                        : 'Upload Evidence'}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="xl:col-span-7">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <FileText className="h-4 w-4" />
+                                            Evidence Library
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {scorecard.evidence.length} document
+                                            {scorecard.evidence.length === 1 ? '' : 's'} attached
+                                            to this scorecard.
+                                        </CardDescription>
+                                    </CardHeader>
+
+                                    <CardContent>
+                                        {scorecard.evidence.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed px-6 py-14 text-center">
+                                                <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
+                                                <h3 className="text-lg font-semibold">
+                                                    No evidence uploaded
+                                                </h3>
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    Upload supporting documents using the form on the
+                                                    left.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {scorecard.evidence.map((evidence) => (
+                                                    <Card key={evidence.id}>
+                                                        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+                                                            <div className="min-w-0 space-y-1">
+                                                                <p className="font-medium">
+                                                                    {evidence.title}
+                                                                </p>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {evidence.description || 'No description provided.'}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    Added {formatDateTime(evidence.created_at)}
+                                                                </p>
+                                                            </div>
+
+                                                            {evidence.file_path && (
                                                                 <a
-                                                                    href={ev.file_path}
+                                                                    href={evidence.file_path}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    <Button variant="ghost" size="sm">
-                                                                        <FileText className="mr-1 h-4 w-4" />
-                                                                        View
+                                                                    <Button variant="outline">
+                                                                        <Eye className="mr-2 h-4 w-4" />
+                                                                        View File
                                                                     </Button>
                                                                 </a>
                                                             )}
-                                                        </TableCell>
-                                                    </TableRow>
+                                                        </CardContent>
+                                                    </Card>
                                                 ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
                     </TabsContent>
 
-                    {/* Comments Tab */}
                     <TabsContent value="comments" className="space-y-6">
-                        {/* Add Comment Form */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Add Comment</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleCommentSubmit} className="space-y-4">
-                                    <div>
-                                        <label className="mb-2 block text-sm leading-none font-medium">
-                                            Comment Type
-                                        </label>
-                                        <Select
-                                            value={commentForm.data.comment_type}
-                                            onValueChange={(v) => commentForm.setData('comment_type', v)}
-                                        >
-                                            <SelectTrigger className="w-full sm:w-48">
-                                                <SelectValue placeholder="Select type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {commentTypes.map((ct) => (
-                                                    <SelectItem key={ct} value={ct}>
-                                                        {formatStatus(ct)}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {commentForm.errors.comment_type && (
-                                            <p className="mt-1.5 text-sm font-medium text-destructive">
-                                                {commentForm.errors.comment_type}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="mb-2 block text-sm leading-none font-medium">
-                                            Comment<span className="ml-1 text-destructive">*</span>
-                                        </label>
-                                        <Textarea
-                                            value={commentForm.data.content}
-                                            onChange={(e) => commentForm.setData('content', e.target.value)}
-                                            rows={3}
-                                            placeholder="Write your comment..."
-                                        />
-                                        {commentForm.errors.content && (
-                                            <p className="mt-1.5 text-sm font-medium text-destructive">
-                                                {commentForm.errors.content}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Button type="submit" disabled={commentForm.processing}>
-                                            <MessageSquare className="mr-2 h-4 w-4" />
-                                            {commentForm.processing ? 'Posting...' : 'Post Comment'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </CardContent>
-                        </Card>
+                        <div className="grid gap-6 xl:grid-cols-12">
+                            <div className="xl:col-span-5">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MessageSquareText className="h-4 w-4" />
+                                            Add Comment
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Leave structured feedback or a workflow note.
+                                        </CardDescription>
+                                    </CardHeader>
 
-                        {/* Comments List */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Comments</CardTitle>
-                                <CardDescription>
-                                    {scorecard.comments.length} comment{scorecard.comments.length !== 1 ? 's' : ''}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {scorecard.comments.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground/50" />
-                                        <h3 className="mb-1 text-lg font-semibold">No comments yet</h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Use the form above to add the first comment.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {scorecard.comments.map((comment) => (
-                                            <div
-                                                key={comment.id}
-                                                className="rounded-lg border p-4"
-                                            >
-                                                <div className="mb-2 flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-semibold">
-                                                            {comment.user?.name ?? 'System'}
-                                                        </span>
-                                                        <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
-                                                            {formatStatus(comment.comment_type)}
-                                                        </Badge>
-                                                    </div>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {comment.created_at}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                                    {comment.content}
+                                    <CardContent>
+                                        <form onSubmit={handleCommentSubmit} className="space-y-4">
+                                            <div>
+                                                <label className="mb-2 block text-sm font-medium">
+                                                    Comment Type
+                                                </label>
+                                                <Select
+                                                    value={commentForm.data.comment_type}
+                                                    onValueChange={(value) =>
+                                                        commentForm.setData(
+                                                            'comment_type',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {commentTypeOptions.map((type) => (
+                                                            <SelectItem key={type} value={type}>
+                                                                {formatLabel(type)}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {commentForm.errors.comment_type && (
+                                                    <p className="mt-1.5 text-sm font-medium text-destructive">
+                                                        {commentForm.errors.comment_type}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="mb-2 block text-sm font-medium">
+                                                    Comment
+                                                    <span className="ml-1 text-destructive">*</span>
+                                                </label>
+                                                <Textarea
+                                                    value={commentForm.data.content}
+                                                    onChange={(e) =>
+                                                        commentForm.setData(
+                                                            'content',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    rows={5}
+                                                    placeholder="Write your comment..."
+                                                />
+                                                {commentForm.errors.content && (
+                                                    <p className="mt-1.5 text-sm font-medium text-destructive">
+                                                        {commentForm.errors.content}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    type="submit"
+                                                    disabled={commentForm.processing}
+                                                >
+                                                    <MessageSquareText className="mr-2 h-4 w-4" />
+                                                    {commentForm.processing
+                                                        ? 'Posting...'
+                                                        : 'Post Comment'}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="xl:col-span-7">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <NotebookPen className="h-4 w-4" />
+                                            Comment Timeline
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {scorecard.comments.length} comment
+                                            {scorecard.comments.length === 1 ? '' : 's'} logged on
+                                            this scorecard.
+                                        </CardDescription>
+                                    </CardHeader>
+
+                                    <CardContent>
+                                        {scorecard.comments.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed px-6 py-14 text-center">
+                                                <MessageSquareText className="mb-4 h-12 w-12 text-muted-foreground" />
+                                                <h3 className="text-lg font-semibold">
+                                                    No comments yet
+                                                </h3>
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    Use the form on the left to add the first comment.
                                                 </p>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {scorecard.comments.map((comment) => (
+                                                    <Card key={comment.id}>
+                                                        <CardContent className="p-5">
+                                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                                <div className="space-y-2">
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <span className="text-sm font-semibold">
+                                                                            {comment.user?.name ??
+                                                                                'System'}
+                                                                        </span>
+                                                                        <Badge variant="outline">
+                                                                            {formatLabel(
+                                                                                comment.comment_type,
+                                                                            )}
+                                                                        </Badge>
+                                                                    </div>
+
+                                                                    <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                                                                        {comment.content}
+                                                                    </p>
+                                                                </div>
+
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {formatDateTime(
+                                                                        comment.created_at,
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>

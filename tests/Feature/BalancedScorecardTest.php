@@ -109,6 +109,21 @@ it('can list performance cycles', function () {
         );
 });
 
+it('treats an empty performance cycle status filter as all', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.cycles.manage']);
+    createBscCycle($organization);
+
+    $this->actingAs($user)
+        ->get('/performance-cycles?status=')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Cycles/Index')
+            ->has('cycles.data', 1)
+            ->where('filters.status', 'all')
+        );
+});
+
 it('can create a performance cycle', function () {
     $user = User::factory()->create();
     grantBscPermissions($user, ['performance.cycles.manage']);

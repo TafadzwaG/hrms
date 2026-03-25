@@ -1,8 +1,6 @@
-import MarketplaceController from './MarketplaceController'
-import PortalAuthController from './PortalAuthController'
-import Candidate from './Candidate'
-import Employer from './Employer'
-import UserImpersonationController from './UserImpersonationController'
+import PasswordResetController from './PasswordResetController'
+import CandidateHubDashboardController from './CandidateHubDashboardController'
+import EmployerHubDashboardController from './EmployerHubDashboardController'
 import CurrentOrganizationController from './CurrentOrganizationController'
 import DashboardController from './DashboardController'
 import OrganizationController from './OrganizationController'
@@ -21,7 +19,6 @@ import AssetMaintenanceController from './AssetMaintenanceController'
 import AssetCategoryController from './AssetCategoryController'
 import AssetVendorController from './AssetVendorController'
 import AssetLocationController from './AssetLocationController'
-import PasswordResetController from './PasswordResetController'
 import UserController from './UserController'
 import WorkflowDefinitionController from './WorkflowDefinitionController'
 import LeaveRequestController from './LeaveRequestController'
@@ -59,7 +56,6 @@ import DocumentTypeController from './DocumentTypeController'
 import DocumentController from './DocumentController'
 import Reports from './Reports'
 import RecruitmentDashboardController from './RecruitmentDashboardController'
-import RecruitmentAdminPaymentsController from './RecruitmentAdminPaymentsController'
 import CandidateResumeController from './CandidateResumeController'
 import CandidateCheckoutController from './CandidateCheckoutController'
 import CompanyProfileController from './CompanyProfileController'
@@ -67,13 +63,12 @@ import VacancyController from './VacancyController'
 import VacancyApplicationController from './VacancyApplicationController'
 import CandidateDirectoryController from './CandidateDirectoryController'
 import PaymentWebhookController from './PaymentWebhookController'
+import PortalAuthController from './PortalAuthController'
 import Settings from './Settings'
 const Controllers = {
-    MarketplaceController: Object.assign(MarketplaceController, MarketplaceController),
-PortalAuthController: Object.assign(PortalAuthController, PortalAuthController),
-Candidate: Object.assign(Candidate, Candidate),
-Employer: Object.assign(Employer, Employer),
-UserImpersonationController: Object.assign(UserImpersonationController, UserImpersonationController),
+    PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
+CandidateHubDashboardController: Object.assign(CandidateHubDashboardController, CandidateHubDashboardController),
+EmployerHubDashboardController: Object.assign(EmployerHubDashboardController, EmployerHubDashboardController),
 CurrentOrganizationController: Object.assign(CurrentOrganizationController, CurrentOrganizationController),
 DashboardController: Object.assign(DashboardController, DashboardController),
 OrganizationController: Object.assign(OrganizationController, OrganizationController),
@@ -92,7 +87,6 @@ AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaint
 AssetCategoryController: Object.assign(AssetCategoryController, AssetCategoryController),
 AssetVendorController: Object.assign(AssetVendorController, AssetVendorController),
 AssetLocationController: Object.assign(AssetLocationController, AssetLocationController),
-PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
 UserController: Object.assign(UserController, UserController),
 WorkflowDefinitionController: Object.assign(WorkflowDefinitionController, WorkflowDefinitionController),
 LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),
@@ -130,7 +124,6 @@ DocumentTypeController: Object.assign(DocumentTypeController, DocumentTypeContro
 DocumentController: Object.assign(DocumentController, DocumentController),
 Reports: Object.assign(Reports, Reports),
 RecruitmentDashboardController: Object.assign(RecruitmentDashboardController, RecruitmentDashboardController),
-RecruitmentAdminPaymentsController: Object.assign(RecruitmentAdminPaymentsController, RecruitmentAdminPaymentsController),
 CandidateResumeController: Object.assign(CandidateResumeController, CandidateResumeController),
 CandidateCheckoutController: Object.assign(CandidateCheckoutController, CandidateCheckoutController),
 CompanyProfileController: Object.assign(CompanyProfileController, CompanyProfileController),
@@ -138,6 +131,7 @@ VacancyController: Object.assign(VacancyController, VacancyController),
 VacancyApplicationController: Object.assign(VacancyApplicationController, VacancyApplicationController),
 CandidateDirectoryController: Object.assign(CandidateDirectoryController, CandidateDirectoryController),
 PaymentWebhookController: Object.assign(PaymentWebhookController, PaymentWebhookController),
+PortalAuthController: Object.assign(PortalAuthController, PortalAuthController),
 Settings: Object.assign(Settings, Settings),
 }
 

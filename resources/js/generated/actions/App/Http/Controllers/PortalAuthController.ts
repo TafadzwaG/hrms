@@ -329,7 +329,7 @@ export const register = {
 
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 export const switchPortal = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -344,7 +344,7 @@ switchPortal.definition = {
 
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchPortal.url = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -372,7 +372,7 @@ switchPortal.url = (args: { portal: string | number } | [portal: string | number
 
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchPortal.get = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -381,7 +381,7 @@ switchPortal.get = (args: { portal: string | number } | [portal: string | number
 })
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchPortal.head = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -391,7 +391,7 @@ switchPortal.head = (args: { portal: string | number } | [portal: string | numbe
 
     /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
     const switchPortalForm = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -401,7 +401,7 @@ switchPortal.head = (args: { portal: string | number } | [portal: string | numbe
 
             /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
         switchPortalForm.get = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -410,7 +410,7 @@ switchPortal.head = (args: { portal: string | number } | [portal: string | numbe
         })
             /**
 * @see \App\Http\Controllers\PortalAuthController::switchPortal
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
         switchPortalForm.head = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

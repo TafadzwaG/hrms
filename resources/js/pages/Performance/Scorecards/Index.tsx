@@ -272,7 +272,7 @@ export default function ScorecardIndex() {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {sc.overall_score != null ? sc.overall_score.toFixed(1) : '--'}
+                                                    {sc.overall_score != null ? Number(sc.overall_score).toFixed(1) : '--'}
                                                 </TableCell>
                                                 <TableCell>
                                                     {sc.overall_rating ? (

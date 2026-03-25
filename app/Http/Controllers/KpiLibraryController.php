@@ -32,7 +32,7 @@ class KpiLibraryController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('Performance/KpiLibrary/Index', [
+        return Inertia::render('Performance/Kpis/Index', [
             'kpis' => $kpis,
             'filters' => [
                 'search' => $search,
@@ -46,7 +46,7 @@ class KpiLibraryController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Performance/KpiLibrary/Create', [
+        return Inertia::render('Performance/Kpis/Create', [
             'perspectives' => KpiLibrary::PERSPECTIVES,
             'targetTypes' => KpiLibrary::TARGET_TYPES,
         ]);
@@ -59,22 +59,18 @@ class KpiLibraryController extends Controller
         $kpi = KpiLibrary::create($validated);
 
         return redirect()
-            ->route('kpi-library.show', $kpi)
+            ->route('kpi-library.index')
             ->with('success', 'KPI created successfully.');
     }
 
-    public function show(KpiLibrary $kpiLibrary): Response
+    public function show(KpiLibrary $kpiLibrary): RedirectResponse
     {
-        return Inertia::render('Performance/KpiLibrary/Show', [
-            'kpi' => $kpiLibrary,
-            'perspectives' => KpiLibrary::PERSPECTIVES,
-            'targetTypes' => KpiLibrary::TARGET_TYPES,
-        ]);
+        return redirect()->route('kpi-library.edit', $kpiLibrary);
     }
 
     public function edit(KpiLibrary $kpiLibrary): Response
     {
-        return Inertia::render('Performance/KpiLibrary/Edit', [
+        return Inertia::render('Performance/Kpis/Edit', [
             'kpi' => $kpiLibrary,
             'perspectives' => KpiLibrary::PERSPECTIVES,
             'targetTypes' => KpiLibrary::TARGET_TYPES,
@@ -88,7 +84,7 @@ class KpiLibraryController extends Controller
         $kpiLibrary->update($validated);
 
         return redirect()
-            ->route('kpi-library.show', $kpiLibrary)
+            ->route('kpi-library.index')
             ->with('success', 'KPI updated successfully.');
     }
 

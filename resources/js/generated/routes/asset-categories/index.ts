@@ -211,108 +211,6 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-export const show = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: show.url(args, options),
-    method: 'get',
-})
-
-show.definition = {
-    methods: ["get","head"],
-    url: '/asset-categories/{assetCategory}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-show.url = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { assetCategory: args }
-    }
-
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { assetCategory: args.id }
-        }
-    
-    if (Array.isArray(args)) {
-        args = {
-                    assetCategory: args[0],
-                }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-                        assetCategory: typeof args.assetCategory === 'object'
-                ? args.assetCategory.id
-                : args.assetCategory,
-                }
-
-    return show.definition.url
-            .replace('{assetCategory}', parsedArgs.assetCategory.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-show.get = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: show.url(args, options),
-    method: 'get',
-})
-/**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-show.head = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: show.url(args, options),
-    method: 'head',
-})
-
-    /**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-    const showForm = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: show.url(args, options),
-        method: 'get',
-    })
-
-            /**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-        showForm.get = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: show.url(args, options),
-            method: 'get',
-        })
-            /**
-* @see \App\Http\Controllers\AssetCategoryController::show
- * @see app/Http/Controllers/AssetCategoryController.php:68
- * @route '/asset-categories/{assetCategory}'
- */
-        showForm.head = (args: { assetCategory: number | { id: number } } | [assetCategory: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: show.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    show.form = showForm
-/**
 * @see \App\Http\Controllers\AssetCategoryController::edit
  * @see app/Http/Controllers/AssetCategoryController.php:107
  * @route '/asset-categories/{assetCategory}/edit'
@@ -596,7 +494,6 @@ const assetCategories = {
     index: Object.assign(index, index),
 create: Object.assign(create, create),
 store: Object.assign(store, store),
-show: Object.assign(show, show),
 edit: Object.assign(edit, edit),
 update: Object.assign(update, update),
 destroy: Object.assign(destroy, destroy),

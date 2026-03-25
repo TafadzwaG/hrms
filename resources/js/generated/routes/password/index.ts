@@ -1,5 +1,61 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
+import manual from './manual'
 import confirmD7e05f from './confirm'
+/**
+* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
+ * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
+ * @route '/reset-password'
+ */
+export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: update.url(options),
+    method: 'post',
+})
+
+update.definition = {
+    methods: ["post"],
+    url: '/reset-password',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
+ * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
+ * @route '/reset-password'
+ */
+update.url = (options?: RouteQueryOptions) => {
+    return update.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
+ * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
+ * @route '/reset-password'
+ */
+update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: update.url(options),
+    method: 'post',
+})
+
+    /**
+* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
+ * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
+ * @route '/reset-password'
+ */
+    const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
+ * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
+ * @route '/reset-password'
+ */
+        updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(options),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \Laravel\Fortify\Http\Controllers\PasswordResetLinkController::request
  * @see vendor/laravel/fortify/src/Http/Controllers/PasswordResetLinkController.php:22
@@ -231,61 +287,6 @@ reset.head = (args: { token: string | number } | [token: string | number ] | str
     
     reset.form = resetForm
 /**
-* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
- * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
- * @route '/reset-password'
- */
-export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: update.url(options),
-    method: 'post',
-})
-
-update.definition = {
-    methods: ["post"],
-    url: '/reset-password',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
- * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
- * @route '/reset-password'
- */
-update.url = (options?: RouteQueryOptions) => {
-    return update.definition.url + queryParams(options)
-}
-
-/**
-* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
- * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
- * @route '/reset-password'
- */
-update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: update.url(options),
-    method: 'post',
-})
-
-    /**
-* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
- * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
- * @route '/reset-password'
- */
-    const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: update.url(options),
-        method: 'post',
-    })
-
-            /**
-* @see \Laravel\Fortify\Http\Controllers\NewPasswordController::update
- * @see vendor/laravel/fortify/src/Http/Controllers/NewPasswordController.php:55
- * @route '/reset-password'
- */
-        updateForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: update.url(options),
-            method: 'post',
-        })
-    
-    update.form = updateForm
-/**
 * @see \Laravel\Fortify\Http\Controllers\ConfirmablePasswordController::confirm
  * @see vendor/laravel/fortify/src/Http/Controllers/ConfirmablePasswordController.php:40
  * @route '/user/confirm-password'
@@ -442,10 +443,11 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     confirmation.form = confirmationForm
 const password = {
-    request: Object.assign(request, request),
+    manual: Object.assign(manual, manual),
+update: Object.assign(update, update),
+request: Object.assign(request, request),
 email: Object.assign(email, email),
 reset: Object.assign(reset, reset),
-update: Object.assign(update, update),
 confirm: Object.assign(confirm, confirmD7e05f),
 confirmation: Object.assign(confirmation, confirmation),
 }

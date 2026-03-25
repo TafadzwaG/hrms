@@ -70,7 +70,8 @@ class PortalAuthController extends Controller
     {
         $user = $request->user();
         $availablePortals = $this->availablePortalsForRegistration($user);
-        $portal = $this->resolver->normalizePortal($request->route('portal') ?? $request->input('portal'));
+        $portal = $this->resolver->normalizePortal($request->route('portal') ?? $request->input('portal'))
+            ?? PortalAccessResolver::PORTAL_EMPLOYEE;
 
         if (! $portal || ! in_array($portal, $availablePortals, true)) {
             throw ValidationException::withMessages([
@@ -120,10 +121,11 @@ class PortalAuthController extends Controller
 
     private function validateRegistration(Request $request, array $availablePortals, bool $setupMode): array
     {
-        $normalizedPortal = $this->resolver->normalizePortal($request->route('portal') ?? $request->input('portal'));
+        $normalizedPortal = $this->resolver->normalizePortal($request->route('portal') ?? $request->input('portal'))
+            ?? PortalAccessResolver::PORTAL_EMPLOYEE;
 
         $rules = [
-            'portal' => ['required', 'string', Rule::in($availablePortals)],
+            'portal' => ['nullable', 'string', Rule::in($availablePortals)],
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',

@@ -14,7 +14,7 @@ class PerformanceCycleController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
-        $status = (string) $request->input('status', 'all');
+        $status = trim((string) $request->input('status', '')) ?: 'all';
 
         $cycles = PerformanceCycle::query()
             ->withCount('scorecards')

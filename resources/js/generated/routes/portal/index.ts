@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 export const switchMethod = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ switchMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchMethod.url = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ switchMethod.url = (args: { portal: string | number } | [portal: string | number
 
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchMethod.get = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ switchMethod.get = (args: { portal: string | number } | [portal: string | number
 })
 /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
 switchMethod.head = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ switchMethod.head = (args: { portal: string | number } | [portal: string | numbe
 
     /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
     const switchMethodForm = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ switchMethod.head = (args: { portal: string | number } | [portal: string | numbe
 
             /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
         switchMethodForm.get = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ switchMethod.head = (args: { portal: string | number } | [portal: string | numbe
         })
             /**
 * @see \App\Http\Controllers\PortalAuthController::switchMethod
- * @see app/Http/Controllers/PortalAuthController.php:107
+ * @see app/Http/Controllers/PortalAuthController.php:108
  * @route '/portal/switch/{portal}'
  */
         switchMethodForm.head = (args: { portal: string | number } | [portal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

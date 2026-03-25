@@ -1,5 +1,83 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(options),
+    method: 'get',
+})
+
+show.definition = {
+    methods: ["get","head"],
+    url: '/reset-password',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+show.url = (options?: RouteQueryOptions) => {
+    return show.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+    const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+        showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\PasswordResetController::show
+ * @see app/Http/Controllers/PasswordResetController.php:56
+ * @route '/reset-password'
+ */
+        showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
+/**
 * @see \App\Http\Controllers\PasswordResetController::sendResetLink
  * @see app/Http/Controllers/PasswordResetController.php:22
  * @route '/users/{user}/send-password-reset-link'
@@ -78,6 +156,6 @@ sendResetLink.post = (args: { user: number | { id: number } } | [user: number | 
         })
     
     sendResetLink.form = sendResetLinkForm
-const PasswordResetController = { sendResetLink }
+const PasswordResetController = { show, sendResetLink }
 
 export default PasswordResetController

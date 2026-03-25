@@ -213,66 +213,61 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-export const show = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/candidate-profiles/{candidate}',
+    url: '/candidate-profiles/{candidate_profile}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-show.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { candidate: args }
+        args = { candidate_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { candidate: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    candidate: args[0],
+                    candidate_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: typeof args.candidate === 'object'
-                ? args.candidate.id
-                : args.candidate,
+                        candidate_profile: args.candidate_profile,
                 }
 
     return show.definition.url
-            .replace('{candidate}', parsedArgs.candidate.toString())
+            .replace('{candidate_profile}', parsedArgs.candidate_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-show.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-show.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -280,9 +275,9 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
     /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-    const showForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
@@ -290,18 +285,18 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
             /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-        showForm.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CandidateProfileController::show
  * @see app/Http/Controllers/CandidateProfileController.php:133
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-        showForm.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -315,66 +310,61 @@ show.head = (args: { candidate: number | { id: number } } | [candidate: number |
 /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-export const edit = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 
 edit.definition = {
     methods: ["get","head"],
-    url: '/candidate-profiles/{candidate}/edit',
+    url: '/candidate-profiles/{candidate_profile}/edit',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-edit.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { candidate: args }
+        args = { candidate_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { candidate: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    candidate: args[0],
+                    candidate_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: typeof args.candidate === 'object'
-                ? args.candidate.id
-                : args.candidate,
+                        candidate_profile: args.candidate_profile,
                 }
 
     return edit.definition.url
-            .replace('{candidate}', parsedArgs.candidate.toString())
+            .replace('{candidate_profile}', parsedArgs.candidate_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-edit.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-edit.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
@@ -382,9 +372,9 @@ edit.head = (args: { candidate: number | { id: number } } | [candidate: number |
     /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-    const editForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
@@ -392,18 +382,18 @@ edit.head = (args: { candidate: number | { id: number } } | [candidate: number |
             /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-        editForm.get = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CandidateProfileController::edit
  * @see app/Http/Controllers/CandidateProfileController.php:149
- * @route '/candidate-profiles/{candidate}/edit'
+ * @route '/candidate-profiles/{candidate_profile}/edit'
  */
-        editForm.head = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -417,66 +407,61 @@ edit.head = (args: { candidate: number | { id: number } } | [candidate: number |
 /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-export const update = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 
 update.definition = {
     methods: ["put","patch"],
-    url: '/candidate-profiles/{candidate}',
+    url: '/candidate-profiles/{candidate_profile}',
 } satisfies RouteDefinition<["put","patch"]>
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-update.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { candidate: args }
+        args = { candidate_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { candidate: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    candidate: args[0],
+                    candidate_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: typeof args.candidate === 'object'
-                ? args.candidate.id
-                : args.candidate,
+                        candidate_profile: args.candidate_profile,
                 }
 
     return update.definition.url
-            .replace('{candidate}', parsedArgs.candidate.toString())
+            .replace('{candidate_profile}', parsedArgs.candidate_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-update.put = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-update.patch = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
@@ -484,9 +469,9 @@ update.patch = (args: { candidate: number | { id: number } } | [candidate: numbe
     /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-    const updateForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -499,9 +484,9 @@ update.patch = (args: { candidate: number | { id: number } } | [candidate: numbe
             /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-        updateForm.put = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -513,9 +498,9 @@ update.patch = (args: { candidate: number | { id: number } } | [candidate: numbe
             /**
 * @see \App\Http\Controllers\CandidateProfileController::update
  * @see app/Http/Controllers/CandidateProfileController.php:157
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-        updateForm.patch = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.patch = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PATCH',
@@ -529,57 +514,52 @@ update.patch = (args: { candidate: number | { id: number } } | [candidate: numbe
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
  * @see app/Http/Controllers/CandidateProfileController.php:172
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-export const destroy = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
 destroy.definition = {
     methods: ["delete"],
-    url: '/candidate-profiles/{candidate}',
+    url: '/candidate-profiles/{candidate_profile}',
 } satisfies RouteDefinition<["delete"]>
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
  * @see app/Http/Controllers/CandidateProfileController.php:172
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-destroy.url = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
-        args = { candidate: args }
+        args = { candidate_profile: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-            args = { candidate: args.id }
-        }
     
     if (Array.isArray(args)) {
         args = {
-                    candidate: args[0],
+                    candidate_profile: args[0],
                 }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        candidate: typeof args.candidate === 'object'
-                ? args.candidate.id
-                : args.candidate,
+                        candidate_profile: args.candidate_profile,
                 }
 
     return destroy.definition.url
-            .replace('{candidate}', parsedArgs.candidate.toString())
+            .replace('{candidate_profile}', parsedArgs.candidate_profile.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
  * @see app/Http/Controllers/CandidateProfileController.php:172
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-destroy.delete = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -587,9 +567,9 @@ destroy.delete = (args: { candidate: number | { id: number } } | [candidate: num
     /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
  * @see app/Http/Controllers/CandidateProfileController.php:172
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-    const destroyForm = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -602,9 +582,9 @@ destroy.delete = (args: { candidate: number | { id: number } } | [candidate: num
             /**
 * @see \App\Http\Controllers\CandidateProfileController::destroy
  * @see app/Http/Controllers/CandidateProfileController.php:172
- * @route '/candidate-profiles/{candidate}'
+ * @route '/candidate-profiles/{candidate_profile}'
  */
-        destroyForm.delete = (args: { candidate: number | { id: number } } | [candidate: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { candidate_profile: string | number } | [candidate_profile: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

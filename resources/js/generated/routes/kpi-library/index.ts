@@ -309,7 +309,7 @@ show.head = (args: { kpi_library: string | number } | [kpi_library: string | num
     show.form = showForm
 /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
 export const edit = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
 edit.url = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +352,7 @@ edit.url = (args: { kpi_library: string | number } | [kpi_library: string | numb
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
 edit.get = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +361,7 @@ edit.get = (args: { kpi_library: string | number } | [kpi_library: string | numb
 })
 /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
 edit.head = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +371,7 @@ edit.head = (args: { kpi_library: string | number } | [kpi_library: string | num
 
     /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
     const editForm = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { kpi_library: string | number } | [kpi_library: string | num
 
             /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
         editForm.get = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +390,7 @@ edit.head = (args: { kpi_library: string | number } | [kpi_library: string | num
         })
             /**
 * @see \App\Http\Controllers\KpiLibraryController::edit
- * @see app/Http/Controllers/KpiLibraryController.php:75
+ * @see app/Http/Controllers/KpiLibraryController.php:71
  * @route '/kpi-library/{kpi_library}/edit'
  */
         editForm.head = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ edit.head = (args: { kpi_library: string | number } | [kpi_library: string | num
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
 export const update = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
 update.url = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { kpi_library: string | number } | [kpi_library: string | nu
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
 update.put = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -458,7 +458,7 @@ update.put = (args: { kpi_library: string | number } | [kpi_library: string | nu
 })
 /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
 update.patch = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -468,7 +468,7 @@ update.patch = (args: { kpi_library: string | number } | [kpi_library: string | 
 
     /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
     const updateForm = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { kpi_library: string | number } | [kpi_library: string | 
 
             /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
         updateForm.put = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { kpi_library: string | number } | [kpi_library: string | 
         })
             /**
 * @see \App\Http\Controllers\KpiLibraryController::update
- * @see app/Http/Controllers/KpiLibraryController.php:84
+ * @see app/Http/Controllers/KpiLibraryController.php:80
  * @route '/kpi-library/{kpi_library}'
  */
         updateForm.patch = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -513,7 +513,7 @@ update.patch = (args: { kpi_library: string | number } | [kpi_library: string | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\KpiLibraryController::destroy
- * @see app/Http/Controllers/KpiLibraryController.php:95
+ * @see app/Http/Controllers/KpiLibraryController.php:91
  * @route '/kpi-library/{kpi_library}'
  */
 export const destroy = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -528,7 +528,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::destroy
- * @see app/Http/Controllers/KpiLibraryController.php:95
+ * @see app/Http/Controllers/KpiLibraryController.php:91
  * @route '/kpi-library/{kpi_library}'
  */
 destroy.url = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -556,7 +556,7 @@ destroy.url = (args: { kpi_library: string | number } | [kpi_library: string | n
 
 /**
 * @see \App\Http\Controllers\KpiLibraryController::destroy
- * @see app/Http/Controllers/KpiLibraryController.php:95
+ * @see app/Http/Controllers/KpiLibraryController.php:91
  * @route '/kpi-library/{kpi_library}'
  */
 destroy.delete = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -566,7 +566,7 @@ destroy.delete = (args: { kpi_library: string | number } | [kpi_library: string 
 
     /**
 * @see \App\Http\Controllers\KpiLibraryController::destroy
- * @see app/Http/Controllers/KpiLibraryController.php:95
+ * @see app/Http/Controllers/KpiLibraryController.php:91
  * @route '/kpi-library/{kpi_library}'
  */
     const destroyForm = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ destroy.delete = (args: { kpi_library: string | number } | [kpi_library: string 
 
             /**
 * @see \App\Http\Controllers\KpiLibraryController::destroy
- * @see app/Http/Controllers/KpiLibraryController.php:95
+ * @see app/Http/Controllers/KpiLibraryController.php:91
  * @route '/kpi-library/{kpi_library}'
  */
         destroyForm.delete = (args: { kpi_library: string | number } | [kpi_library: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

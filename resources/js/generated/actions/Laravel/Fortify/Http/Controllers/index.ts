@@ -1,6 +1,6 @@
+import NewPasswordController from './NewPasswordController'
 import AuthenticatedSessionController from './AuthenticatedSessionController'
 import PasswordResetLinkController from './PasswordResetLinkController'
-import NewPasswordController from './NewPasswordController'
 import EmailVerificationPromptController from './EmailVerificationPromptController'
 import VerifyEmailController from './VerifyEmailController'
 import EmailVerificationNotificationController from './EmailVerificationNotificationController'
@@ -15,9 +15,9 @@ import TwoFactorQrCodeController from './TwoFactorQrCodeController'
 import TwoFactorSecretKeyController from './TwoFactorSecretKeyController'
 import RecoveryCodeController from './RecoveryCodeController'
 const Controllers = {
-    AuthenticatedSessionController: Object.assign(AuthenticatedSessionController, AuthenticatedSessionController),
+    NewPasswordController: Object.assign(NewPasswordController, NewPasswordController),
+AuthenticatedSessionController: Object.assign(AuthenticatedSessionController, AuthenticatedSessionController),
 PasswordResetLinkController: Object.assign(PasswordResetLinkController, PasswordResetLinkController),
-NewPasswordController: Object.assign(NewPasswordController, NewPasswordController),
 EmailVerificationPromptController: Object.assign(EmailVerificationPromptController, EmailVerificationPromptController),
 VerifyEmailController: Object.assign(VerifyEmailController, VerifyEmailController),
 EmailVerificationNotificationController: Object.assign(EmailVerificationNotificationController, EmailVerificationNotificationController),
