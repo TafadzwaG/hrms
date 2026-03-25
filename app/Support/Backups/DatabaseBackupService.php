@@ -11,6 +11,11 @@ use ZipArchive;
 
 class DatabaseBackupService
 {
+    public function __construct(
+        private readonly MysqlDumpBinaryResolver $mysqlDumpBinaryResolver,
+    ) {
+    }
+
     /**
      * @param  array{
      *   base_dir: string,
@@ -159,7 +164,9 @@ class DatabaseBackupService
             throw new \RuntimeException('MySQL backup is missing database or username credentials.');
         }
 
-        $mysqldump = (string) (env('MYSQLDUMP_PATH') ?: 'mysqldump');
+        $mysqldump = $this->mysqlDumpBinaryResolver->resolve(
+            env('MYSQLDUMP_PATH')
+        );
 
         $command = [
             $mysqldump,

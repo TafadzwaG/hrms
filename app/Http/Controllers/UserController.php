@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -754,7 +755,7 @@ class UserController extends Controller
                 'status' => $user->employee->status,
             ] : null,
             'can_impersonate' => $canImpersonate,
-            'impersonate_url' => $canImpersonate
+            'impersonate_url' => $canImpersonate && Route::has('users.impersonation.store')
                 ? route('users.impersonation.store', $user, false)
                 : null,
             'created_at' => optional($user->created_at)->toDateTimeString(),

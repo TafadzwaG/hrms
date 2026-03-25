@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\UserController::destroy
- * @see app/Http/Controllers/UserController.php:367
+ * @see app/Http/Controllers/UserController.php:368
  * @route '/users/{user}/roles/{role}'
  */
 export const destroy = (args: { user: number | { id: number }, role: number | { id: number } } | [user: number | { id: number }, role: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -16,7 +16,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\UserController::destroy
- * @see app/Http/Controllers/UserController.php:367
+ * @see app/Http/Controllers/UserController.php:368
  * @route '/users/{user}/roles/{role}'
  */
 destroy.url = (args: { user: number | { id: number }, role: number | { id: number } } | [user: number | { id: number }, role: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ destroy.url = (args: { user: number | { id: number }, role: number | { id: numbe
 
 /**
 * @see \App\Http\Controllers\UserController::destroy
- * @see app/Http/Controllers/UserController.php:367
+ * @see app/Http/Controllers/UserController.php:368
  * @route '/users/{user}/roles/{role}'
  */
 destroy.delete = (args: { user: number | { id: number }, role: number | { id: number } } | [user: number | { id: number }, role: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -56,7 +56,7 @@ destroy.delete = (args: { user: number | { id: number }, role: number | { id: nu
 
     /**
 * @see \App\Http\Controllers\UserController::destroy
- * @see app/Http/Controllers/UserController.php:367
+ * @see app/Http/Controllers/UserController.php:368
  * @route '/users/{user}/roles/{role}'
  */
     const destroyForm = (args: { user: number | { id: number }, role: number | { id: number } } | [user: number | { id: number }, role: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -71,7 +71,7 @@ destroy.delete = (args: { user: number | { id: number }, role: number | { id: nu
 
             /**
 * @see \App\Http\Controllers\UserController::destroy
- * @see app/Http/Controllers/UserController.php:367
+ * @see app/Http/Controllers/UserController.php:368
  * @route '/users/{user}/roles/{role}'
  */
         destroyForm.delete = (args: { user: number | { id: number }, role: number | { id: number } } | [user: number | { id: number }, role: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

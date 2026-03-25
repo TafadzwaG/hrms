@@ -62,6 +62,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserImpersonationController;
 use App\Http\Controllers\WorkflowDefinitionController;
 use App\Http\Controllers\EmployeePayrollProfileController;
 use App\Http\Controllers\BenefitController;
@@ -508,6 +509,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/users/{user}/send-password-reset-link', [PasswordResetController::class, 'sendResetLink'])
         ->middleware('permission:users.update')
         ->name('users.send-password-reset-link');
+    Route::post('/users/{user}/impersonation', [UserImpersonationController::class, 'store'])
+        ->middleware('permission:users.view')
+        ->name('users.impersonation.store');
+    Route::delete('/impersonation', [UserImpersonationController::class, 'destroy'])
+        ->name('impersonation.destroy');
     Route::delete('/users/{user}/roles/{role}', [UserController::class, 'destroyRole'])
         ->middleware('permission:users.assign_roles')
         ->name('users.roles.destroy');

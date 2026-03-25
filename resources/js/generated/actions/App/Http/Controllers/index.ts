@@ -19,6 +19,7 @@ import AssetMaintenanceController from './AssetMaintenanceController'
 import AssetCategoryController from './AssetCategoryController'
 import AssetVendorController from './AssetVendorController'
 import AssetLocationController from './AssetLocationController'
+import UserImpersonationController from './UserImpersonationController'
 import UserController from './UserController'
 import WorkflowDefinitionController from './WorkflowDefinitionController'
 import LeaveRequestController from './LeaveRequestController'
@@ -87,6 +88,7 @@ AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaint
 AssetCategoryController: Object.assign(AssetCategoryController, AssetCategoryController),
 AssetVendorController: Object.assign(AssetVendorController, AssetVendorController),
 AssetLocationController: Object.assign(AssetLocationController, AssetLocationController),
+UserImpersonationController: Object.assign(UserImpersonationController, UserImpersonationController),
 UserController: Object.assign(UserController, UserController),
 WorkflowDefinitionController: Object.assign(WorkflowDefinitionController, WorkflowDefinitionController),
 LeaveRequestController: Object.assign(LeaveRequestController, LeaveRequestController),
