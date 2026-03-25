@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::store
- * @see app/Http/Controllers/ScorecardTemplateController.php:48
+ * @see app/Http/Controllers/ScorecardTemplateController.php:49
  * @route '/scorecard-templates'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::store
- * @see app/Http/Controllers/ScorecardTemplateController.php:48
+ * @see app/Http/Controllers/ScorecardTemplateController.php:49
  * @route '/scorecard-templates'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::store
- * @see app/Http/Controllers/ScorecardTemplateController.php:48
+ * @see app/Http/Controllers/ScorecardTemplateController.php:49
  * @route '/scorecard-templates'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\ScorecardTemplateController::store
- * @see app/Http/Controllers/ScorecardTemplateController.php:48
+ * @see app/Http/Controllers/ScorecardTemplateController.php:49
  * @route '/scorecard-templates'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::store
- * @see app/Http/Controllers/ScorecardTemplateController.php:48
+ * @see app/Http/Controllers/ScorecardTemplateController.php:49
  * @route '/scorecard-templates'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
 export const show = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
 show.url = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -255,7 +255,7 @@ show.url = (args: { scorecard_template: string | number } | [scorecard_template:
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
 show.get = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +264,7 @@ show.get = (args: { scorecard_template: string | number } | [scorecard_template:
 })
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
 show.head = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -274,7 +274,7 @@ show.head = (args: { scorecard_template: string | number } | [scorecard_template
 
     /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
     const showForm = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -284,7 +284,7 @@ show.head = (args: { scorecard_template: string | number } | [scorecard_template
 
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
         showForm.get = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ show.head = (args: { scorecard_template: string | number } | [scorecard_template
         })
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::show
- * @see app/Http/Controllers/ScorecardTemplateController.php:70
+ * @see app/Http/Controllers/ScorecardTemplateController.php:71
  * @route '/scorecard-templates/{scorecard_template}'
  */
         showForm.head = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -309,7 +309,7 @@ show.head = (args: { scorecard_template: string | number } | [scorecard_template
     show.form = showForm
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
 export const edit = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
 edit.url = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +352,7 @@ edit.url = (args: { scorecard_template: string | number } | [scorecard_template:
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
 edit.get = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +361,7 @@ edit.get = (args: { scorecard_template: string | number } | [scorecard_template:
 })
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
 edit.head = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +371,7 @@ edit.head = (args: { scorecard_template: string | number } | [scorecard_template
 
     /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
     const editForm = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { scorecard_template: string | number } | [scorecard_template
 
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
         editForm.get = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +390,7 @@ edit.head = (args: { scorecard_template: string | number } | [scorecard_template
         })
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::edit
- * @see app/Http/Controllers/ScorecardTemplateController.php:79
+ * @see app/Http/Controllers/ScorecardTemplateController.php:86
  * @route '/scorecard-templates/{scorecard_template}/edit'
  */
         editForm.head = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ edit.head = (args: { scorecard_template: string | number } | [scorecard_template
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
 export const update = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
 update.url = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { scorecard_template: string | number } | [scorecard_templat
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
 update.put = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -458,7 +458,7 @@ update.put = (args: { scorecard_template: string | number } | [scorecard_templat
 })
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
 update.patch = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -468,7 +468,7 @@ update.patch = (args: { scorecard_template: string | number } | [scorecard_templ
 
     /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
     const updateForm = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { scorecard_template: string | number } | [scorecard_templ
 
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
         updateForm.put = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { scorecard_template: string | number } | [scorecard_templ
         })
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::update
- * @see app/Http/Controllers/ScorecardTemplateController.php:92
+ * @see app/Http/Controllers/ScorecardTemplateController.php:106
  * @route '/scorecard-templates/{scorecard_template}'
  */
         updateForm.patch = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -513,7 +513,7 @@ update.patch = (args: { scorecard_template: string | number } | [scorecard_templ
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::destroy
- * @see app/Http/Controllers/ScorecardTemplateController.php:114
+ * @see app/Http/Controllers/ScorecardTemplateController.php:128
  * @route '/scorecard-templates/{scorecard_template}'
  */
 export const destroy = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -528,7 +528,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::destroy
- * @see app/Http/Controllers/ScorecardTemplateController.php:114
+ * @see app/Http/Controllers/ScorecardTemplateController.php:128
  * @route '/scorecard-templates/{scorecard_template}'
  */
 destroy.url = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -556,7 +556,7 @@ destroy.url = (args: { scorecard_template: string | number } | [scorecard_templa
 
 /**
 * @see \App\Http\Controllers\ScorecardTemplateController::destroy
- * @see app/Http/Controllers/ScorecardTemplateController.php:114
+ * @see app/Http/Controllers/ScorecardTemplateController.php:128
  * @route '/scorecard-templates/{scorecard_template}'
  */
 destroy.delete = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -566,7 +566,7 @@ destroy.delete = (args: { scorecard_template: string | number } | [scorecard_tem
 
     /**
 * @see \App\Http\Controllers\ScorecardTemplateController::destroy
- * @see app/Http/Controllers/ScorecardTemplateController.php:114
+ * @see app/Http/Controllers/ScorecardTemplateController.php:128
  * @route '/scorecard-templates/{scorecard_template}'
  */
     const destroyForm = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ destroy.delete = (args: { scorecard_template: string | number } | [scorecard_tem
 
             /**
 * @see \App\Http\Controllers\ScorecardTemplateController::destroy
- * @see app/Http/Controllers/ScorecardTemplateController.php:114
+ * @see app/Http/Controllers/ScorecardTemplateController.php:128
  * @route '/scorecard-templates/{scorecard_template}'
  */
         destroyForm.delete = (args: { scorecard_template: string | number } | [scorecard_template: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -363,7 +363,8 @@ export default function ScorecardEdit() {
                                     </h1>
                                     <p className="max-w-2xl text-sm text-muted-foreground">
                                         Refine the assignment, reshape KPI items by perspective, and
-                                        rebalance the scorecard using a cleaner monochrome workspace.
+                                        rebalance the scorecard using the same layout language as the
+                                        cycle editor.
                                     </p>
                                 </div>
                             </div>

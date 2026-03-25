@@ -162,7 +162,7 @@ it('can update a performance cycle', function () {
 
 it('can list KPI library items', function () {
     $user = User::factory()->create();
-    $organization = grantBscPermissions($user, ['performance.kpis.manage']);
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.kpis.manage']);
 
     KpiLibrary::withoutGlobalScopes()->create([
         'organization_id' => $organization->id,
@@ -179,6 +179,30 @@ it('can list KPI library items', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Performance/Kpis/Index')
             ->has('kpis.data', 1)
+        );
+});
+
+it('treats empty KPI library filters as all', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.kpis.manage']);
+
+    KpiLibrary::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Customer Retention',
+        'code' => 'KPI-'.str()->random(4),
+        'perspective' => 'customer',
+        'target_type' => 'percentage',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/kpi-library?perspective=&is_active=')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Kpis/Index')
+            ->has('kpis.data', 1)
+            ->where('filters.perspective', 'all')
+            ->where('filters.is_active', 'all')
         );
 });
 
@@ -203,6 +227,45 @@ it('can create a KPI', function () {
 });
 
 // ── Scorecard Template CRUD ─────────────────────────────
+
+it('can list scorecard templates', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.templates.manage']);
+
+    ScorecardTemplate::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Operations Template',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/scorecard-templates')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Templates/Index')
+            ->has('templates.data', 1)
+        );
+});
+
+it('treats empty scorecard template filters as all', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.templates.manage']);
+
+    ScorecardTemplate::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Leadership Template',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/scorecard-templates?is_active=')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Templates/Index')
+            ->has('templates.data', 1)
+            ->where('filters.is_active', 'all')
+        );
+});
 
 it('can create a scorecard template with items', function () {
     $user = User::factory()->create();
@@ -240,6 +303,41 @@ it('can create a scorecard template with items', function () {
     $template = ScorecardTemplate::withoutGlobalScopes()->where('name', 'Manager Template')->first();
     expect($template)->not->toBeNull();
     expect($template->items)->toHaveCount(1);
+});
+
+it('can view a scorecard template', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.templates.manage']);
+
+    $template = ScorecardTemplate::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Balanced Template',
+        'description' => 'Reusable template',
+        'is_active' => true,
+        'scope_type' => 'department',
+        'scope_value' => 'Operations',
+    ]);
+
+    ScorecardTemplateItem::create([
+        'scorecard_template_id' => $template->id,
+        'perspective' => 'financial',
+        'objective' => 'Improve margin',
+        'kpi_name' => 'Gross Margin',
+        'target_type' => 'percentage',
+        'target_value' => 25,
+        'weight' => 25,
+        'sort_order' => 1,
+    ]);
+
+    $this->actingAs($user)
+        ->get("/scorecard-templates/{$template->id}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Templates/Show')
+            ->has('template')
+            ->has('template.items', 1)
+            ->where('template.items_count', 1)
+        );
 });
 
 // ── Employee Scorecard CRUD ─────────────────────────────
@@ -282,6 +380,52 @@ it('can view an employee scorecard', function () {
             ->component('Performance/Scorecards/Show')
             ->has('scorecard')
             ->has('perspectiveBreakdown')
+        );
+});
+
+it('can list employee scorecards', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.scorecards.view']);
+    $employee = createBscEmployee($organization);
+    $cycle = createBscCycle($organization);
+
+    EmployeeScorecard::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_id' => $employee->id,
+        'performance_cycle_id' => $cycle->id,
+        'status' => 'draft',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/employee-scorecards')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Scorecards/Index')
+            ->has('scorecards.data', 1)
+        );
+});
+
+it('treats empty employee scorecard filters as all', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.scorecards.view']);
+    $employee = createBscEmployee($organization);
+    $cycle = createBscCycle($organization);
+
+    EmployeeScorecard::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_id' => $employee->id,
+        'performance_cycle_id' => $cycle->id,
+        'status' => 'draft',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/employee-scorecards?cycle_id=&status=')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/Scorecards/Index')
+            ->has('scorecards.data', 1)
+            ->where('filters.cycle_id', 'all')
+            ->where('filters.status', 'all')
         );
 });
 
@@ -519,6 +663,73 @@ it('can create an improvement plan', function () {
         ->assertRedirect();
 
     expect(PerformanceImprovementPlan::withoutGlobalScopes()->where('title', 'Q1 Improvement Plan')->exists())->toBeTrue();
+});
+
+it('can list improvement plans', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.improvement_plans.manage']);
+    $employee = createBscEmployee($organization);
+    $cycle = createBscCycle($organization);
+    $scorecard = EmployeeScorecard::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_id' => $employee->id,
+        'performance_cycle_id' => $cycle->id,
+        'status' => 'finalized',
+        'overall_score' => 45,
+        'overall_rating' => 'Needs Improvement',
+    ]);
+
+    PerformanceImprovementPlan::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_scorecard_id' => $scorecard->id,
+        'employee_id' => $employee->id,
+        'title' => 'Recover Service Quality',
+        'start_date' => '2026-04-01',
+        'end_date' => '2026-06-30',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/improvement-plans')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/ImprovementPlans/Index')
+            ->has('plans.data', 1)
+        );
+});
+
+it('treats empty improvement plan filters as all', function () {
+    $user = User::factory()->create();
+    $organization = grantBscPermissions($user, ['performance.view', 'performance.improvement_plans.manage']);
+    $employee = createBscEmployee($organization);
+    $cycle = createBscCycle($organization);
+    $scorecard = EmployeeScorecard::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_id' => $employee->id,
+        'performance_cycle_id' => $cycle->id,
+        'status' => 'finalized',
+        'overall_score' => 35,
+        'overall_rating' => 'Unsatisfactory',
+    ]);
+
+    PerformanceImprovementPlan::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'employee_scorecard_id' => $scorecard->id,
+        'employee_id' => $employee->id,
+        'title' => 'Stabilize Delivery',
+        'start_date' => '2026-04-01',
+        'end_date' => '2026-06-30',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/improvement-plans?status=')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Performance/ImprovementPlans/Index')
+            ->has('plans.data', 1)
+            ->where('filters.status', 'all')
+        );
 });
 
 // ── Comments ────────────────────────────────────────────

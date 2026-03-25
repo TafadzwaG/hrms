@@ -19,6 +19,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import {
+    formatPerformanceDate,
+    formatPerformanceDateTime,
+} from '@/pages/Performance/components/primitives';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -122,31 +126,11 @@ function formatLabel(value: string) {
 }
 
 function formatDate(value: string | null | undefined) {
-    if (!value) return '—';
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '—';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date);
+    return formatPerformanceDate(value);
 }
 
 function formatDateTime(value: string | null | undefined) {
-    if (!value) return '—';
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '—';
-
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    }).format(date);
+    return formatPerformanceDateTime(value);
 }
 
 function getStatusVariant(status: string): 'default' | 'secondary' | 'outline' {
@@ -416,7 +400,7 @@ export default function ScorecardShow() {
                                         <div className="flex items-center gap-2">
                                             <CalendarClock className="h-4 w-4" />
                                             <span>
-                                                {formatDate(scorecard.cycle.start_date)} —{' '}
+                                                {formatDate(scorecard.cycle.start_date)} â€”{' '}
                                                 {formatDate(scorecard.cycle.end_date)}
                                             </span>
                                         </div>
@@ -472,7 +456,7 @@ export default function ScorecardShow() {
                                 value={
                                     scorecard.overall_score != null
                                         ? Number(scorecard.overall_score).toFixed(1)
-                                        : '—'
+                                        : 'â€”'
                                 }
                                 helper="Final rolled-up score"
                             />
@@ -607,7 +591,7 @@ export default function ScorecardShow() {
                                                                         ? Number(
                                                                               breakdown.average_score,
                                                                           ).toFixed(1)
-                                                                        : '—'}
+                                                                        : 'â€”'}
                                                                 </p>
                                                             </div>
                                                             <div>
@@ -730,7 +714,7 @@ export default function ScorecardShow() {
                                                     {scorecard.cycle.title}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {formatDate(scorecard.cycle.start_date)} —{' '}
+                                                    {formatDate(scorecard.cycle.start_date)} â€”{' '}
                                                     {formatDate(scorecard.cycle.end_date)}
                                                 </p>
                                             </div>
@@ -946,7 +930,7 @@ export default function ScorecardShow() {
                                                             ? Number(
                                                                   activeBreakdown.average_score,
                                                               ).toFixed(1)
-                                                            : '—'}
+                                                            : 'â€”'}
                                                     </p>
                                                     <p className="mt-1 text-xs text-muted-foreground">
                                                         Across this perspective
@@ -1002,7 +986,7 @@ export default function ScorecardShow() {
                                                                     value={
                                                                         item.target_value != null
                                                                             ? item.target_value
-                                                                            : '—'
+                                                                            : 'â€”'
                                                                     }
                                                                 />
                                                                 <DetailStat
@@ -1010,7 +994,7 @@ export default function ScorecardShow() {
                                                                     value={
                                                                         item.actual_value != null
                                                                             ? item.actual_value
-                                                                            : '—'
+                                                                            : 'â€”'
                                                                     }
                                                                 />
                                                                 <DetailStat
@@ -1020,7 +1004,7 @@ export default function ScorecardShow() {
                                                                             ? Number(
                                                                                   item.self_score,
                                                                               ).toFixed(1)
-                                                                            : '—'
+                                                                            : 'â€”'
                                                                     }
                                                                 />
                                                                 <DetailStat
@@ -1030,7 +1014,7 @@ export default function ScorecardShow() {
                                                                             ? Number(
                                                                                   item.manager_score,
                                                                               ).toFixed(1)
-                                                                            : '—'
+                                                                            : 'â€”'
                                                                     }
                                                                 />
                                                                 <div className="sm:col-span-2">
@@ -1041,7 +1025,7 @@ export default function ScorecardShow() {
                                                                                 ? Number(
                                                                                       item.final_score,
                                                                                   ).toFixed(1)
-                                                                                : '—'
+                                                                                : 'â€”'
                                                                         }
                                                                     />
                                                                 </div>

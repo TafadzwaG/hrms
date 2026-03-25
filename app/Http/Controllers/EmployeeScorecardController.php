@@ -25,8 +25,8 @@ class EmployeeScorecardController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
-        $cycleId = $request->input('cycle_id');
-        $status = (string) $request->input('status', 'all');
+        $cycleId = trim((string) $request->input('cycle_id', '')) ?: 'all';
+        $status = trim((string) $request->input('status', '')) ?: 'all';
 
         $scorecards = EmployeeScorecard::query()
             ->with([
@@ -42,7 +42,7 @@ class EmployeeScorecardController extends Controller
                         ->orWhere('staff_number', 'like', "%{$search}%");
                 });
             })
-            ->when($cycleId, fn (Builder $q) => $q->where('performance_cycle_id', $cycleId))
+            ->when($cycleId !== 'all', fn (Builder $q) => $q->where('performance_cycle_id', $cycleId))
             ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status))
             ->orderByDesc('updated_at')
             ->orderByDesc('id')

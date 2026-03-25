@@ -183,7 +183,7 @@ export default function ScorecardCreate() {
         >
             <Head title="New Employee Scorecard" />
 
-            <div className="w-full space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="w-full space-y-6 p-4 md:p-6">
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">

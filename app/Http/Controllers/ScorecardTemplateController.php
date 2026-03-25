@@ -16,10 +16,10 @@ class ScorecardTemplateController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
-        $isActive = $request->input('is_active', 'all');
+        $isActive = trim((string) $request->input('is_active', '')) ?: 'all';
 
         $templates = ScorecardTemplate::query()
-            ->withCount('items')
+            ->withCount(['items', 'scorecards'])
             ->when($search !== '', fn (Builder $q) => $q->where('name', 'like', "%{$search}%"))
             ->when($isActive !== 'all', fn (Builder $q) => $q->where('is_active', $isActive === '1' || $isActive === 'true'))
             ->orderByDesc('updated_at')
@@ -38,6 +38,7 @@ class ScorecardTemplateController extends Controller
     public function create(): Response
     {
         return Inertia::render('Performance/Templates/Create', [
+            'kpis' => $this->kpiLibraryItems(),
             'kpiLibraryItems' => $this->kpiLibraryItems(),
             'perspectives' => KpiLibrary::PERSPECTIVES,
             'targetTypes' => KpiLibrary::TARGET_TYPES,
@@ -69,7 +70,13 @@ class ScorecardTemplateController extends Controller
 
     public function show(ScorecardTemplate $scorecardTemplate): Response
     {
-        $scorecardTemplate->load(['items.kpi']);
+        $scorecardTemplate->load([
+            'items' => fn ($query) => $query
+                ->with('kpi')
+                ->orderBy('perspective')
+                ->orderBy('sort_order')
+                ->orderBy('id'),
+        ])->loadCount(['items', 'scorecards']);
 
         return Inertia::render('Performance/Templates/Show', [
             'template' => $scorecardTemplate,
@@ -78,10 +85,17 @@ class ScorecardTemplateController extends Controller
 
     public function edit(ScorecardTemplate $scorecardTemplate): Response
     {
-        $scorecardTemplate->load(['items.kpi']);
+        $scorecardTemplate->load([
+            'items' => fn ($query) => $query
+                ->with('kpi')
+                ->orderBy('perspective')
+                ->orderBy('sort_order')
+                ->orderBy('id'),
+        ])->loadCount(['items', 'scorecards']);
 
         return Inertia::render('Performance/Templates/Edit', [
             'template' => $scorecardTemplate,
+            'kpis' => $this->kpiLibraryItems(),
             'kpiLibraryItems' => $this->kpiLibraryItems(),
             'perspectives' => KpiLibrary::PERSPECTIVES,
             'targetTypes' => KpiLibrary::TARGET_TYPES,

@@ -319,6 +319,74 @@
             no-repeat center / contain;
     }
 
+    [data-talent-growth-scope='true'] {
+        --tg-surface-padding-x: 1rem;
+        --tg-surface-padding-y: 0.875rem;
+    }
+
+    [data-talent-growth-scope='true'] h1.text-3xl {
+        font-size: 1.7rem;
+        line-height: 2rem;
+    }
+
+    [data-talent-growth-scope='true'] h1.text-2xl {
+        font-size: 1.42rem;
+        line-height: 1.8rem;
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='card'] {
+        gap: 0.875rem;
+        border-radius: var(--radius-md);
+        padding-top: var(--tg-surface-padding-y);
+        padding-bottom: var(--tg-surface-padding-y);
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='card-header'],
+    [data-talent-growth-scope='true'] [data-slot='card-content'],
+    [data-talent-growth-scope='true'] [data-slot='card-footer'] {
+        padding-left: var(--tg-surface-padding-x);
+        padding-right: var(--tg-surface-padding-x);
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='card-header'] {
+        gap: 0.25rem;
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='card-title'] {
+        font-size: 0.96rem;
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='card-description'] {
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='table-header'] th,
+    [data-talent-growth-scope='true'] [data-slot='table-body'] td {
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+    }
+
+    [data-talent-growth-scope='true'] .text-sm {
+        font-size: 0.8125rem;
+        line-height: 1.25rem;
+    }
+
+    [data-talent-growth-scope='true'] .text-xs {
+        font-size: 0.7rem;
+        line-height: 1rem;
+    }
+
+    [data-talent-growth-scope='true'] .h-10.w-10,
+    [data-talent-growth-scope='true'] .size-10 {
+        height: 2.15rem;
+        width: 2.15rem;
+    }
+
+    [data-talent-growth-scope='true'] [data-slot='button'] {
+        font-size: 0.8125rem;
+    }
+
     .dark [data-dashboard-scope] [class~='bg-white'] {
         background-color: var(--card) !important;
     }

@@ -1,5 +1,12 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -8,12 +15,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useCallback, useState } from 'react';
+import {
+    ArrowLeft,
+    FileText,
+    Layers3,
+    Plus,
+    Save,
+    Settings2,
+    Target,
+    Trash2,
+} from 'lucide-react';
+import type { FormEvent, ReactNode } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 type KpiOption = {
     id: number;
@@ -23,6 +40,7 @@ type KpiOption = {
     target_type: string;
     default_target: string | null;
     default_weight: number | null;
+    unit?: string | null;
 };
 
 type TemplateItem = {
@@ -33,6 +51,7 @@ type TemplateItem = {
     target_type: string;
     target_value: string;
     weight: string;
+    sort_order: number;
 };
 
 type TemplatePayload = {
@@ -54,9 +73,12 @@ type TemplatePayload = {
     }[];
 };
 
-function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+const perspectiveOrder = ['financial', 'customer', 'internal_process', 'learning_and_growth'];
+const noneValue = '__none__';
+
+function FieldLabel({ children, required }: { children: ReactNode; required?: boolean }) {
     return (
-        <label className="mb-2 block text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label className="mb-2 block text-sm font-medium">
             {children}
             {required && <span className="ml-1 text-destructive">*</span>}
         </label>
@@ -65,25 +87,44 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
-    return <p className="mt-1.5 text-sm font-medium text-destructive">{message}</p>;
+    return <p className="mt-2 text-sm text-destructive">{message}</p>;
 }
 
 function formatLabel(value: string) {
-    return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-const perspectiveOrder = ['financial', 'customer', 'internal_process', 'learning_and_growth'];
+function SectionHeading({
+    icon,
+    title,
+    description,
+}: {
+    icon: ReactNode;
+    title: string;
+    description: string;
+}) {
+    return (
+        <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-background">
+                {icon}
+            </div>
+            <div className="space-y-1">
+                <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+                <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+        </div>
+    );
+}
 
 export default function TemplateEdit() {
-    const { template, kpis, perspectives, targetTypes, scopeTypes } = usePage<{
+    const { template, kpis, targetTypes, scopeTypes } = usePage<{
         template: TemplatePayload;
         kpis: KpiOption[];
-        perspectives: string[];
         targetTypes: string[];
         scopeTypes: string[];
     }>().props;
 
-    const initialItems: TemplateItem[] = template.items.map((item) => ({
+    const initialItems: TemplateItem[] = template.items.map((item, index) => ({
         perspective: item.perspective,
         objective: item.objective,
         kpi_name: item.kpi_name,
@@ -91,6 +132,7 @@ export default function TemplateEdit() {
         target_type: item.target_type,
         target_value: item.target_value ?? '',
         weight: String(item.weight),
+        sort_order: index,
     }));
 
     const { data, setData, errors, put, processing } = useForm({
@@ -104,33 +146,42 @@ export default function TemplateEdit() {
 
     const [items, setItems] = useState<TemplateItem[]>(initialItems);
 
+    const syncItems = useCallback((nextItems: TemplateItem[]) => {
+        const normalized = nextItems.map((item, index) => ({
+            ...item,
+            sort_order: index,
+        }));
+        setItems(normalized);
+        setData('items', normalized);
+    }, [setData]);
+
     const addItem = useCallback((perspective: string) => {
-        const newItem: TemplateItem = {
-            perspective,
-            objective: '',
-            kpi_name: '',
-            kpi_library_id: '',
-            target_type: '',
-            target_value: '',
-            weight: '',
-        };
-        const updated = [...items, newItem];
-        setItems(updated);
-        setData('items', updated);
-    }, [items, setData]);
+        syncItems([
+            ...items,
+            {
+                perspective,
+                objective: '',
+                kpi_name: '',
+                kpi_library_id: '',
+                target_type: '',
+                target_value: '',
+                weight: '',
+                sort_order: items.length,
+            },
+        ]);
+    }, [items, syncItems]);
 
     const removeItem = useCallback((index: number) => {
-        const updated = items.filter((_, i) => i !== index);
-        setItems(updated);
-        setData('items', updated);
-    }, [items, setData]);
+        syncItems(items.filter((_, itemIndex) => itemIndex !== index));
+    }, [items, syncItems]);
 
     const updateItem = useCallback((index: number, field: keyof TemplateItem, value: string) => {
         const updated = [...items];
         updated[index] = { ...updated[index], [field]: value };
 
         if (field === 'kpi_library_id' && value) {
-            const kpi = kpis.find((k) => String(k.id) === value);
+            const kpi = kpis.find((row) => String(row.id) === value);
+
             if (kpi) {
                 updated[index].kpi_name = kpi.name;
                 updated[index].perspective = kpi.perspective;
@@ -140,11 +191,17 @@ export default function TemplateEdit() {
             }
         }
 
-        setItems(updated);
-        setData('items', updated);
-    }, [items, kpis, setData]);
+        syncItems(updated);
+    }, [items, kpis, syncItems]);
 
     const totalWeight = items.reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0);
+
+    const summary = useMemo(() => ({
+        active: data.is_active ? 'Active' : 'Inactive',
+        scope: data.scope_type ? formatLabel(data.scope_type) : 'Not set',
+        items: items.length,
+        weight: `${totalWeight.toFixed(1)}%`,
+    }), [data.is_active, data.scope_type, items.length, totalWeight]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -159,239 +216,416 @@ export default function TemplateEdit() {
             breadcrumbs={[
                 { title: 'Performance', href: '/performance' },
                 { title: 'Templates', href: '/scorecard-templates' },
-                { title: template.name, href: '#' },
+                { title: template.name, href: `/scorecard-templates/${template.id}` },
                 { title: 'Edit', href: '#' },
             ]}
         >
             <Head title={`Edit Template - ${template.name}`} />
 
-            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
-                <div className="flex items-center gap-3">
-                    <Link href="/scorecard-templates">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Edit Scorecard Template</h1>
-                        <p className="text-sm text-muted-foreground">{template.name}</p>
+            <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+                <div className="mb-6 flex flex-col gap-4 border-b pb-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="flex items-start gap-4">
+                        <Link href={`/scorecard-templates/${template.id}`}>
+                            <Button variant="outline" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+
+                        <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">Performance Management</p>
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight">
+                                    Edit Scorecard Template
+                                </h1>
+                                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                                    Refine KPI items, update scope, and keep this template aligned to
+                                    the same editorial layout as performance cycles.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[320px]">
+                        <Card>
+                            <CardContent className="p-4">
+                                <p className="text-xs text-muted-foreground">Template Status</p>
+                                <p className="mt-1 text-sm font-medium">{summary.active}</p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardContent className="p-4">
+                                <p className="text-xs text-muted-foreground">Items</p>
+                                <p className="mt-1 text-sm font-medium">
+                                    {summary.items} item{summary.items === 1 ? '' : 's'}
+                                </p>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Template Info */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Template Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div className="sm:col-span-2">
-                                <FieldLabel required>Name</FieldLabel>
-                                <Input
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-12">
+                    <div className="space-y-6 xl:col-span-8">
+                        <Card>
+                            <CardHeader>
+                                <SectionHeading
+                                    icon={<FileText className="h-4 w-4" />}
+                                    title="Template Identity"
+                                    description="Define the template name, summary, and scoping details."
                                 />
-                                <FieldError message={errors.name} />
-                            </div>
-                            <div className="sm:col-span-2">
-                                <FieldLabel>Description</FieldLabel>
-                                <Textarea
-                                    value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
-                                    rows={3}
-                                />
-                                <FieldError message={errors.description} />
-                            </div>
-                            <div>
-                                <FieldLabel>Scope Type</FieldLabel>
-                                <Select
-                                    value={data.scope_type}
-                                    onValueChange={(v) => setData('scope_type', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select scope type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {scopeTypes.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {formatLabel(s)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.scope_type} />
-                            </div>
-                            <div>
-                                <FieldLabel>Scope Value</FieldLabel>
-                                <Input
-                                    value={data.scope_value}
-                                    onChange={(e) => setData('scope_value', e.target.value)}
-                                />
-                                <FieldError message={errors.scope_value} />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    id="is_active"
-                                    checked={data.is_active}
-                                    onChange={(e) => setData('is_active', e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-300"
-                                />
-                                <label htmlFor="is_active" className="text-sm font-medium">
-                                    Active
-                                </label>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardHeader>
+                            <CardContent className="grid gap-6 md:grid-cols-2">
+                                <div className="md:col-span-2">
+                                    <FieldLabel required>Name</FieldLabel>
+                                    <Input
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        placeholder="e.g. Standard Employee Scorecard"
+                                    />
+                                    <FieldError message={errors.name} />
+                                </div>
 
-                    {/* Items by Perspective */}
-                    {perspectiveOrder.map((perspective) => {
-                        const perspectiveItems = getItemsForPerspective(perspective);
-                        return (
-                            <Card key={perspective}>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                                    <CardTitle>{formatLabel(perspective)}</CardTitle>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => addItem(perspective)}
+                                <div className="md:col-span-2">
+                                    <FieldLabel>Description</FieldLabel>
+                                    <Textarea
+                                        value={data.description}
+                                        onChange={(e) => setData('description', e.target.value)}
+                                        rows={6}
+                                        placeholder="Describe the purpose, intended audience, and how this template should be applied..."
+                                    />
+                                    <FieldError message={errors.description} />
+                                </div>
+
+                                <div>
+                                    <FieldLabel>Scope Type</FieldLabel>
+                                    <Select
+                                        value={data.scope_type || noneValue}
+                                        onValueChange={(value) =>
+                                            setData('scope_type', value === noneValue ? '' : value)
+                                        }
                                     >
-                                        <Plus className="mr-1 h-3 w-3" />
-                                        Add Item
-                                    </Button>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {perspectiveItems.length === 0 ? (
-                                        <p className="text-sm text-muted-foreground">
-                                            No items added for this perspective yet.
-                                        </p>
-                                    ) : (
-                                        perspectiveItems.map(({ item, idx }) => (
-                                            <div key={idx} className="rounded-lg border p-4 space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium">
-                                                        Item {perspectiveItems.indexOf(perspectiveItems.find(pi => pi.idx === idx)!) + 1}
-                                                    </span>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => removeItem(idx)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                                    </Button>
-                                                </div>
-                                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                                    <div>
-                                                        <FieldLabel>KPI from Library</FieldLabel>
-                                                        <Select
-                                                            value={item.kpi_library_id}
-                                                            onValueChange={(v) => updateItem(idx, 'kpi_library_id', v)}
-                                                        >
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Pick from library (optional)" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {kpis
-                                                                    .filter((k) => k.perspective === perspective)
-                                                                    .map((k) => (
-                                                                        <SelectItem key={k.id} value={String(k.id)}>
-                                                                            {k.code} - {k.name}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div>
-                                                        <FieldLabel required>KPI Name</FieldLabel>
-                                                        <Input
-                                                            value={item.kpi_name}
-                                                            onChange={(e) => updateItem(idx, 'kpi_name', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <FieldLabel required>Objective</FieldLabel>
-                                                        <Input
-                                                            value={item.objective}
-                                                            onChange={(e) => updateItem(idx, 'objective', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <FieldLabel required>Target Type</FieldLabel>
-                                                        <Select
-                                                            value={item.target_type}
-                                                            onValueChange={(v) => updateItem(idx, 'target_type', v)}
-                                                        >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select scope type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value={noneValue}>No scope</SelectItem>
+                                            {scopeTypes.map((scope) => (
+                                                <SelectItem key={scope} value={scope}>
+                                                    {formatLabel(scope)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldError message={errors.scope_type} />
+                                </div>
+
+                                <div>
+                                    <FieldLabel>Scope Value</FieldLabel>
+                                    <Input
+                                        value={data.scope_value}
+                                        onChange={(e) => setData('scope_value', e.target.value)}
+                                        placeholder="e.g. Sales Department"
+                                    />
+                                    <FieldError message={errors.scope_value} />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {perspectiveOrder.map((perspective) => {
+                            const perspectiveItems = getItemsForPerspective(perspective);
+
+                            return (
+                                <Card key={perspective}>
+                                    <CardHeader>
+                                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                            <SectionHeading
+                                                icon={<Target className="h-4 w-4" />}
+                                                title={formatLabel(perspective)}
+                                                description="Define the objectives and KPI measurements for this perspective."
+                                            />
+
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => addItem(perspective)}
+                                            >
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Add Item
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent className="space-y-4">
+                                        {perspectiveItems.length === 0 ? (
+                                            <div className="rounded-lg border border-dashed px-5 py-8 text-center">
+                                                <p className="text-sm text-muted-foreground">
+                                                    No items added for this perspective yet.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            perspectiveItems.map(({ item, idx }, itemPosition) => (
+                                                <Card key={`${perspective}-${idx}`} className="bg-muted/20">
+                                                    <CardHeader className="pb-4">
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <div className="space-y-1">
+                                                                <CardTitle className="text-base">
+                                                                    Item {itemPosition + 1}
+                                                                </CardTitle>
+                                                                <CardDescription>
+                                                                    Configure the KPI, target, and weight for this entry.
+                                                                </CardDescription>
+                                                            </div>
+
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="icon"
+                                                                onClick={() => removeItem(idx)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </CardHeader>
+
+                                                    <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                                        <div className="lg:col-span-3">
+                                                            <FieldLabel>KPI from Library</FieldLabel>
+                                                            <Select
+                                                                value={item.kpi_library_id || noneValue}
+                                                                onValueChange={(value) =>
+                                                                    updateItem(
+                                                                        idx,
+                                                                        'kpi_library_id',
+                                                                        value === noneValue ? '' : value,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Pick from library (optional)" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value={noneValue}>
+                                                                        Custom KPI
+                                                                    </SelectItem>
+                                                                    {kpis
+                                                                        .filter((kpi) => kpi.perspective === perspective)
+                                                                        .map((kpi) => (
+                                                                            <SelectItem key={kpi.id} value={String(kpi.id)}>
+                                                                                {kpi.code} · {kpi.name}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div>
+                                                            <FieldLabel required>KPI Name</FieldLabel>
+                                                            <Input
+                                                                value={item.kpi_name}
+                                                                onChange={(e) =>
+                                                                    updateItem(idx, 'kpi_name', e.target.value)
+                                                                }
+                                                                placeholder="KPI name"
+                                                            />
+                                                        </div>
+
+                                                        <div className="sm:col-span-2">
+                                                            <FieldLabel required>Objective</FieldLabel>
+                                                            <Input
+                                                                value={item.objective}
+                                                                onChange={(e) =>
+                                                                    updateItem(idx, 'objective', e.target.value)
+                                                                }
+                                                                placeholder="Strategic objective"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <FieldLabel required>Target Type</FieldLabel>
+                                                            <Select
+                                                                value={item.target_type || noneValue}
+                                                                onValueChange={(value) =>
+                                                                    updateItem(
+                                                                        idx,
+                                                                        'target_type',
+                                                                        value === noneValue ? '' : value,
+                                                                    )
+                                                                }
+                                                            >
                                                             <SelectTrigger>
                                                                 <SelectValue placeholder="Select type" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                {targetTypes.map((t) => (
-                                                                    <SelectItem key={t} value={t}>
-                                                                        {formatLabel(t)}
+                                                                <SelectItem value={noneValue}>
+                                                                    Select later
+                                                                </SelectItem>
+                                                                {targetTypes.map((targetType) => (
+                                                                    <SelectItem key={targetType} value={targetType}>
+                                                                        {formatLabel(targetType)}
                                                                     </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div>
-                                                        <FieldLabel>Target Value</FieldLabel>
-                                                        <Input
-                                                            value={item.target_value}
-                                                            onChange={(e) => updateItem(idx, 'target_value', e.target.value)}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <FieldLabel required>Weight (%)</FieldLabel>
-                                                        <Input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={item.weight}
-                                                            onChange={(e) => updateItem(idx, 'weight', e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div>
+                                                            <FieldLabel>Target Value</FieldLabel>
+                                                            <Input
+                                                                value={item.target_value}
+                                                                onChange={(e) =>
+                                                                    updateItem(idx, 'target_value', e.target.value)
+                                                                }
+                                                                placeholder="e.g. 100"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <FieldLabel required>Weight (%)</FieldLabel>
+                                                            <Input
+                                                                type="number"
+                                                                min="0"
+                                                                max="100"
+                                                                step="0.01"
+                                                                value={item.weight}
+                                                                onChange={(e) =>
+                                                                    updateItem(idx, 'weight', e.target.value)
+                                                                }
+                                                                placeholder="e.g. 10"
+                                                            />
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+
+                    <div className="space-y-6 xl:col-span-4">
+                        <div className="space-y-6 xl:sticky xl:top-6">
+                            <Card>
+                                <CardHeader>
+                                    <SectionHeading
+                                        icon={<Settings2 className="h-4 w-4" />}
+                                        title="Configuration"
+                                        description="Control publication and review the overall weighting."
+                                    />
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <Card className="bg-muted/30">
+                                        <CardContent className="flex items-start justify-between gap-4 p-4">
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-medium">Active Template</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Active templates are available for scorecard assignments.
+                                                </p>
                                             </div>
-                                        ))
-                                    )}
+
+                                            <Switch
+                                                id="is_active"
+                                                checked={data.is_active}
+                                                onCheckedChange={(checked) => setData('is_active', checked)}
+                                            />
+                                        </CardContent>
+                                    </Card>
+
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Weight</span>
+                                            <span className={Math.abs(totalWeight - 100) < 0.01 ? 'font-medium' : 'font-medium text-destructive'}>
+                                                {totalWeight.toFixed(1)}%
+                                            </span>
+                                        </div>
+
+                                        {Math.abs(totalWeight - 100) >= 0.01 && items.length > 0 && (
+                                            <p className="text-sm text-destructive">
+                                                Total weight should equal 100%.
+                                            </p>
+                                        )}
+
+                                        <FieldError message={errors.items} />
+                                    </div>
                                 </CardContent>
                             </Card>
-                        );
-                    })}
 
-                    {/* Total Weight */}
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Total Weight</span>
-                                <span className={`text-lg font-bold ${Math.abs(totalWeight - 100) < 0.01 ? 'text-emerald-600' : 'text-destructive'}`}>
-                                    {totalWeight.toFixed(1)}%
-                                </span>
-                            </div>
-                            {Math.abs(totalWeight - 100) >= 0.01 && items.length > 0 && (
-                                <p className="mt-1 text-sm text-destructive">
-                                    Total weight should equal 100%.
-                                </p>
-                            )}
-                            <FieldError message={errors.items} />
-                        </CardContent>
-                    </Card>
+                            <Card className="bg-muted/20">
+                                <CardHeader>
+                                    <CardTitle className="text-base">Live Summary</CardTitle>
+                                    <CardDescription>
+                                        A quick preview of the template before saving.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <Layers3 className="h-4 w-4 text-muted-foreground" />
+                                            <p className="text-xl font-semibold tracking-tight">
+                                                {data.name || 'Untitled template'}
+                                            </p>
+                                        </div>
 
-                    {/* Submit */}
-                    <div className="flex items-center justify-end gap-3">
-                        <Link href="/scorecard-templates">
-                            <Button variant="outline" type="button">
-                                <X className="mr-2 h-4 w-4" />
-                                Cancel
-                            </Button>
-                        </Link>
-                        <Button type="submit" disabled={processing}>
-                            <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Saving...' : 'Update Template'}
-                        </Button>
+                                        <p className="mt-2 text-sm text-muted-foreground">
+                                            {data.description?.trim()
+                                                ? data.description
+                                                : 'A short summary will appear here once you add a description.'}
+                                        </p>
+                                    </div>
+
+                                    <div className="grid gap-3">
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-xs text-muted-foreground">Scope</p>
+                                                <p className="mt-1 text-sm font-medium">{summary.scope}</p>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-xs text-muted-foreground">Items</p>
+                                                <p className="mt-1 text-sm font-medium">
+                                                    {summary.items} item{summary.items === 1 ? '' : 's'}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-xs text-muted-foreground">Weight</p>
+                                                <p className="mt-1 text-sm font-medium">{summary.weight}</p>
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-xs text-muted-foreground">Status</p>
+                                                <div className="mt-1">
+                                                    <Badge variant={data.is_active ? 'default' : 'outline'}>
+                                                        {summary.active}
+                                                    </Badge>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="flex flex-col gap-3 p-4">
+                                    <Link href={`/scorecard-templates/${template.id}`} className="w-full">
+                                        <Button variant="outline" type="button" className="w-full">
+                                            Cancel
+                                        </Button>
+                                    </Link>
+
+                                    <Button type="submit" disabled={processing} className="w-full">
+                                        <Save className="mr-2 h-4 w-4" />
+                                        {processing ? 'Saving...' : 'Update Template'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
                 </form>
             </div>

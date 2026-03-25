@@ -14,8 +14,8 @@ class KpiLibraryController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
-        $perspective = (string) $request->input('perspective', 'all');
-        $isActive = $request->input('is_active', 'all');
+        $perspective = trim((string) $request->input('perspective', '')) ?: 'all';
+        $isActive = trim((string) $request->input('is_active', '')) ?: 'all';
 
         $kpis = KpiLibrary::query()
             ->when($search !== '', function (Builder $q) use ($search) {
