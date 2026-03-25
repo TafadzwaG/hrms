@@ -11,7 +11,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type KpiPayload = {
@@ -80,7 +80,7 @@ export default function KpiEdit() {
         >
             <Head title={`Edit KPI - ${kpi.name}`} />
 
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-6">
+            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
                 <div className="flex items-center gap-3">
                     <Link href="/kpi-library">
                         <Button variant="ghost" size="icon">
@@ -230,7 +230,6 @@ export default function KpiEdit() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href="/kpi-library">
                             <Button variant="outline" type="button">
-                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

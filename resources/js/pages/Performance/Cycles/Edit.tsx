@@ -8,10 +8,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type CyclePayload = {
@@ -73,7 +74,7 @@ export default function CycleEdit() {
         >
             <Head title={`Edit Cycle - ${cycle.title}`} />
 
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-6">
+            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
                 <div className="flex items-center gap-3">
                     <Link href={`/performance-cycles/${cycle.id}`}>
                         <Button variant="ghost" size="icon">
@@ -166,12 +167,10 @@ export default function CycleEdit() {
                                 <FieldError message={errors.status} />
                             </div>
                             <div className="flex items-center gap-3 pt-6">
-                                <input
-                                    type="checkbox"
+                                <Switch
                                     id="self_assessment_enabled"
                                     checked={data.self_assessment_enabled}
-                                    onChange={(e) => setData('self_assessment_enabled', e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-300"
+                                    onCheckedChange={(checked) => setData('self_assessment_enabled', checked)}
                                 />
                                 <label htmlFor="self_assessment_enabled" className="text-sm font-medium">
                                     Enable Self-Assessment
@@ -185,7 +184,6 @@ export default function CycleEdit() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href={`/performance-cycles/${cycle.id}`}>
                             <Button variant="outline" type="button">
-                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>

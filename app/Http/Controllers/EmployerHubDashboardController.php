@@ -89,6 +89,10 @@ class EmployerHubDashboardController extends Controller
         }
 
         return Inertia::render('Employer/Dashboard', [
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'company' => $company ? [
                 'id' => $company->id,
                 'company_name' => $company->company_name,
@@ -97,10 +101,6 @@ class EmployerHubDashboardController extends Controller
                 'email' => $company->email,
                 'approved_at' => $company->approved_at?->toDateString(),
             ] : null,
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
             'metrics' => $metrics,
             'applicationsByStatus' => $applicationsByStatus,
             'vacancies' => $vacancies,

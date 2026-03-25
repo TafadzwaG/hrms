@@ -25,7 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, ClipboardList, Save, X } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Save } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 type EmployeeOption = {
@@ -127,7 +127,7 @@ export default function ScorecardCreate() {
         >
             <Head title="New Employee Scorecard" />
 
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-6">
+            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
                 <div className="flex items-center gap-3">
                     <Link href="/employee-scorecards">
                         <Button variant="ghost" size="icon">
@@ -299,7 +299,6 @@ export default function ScorecardCreate() {
                     <div className="flex items-center justify-end gap-3">
                         <Link href="/employee-scorecards">
                             <Button variant="outline" type="button">
-                                <X className="mr-2 h-4 w-4" />
                                 Cancel
                             </Button>
                         </Link>
