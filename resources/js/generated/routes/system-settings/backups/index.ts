@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SystemSettingsController::update
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::update
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::update
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -35,7 +35,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::update
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
     const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -50,7 +50,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::update
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
         updateForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -66,7 +66,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::run
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 export const run = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -81,7 +81,7 @@ run.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::run
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 run.url = (options?: RouteQueryOptions) => {
@@ -90,7 +90,7 @@ run.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::run
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 run.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -100,7 +100,7 @@ run.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::run
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
     const runForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -110,7 +110,7 @@ run.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::run
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
         runForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -121,7 +121,7 @@ run.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     run.form = runForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 export const download = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -136,7 +136,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 download.url = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -164,7 +164,7 @@ download.url = (args: { file: string | number } | [file: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 download.get = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -173,7 +173,7 @@ download.get = (args: { file: string | number } | [file: string | number ] | str
 })
 /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 download.head = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -183,7 +183,7 @@ download.head = (args: { file: string | number } | [file: string | number ] | st
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
     const downloadForm = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -193,7 +193,7 @@ download.head = (args: { file: string | number } | [file: string | number ] | st
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
         downloadForm.get = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -202,7 +202,7 @@ download.head = (args: { file: string | number } | [file: string | number ] | st
         })
             /**
 * @see \App\Http\Controllers\SystemSettingsController::download
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
         downloadForm.head = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

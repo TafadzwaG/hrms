@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\RunDatabaseBackupJob;
 use App\Models\Organization;
 use App\Models\User;
+use App\Rules\AcceptAnyImageMime;
 use App\Support\Audit\AuditLogger;
+use App\Support\PublicDiskUrl;
 use App\Support\Settings\SystemSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +34,7 @@ class SystemSettingsController extends Controller
             'system' => [
                 'system_name' => $settings->getString('general', 'system_name', config('app.name'), $systemOrgId),
                 'system_short_name' => $settings->getString('general', 'system_short_name', null, $systemOrgId),
-                'system_logo_url' => $systemLogoPath ? Storage::disk('public')->url($systemLogoPath) : null,
+                'system_logo_url' => PublicDiskUrl::make($systemLogoPath),
                 'system_logo_path' => $systemLogoPath,
             ],
             'company' => [
@@ -46,7 +48,7 @@ class SystemSettingsController extends Controller
                 'default_currency' => $orgId ? $settings->getString('company', 'default_currency', null, $orgId) : null,
                 'date_format' => $orgId ? $settings->getString('company', 'date_format', null, $orgId) : null,
                 'default_timezone' => $organization?->timezone,
-                'company_logo_url' => $companyLogoPath ? Storage::disk('public')->url($companyLogoPath) : null,
+                'company_logo_url' => PublicDiskUrl::make($companyLogoPath),
                 'company_logo_path' => $companyLogoPath,
             ],
             'branding' => [
@@ -264,7 +266,7 @@ class SystemSettingsController extends Controller
         $systemOrgId = $settings->systemOrganizationId();
 
         $validated = $request->validate([
-            'system_logo' => ['required', 'file', 'image', 'max:2048'],
+            'system_logo' => ['required', 'file', new AcceptAnyImageMime(), 'max:2048'],
         ]);
 
         $file = $request->file('system_logo');
@@ -306,7 +308,7 @@ class SystemSettingsController extends Controller
         }
 
         $validated = $request->validate([
-            'company_logo' => ['required', 'file', 'image', 'max:2048'],
+            'company_logo' => ['required', 'file', new AcceptAnyImageMime(), 'max:2048'],
         ]);
 
         $file = $request->file('company_logo');

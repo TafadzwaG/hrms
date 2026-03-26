@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::store
- * @see app/Http/Controllers/Candidate/ProfileController.php:65
+ * @see app/Http/Controllers/Candidate/ProfileController.php:120
  * @route '/candidate/profile/experiences'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::store
- * @see app/Http/Controllers/Candidate/ProfileController.php:65
+ * @see app/Http/Controllers/Candidate/ProfileController.php:120
  * @route '/candidate/profile/experiences'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::store
- * @see app/Http/Controllers/Candidate/ProfileController.php:65
+ * @see app/Http/Controllers/Candidate/ProfileController.php:120
  * @route '/candidate/profile/experiences'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\Candidate\ProfileController::store
- * @see app/Http/Controllers/Candidate/ProfileController.php:65
+ * @see app/Http/Controllers/Candidate/ProfileController.php:120
  * @route '/candidate/profile/experiences'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::store
- * @see app/Http/Controllers/Candidate/ProfileController.php:65
+ * @see app/Http/Controllers/Candidate/ProfileController.php:120
  * @route '/candidate/profile/experiences'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -56,7 +56,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:82
+ * @see app/Http/Controllers/Candidate/ProfileController.php:137
  * @route '/candidate/profile/experiences/{experience}'
  */
 export const update = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -71,7 +71,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:82
+ * @see app/Http/Controllers/Candidate/ProfileController.php:137
  * @route '/candidate/profile/experiences/{experience}'
  */
 update.url = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -104,7 +104,7 @@ update.url = (args: { experience: number | { id: number } } | [experience: numbe
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:82
+ * @see app/Http/Controllers/Candidate/ProfileController.php:137
  * @route '/candidate/profile/experiences/{experience}'
  */
 update.put = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -114,7 +114,7 @@ update.put = (args: { experience: number | { id: number } } | [experience: numbe
 
     /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:82
+ * @see app/Http/Controllers/Candidate/ProfileController.php:137
  * @route '/candidate/profile/experiences/{experience}'
  */
     const updateForm = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -129,7 +129,7 @@ update.put = (args: { experience: number | { id: number } } | [experience: numbe
 
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:82
+ * @see app/Http/Controllers/Candidate/ProfileController.php:137
  * @route '/candidate/profile/experiences/{experience}'
  */
         updateForm.put = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -145,7 +145,7 @@ update.put = (args: { experience: number | { id: number } } | [experience: numbe
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::destroy
- * @see app/Http/Controllers/Candidate/ProfileController.php:101
+ * @see app/Http/Controllers/Candidate/ProfileController.php:156
  * @route '/candidate/profile/experiences/{experience}'
  */
 export const destroy = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -160,7 +160,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::destroy
- * @see app/Http/Controllers/Candidate/ProfileController.php:101
+ * @see app/Http/Controllers/Candidate/ProfileController.php:156
  * @route '/candidate/profile/experiences/{experience}'
  */
 destroy.url = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -193,7 +193,7 @@ destroy.url = (args: { experience: number | { id: number } } | [experience: numb
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::destroy
- * @see app/Http/Controllers/Candidate/ProfileController.php:101
+ * @see app/Http/Controllers/Candidate/ProfileController.php:156
  * @route '/candidate/profile/experiences/{experience}'
  */
 destroy.delete = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -203,7 +203,7 @@ destroy.delete = (args: { experience: number | { id: number } } | [experience: n
 
     /**
 * @see \App\Http\Controllers\Candidate\ProfileController::destroy
- * @see app/Http/Controllers/Candidate/ProfileController.php:101
+ * @see app/Http/Controllers/Candidate/ProfileController.php:156
  * @route '/candidate/profile/experiences/{experience}'
  */
     const destroyForm = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -218,7 +218,7 @@ destroy.delete = (args: { experience: number | { id: number } } | [experience: n
 
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::destroy
- * @see app/Http/Controllers/Candidate/ProfileController.php:101
+ * @see app/Http/Controllers/Candidate/ProfileController.php:156
  * @route '/candidate/profile/experiences/{experience}'
  */
         destroyForm.delete = (args: { experience: number | { id: number } } | [experience: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

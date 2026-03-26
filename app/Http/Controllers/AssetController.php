@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesRolePageScope;
+use App\Rules\AcceptAnyImageMime;
 use App\Models\Asset;
 use App\Models\AssetAssignment;
 use App\Models\AssetCategory;
@@ -154,7 +155,7 @@ class AssetController extends Controller
     {
         $data = $this->validateAsset($request);
 
-        $request->validate(['image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120']]);
+        $request->validate(['image' => ['nullable', 'file', new AcceptAnyImageMime(), 'max:5120']]);
 
         $asset = DB::transaction(function () use ($data, $request) {
             $asset = Asset::create([
@@ -230,7 +231,7 @@ class AssetController extends Controller
     {
         $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $data = $this->validateAsset($request, $asset);
-        $request->validate(['image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120']]);
+        $request->validate(['image' => ['nullable', 'file', new AcceptAnyImageMime(), 'max:5120']]);
         $oldStatus = $asset->status;
 
         DB::transaction(function () use ($asset, $data, $request, $oldStatus) {

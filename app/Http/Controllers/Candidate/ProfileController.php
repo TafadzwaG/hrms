@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Candidate;
 
+use App\Http\Requests\Candidate\UpdateCandidateProfileImageRequest;
 use App\Http\Requests\Candidate\UpdateCandidateProfileRequest;
 use App\Http\Requests\Candidate\UpdateCandidateSummaryRequest;
 use App\Http\Requests\Candidate\UpsertCandidateExperienceRequest;
 use App\Models\CandidateExperience;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,6 +63,58 @@ class ProfileController extends BaseCandidateHubController
         $candidate->update($request->validated());
 
         return back()->with('success', 'Professional summary updated.');
+    }
+
+    public function updateImage(UpdateCandidateProfileImageRequest $request): RedirectResponse
+    {
+        $candidate = $this->candidate($request);
+
+        if ($candidate instanceof \Illuminate\Http\RedirectResponse) {
+            return $candidate;
+        }
+
+        $file = $request->file('profile_image');
+        $storedName = Str::uuid()->toString().'_'.$file->getClientOriginalName();
+        $path = $file->storeAs('candidate-profile-images/'.$candidate->id, $storedName, 'public');
+
+        $metadata = $candidate->metadata ?? [];
+        $previousPath = data_get($metadata, 'profile_image_path');
+
+        data_set($metadata, 'profile_image_path', $path);
+
+        $candidate->update([
+            'metadata' => $metadata,
+        ]);
+
+        if ($previousPath && $previousPath !== $path && Storage::disk('public')->exists($previousPath)) {
+            Storage::disk('public')->delete($previousPath);
+        }
+
+        return back()->with('success', 'Profile image updated.');
+    }
+
+    public function destroyImage(Request $request): RedirectResponse
+    {
+        $candidate = $this->candidate($request);
+
+        if ($candidate instanceof \Illuminate\Http\RedirectResponse) {
+            return $candidate;
+        }
+
+        $metadata = $candidate->metadata ?? [];
+        $previousPath = data_get($metadata, 'profile_image_path');
+
+        if ($previousPath && Storage::disk('public')->exists($previousPath)) {
+            Storage::disk('public')->delete($previousPath);
+        }
+
+        data_forget($metadata, 'profile_image_path');
+
+        $candidate->update([
+            'metadata' => $metadata,
+        ]);
+
+        return back()->with('success', 'Profile image removed.');
     }
 
     public function storeExperience(UpsertCandidateExperienceRequest $request): RedirectResponse

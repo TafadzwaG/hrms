@@ -18,6 +18,7 @@ export type CandidateUser = {
     listing_activated_at: string;
     listing_expires_at: string;
     headline: string;
+    profile_image_url?: string | null;
 };
 
 export type CandidateMetrics = {

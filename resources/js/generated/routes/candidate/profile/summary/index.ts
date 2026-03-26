@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:52
+ * @see app/Http/Controllers/Candidate/ProfileController.php:55
  * @route '/candidate/profile/summary'
  */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:52
+ * @see app/Http/Controllers/Candidate/ProfileController.php:55
  * @route '/candidate/profile/summary'
  */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:52
+ * @see app/Http/Controllers/Candidate/ProfileController.php:55
  * @route '/candidate/profile/summary'
  */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -35,7 +35,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:52
+ * @see app/Http/Controllers/Candidate/ProfileController.php:55
  * @route '/candidate/profile/summary'
  */
     const updateForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -50,7 +50,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::update
- * @see app/Http/Controllers/Candidate/ProfileController.php:52
+ * @see app/Http/Controllers/Candidate/ProfileController.php:55
  * @route '/candidate/profile/summary'
  */
         updateForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

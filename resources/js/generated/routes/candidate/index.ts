@@ -245,7 +245,7 @@ jobs.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     jobs.form = jobsForm
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -260,7 +260,7 @@ profile.definition = {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
 profile.url = (options?: RouteQueryOptions) => {
@@ -269,7 +269,7 @@ profile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -278,7 +278,7 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -288,7 +288,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
     const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -298,7 +298,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
         profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -307,7 +307,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Candidate\ProfileController::profile
- * @see app/Http/Controllers/Candidate/ProfileController.php:16
+ * @see app/Http/Controllers/Candidate/ProfileController.php:19
  * @route '/candidate/profile'
  */
         profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

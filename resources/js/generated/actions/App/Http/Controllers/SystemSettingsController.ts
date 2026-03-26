@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateGeneral
- * @see app/Http/Controllers/SystemSettingsController.php:109
+ * @see app/Http/Controllers/SystemSettingsController.php:111
  * @route '/system-settings/general'
  */
 export const updateGeneral = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ updateGeneral.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateGeneral
- * @see app/Http/Controllers/SystemSettingsController.php:109
+ * @see app/Http/Controllers/SystemSettingsController.php:111
  * @route '/system-settings/general'
  */
 updateGeneral.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ updateGeneral.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateGeneral
- * @see app/Http/Controllers/SystemSettingsController.php:109
+ * @see app/Http/Controllers/SystemSettingsController.php:111
  * @route '/system-settings/general'
  */
 updateGeneral.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -113,7 +113,7 @@ updateGeneral.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::updateGeneral
- * @see app/Http/Controllers/SystemSettingsController.php:109
+ * @see app/Http/Controllers/SystemSettingsController.php:111
  * @route '/system-settings/general'
  */
     const updateGeneralForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -128,7 +128,7 @@ updateGeneral.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::updateGeneral
- * @see app/Http/Controllers/SystemSettingsController.php:109
+ * @see app/Http/Controllers/SystemSettingsController.php:111
  * @route '/system-settings/general'
  */
         updateGeneralForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -144,7 +144,7 @@ updateGeneral.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     updateGeneral.form = updateGeneralForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadSystemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 export const uploadSystemLogo = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -159,7 +159,7 @@ uploadSystemLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadSystemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 uploadSystemLogo.url = (options?: RouteQueryOptions) => {
@@ -168,7 +168,7 @@ uploadSystemLogo.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadSystemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 uploadSystemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ uploadSystemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadSystemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
     const uploadSystemLogoForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -188,7 +188,7 @@ uploadSystemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadSystemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
         uploadSystemLogoForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -199,7 +199,7 @@ uploadSystemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =
     uploadSystemLogo.form = uploadSystemLogoForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadCompanyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 export const uploadCompanyLogo = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -214,7 +214,7 @@ uploadCompanyLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadCompanyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 uploadCompanyLogo.url = (options?: RouteQueryOptions) => {
@@ -223,7 +223,7 @@ uploadCompanyLogo.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadCompanyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 uploadCompanyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -233,7 +233,7 @@ uploadCompanyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> 
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadCompanyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
     const uploadCompanyLogoForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -243,7 +243,7 @@ uploadCompanyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> 
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::uploadCompanyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
         uploadCompanyLogoForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -254,7 +254,7 @@ uploadCompanyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> 
     uploadCompanyLogo.form = uploadCompanyLogoForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateTheme
- * @see app/Http/Controllers/SystemSettingsController.php:212
+ * @see app/Http/Controllers/SystemSettingsController.php:214
  * @route '/system-settings/branding/theme'
  */
 export const updateTheme = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -269,7 +269,7 @@ updateTheme.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateTheme
- * @see app/Http/Controllers/SystemSettingsController.php:212
+ * @see app/Http/Controllers/SystemSettingsController.php:214
  * @route '/system-settings/branding/theme'
  */
 updateTheme.url = (options?: RouteQueryOptions) => {
@@ -278,7 +278,7 @@ updateTheme.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateTheme
- * @see app/Http/Controllers/SystemSettingsController.php:212
+ * @see app/Http/Controllers/SystemSettingsController.php:214
  * @route '/system-settings/branding/theme'
  */
 updateTheme.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -288,7 +288,7 @@ updateTheme.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::updateTheme
- * @see app/Http/Controllers/SystemSettingsController.php:212
+ * @see app/Http/Controllers/SystemSettingsController.php:214
  * @route '/system-settings/branding/theme'
  */
     const updateThemeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -303,7 +303,7 @@ updateTheme.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::updateTheme
- * @see app/Http/Controllers/SystemSettingsController.php:212
+ * @see app/Http/Controllers/SystemSettingsController.php:214
  * @route '/system-settings/branding/theme'
  */
         updateThemeForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -319,7 +319,7 @@ updateTheme.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     updateTheme.form = updateThemeForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updatePreferences
- * @see app/Http/Controllers/SystemSettingsController.php:342
+ * @see app/Http/Controllers/SystemSettingsController.php:344
  * @route '/system-settings/preferences'
  */
 export const updatePreferences = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -334,7 +334,7 @@ updatePreferences.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updatePreferences
- * @see app/Http/Controllers/SystemSettingsController.php:342
+ * @see app/Http/Controllers/SystemSettingsController.php:344
  * @route '/system-settings/preferences'
  */
 updatePreferences.url = (options?: RouteQueryOptions) => {
@@ -343,7 +343,7 @@ updatePreferences.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updatePreferences
- * @see app/Http/Controllers/SystemSettingsController.php:342
+ * @see app/Http/Controllers/SystemSettingsController.php:344
  * @route '/system-settings/preferences'
  */
 updatePreferences.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -353,7 +353,7 @@ updatePreferences.put = (options?: RouteQueryOptions): RouteDefinition<'put'> =>
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::updatePreferences
- * @see app/Http/Controllers/SystemSettingsController.php:342
+ * @see app/Http/Controllers/SystemSettingsController.php:344
  * @route '/system-settings/preferences'
  */
     const updatePreferencesForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -368,7 +368,7 @@ updatePreferences.put = (options?: RouteQueryOptions): RouteDefinition<'put'> =>
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::updatePreferences
- * @see app/Http/Controllers/SystemSettingsController.php:342
+ * @see app/Http/Controllers/SystemSettingsController.php:344
  * @route '/system-settings/preferences'
  */
         updatePreferencesForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -384,7 +384,7 @@ updatePreferences.put = (options?: RouteQueryOptions): RouteDefinition<'put'> =>
     updatePreferences.form = updatePreferencesForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateBackups
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 export const updateBackups = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -399,7 +399,7 @@ updateBackups.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateBackups
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 updateBackups.url = (options?: RouteQueryOptions) => {
@@ -408,7 +408,7 @@ updateBackups.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::updateBackups
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
 updateBackups.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -418,7 +418,7 @@ updateBackups.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::updateBackups
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
     const updateBackupsForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -433,7 +433,7 @@ updateBackups.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::updateBackups
- * @see app/Http/Controllers/SystemSettingsController.php:404
+ * @see app/Http/Controllers/SystemSettingsController.php:406
  * @route '/system-settings/backups'
  */
         updateBackupsForm.put = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -449,7 +449,7 @@ updateBackups.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     updateBackups.form = updateBackupsForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::runBackup
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 export const runBackup = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -464,7 +464,7 @@ runBackup.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::runBackup
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 runBackup.url = (options?: RouteQueryOptions) => {
@@ -473,7 +473,7 @@ runBackup.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::runBackup
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
 runBackup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -483,7 +483,7 @@ runBackup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::runBackup
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
     const runBackupForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -493,7 +493,7 @@ runBackup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::runBackup
- * @see app/Http/Controllers/SystemSettingsController.php:499
+ * @see app/Http/Controllers/SystemSettingsController.php:501
  * @route '/system-settings/backups/run'
  */
         runBackupForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -504,7 +504,7 @@ runBackup.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     runBackup.form = runBackupForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 export const downloadBackup = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -519,7 +519,7 @@ downloadBackup.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 downloadBackup.url = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -547,7 +547,7 @@ downloadBackup.url = (args: { file: string | number } | [file: string | number ]
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 downloadBackup.get = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -556,7 +556,7 @@ downloadBackup.get = (args: { file: string | number } | [file: string | number ]
 })
 /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
 downloadBackup.head = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -566,7 +566,7 @@ downloadBackup.head = (args: { file: string | number } | [file: string | number 
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
     const downloadBackupForm = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -576,7 +576,7 @@ downloadBackup.head = (args: { file: string | number } | [file: string | number 
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
         downloadBackupForm.get = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -585,7 +585,7 @@ downloadBackup.head = (args: { file: string | number } | [file: string | number 
         })
             /**
 * @see \App\Http\Controllers\SystemSettingsController::downloadBackup
- * @see app/Http/Controllers/SystemSettingsController.php:523
+ * @see app/Http/Controllers/SystemSettingsController.php:525
  * @route '/system-settings/backups/download/{file}'
  */
         downloadBackupForm.head = (args: { file: string | number } | [file: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

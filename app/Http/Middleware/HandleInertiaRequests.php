@@ -8,12 +8,12 @@ use App\Support\Auth\PortalAccessResolver;
 use App\Support\Auth\UserImpersonationService;
 use App\Support\Dashboard\RoleDashboardResolver;
 use App\Support\Dashboard\RoleSidebarShortcutBuilder;
+use App\Support\PublicDiskUrl;
 use App\Support\Rbac\PermissionRegistry;
 use App\Support\Settings\SystemSettingsService;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Middleware;
 
@@ -128,7 +128,7 @@ class HandleInertiaRequests extends Middleware
         $systemName = $settings->getString('general', 'system_name', config('app.name'), $systemOrgId) ?? config('app.name');
         $systemShortName = $settings->getString('general', 'system_short_name', null, $systemOrgId);
         $systemLogoPath = $settings->getString('branding', 'system_logo_path', null, $systemOrgId);
-        $systemLogoUrl = $systemLogoPath ? Storage::disk('public')->url($systemLogoPath) : null;
+        $systemLogoUrl = PublicDiskUrl::make($systemLogoPath);
 
         $brandingOrgId = $activeOrganization?->id;
         $branding = $brandingOrgId ? [

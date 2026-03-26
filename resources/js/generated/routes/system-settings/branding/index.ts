@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import theme from './theme'
 /**
 * @see \App\Http\Controllers\SystemSettingsController::systemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 export const systemLogo = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ systemLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::systemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 systemLogo.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ systemLogo.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::systemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
 systemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,7 +36,7 @@ systemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::systemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
     const systemLogoForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -46,7 +46,7 @@ systemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::systemLogo
- * @see app/Http/Controllers/SystemSettingsController.php:262
+ * @see app/Http/Controllers/SystemSettingsController.php:264
  * @route '/system-settings/branding/system-logo'
  */
         systemLogoForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ systemLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     systemLogo.form = systemLogoForm
 /**
 * @see \App\Http\Controllers\SystemSettingsController::companyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 export const companyLogo = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ companyLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::companyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 companyLogo.url = (options?: RouteQueryOptions) => {
@@ -81,7 +81,7 @@ companyLogo.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::companyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
 companyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ companyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::companyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
     const companyLogoForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -101,7 +101,7 @@ companyLogo.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::companyLogo
- * @see app/Http/Controllers/SystemSettingsController.php:299
+ * @see app/Http/Controllers/SystemSettingsController.php:301
  * @route '/system-settings/branding/company-logo'
  */
         companyLogoForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

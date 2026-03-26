@@ -119,6 +119,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [\App\Http\Controllers\Candidate\ProfileController::class, 'edit'])->name('profile');
         Route::put('/profile', [\App\Http\Controllers\Candidate\ProfileController::class, 'update'])->name('profile.update');
         Route::put('/profile/summary', [\App\Http\Controllers\Candidate\ProfileController::class, 'updateSummary'])->name('profile.summary.update');
+        Route::post('/profile/image', [\App\Http\Controllers\Candidate\ProfileController::class, 'updateImage'])->name('profile.image.update');
+        Route::delete('/profile/image', [\App\Http\Controllers\Candidate\ProfileController::class, 'destroyImage'])->name('profile.image.destroy');
         Route::post('/profile/experiences', [\App\Http\Controllers\Candidate\ProfileController::class, 'storeExperience'])->name('profile.experiences.store');
         Route::put('/profile/experiences/{experience}', [\App\Http\Controllers\Candidate\ProfileController::class, 'updateExperience'])->name('profile.experiences.update');
         Route::delete('/profile/experiences/{experience}', [\App\Http\Controllers\Candidate\ProfileController::class, 'destroyExperience'])->name('profile.experiences.destroy');
@@ -159,6 +161,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports', [\App\Http\Controllers\Employer\ReportsController::class, 'index'])->name('reports');
         Route::get('/company', [\App\Http\Controllers\Employer\CompanyProfileController::class, 'edit'])->name('company');
         Route::put('/company', [\App\Http\Controllers\Employer\CompanyProfileController::class, 'update'])->name('company.update');
+        Route::post('/company/logo', [\App\Http\Controllers\Employer\CompanyProfileController::class, 'updateLogo'])->name('company.logo.update');
+        Route::delete('/company/logo', [\App\Http\Controllers\Employer\CompanyProfileController::class, 'destroyLogo'])->name('company.logo.destroy');
         Route::get('/billing', [\App\Http\Controllers\Employer\BillingController::class, 'edit'])->name('billing');
         Route::put('/billing/profile', [\App\Http\Controllers\Employer\BillingController::class, 'updateProfile'])->name('billing.profile.update');
         Route::put('/billing/subscription', [\App\Http\Controllers\Employer\BillingController::class, 'changeSubscription'])->name('billing.subscription.update');

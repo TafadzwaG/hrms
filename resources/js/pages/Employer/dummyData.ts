@@ -10,6 +10,7 @@ export type Company = {
     address?: string | null;
     description?: string | null;
     logo_path?: string | null;
+    logo_url?: string | null;
     approved_at?: string | null;
     metadata?: Record<string, unknown>;
 };
@@ -142,6 +143,7 @@ export type EmployerCandidateProfile = {
     listing_activated_at?: string | null;
     listing_expires_at?: string | null;
     profile_views?: number;
+    profile_image_url?: string | null;
 };
 
 export type EmployerCandidateEducation = {

@@ -2,13 +2,16 @@ import { useForm, usePage } from '@inertiajs/react';
 import { 
     Building2, 
     Globe, 
+    ImagePlus,
     Mail, 
     MapPin, 
     Phone, 
     ShieldCheck, 
     Plus, 
-    Save 
+    Save,
+    Trash2,
 } from 'lucide-react';
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 
 import InputError from '@/components/input-error';
@@ -32,6 +35,7 @@ type PageProps = {
 export default function EmployerCompanyProfilePage() {
     const { company, industries } = usePage<PageProps>().props;
     const user = usePage<{ user?: User }>().props.user ?? { name: 'Employer User', email: company.email ?? '' };
+    const logoInputRef = useRef<HTMLInputElement | null>(null);
     
     const form = useForm({
         company_name: company.company_name ?? '',
@@ -43,6 +47,22 @@ export default function EmployerCompanyProfilePage() {
         address: company.address ?? '',
         description: company.description ?? '',
     });
+    const logoForm = useForm<{ logo: File | null }>({
+        logo: null,
+    });
+
+    const uploadLogo = (file: File | null) => {
+        if (!file) {
+            return;
+        }
+
+        logoForm.setData('logo', file);
+        logoForm.post('/employer/company/logo', {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => logoForm.reset(),
+        });
+    };
 
     return (
         <EmployerHubLayout
@@ -166,8 +186,16 @@ export default function EmployerCompanyProfilePage() {
                         {/* Profile Summary Card */}
                         <div className="bg-white p-6 rounded-sm shadow-sm border border-zinc-200">
                             <div className="flex items-start justify-between mb-6">
-                                <div className="w-12 h-12 bg-black flex items-center justify-center rounded-sm text-white text-lg font-black shrink-0">
-                                    {getInitials(company.company_name)}
+                                <div className="w-12 h-12 overflow-hidden bg-black flex items-center justify-center rounded-sm text-white text-lg font-black shrink-0">
+                                    {company.logo_url ? (
+                                        <img
+                                            src={company.logo_url}
+                                            alt={company.company_name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        getInitials(company.company_name)
+                                    )}
                                 </div>
                                 <div className="flex flex-col items-end gap-1.5">
                                     <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-sm border border-emerald-200">
@@ -183,6 +211,55 @@ export default function EmployerCompanyProfilePage() {
                             </div>
                             <h3 className="text-base font-black tracking-tighter text-black uppercase">{company.company_name}</h3>
                             <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{company.industry || 'Industry not set'}</p>
+                            <input
+                                ref={logoInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(event) => {
+                                    const file = event.target.files?.[0] ?? null;
+                                    uploadLogo(file);
+                                    event.currentTarget.value = '';
+                                }}
+                            />
+                            <div className="mt-4 space-y-2">
+                                <div className="flex flex-col gap-2 sm:flex-row">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => logoInputRef.current?.click()}
+                                        disabled={logoForm.processing}
+                                        className="flex-1"
+                                    >
+                                        <ImagePlus className="h-4 w-4" />
+                                        {logoForm.processing
+                                            ? 'Uploading...'
+                                            : company.logo_url
+                                              ? 'Change logo'
+                                              : 'Upload logo'}
+                                    </Button>
+                                    {company.logo_url ? (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                logoForm.delete('/employer/company/logo', {
+                                                    preserveScroll: true,
+                                                })
+                                            }
+                                            disabled={logoForm.processing}
+                                            className="flex-1"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                            Remove
+                                        </Button>
+                                    ) : null}
+                                </div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                    Any image format up to 4MB
+                                </p>
+                                <InputError message={logoForm.errors.logo} />
+                            </div>
                             
                             <div className="space-y-3 pt-5 mt-5 border-t border-zinc-100">
                                 <div className="flex items-center gap-2.5">

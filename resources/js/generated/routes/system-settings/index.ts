@@ -5,7 +5,7 @@ import preferences from './preferences'
 import backups from './backups'
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -20,7 +20,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -29,7 +29,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -38,7 +38,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -48,7 +48,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -67,7 +67,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\SystemSettingsController::index
- * @see app/Http/Controllers/SystemSettingsController.php:21
+ * @see app/Http/Controllers/SystemSettingsController.php:23
  * @route '/system-settings'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

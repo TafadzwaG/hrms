@@ -11,6 +11,8 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyApplication;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function employerHubCreateCompany(User $owner, array $overrides = []): CompanyProfile
@@ -619,4 +621,48 @@ test('employer can update company profile and billing subscription data', functi
     expect($newSubscription)->not->toBeNull()
         ->and($newSubscription?->seats)->toBe(12)
         ->and((float) $newSubscription?->amount)->toBe(249.0);
+});
+
+test('employer can upload and remove a company logo', function () {
+    Storage::fake('public');
+
+    $owner = User::factory()->create();
+    $company = employerHubCreateCompany($owner, [
+        'logo_path' => 'company-logos/legacy-logo.png',
+    ]);
+
+    Storage::disk('public')->put('company-logos/legacy-logo.png', 'legacy logo');
+
+    $upload = UploadedFile::fake()->create('nimbus-logo.svg', 32, 'image/svg+xml');
+
+    $this->actingAs($owner)
+        ->from(route('employer.company'))
+        ->post(route('employer.company.logo.update'), [
+            'logo' => $upload,
+        ])
+        ->assertRedirect(route('employer.company'));
+
+    $company->refresh();
+
+    expect($company->logo_path)->not->toBeNull()
+        ->and($company->logo_path)->not->toBe('company-logos/legacy-logo.png');
+
+    Storage::disk('public')->assertMissing('company-logos/legacy-logo.png');
+    Storage::disk('public')->assertExists($company->logo_path);
+
+    $this->actingAs($owner)
+        ->get(route('employer.company'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('company.logo_url', '/storage/'.$company->logo_path)
+        );
+
+    $this->actingAs($owner)
+        ->from(route('employer.company'))
+        ->delete(route('employer.company.logo.destroy'))
+        ->assertRedirect(route('employer.company'));
+
+    $company->refresh();
+
+    expect($company->logo_path)->toBeNull();
 });

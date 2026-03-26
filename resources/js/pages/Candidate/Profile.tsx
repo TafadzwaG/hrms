@@ -2,6 +2,7 @@ import { useForm, usePage } from '@inertiajs/react';
 import {
     Briefcase,
     Download,
+    ImagePlus,
     Mail,
     MapPin,
     Phone,
@@ -9,7 +10,7 @@ import {
     Edit2,
     Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ type PageProps = {
         alt_phone?: string | null;
         national_id?: string | null;
         is_public?: boolean;
+        profile_image_url?: string | null;
     };
     experiences: CandidateExperience[];
     education_levels: string[];
@@ -90,6 +92,23 @@ export default function CandidateProfilePage() {
     });
 
     const experienceForm = useForm<ExperienceForm>(emptyExperience);
+    const profileImageForm = useForm<{ profile_image: File | null }>({
+        profile_image: null,
+    });
+    const profileImageInputRef = useRef<HTMLInputElement | null>(null);
+
+    const uploadProfileImage = (file: File | null) => {
+        if (!file) {
+            return;
+        }
+
+        profileImageForm.setData('profile_image', file);
+        profileImageForm.post('/candidate/profile/image', {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => profileImageForm.reset(),
+        });
+    };
 
     const submitExperience = () => {
         if (editingExperienceId) {
@@ -459,12 +478,20 @@ export default function CandidateProfilePage() {
 
                     {/* Right Column: Summaries & Lists */}
                     <div className="space-y-8">
-                        
                         {/* 4. Profile Summary Card (No longer sticky) */}
                         <div className="rounded-lg border border-border/70 bg-background/95 p-6 shadow-sm">
                             <div className="mb-8 flex flex-col items-center text-center">
-                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-sm bg-black text-2xl font-black text-white">
-                                    {getInitials(candidate.full_name)}
+                                <div className="mb-4 flex h-20 w-20 items-center justify-center overflow-hidden rounded-sm bg-black text-2xl font-black text-white">
+                                  
+                                    {candidate.profile_image_url ? (
+                                        <img
+                                            src={candidate.profile_image_url}
+                                            alt={candidate.full_name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        getInitials(candidate.full_name)
+                                    )}
                                 </div>
                                 <h2 className="text-2xl font-black tracking-tighter text-black uppercase">
                                     {candidate.full_name || 'Candidate'}
@@ -472,6 +499,55 @@ export default function CandidateProfilePage() {
                                 <p className="mt-1 text-sm font-bold tracking-wide text-zinc-500">
                                     {candidate.headline || 'No headline set'}
                                 </p>
+                                <input
+                                    ref={profileImageInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0] ?? null;
+                                        uploadProfileImage(file);
+                                        event.currentTarget.value = '';
+                                    }}
+                                />
+                                <div className="mt-4 flex w-full flex-col gap-2">
+                                    <div className="flex w-full flex-col gap-2 sm:flex-row">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => profileImageInputRef.current?.click()}
+                                            disabled={profileImageForm.processing}
+                                            className="flex-1"
+                                        >
+                                            <ImagePlus className="h-4 w-4" />
+                                            {profileImageForm.processing
+                                                ? 'Uploading...'
+                                                : candidate.profile_image_url
+                                                  ? 'Change photo'
+                                                  : 'Upload photo'}
+                                        </Button>
+                                        {candidate.profile_image_url ? (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    profileImageForm.delete('/candidate/profile/image', {
+                                                        preserveScroll: true,
+                                                    })
+                                                }
+                                                disabled={profileImageForm.processing}
+                                                className="flex-1"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                Remove
+                                            </Button>
+                                        ) : null}
+                                    </div>
+                                    <p className="text-[10px] font-medium tracking-wide text-zinc-400">
+                                        Any image format up to 4MB.
+                                    </p>
+                                    <InputError message={profileImageForm.errors.profile_image} />
+                                </div>
                             </div>
 
                             <div className="space-y-4 border-t border-zinc-100 pt-6">

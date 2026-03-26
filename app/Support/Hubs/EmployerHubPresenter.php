@@ -16,6 +16,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\User;
 use App\Models\Vacancy;
 use App\Models\VacancyApplication;
+use App\Support\PublicDiskUrl;
 use App\Support\RichText;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -36,6 +37,7 @@ class EmployerHubPresenter
             'address' => $company->address,
             'description' => $company->description,
             'logo_path' => $company->logo_path,
+            'logo_url' => $this->fileUrl($company->logo_path),
             'approved_at' => $company->approved_at?->toDateString(),
             'metadata' => $company->metadata ?? [],
         ];
@@ -174,6 +176,7 @@ class EmployerHubPresenter
             'listing_activated_at' => $candidate->listing_activated_at?->toDateString(),
             'listing_expires_at' => $candidate->listing_expires_at?->toDateString(),
             'profile_views' => (int) data_get($candidate->metadata, 'profile_views', 0),
+            'profile_image_url' => $this->fileUrl(data_get($candidate->metadata, 'profile_image_path')),
         ];
     }
 
@@ -346,5 +349,18 @@ class EmployerHubPresenter
             'vacancy_id' => $match['vacancy_id'] ?? null,
             'vacancy_title' => $match['vacancy_title'] ?? null,
         ];
+    }
+
+    private function fileUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
+            return $path;
+        }
+
+        return PublicDiskUrl::make($path);
     }
 }

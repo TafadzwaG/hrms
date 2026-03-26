@@ -242,7 +242,7 @@ reports.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     reports.form = reportsForm
 /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
 export const company = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -257,7 +257,7 @@ company.definition = {
 
 /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
 company.url = (options?: RouteQueryOptions) => {
@@ -266,7 +266,7 @@ company.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
 company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -275,7 +275,7 @@ company.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
 company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -285,7 +285,7 @@ company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
     const companyForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -295,7 +295,7 @@ company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
         companyForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -304,7 +304,7 @@ company.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\Employer\CompanyProfileController::company
- * @see app/Http/Controllers/Employer/CompanyProfileController.php:13
+ * @see app/Http/Controllers/Employer/CompanyProfileController.php:16
  * @route '/employer/company'
  */
         companyForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

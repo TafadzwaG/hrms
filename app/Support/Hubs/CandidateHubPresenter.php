@@ -10,6 +10,7 @@ use App\Models\CandidateResume;
 use App\Models\CandidateSkill;
 use App\Models\Vacancy;
 use App\Models\VacancyApplication;
+use App\Support\PublicDiskUrl;
 use App\Support\RichText;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -41,6 +42,7 @@ class CandidateHubPresenter
             'alt_phone' => $candidate->alt_phone,
             'national_id' => $candidate->national_id,
             'is_public' => (bool) $candidate->is_public,
+            'profile_image_url' => $this->fileUrl(data_get($candidate->metadata, 'profile_image_path')),
         ];
     }
 
@@ -239,5 +241,18 @@ class CandidateHubPresenter
         }
 
         return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+    }
+
+    private function fileUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '/'])) {
+            return $path;
+        }
+
+        return PublicDiskUrl::make($path);
     }
 }

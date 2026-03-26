@@ -352,6 +352,58 @@ test('candidate can update profile details summary and work experience records',
     expect(CandidateExperience::query()->find($experience->id))->toBeNull();
 });
 
+test('candidate can upload and remove a profile image', function () {
+    Storage::fake('public');
+
+    $user = User::factory()->create();
+    $candidate = candidateHubCreateProfile($user);
+    $existingPath = 'candidate-profile-images/'.$candidate->id.'/existing-avatar.png';
+
+    Storage::disk('public')->put($existingPath, 'existing avatar');
+    $candidate->update([
+        'metadata' => [
+            ...($candidate->metadata ?? []),
+            'profile_image_path' => $existingPath,
+        ],
+    ]);
+
+    $upload = UploadedFile::fake()->create('candidate-avatar.gif', 256, 'image/gif');
+
+    $this->actingAs($user)
+        ->from(route('candidate.profile'))
+        ->post(route('candidate.profile.image.update'), [
+            'profile_image' => $upload,
+        ])
+        ->assertRedirect(route('candidate.profile'));
+
+    $candidate->refresh();
+    $newPath = data_get($candidate->metadata, 'profile_image_path');
+
+    expect($newPath)->not->toBeNull()
+        ->and($newPath)->not->toBe($existingPath);
+
+    Storage::disk('public')->assertMissing($existingPath);
+    Storage::disk('public')->assertExists($newPath);
+
+    $this->actingAs($user)
+        ->get(route('candidate.profile'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('candidate.profile_image_url', '/storage/'.$newPath)
+        );
+
+    $this->actingAs($user)
+        ->from(route('candidate.profile'))
+        ->delete(route('candidate.profile.image.destroy'))
+        ->assertRedirect(route('candidate.profile'));
+
+    $candidate->refresh();
+
+    expect(data_get($candidate->metadata, 'profile_image_path'))->toBeNull();
+
+    Storage::disk('public')->assertMissing($newPath);
+});
+
 test('candidate can manage education skills and settings', function () {
     $user = User::factory()->create();
     $candidate = candidateHubCreateProfile($user);
