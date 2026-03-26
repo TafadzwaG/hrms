@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:288
+ * @see app/Http/Controllers/EmployeeScorecardController.php:304
  * @route '/employee-scorecards/{employee_scorecard}/evidence'
  */
 export const store = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:288
+ * @see app/Http/Controllers/EmployeeScorecardController.php:304
  * @route '/employee-scorecards/{employee_scorecard}/evidence'
  */
 store.url = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ store.url = (args: { employee_scorecard: string | number } | [employee_scorecard
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:288
+ * @see app/Http/Controllers/EmployeeScorecardController.php:304
  * @route '/employee-scorecards/{employee_scorecard}/evidence'
  */
 store.post = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ store.post = (args: { employee_scorecard: string | number } | [employee_scorecar
 
     /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:288
+ * @see app/Http/Controllers/EmployeeScorecardController.php:304
  * @route '/employee-scorecards/{employee_scorecard}/evidence'
  */
     const storeForm = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ store.post = (args: { employee_scorecard: string | number } | [employee_scorecar
 
             /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:288
+ * @see app/Http/Controllers/EmployeeScorecardController.php:304
  * @route '/employee-scorecards/{employee_scorecard}/evidence'
  */
         storeForm.post = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -75,7 +75,7 @@ store.post = (args: { employee_scorecard: string | number } | [employee_scorecar
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
 export const download = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -90,7 +90,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
 download.url = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions) => {
@@ -116,7 +116,7 @@ download.url = (args: { employee_scorecard: string | number, evidence: string | 
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
 download.get = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -125,7 +125,7 @@ download.get = (args: { employee_scorecard: string | number, evidence: string | 
 })
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
 download.head = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -135,7 +135,7 @@ download.head = (args: { employee_scorecard: string | number, evidence: string |
 
     /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
     const downloadForm = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ download.head = (args: { employee_scorecard: string | number, evidence: string |
 
             /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
         downloadForm.get = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ download.head = (args: { employee_scorecard: string | number, evidence: string |
         })
             /**
 * @see \App\Http\Controllers\EmployeeScorecardController::download
- * @see app/Http/Controllers/EmployeeScorecardController.php:313
+ * @see app/Http/Controllers/EmployeeScorecardController.php:330
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}/download'
  */
         downloadForm.head = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -170,7 +170,7 @@ download.head = (args: { employee_scorecard: string | number, evidence: string |
     download.form = downloadForm
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::destroy
- * @see app/Http/Controllers/EmployeeScorecardController.php:326
+ * @see app/Http/Controllers/EmployeeScorecardController.php:344
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}'
  */
 export const destroy = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -185,7 +185,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::destroy
- * @see app/Http/Controllers/EmployeeScorecardController.php:326
+ * @see app/Http/Controllers/EmployeeScorecardController.php:344
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}'
  */
 destroy.url = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ destroy.url = (args: { employee_scorecard: string | number, evidence: string | n
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::destroy
- * @see app/Http/Controllers/EmployeeScorecardController.php:326
+ * @see app/Http/Controllers/EmployeeScorecardController.php:344
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}'
  */
 destroy.delete = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -221,7 +221,7 @@ destroy.delete = (args: { employee_scorecard: string | number, evidence: string 
 
     /**
 * @see \App\Http\Controllers\EmployeeScorecardController::destroy
- * @see app/Http/Controllers/EmployeeScorecardController.php:326
+ * @see app/Http/Controllers/EmployeeScorecardController.php:344
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}'
  */
     const destroyForm = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -236,7 +236,7 @@ destroy.delete = (args: { employee_scorecard: string | number, evidence: string 
 
             /**
 * @see \App\Http\Controllers\EmployeeScorecardController::destroy
- * @see app/Http/Controllers/EmployeeScorecardController.php:326
+ * @see app/Http/Controllers/EmployeeScorecardController.php:344
  * @route '/employee-scorecards/{employee_scorecard}/evidence/{evidence}'
  */
         destroyForm.delete = (args: { employee_scorecard: string | number, evidence: string | number } | [employee_scorecard: string | number, evidence: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::index
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:16
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:20
  * @route '/improvement-plans'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::create
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:55
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:62
  * @route '/improvement-plans/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::store
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:64
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:71
  * @route '/improvement-plans'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::store
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:64
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:71
  * @route '/improvement-plans'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::store
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:64
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:71
  * @route '/improvement-plans'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::store
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:64
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:71
  * @route '/improvement-plans'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::store
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:64
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:71
  * @route '/improvement-plans'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +212,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
 export const show = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,7 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
 show.url = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -255,7 +255,7 @@ show.url = (args: { improvement_plan: string | number } | [improvement_plan: str
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
 show.get = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +264,7 @@ show.get = (args: { improvement_plan: string | number } | [improvement_plan: str
 })
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
 show.head = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -274,7 +274,7 @@ show.head = (args: { improvement_plan: string | number } | [improvement_plan: st
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
     const showForm = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -284,7 +284,7 @@ show.head = (args: { improvement_plan: string | number } | [improvement_plan: st
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
         showForm.get = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ show.head = (args: { improvement_plan: string | number } | [improvement_plan: st
         })
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::show
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:76
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:84
  * @route '/improvement-plans/{improvement_plan}'
  */
         showForm.head = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -309,7 +309,7 @@ show.head = (args: { improvement_plan: string | number } | [improvement_plan: st
     show.form = showForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
 export const edit = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -324,7 +324,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
 edit.url = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -352,7 +352,7 @@ edit.url = (args: { improvement_plan: string | number } | [improvement_plan: str
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
 edit.get = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -361,7 +361,7 @@ edit.get = (args: { improvement_plan: string | number } | [improvement_plan: str
 })
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
 edit.head = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -371,7 +371,7 @@ edit.head = (args: { improvement_plan: string | number } | [improvement_plan: st
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
     const editForm = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { improvement_plan: string | number } | [improvement_plan: st
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
         editForm.get = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -390,7 +390,7 @@ edit.head = (args: { improvement_plan: string | number } | [improvement_plan: st
         })
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::edit
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:91
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:100
  * @route '/improvement-plans/{improvement_plan}/edit'
  */
         editForm.head = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -406,7 +406,7 @@ edit.head = (args: { improvement_plan: string | number } | [improvement_plan: st
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
 export const update = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -421,7 +421,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
 update.url = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -449,7 +449,7 @@ update.url = (args: { improvement_plan: string | number } | [improvement_plan: s
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
 update.put = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -458,7 +458,7 @@ update.put = (args: { improvement_plan: string | number } | [improvement_plan: s
 })
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
 update.patch = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -468,7 +468,7 @@ update.patch = (args: { improvement_plan: string | number } | [improvement_plan:
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
     const updateForm = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { improvement_plan: string | number } | [improvement_plan:
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
         updateForm.put = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -497,7 +497,7 @@ update.patch = (args: { improvement_plan: string | number } | [improvement_plan:
         })
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::update
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:106
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:116
  * @route '/improvement-plans/{improvement_plan}'
  */
         updateForm.patch = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -513,7 +513,7 @@ update.patch = (args: { improvement_plan: string | number } | [improvement_plan:
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::destroy
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:117
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:129
  * @route '/improvement-plans/{improvement_plan}'
  */
 export const destroy = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -528,7 +528,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::destroy
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:117
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:129
  * @route '/improvement-plans/{improvement_plan}'
  */
 destroy.url = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -556,7 +556,7 @@ destroy.url = (args: { improvement_plan: string | number } | [improvement_plan: 
 
 /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::destroy
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:117
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:129
  * @route '/improvement-plans/{improvement_plan}'
  */
 destroy.delete = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -566,7 +566,7 @@ destroy.delete = (args: { improvement_plan: string | number } | [improvement_pla
 
     /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::destroy
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:117
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:129
  * @route '/improvement-plans/{improvement_plan}'
  */
     const destroyForm = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -581,7 +581,7 @@ destroy.delete = (args: { improvement_plan: string | number } | [improvement_pla
 
             /**
 * @see \App\Http\Controllers\PerformanceImprovementPlanController::destroy
- * @see app/Http/Controllers/PerformanceImprovementPlanController.php:117
+ * @see app/Http/Controllers/PerformanceImprovementPlanController.php:129
  * @route '/improvement-plans/{improvement_plan}'
  */
         destroyForm.delete = (args: { improvement_plan: string | number } | [improvement_plan: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

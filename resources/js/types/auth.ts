@@ -1,4 +1,29 @@
 export type PortalType = 'employee' | 'candidate' | 'employer';
+export type DashboardRole =
+    | 'system_admin'
+    | 'hr_admin'
+    | 'payroll'
+    | 'manager'
+    | 'authoriser'
+    | 'auditor'
+    | 'employee';
+
+export type SidebarShortcut = {
+    title: string;
+    href: string;
+    icon: string;
+    badge?: string | null;
+};
+
+export type PageRoleScope = {
+    mode: 'self' | 'team' | 'approval_queue' | 'tenant' | 'readonly';
+    label: string;
+    allows_self_toggle?: boolean;
+    current_view?: 'team' | 'self' | null;
+    requested_view?: 'team' | 'mine' | null;
+    self_label?: string;
+    team_label?: string;
+};
 
 export type AuthRole = {
     id: number;
@@ -29,6 +54,8 @@ export type AuthUser = {
     primary_portal?: PortalType;
     active_portal?: PortalType;
     available_portals?: PortalType[];
+    dashboard_role?: DashboardRole;
+    pinned_shortcuts?: SidebarShortcut[];
     portal_switch_urls?: Partial<Record<PortalType, string>>;
     is_impersonated?: boolean;
     created_at: string | null;

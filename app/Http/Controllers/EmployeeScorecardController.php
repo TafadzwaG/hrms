@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Employee;
 use App\Models\EmployeeScorecard;
 use App\Models\EmployeeScorecardItem;
@@ -10,6 +11,7 @@ use App\Models\PerformanceComment;
 use App\Models\PerformanceCycle;
 use App\Models\PerformanceEvidence;
 use App\Models\ScorecardTemplate;
+use App\Support\Access\RolePageScopeResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,8 @@ use Inertia\Response;
 
 class EmployeeScorecardController extends Controller
 {
+    use ResolvesRolePageScope;
+
     // ── CRUD ─────────────────────────────────────────────────
 
     public function index(Request $request): Response
@@ -28,7 +32,7 @@ class EmployeeScorecardController extends Controller
         $cycleId = trim((string) $request->input('cycle_id', '')) ?: 'all';
         $status = trim((string) $request->input('status', '')) ?: 'all';
 
-        $scorecards = EmployeeScorecard::query()
+        $scorecardsQuery = EmployeeScorecard::query()
             ->with([
                 'employee:id,first_name,middle_name,surname,staff_number',
                 'cycle:id,title',
@@ -43,7 +47,9 @@ class EmployeeScorecardController extends Controller
                 });
             })
             ->when($cycleId !== 'all', fn (Builder $q) => $q->where('performance_cycle_id', $cycleId))
-            ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status))
+            ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status));
+        $scope = $this->applyRolePageScope($scorecardsQuery, $request, RolePageScopeResolver::MODULE_SCORECARDS);
+        $scorecards = $scorecardsQuery
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
             ->paginate(15)
@@ -57,20 +63,21 @@ class EmployeeScorecardController extends Controller
 
         return Inertia::render('Performance/Scorecards/Index', [
             'scorecards' => $scorecards,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'cycle_id' => $cycleId,
                 'status' => $status,
-            ],
+            ], $scope),
             'cycles' => $cycles,
             'statuses' => EmployeeScorecard::STATUSES,
+            'scope' => $scope,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Performance/Scorecards/Create', [
-            'options' => $this->scorecardFormOptions(),
+            'options' => $this->scorecardFormOptions($request),
         ]);
     }
 
@@ -78,6 +85,7 @@ class EmployeeScorecardController extends Controller
     {
         $validated = $request->validate($this->rules());
         $itemsData = $request->validate($this->itemRules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_SCORECARDS, $validated['employee_id'] ?? null);
 
         $scorecard = DB::transaction(function () use ($validated, $itemsData, $request) {
             $validated['created_by'] = $request->user()?->id;
@@ -117,8 +125,9 @@ class EmployeeScorecardController extends Controller
             ->with('success', 'Employee scorecard created successfully.');
     }
 
-    public function show(EmployeeScorecard $employeeScorecard): Response
+    public function show(Request $request, EmployeeScorecard $employeeScorecard): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $employeeScorecard->load([
             'items.kpi',
             'comments.user:id,name',
@@ -150,20 +159,23 @@ class EmployeeScorecardController extends Controller
         ]);
     }
 
-    public function edit(EmployeeScorecard $employeeScorecard): Response
+    public function edit(Request $request, EmployeeScorecard $employeeScorecard): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $employeeScorecard->load(['items.kpi']);
 
         return Inertia::render('Performance/Scorecards/Edit', [
             'scorecard' => $employeeScorecard,
-            'options' => $this->scorecardFormOptions(),
+            'options' => $this->scorecardFormOptions($request),
         ]);
     }
 
     public function update(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $validated = $request->validate($this->rules());
         $itemsData = $request->validate($this->itemRules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_SCORECARDS, $validated['employee_id'] ?? null);
 
         DB::transaction(function () use ($employeeScorecard, $validated, $itemsData) {
             $employeeScorecard->update($validated);
@@ -184,6 +196,7 @@ class EmployeeScorecardController extends Controller
 
     public function destroy(EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord(request(), RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         if ($employeeScorecard->status !== 'draft') {
             return back()->with('error', 'Only draft scorecards can be deleted.');
         }
@@ -210,6 +223,7 @@ class EmployeeScorecardController extends Controller
 
     public function submitSelfAssessment(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $request->validate([
             'items' => ['required', 'array'],
             'items.*.id' => ['required', 'integer', 'exists:employee_scorecard_items,id'],
@@ -238,6 +252,7 @@ class EmployeeScorecardController extends Controller
 
     public function submitManagerReview(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $request->validate([
             'items' => ['required', 'array'],
             'items.*.id' => ['required', 'integer', 'exists:employee_scorecard_items,id'],
@@ -274,6 +289,7 @@ class EmployeeScorecardController extends Controller
 
     public function finalize(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $employeeScorecard->update([
             'status' => 'finalized',
             'finalized_at' => now(),
@@ -287,6 +303,7 @@ class EmployeeScorecardController extends Controller
 
     public function storeEvidence(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $request->validate([
             'file' => ['required', 'file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png,gif,txt'],
             'description' => ['nullable', 'string', 'max:500'],
@@ -310,8 +327,9 @@ class EmployeeScorecardController extends Controller
         return back()->with('success', 'Evidence uploaded successfully.');
     }
 
-    public function downloadEvidence(EmployeeScorecard $employeeScorecard, PerformanceEvidence $performanceEvidence)
+    public function downloadEvidence(Request $request, EmployeeScorecard $employeeScorecard, PerformanceEvidence $performanceEvidence)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         abort_unless((int) $performanceEvidence->employee_scorecard_id === (int) $employeeScorecard->id, 404);
 
         $disk = Storage::disk('public');
@@ -323,8 +341,9 @@ class EmployeeScorecardController extends Controller
         return back()->with('error', 'The requested evidence file could not be located.');
     }
 
-    public function destroyEvidence(EmployeeScorecard $employeeScorecard, PerformanceEvidence $performanceEvidence): RedirectResponse
+    public function destroyEvidence(Request $request, EmployeeScorecard $employeeScorecard, PerformanceEvidence $performanceEvidence): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         abort_unless((int) $performanceEvidence->employee_scorecard_id === (int) $employeeScorecard->id, 404);
 
         Storage::disk('public')->delete($performanceEvidence->file_path);
@@ -337,6 +356,7 @@ class EmployeeScorecardController extends Controller
 
     public function storeComment(Request $request, EmployeeScorecard $employeeScorecard): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_SCORECARDS, $employeeScorecard);
         $request->validate([
             'comment' => ['required', 'string'],
             'type' => ['required', 'in:' . implode(',', PerformanceComment::TYPES)],
@@ -379,13 +399,9 @@ class EmployeeScorecardController extends Controller
         ];
     }
 
-    private function scorecardFormOptions(): array
+    private function scorecardFormOptions(Request $request): array
     {
-        $employees = Employee::query()
-            ->select('id', 'first_name', 'middle_name', 'surname', 'staff_number')
-            ->orderBy('first_name')
-            ->orderBy('surname')
-            ->get();
+        $employees = $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_SCORECARDS);
 
         $cycles = PerformanceCycle::query()
             ->select('id', 'title', 'status')

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\PayslipController::index
- * @see app/Http/Controllers/PayslipController.php:21
+ * @see app/Http/Controllers/PayslipController.php:25
  * @route '/payroll/payslips'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
 export const show = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
 show.url = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -122,7 +122,7 @@ show.url = (args: { result: string | number } | [result: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
 show.get = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,7 +131,7 @@ show.get = (args: { result: string | number } | [result: string | number ] | str
 })
 /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
 show.head = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -141,7 +141,7 @@ show.head = (args: { result: string | number } | [result: string | number ] | st
 
     /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
     const showForm = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -151,7 +151,7 @@ show.head = (args: { result: string | number } | [result: string | number ] | st
 
             /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
         showForm.get = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -160,7 +160,7 @@ show.head = (args: { result: string | number } | [result: string | number ] | st
         })
             /**
 * @see \App\Http\Controllers\PayslipController::show
- * @see app/Http/Controllers/PayslipController.php:147
+ * @see app/Http/Controllers/PayslipController.php:153
  * @route '/payroll/payslips/{result}'
  */
         showForm.head = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -176,7 +176,7 @@ show.head = (args: { result: string | number } | [result: string | number ] | st
     show.form = showForm
 /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
 export const download = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
 download.url = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -219,7 +219,7 @@ download.url = (args: { result: string | number } | [result: string | number ] |
 
 /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
 download.get = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -228,7 +228,7 @@ download.get = (args: { result: string | number } | [result: string | number ] |
 })
 /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
 download.head = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -238,7 +238,7 @@ download.head = (args: { result: string | number } | [result: string | number ] 
 
     /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
     const downloadForm = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -248,7 +248,7 @@ download.head = (args: { result: string | number } | [result: string | number ] 
 
             /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
         downloadForm.get = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -257,7 +257,7 @@ download.head = (args: { result: string | number } | [result: string | number ] 
         })
             /**
 * @see \App\Http\Controllers\PayslipController::download
- * @see app/Http/Controllers/PayslipController.php:157
+ * @see app/Http/Controllers/PayslipController.php:164
  * @route '/payroll/payslips/{result}/download'
  */
         downloadForm.head = (args: { result: string | number } | [result: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

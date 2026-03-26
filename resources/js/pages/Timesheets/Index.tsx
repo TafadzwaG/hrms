@@ -39,6 +39,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Select,
     SelectContent,
@@ -54,6 +55,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 
 type PaginatedRecords = {
     data: any[];
@@ -65,7 +68,7 @@ type PaginatedRecords = {
 
 type TimesheetsPageProps = {
     records: PaginatedRecords;
-    filters: { search?: string; status?: string };
+    filters: { search?: string; status?: string; scope_view?: string };
     stats: {
         total: number;
         pending: number;
@@ -75,10 +78,11 @@ type TimesheetsPageProps = {
         overtime_minutes: number;
     };
     statusOptions: string[];
+    scope?: PageRoleScope;
 };
 
 export default function TimesheetIndex() {
-    const { records, filters, stats, statusOptions } =
+    const { records, filters, stats, statusOptions, scope } =
         usePage<TimesheetsPageProps>().props;
 
     const [search, setSearch] = useState<string>(filters?.search ?? '');
@@ -96,7 +100,10 @@ export default function TimesheetIndex() {
     const applyFilters = () => {
         router.get(
             `${API}/timesheets`,
-            { search, status },
+            buildIndexParams(filters, {
+                search,
+                status: status === 'all' ? '' : status,
+            }),
             { preserveState: true, replace: true, preserveScroll: true },
         );
     };
@@ -104,7 +111,15 @@ export default function TimesheetIndex() {
     const handlePageChange = (page: number) => {
         router.get(
             `${API}/timesheets`,
-            { page, search, status },
+            buildIndexParams(
+                filters,
+                {
+                    page,
+                    search,
+                    status: status === 'all' ? '' : status,
+                },
+                { resetPage: false },
+            ),
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -239,6 +254,13 @@ export default function TimesheetIndex() {
                         </Button>
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path={`${API}/timesheets`}
+                    filters={filters}
+                    className="mb-6"
+                />
 
                 <div className="grid grid-cols-1 gap-8 xl:grid-cols-4">
                     <div className="space-y-6 xl:col-span-3">

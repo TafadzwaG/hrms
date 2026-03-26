@@ -18,6 +18,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import { Separator } from '@/components/ui/separator';
 import {
     Select,
@@ -35,6 +36,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ClipboardList,
@@ -150,11 +153,12 @@ function MetricCard({
 }
 
 export default function ScorecardIndex() {
-    const { scorecards, filters, cycles, statuses } = usePage<{
+    const { scorecards, filters, cycles, statuses, scope } = usePage<{
         scorecards: PaginatedScorecards;
-        filters: { search?: string; cycle_id?: string; status?: string };
+        filters: { search?: string; cycle_id?: string; status?: string; scope_view?: string };
         cycles: CycleOption[];
         statuses: string[];
+        scope?: PageRoleScope;
     }>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -163,22 +167,12 @@ export default function ScorecardIndex() {
     const [scorecardToDelete, setScorecardToDelete] = useState<ScorecardRow | null>(null);
 
     useEffect(() => {
-        const params: Record<string, string> = {};
-
-        if (search.trim() !== '') {
-            params.search = search.trim();
-        }
-
-        if (cycleId !== 'all') {
-            params.cycle_id = cycleId;
-        }
-
-        if (status !== 'all') {
-            params.status = status;
-        }
-
         const timer = window.setTimeout(() => {
-            router.get('/employee-scorecards', params, {
+            router.get('/employee-scorecards', buildIndexParams(filters, {
+                search: search.trim(),
+                cycle_id: cycleId !== 'all' ? cycleId : '',
+                status: status !== 'all' ? status : '',
+            }), {
                 preserveState: true,
                 replace: true,
                 preserveScroll: true,
@@ -198,23 +192,16 @@ export default function ScorecardIndex() {
     };
 
     const handlePageChange = (selectedItem: { selected: number }) => {
-        const params: Record<string, string | number> = {
-            page: selectedItem.selected + 1,
-        };
-
-        if (search.trim() !== '') {
-            params.search = search.trim();
-        }
-
-        if (cycleId !== 'all') {
-            params.cycle_id = cycleId;
-        }
-
-        if (status !== 'all') {
-            params.status = status;
-        }
-
-        router.get('/employee-scorecards', params, {
+        router.get('/employee-scorecards', buildIndexParams(
+            filters,
+            {
+                page: selectedItem.selected + 1,
+                search: search.trim(),
+                cycle_id: cycleId !== 'all' ? cycleId : '',
+                status: status !== 'all' ? status : '',
+            },
+            { resetPage: false },
+        ), {
             preserveScroll: true,
             preserveState: true,
         });
@@ -249,6 +236,12 @@ export default function ScorecardIndex() {
             <Head title="Employee Scorecards" />
 
             <div className="w-full space-y-6 p-4 md:p-6">
+                <RoleScopeBar
+                    scope={scope}
+                    path="/employee-scorecards"
+                    filters={filters}
+                />
+
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">

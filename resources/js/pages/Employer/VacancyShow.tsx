@@ -39,7 +39,7 @@ export default function EmployerVacancyShowPage() {
     const user = usePage<{ user?: User }>().props.user ?? { name: 'Employer User', email: company.email ?? '' };
 
     const updateStatus = (applicationId: number, status: string) => {
-        router.patch(`/employer/applications/${applicationId}/status`, { status }, { preserveScroll: true });
+        router.patch(`/employer/candidates/${applicationId}/status`, { status }, { preserveScroll: true });
     };
 
     return (

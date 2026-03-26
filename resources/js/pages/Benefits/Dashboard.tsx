@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Table,
     TableBody,
@@ -10,6 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
@@ -54,6 +56,7 @@ type DashboardProps = {
     stats: DashboardStats;
     recent_enrollments: RecentEnrollment[];
     category_summary: CategorySummary[];
+    scope?: PageRoleScope;
 };
 
 const statusStyles: Record<string, string> = {
@@ -112,6 +115,7 @@ export default function BenefitsDashboard() {
         },
         recent_enrollments = [],
         category_summary = [],
+        scope,
     } = usePage<DashboardProps>().props;
 
     return (
@@ -151,6 +155,11 @@ export default function BenefitsDashboard() {
                         </Link>
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/benefits/dashboard"
+                />
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

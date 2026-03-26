@@ -17,6 +17,7 @@ import {
     IndexTablePagination,
     SortableTableHead,
 } from '@/components/index-table';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Card,
     CardContent,
@@ -43,6 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
 import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Eye,
@@ -90,15 +92,17 @@ type PaginatedEmployees = {
 };
 
 export default function EmployeeIndex() {
-    const { employees, filters, payPoints } = usePage<{
+    const { employees, filters, payPoints, scope } = usePage<{
         employees: PaginatedEmployees;
         filters: {
             search?: string;
             pay_point?: string;
             sort?: string;
             direction?: 'asc' | 'desc';
+            scope_view?: string;
         };
         payPoints: string[];
+        scope?: PageRoleScope;
     }>().props;
 
     const { can } = useAuthorization();
@@ -185,6 +189,12 @@ export default function EmployeeIndex() {
                         )}
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/employees"
+                    filters={filters}
+                />
 
                 {/* Main Directory Card */}
                 <Card className="flex h-[calc(100vh-220px)] w-full flex-col overflow-hidden border-border bg-background shadow-sm">

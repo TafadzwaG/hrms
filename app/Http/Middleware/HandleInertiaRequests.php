@@ -6,6 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\Auth\PortalAccessResolver;
 use App\Support\Auth\UserImpersonationService;
+use App\Support\Dashboard\RoleDashboardResolver;
+use App\Support\Dashboard\RoleSidebarShortcutBuilder;
 use App\Support\Rbac\PermissionRegistry;
 use App\Support\Settings\SystemSettingsService;
 use App\Support\Tenancy\TenantContext;
@@ -95,6 +97,8 @@ class HandleInertiaRequests extends Middleware
             $availablePortals = $portalResolver->availablePortals($user)->all();
             $activePortal = $portalResolver->activePortalForRequest($request, $user);
             $impersonationPayload = app(UserImpersonationService::class)->payload($request);
+            $dashboardRole = app(RoleDashboardResolver::class)->resolve($user);
+            $pinnedShortcuts = app(RoleSidebarShortcutBuilder::class)->build($user);
 
             $userPayload = [
                 'id' => $user->id,
@@ -108,6 +112,8 @@ class HandleInertiaRequests extends Middleware
                 'primary_portal' => $portalResolver->primaryPortal($user),
                 'active_portal' => $activePortal,
                 'available_portals' => $availablePortals,
+                'dashboard_role' => $dashboardRole,
+                'pinned_shortcuts' => $pinnedShortcuts,
                 'portal_switch_urls' => collect($availablePortals)
                     ->mapWithKeys(fn (string $portal) => [$portal => route('portal.switch', $portal)])
                     ->all(),

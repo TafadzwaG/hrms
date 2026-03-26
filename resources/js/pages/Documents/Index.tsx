@@ -37,6 +37,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Select,
     SelectContent,
@@ -44,6 +45,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 
 type Employee = {
     id: number;
@@ -93,6 +96,7 @@ export default function DocumentIndex() {
         employees,
         stats,
         isTrashView,
+        scope,
     } = usePage().props as unknown as {
         documents: PaginatedData;
         filters: any;
@@ -102,6 +106,7 @@ export default function DocumentIndex() {
         employees: Employee[];
         stats: any;
         isTrashView?: boolean;
+        scope?: PageRoleScope;
     };
 
     // --- State: Filters ---
@@ -141,12 +146,12 @@ export default function DocumentIndex() {
     // Auto-fetch on filter change
     useEffect(() => {
         const timer = setTimeout(() => {
-            const params: any = { search };
-            if (accessPolicy !== 'all') params.access_policy = accessPolicy;
-            if (docType !== 'all') params.document_type_id = docType;
-            if (expiryState !== 'all') params.expiry_state = expiryState;
-
-            router.get(isTrashView ? `${basePath}/trash` : basePath, params, {
+            router.get(isTrashView ? `${basePath}/trash` : basePath, buildIndexParams(filters, {
+                search,
+                access_policy: accessPolicy !== 'all' ? accessPolicy : '',
+                document_type_id: docType !== 'all' ? docType : '',
+                expiry_state: expiryState !== 'all' ? expiryState : '',
+            }), {
                 preserveState: true,
                 replace: true,
             });
@@ -156,12 +161,17 @@ export default function DocumentIndex() {
 
     // --- Handlers ---
     const handlePageChange = (selectedItem: { selected: number }) => {
-        const params: any = { page: selectedItem.selected + 1, search };
-        if (accessPolicy !== 'all') params.access_policy = accessPolicy;
-        if (docType !== 'all') params.document_type_id = docType;
-        if (expiryState !== 'all') params.expiry_state = expiryState;
-
-        router.get(isTrashView ? `${basePath}/trash` : basePath, params, {
+        router.get(isTrashView ? `${basePath}/trash` : basePath, buildIndexParams(
+            filters,
+            {
+                page: selectedItem.selected + 1,
+                search,
+                access_policy: accessPolicy !== 'all' ? accessPolicy : '',
+                document_type_id: docType !== 'all' ? docType : '',
+                expiry_state: expiryState !== 'all' ? expiryState : '',
+            },
+            { resetPage: false },
+        ), {
             preserveState: true,
             preserveScroll: true,
         });
@@ -326,6 +336,12 @@ export default function DocumentIndex() {
                         )}
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path={isTrashView ? `${basePath}/trash` : basePath}
+                    filters={filters}
+                />
 
                 {/* Metrics Row */}
                 {!isTrashView && (

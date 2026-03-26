@@ -25,12 +25,6 @@ class EnsureUserHasPermission
             return $next($request);
         }
 
-        if ($request->expectsJson() || $request->header('X-Inertia')) {
-            throw new AuthorizationException('You do not have permission to perform this action.');
-        }
-
-        return redirect()
-            ->route('dashboard')
-            ->with('error', 'You do not have permission to access that area.');
+        throw new AuthorizationException('You do not have permission to perform this action.');
     }
 }

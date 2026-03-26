@@ -53,7 +53,7 @@ export default function EmployerCandidatesPage() {
     const [vacancyFilter, setVacancyFilter] = useState(filters.vacancy_id?.toString() ?? '__all__');
 
     const updateStatus = (applicationId: number, status: string) => {
-        router.patch(`/employer/applications/${applicationId}/status`, { status }, { preserveScroll: true });
+        router.patch(`/employer/candidates/${applicationId}/status`, { status }, { preserveScroll: true });
     };
 
     return (

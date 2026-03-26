@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:338
+ * @see app/Http/Controllers/EmployeeScorecardController.php:357
  * @route '/employee-scorecards/{employee_scorecard}/comments'
  */
 export const store = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:338
+ * @see app/Http/Controllers/EmployeeScorecardController.php:357
  * @route '/employee-scorecards/{employee_scorecard}/comments'
  */
 store.url = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ store.url = (args: { employee_scorecard: string | number } | [employee_scorecard
 
 /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:338
+ * @see app/Http/Controllers/EmployeeScorecardController.php:357
  * @route '/employee-scorecards/{employee_scorecard}/comments'
  */
 store.post = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ store.post = (args: { employee_scorecard: string | number } | [employee_scorecar
 
     /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:338
+ * @see app/Http/Controllers/EmployeeScorecardController.php:357
  * @route '/employee-scorecards/{employee_scorecard}/comments'
  */
     const storeForm = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ store.post = (args: { employee_scorecard: string | number } | [employee_scorecar
 
             /**
 * @see \App\Http\Controllers\EmployeeScorecardController::store
- * @see app/Http/Controllers/EmployeeScorecardController.php:338
+ * @see app/Http/Controllers/EmployeeScorecardController.php:357
  * @route '/employee-scorecards/{employee_scorecard}/comments'
  */
         storeForm.post = (args: { employee_scorecard: string | number } | [employee_scorecard: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -1,52 +1,42 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
-    Briefcase,
-    Users,
-    Building2,
-    Plus,
-    LogOut,
-    ChevronRight,
     BarChart3,
-    ShieldCheck,
-    LayoutDashboard,
-    Settings,
-    Bell,
-    TrendingUp,
-    MapPin,
-    Clock,
+    Briefcase,
+    Building2,
+    CalendarClock,
+    CircleDollarSign,
+    Eye,
     FileText,
-    LayoutGrid,
-    Info
+    MapPin,
+    Plus,
+    Sparkles,
+    TrendingUp,
+    Users,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-
-type Company = {
-    id: number;
-    company_name: string;
-    status: string;
-};
-
-type Vacancy = {
-    id: number;
-    title: string;
-    status: string;
-    department?: string;
-    location: string | null;
-    applications_count: number;
-};
-
-type RecentApplication = {
-    id: number;
-    candidate_name: string;
-    candidate_headline: string | null;
-    vacancy_title: string;
-    status: string;
-    applied_at: string;
-    match_score?: number;
-};
+import {
+    employerBreadcrumbs,
+    EmployerEmptyState,
+    EmployerGhostActionButton,
+    EmployerHubLayout,
+    EmployerInfoField,
+    EmployerMetricCard,
+    EmployerPrimaryButton,
+    EmployerSectionCard,
+    EmployerStatusBadge,
+    formatEmployerDate,
+} from './components/hub';
+import type {
+    BillingProfile,
+    Company,
+    RecentApplication,
+    RecommendedTalent,
+    Subscription,
+    User,
+    Vacancy,
+} from './dummyData';
 
 type Metrics = {
     total_vacancies: number;
@@ -55,310 +45,460 @@ type Metrics = {
     company_status: string;
 };
 
-type Props = {
-    user: { name: string; email: string } | null;
-    company: Company | null;
+type PageProps = {
+    user: User;
+    company: Company;
     metrics: Metrics;
     applicationsByStatus: Record<string, number>;
     vacancies: Vacancy[];
     recentApplications: RecentApplication[];
+    recommendedTalent?: RecommendedTalent[];
+    billingSummary?: {
+        profile: BillingProfile;
+        subscription: Subscription;
+    };
 };
 
-export default function EmployerDashboard({
-    user,
-    company,
-    metrics,
-    vacancies,
-    recentApplications,
-    applicationsByStatus
-}: Props) {
-    const handleLogout = () => router.post('/logout');
-    const userInitials = user?.name
-        ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-        : '??';
+export default function EmployerDashboard() {
+    const {
+        user,
+        company,
+        metrics,
+        vacancies,
+        recentApplications,
+        applicationsByStatus,
+        recommendedTalent = [],
+        billingSummary,
+    } = usePage<PageProps>().props;
+
+    const firstName = user?.name?.split(' ')[0] ?? 'there';
+    const pipelineCount =
+        countFor(applicationsByStatus, 'shortlisted') +
+        countFor(applicationsByStatus, 'interview') +
+        countFor(applicationsByStatus, 'offered');
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans text-slate-900 antialiased">
-            <Head title="Employer Hub - HRX" />
-
-            {/* ===== SIDEBAR NAVIGATION ===== */}
-            <aside className="flex h-full w-64 flex-col border-r border-slate-200 bg-white">
-                <div className="flex items-center space-x-2 border-b border-slate-100 p-6">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-900 text-white">
-                        <ShieldCheck size={20} />
-                    </div>
-                    <span className="text-lg font-bold tracking-tight text-slate-900 uppercase">
-                        HRX <span className="text-slate-400 font-medium italic lowercase">Hub</span>
-                    </span>
+        <EmployerHubLayout
+            title={`Welcome back, ${firstName}`}
+            subtitle={company.company_name || 'Employer dashboard'}
+            active="dashboard"
+            company={company}
+            user={user}
+            breadcrumbs={employerBreadcrumbs()}
+            headerActions={
+                <div className="flex flex-wrap items-center gap-2">
+                    <Link href="/employer/candidates">
+                        <EmployerGhostActionButton>
+                            <Users className="mr-1.5 h-3.5 w-3.5" />
+                            Review Candidates
+                        </EmployerGhostActionButton>
+                    </Link>
+                    <EmployerPrimaryButton href="/employer/vacancies/create">
+                        <Plus className="mr-1.5 h-3.5 w-3.5" />
+                        Post Vacancy
+                    </EmployerPrimaryButton>
+                </div>
+            }
+        >
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <EmployerMetricCard
+                        icon={<Briefcase className="h-4 w-4" />}
+                        label="Open Roles"
+                        value={metrics.total_vacancies}
+                        helper="Tracked vacancies"
+                    />
+                    <EmployerMetricCard
+                        icon={<TrendingUp className="h-4 w-4" />}
+                        label="Live Listings"
+                        value={metrics.published_vacancies}
+                        helper="Currently published"
+                    />
+                    <EmployerMetricCard
+                        icon={<Users className="h-4 w-4" />}
+                        label="Applications"
+                        value={metrics.total_applications}
+                        helper="Across all vacancies"
+                    />
+                    <EmployerMetricCard
+                        icon={<CalendarClock className="h-4 w-4" />}
+                        label="In Pipeline"
+                        value={pipelineCount}
+                        helper="Shortlist to offer"
+                    />
                 </div>
 
-                <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-                    <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Main Menu</p>
-                    <SidebarLink href="#" icon={<LayoutDashboard size={20} />} label="Dashboard" active />
-                    <SidebarLink href="#" icon={<Briefcase size={20} />} label="Vacancies" />
-                    <SidebarLink href="#" icon={<Users size={20} />} label="Candidates" />
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                    <div className="space-y-6 xl:col-span-2">
+                        <EmployerSectionCard
+                            title="Hiring Pipeline"
+                            icon={<BarChart3 className="h-4 w-4" />}
+                            description="Live application status distribution across your active hiring workflow."
+                            action={
+                                <Link href="/employer/reports">
+                                    <EmployerGhostActionButton>
+                                        <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                        Open Reports
+                                    </EmployerGhostActionButton>
+                                </Link>
+                            }
+                        >
+                            {Object.keys(applicationsByStatus).length > 0 ? (
+                                <div className="space-y-4">
+                                    {Object.entries(applicationsByStatus).map(([status, count]) => {
+                                        const percentage = metrics.total_applications > 0
+                                            ? Math.round((count / metrics.total_applications) * 100)
+                                            : 0;
 
-                    <p className="mb-2 mt-8 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">Organization</p>
-                    <SidebarLink href="#" icon={<FileText size={20} />} label="Reports" />
-                    <SidebarLink href="#" icon={<Building2 size={20} />} label="Company Profile" />
-                    <SidebarLink href="#" icon={<Settings size={20} />} label="Billing" />
-                </nav>
-
-                {/* User Profile Section at bottom */}
-                <div className="border-t border-slate-100 p-4">
-                    <div className="flex items-center px-2 py-3">
-                        <div className="flex-shrink-0">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-600 text-xs">
-                                {userInitials}
-                            </div>
-                        </div>
-                        <div className="ml-3 overflow-hidden">
-                            <p className="truncate text-xs font-semibold text-slate-900">{user?.name ?? 'Unknown'}</p>
-                            <p className="truncate text-[10px] text-slate-500 uppercase font-bold">{user?.email ?? ''}</p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={handleLogout}
-                        className="mt-2 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                    >
-                        <LogOut size={14} /> Terminate Session
-                    </button>
-                </div>
-            </aside>
-
-            {/* ===== MAIN CONTENT AREA ===== */}
-            <main className="flex-1 overflow-y-auto bg-slate-50">
-                {/* TOP BAR */}
-                <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900">Employer Hub</h1>
-                        <p className="text-sm text-slate-500">Overview of your current hiring activity</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                            <Bell size={24} />
-                        </button>
-                        <Button className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-colors uppercase tracking-tighter">
-                            Post a New Job
-                        </Button>
-                    </div>
-                </header>
-
-                <div className="mx-auto w-full p-8">
-                    {/* METRICS ROW */}
-                    <section className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <KPICard label="Active Vacancies" value={metrics.total_vacancies} trend="2 new" />
-                        <KPICard label="New Applications" value={metrics.total_applications} subLabel="Last 24 hours" />
-                        <KPICard label="Interviews" value="6" subLabel="Today" />
-                        <KPICard label="Total Hires" value="124" subLabel="Year to date" />
-                    </section>
-
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                        {/* LEFT COLUMN (2/3) */}
-                        <div className="lg:col-span-2 space-y-8">
-                            
-                            {/* ACTIVE REQUISITIONS */}
-                            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="flex items-center justify-between border-b border-slate-100 p-6">
-                                    <h2 className="text-lg font-bold text-slate-900">Active Requisitions</h2>
-                                    <button className="text-xs font-semibold uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900">View All</button>
+                                        return (
+                                            <div key={status} className="space-y-2">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <EmployerStatusBadge status={humanize(status)} />
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {count} applications
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-foreground">
+                                                        {percentage}%
+                                                    </span>
+                                                </div>
+                                                <Progress value={percentage} className="h-2 bg-muted" />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
+                            ) : (
+                                <EmployerEmptyState message="No applications have entered the hiring pipeline yet." />
+                            )}
+                        </EmployerSectionCard>
+
+                        <EmployerSectionCard
+                            title="Active Vacancies"
+                            icon={<Briefcase className="h-4 w-4" />}
+                            description="Current requisitions, publication status, and application load."
+                            action={
+                                <Link href="/employer/vacancies">
+                                    <EmployerGhostActionButton>
+                                        View All
+                                    </EmployerGhostActionButton>
+                                </Link>
+                            }
+                        >
+                            {vacancies.length > 0 ? (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="border-b border-slate-100 bg-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                        <thead className="border-b border-border/70 bg-muted/30 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                                             <tr>
-                                                <th className="px-6 py-3">Job Title</th>
-                                                <th className="px-6 py-3">Department</th>
-                                                <th className="px-6 py-3">Applicants</th>
-                                                <th className="px-6 py-3">Status</th>
-                                                <th className="px-6 py-3"></th>
+                                                <th className="px-3 py-2.5">Vacancy</th>
+                                                <th className="px-3 py-2.5">Details</th>
+                                                <th className="px-3 py-2.5">Applications</th>
+                                                <th className="px-3 py-2.5">Status</th>
+                                                <th className="px-3 py-2.5 text-right">Action</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100 text-sm">
-                                            {vacancies.map((v) => (
-                                                <tr key={v.id} className="transition-colors hover:bg-slate-50">
-                                                    <td className="px-6 py-4 font-semibold text-slate-900">{v.title}</td>
-                                                    <td className="px-6 py-4 text-slate-600">Engineering</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="font-medium text-slate-900">{v.applications_count}</span>
-                                                            <span className="text-[10px] font-bold text-emerald-500">+12%</span>
+                                        <tbody className="divide-y divide-border/60 text-sm">
+                                            {vacancies.slice(0, 6).map((vacancy) => (
+                                                <tr key={vacancy.id} className="transition-colors hover:bg-muted/20">
+                                                    <td className="px-3 py-3 align-top">
+                                                        <div className="space-y-1">
+                                                            <p className="font-semibold text-foreground">
+                                                                {vacancy.title}
+                                                            </p>
+                                                            <p className="text-[11px] text-muted-foreground">
+                                                                {vacancy.department || 'General'}
+                                                            </p>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4">
-                                                        <Badge className="rounded bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase text-white border-0">
-                                                            {v.status}
-                                                        </Badge>
+                                                    <td className="px-3 py-3 align-top">
+                                                        <div className="space-y-1 text-[11px] text-muted-foreground">
+                                                            <p>{vacancy.location || 'Remote / unspecified'}</p>
+                                                            <p>{vacancy.employment_type || 'Employment type not set'}</p>
+                                                        </div>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button className="text-slate-400 hover:text-slate-900">
-                                                            <ChevronRight size={20} />
-                                                        </button>
+                                                    <td className="px-3 py-3 align-top">
+                                                        <span className="text-sm font-semibold text-foreground">
+                                                            {vacancy.applications_count}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-3 align-top">
+                                                        <EmployerStatusBadge status={vacancy.status} />
+                                                    </td>
+                                                    <td className="px-3 py-3 text-right align-top">
+                                                        <Link href={`/employer/vacancies/${vacancy.id}`}>
+                                                            <EmployerGhostActionButton>
+                                                                <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                                View
+                                                            </EmployerGhostActionButton>
+                                                        </Link>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
-                            </section>
+                            ) : (
+                                <EmployerEmptyState message="Create your first vacancy to start receiving applications." />
+                            )}
+                        </EmployerSectionCard>
 
-                            {/* RECENT APPLICANTS */}
-                            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="border-b border-slate-100 p-6">
-                                    <h2 className="text-lg font-bold text-slate-900">Recent Applicants</h2>
-                                </div>
-                                <div className="divide-y divide-slate-100">
-                                    {recentApplications.map((app) => (
-                                        <div key={app.id} className="flex items-center justify-between p-6 transition-colors hover:bg-slate-50">
-                                            <div className="flex items-center">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 font-bold text-slate-400 text-xs">
-                                                    {app.candidate_name.substring(0, 1)}
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <h4 className="text-sm font-bold text-slate-900">{app.candidate_name}</h4>
-                                                        <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold italic text-white uppercase">98% Match</span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-500">
-                                                        Applied for <span className="font-medium text-slate-700">{app.vacancy_title}</span> • {app.applied_at}
+                        <EmployerSectionCard
+                            title="Recent Applications"
+                            icon={<FileText className="h-4 w-4" />}
+                            description="The most recent candidates entering your pipeline."
+                            action={
+                                <Link href="/employer/candidates">
+                                    <EmployerGhostActionButton>
+                                        <Users className="mr-1.5 h-3.5 w-3.5" />
+                                        Candidate Queue
+                                    </EmployerGhostActionButton>
+                                </Link>
+                            }
+                        >
+                            {recentApplications.length > 0 ? (
+                                <div className="space-y-3">
+                                    {recentApplications.slice(0, 5).map((application) => (
+                                        <div
+                                            key={application.id}
+                                            className="flex flex-col gap-3 rounded-lg border border-border/70 bg-muted/10 p-4 md:flex-row md:items-start md:justify-between"
+                                        >
+                                            <div className="space-y-2">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <p className="text-sm font-semibold text-foreground">
+                                                        {application.candidate_name || 'Candidate'}
                                                     </p>
+                                                    <EmployerStatusBadge status={humanize(application.status)} />
+                                                    {application.match ? (
+                                                        <span className="rounded-md border border-primary/40 bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground">
+                                                            {application.match.score}% match
+                                                        </span>
+                                                    ) : null}
                                                 </div>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Applied for <span className="font-medium text-foreground">{application.vacancy_title}</span>
+                                                    {' · '}
+                                                    {application.applied_at}
+                                                </p>
+                                                {application.candidate_headline ? (
+                                                    <p className="text-[11px] text-muted-foreground">
+                                                        {application.candidate_headline}
+                                                    </p>
+                                                ) : null}
+                                                {application.match?.reasons?.length ? (
+                                                    <ul className="space-y-1">
+                                                        {application.match.reasons.slice(0, 2).map((reason) => (
+                                                            <li
+                                                                key={reason}
+                                                                className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground"
+                                                            >
+                                                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                                <span>{reason}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                ) : null}
                                             </div>
-                                            <div className="flex space-x-2">
-                                                <button className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-slate-50">Profile</button>
-                                                <button className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-slate-800">Shortlist</button>
+
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Link href={`/employer/candidates/${application.id}`}>
+                                                    <EmployerGhostActionButton>
+                                                        <Eye className="mr-1.5 h-3.5 w-3.5" />
+                                                        View Profile
+                                                    </EmployerGhostActionButton>
+                                                </Link>
+                                                {application.resume?.download_url ? (
+                                                    <a href={application.resume.download_url}>
+                                                        <EmployerGhostActionButton>
+                                                            <FileText className="mr-1.5 h-3.5 w-3.5" />
+                                                            Resume
+                                                        </EmployerGhostActionButton>
+                                                    </a>
+                                                ) : null}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                            </section>
-                        </div>
+                            ) : (
+                                <EmployerEmptyState message="Applications will appear here once candidates start applying." />
+                            )}
+                        </EmployerSectionCard>
+                    </div>
 
-                        {/* RIGHT COLUMN (1/3) */}
-                        <div className="space-y-8">
-                            {/* HIRING PROGRESS */}
-                            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h2 className="mb-6 text-sm font-bold uppercase tracking-wider text-slate-900">Hiring Progress</h2>
-                                <div className="space-y-6">
-                                    <div>
-                                        <div className="mb-2 flex justify-between text-xs font-bold">
-                                            <span className="text-slate-500">Filling Rate</span>
-                                            <span className="text-slate-900">78%</span>
-                                        </div>
-                                        <Progress value={78} className="h-2 bg-slate-100" />
-                                    </div>
-                                    <div>
-                                        <div className="mb-2 flex justify-between text-xs font-bold">
-                                            <span className="text-slate-500">Onboarding Velocity</span>
-                                            <span className="text-slate-900">62%</span>
-                                        </div>
-                                        <Progress value={62} className="h-2 bg-slate-100" />
-                                    </div>
+                    <div className="space-y-6">
+                        <EmployerSectionCard
+                            title="Company Snapshot"
+                            icon={<Building2 className="h-4 w-4" />}
+                            description="Your company profile and current hiring readiness."
+                        >
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 gap-3">
+                                    <EmployerInfoField
+                                        label="Company"
+                                        value={company.company_name}
+                                        icon={<Building2 className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Status"
+                                        value={humanize(company.status)}
+                                        icon={<Sparkles className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Industry"
+                                        value={company.industry}
+                                        icon={<BarChart3 className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Location"
+                                        value={company.address}
+                                        icon={<MapPin className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Contact"
+                                        value={company.email}
+                                        icon={<FileText className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Approved"
+                                        value={formatEmployerDate(company.approved_at)}
+                                        icon={<CalendarClock className="h-3.5 w-3.5" />}
+                                    />
                                 </div>
-                                <div className="mt-8 border-t border-slate-100 pt-6 text-center">
-                                    <div className="relative inline-flex h-24 w-24 items-center justify-center rounded-full border-[6px] border-slate-900 border-r-slate-100">
-                                        <div className="text-center">
-                                            <span className="block text-xl font-bold text-slate-900">12</span>
-                                            <span className="text-[10px] font-bold uppercase text-slate-400">Days to Hire</span>
-                                        </div>
-                                    </div>
-                                    <p className="mt-4 text-[10px] font-medium text-slate-400 uppercase tracking-tight">Average across all departments</p>
-                                </div>
-                            </section>
 
-                            {/* TALENT MATCHES */}
-                            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                                <div className="flex items-center justify-between border-b border-slate-100 p-4">
-                                    <h2 className="text-sm font-bold uppercase tracking-wider text-slate-900">Talent Matches</h2>
-                                    <Info size={16} className="text-slate-400" />
-                                </div>
-                                <div className="space-y-4 p-4">
-                                    <RecommendedTalent name="Marcus Low" headline="Fullstack • 8 yrs exp" initials="ML" />
-                                    <RecommendedTalent name="Sara Jensen" headline="UI/UX • 5 yrs exp" initials="SJ" />
-                                </div>
-                            </section>
-
-                            {/* COMPANY ACCOUNT */}
-                            <section className="rounded-xl bg-slate-900 p-6 text-white shadow-lg shadow-slate-200">
-                                <div className="mb-6 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Company Account</span>
-                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase text-white">ENTERPRISE</span>
-                                </div>
-                                <div className="mb-4">
-                                    <h3 className="text-lg font-bold">{company?.company_name || 'HRX Global'}</h3>
-                                    <p className="text-xs text-slate-400 font-medium">Billing: Monthly Pro Plan</p>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-slate-800 py-4">
-                                    <div className="flex -space-x-2">
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-700"></div>
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-600"></div>
-                                        <div className="h-6 w-6 rounded-full border border-slate-900 bg-slate-500"></div>
-                                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-900 bg-slate-800 text-[8px] font-bold">+4</div>
+                                {company.description ? (
+                                    <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                                            Summary
+                                        </p>
+                                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                                            {company.description}
+                                        </p>
                                     </div>
-                                    <span className="text-xs font-medium text-slate-300">7 Active Users</span>
+                                ) : null}
+
+                                <Link href="/employer/company">
+                                    <Button variant="outline" className="w-full">
+                                        <Building2 className="mr-1.5 h-4 w-4" />
+                                        Manage Company Profile
+                                    </Button>
+                                </Link>
+                            </div>
+                        </EmployerSectionCard>
+
+                        <EmployerSectionCard
+                            title="Recommended Talent"
+                            icon={<Sparkles className="h-4 w-4" />}
+                            description="Candidates the exchange engine rates highly for your open roles."
+                        >
+                            {recommendedTalent.length > 0 ? (
+                                <div className="space-y-3">
+                                    {recommendedTalent.slice(0, 4).map((candidate) => (
+                                        <div
+                                            key={candidate.id}
+                                            className="rounded-lg border border-border/70 bg-muted/10 p-4"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-background text-[11px] font-bold text-muted-foreground ring-1 ring-border/50">
+                                                            {candidate.initials}
+                                                        </span>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-foreground">
+                                                                {candidate.name}
+                                                            </p>
+                                                            <p className="text-[11px] text-muted-foreground">
+                                                                {candidate.headline}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {candidate.location ? (
+                                                        <p className="text-[11px] text-muted-foreground">
+                                                            {candidate.location}
+                                                        </p>
+                                                    ) : null}
+                                                </div>
+                                                {candidate.match ? (
+                                                    <span className="rounded-md border border-primary/40 bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary-foreground">
+                                                        {candidate.match.score}%
+                                                    </span>
+                                                ) : null}
+                                            </div>
+
+                                            {candidate.match?.reasons?.length ? (
+                                                <ul className="mt-3 space-y-1.5">
+                                                    {candidate.match.reasons.slice(0, 2).map((reason) => (
+                                                        <li
+                                                            key={reason}
+                                                            className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground"
+                                                        >
+                                                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                                            <span>{reason}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : null}
+                                        </div>
+                                    ))}
                                 </div>
-                                <button className="mt-2 w-full rounded bg-white py-2 text-xs font-bold text-slate-900 transition-colors hover:bg-slate-100 uppercase tracking-widest">
-                                    Manage Subscriptions
-                                </button>
-                            </section>
-                        </div>
+                            ) : (
+                                <EmployerEmptyState message="Recommended talent will appear here as soon as you have active vacancies." />
+                            )}
+                        </EmployerSectionCard>
+
+                        <EmployerSectionCard
+                            title="Billing Overview"
+                            icon={<CircleDollarSign className="h-4 w-4" />}
+                            description="Active subscription status and billing profile information."
+                        >
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 gap-3">
+                                    <EmployerInfoField
+                                        label="Plan"
+                                        value={billingSummary?.subscription?.plan?.name ?? 'No active plan'}
+                                        icon={<CircleDollarSign className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Billing Email"
+                                        value={billingSummary?.profile?.billing_email || company.email}
+                                        icon={<FileText className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Seats"
+                                        value={billingSummary?.subscription?.seats ?? '—'}
+                                        icon={<Users className="h-3.5 w-3.5" />}
+                                    />
+                                    <EmployerInfoField
+                                        label="Renews"
+                                        value={formatEmployerDate(billingSummary?.subscription?.renews_at)}
+                                        icon={<CalendarClock className="h-3.5 w-3.5" />}
+                                    />
+                                </div>
+
+                                <Link href="/employer/billing">
+                                    <Button variant="outline" className="w-full">
+                                        <CircleDollarSign className="mr-1.5 h-4 w-4" />
+                                        Open Billing
+                                    </Button>
+                                </Link>
+                            </div>
+                        </EmployerSectionCard>
                     </div>
                 </div>
-            </main>
-        </div>
-    );
-}
-
-// ---------- HELPERS / SUB-COMPONENTS ----------
-
-function SidebarLink({ href, icon, label, active = false }: { href: string; icon: React.ReactNode; label: string; active?: boolean }) {
-    return (
-        <Link
-            href={href}
-            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all ${
-                active 
-                ? 'bg-slate-100 text-slate-900 border-r-2 border-slate-900 rounded-none' 
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-        >
-            <span className="mr-3">{icon}</span>
-            {label}
-        </Link>
-    );
-}
-
-function KPICard({ label, value, trend, subLabel }: { label: string; value: string | number; trend?: string; subLabel?: string }) {
-    return (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
-            <div className="flex items-end justify-between">
-                <h3 className="text-3xl font-bold text-slate-900 leading-none">{value}</h3>
-                {trend && (
-                    <span className="flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-500">
-                        <TrendingUp size={12} className="mr-1" /> {trend}
-                    </span>
-                )}
-                {subLabel && <span className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">{subLabel}</span>}
             </div>
-        </div>
+        </EmployerHubLayout>
     );
 }
 
-function RecommendedTalent({ name, headline, initials }: { name: string, headline: string, initials: string }) {
-    return (
-        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 transition-colors hover:bg-white">
-            <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                    {initials}
-                </div>
-                <div>
-                    <h5 className="text-xs font-bold text-slate-900">{name}</h5>
-                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">{headline}</p>
-                </div>
-            </div>
-            <button className="mt-3 w-full rounded border border-slate-200 py-1.5 text-[10px] font-bold uppercase transition-colors hover:bg-slate-50 tracking-widest">
-                Invite to Apply
-            </button>
-        </div>
-    );
+function countFor(map: Record<string, number>, key: string): number {
+    return Number(map[key] ?? 0);
+}
+
+function humanize(value: string | null | undefined): string {
+    if (!value) {
+        return 'N/A';
+    }
+
+    return value
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

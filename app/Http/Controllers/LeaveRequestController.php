@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\Audit\AuditContext;
 use App\Support\Audit\AuditLogger;
 use Carbon\Carbon;
@@ -17,6 +19,8 @@ use Inertia\Inertia;
 
 class LeaveRequestController extends Controller
 {
+    use ResolvesRolePageScope;
+
     private const MODULE_KEY = 'leave_requests';
 
     private const PAGE_ROOT = 'LeaveRequests';
@@ -28,6 +32,7 @@ class LeaveRequestController extends Controller
 
         $query = LeaveRequest::query()
             ->with($this->leaveRequestRelations());
+        $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_LEAVE);
 
         $searchable = Arr::get($config, 'searchable', []);
 
@@ -72,24 +77,26 @@ class LeaveRequestController extends Controller
         return Inertia::render(self::PAGE_ROOT.'/Index', [
             'module' => $this->moduleMeta(),
             'records' => $records,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
-            ],
+            ], $scope),
+            'scope' => $scope,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render(self::PAGE_ROOT.'/Create', [
             'module' => $this->moduleMeta(),
             'record' => null,
-            'employees' => $this->employeeOptions(),
+            'employees' => $this->employeeOptions($request),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate($this->validationRules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
 
         LeaveRequest::create($validated);
 
@@ -103,6 +110,7 @@ class LeaveRequestController extends Controller
         $record = $this->decorateLeaveRequest(
             $this->findOrFail($this->resolveRouteRecordId($request))
         );
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
         $leaveBalances = $this->buildLeaveBalances($record);
         $recentHistory = $this->buildRecentHistory($record);
@@ -127,6 +135,7 @@ class LeaveRequestController extends Controller
         $record = $this->decorateLeaveRequest(
             $this->findOrFail($this->resolveRouteRecordId($request))
         );
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
         $approvalData = $this->buildApprovalData($record);
         $teamCoverage = $this->buildApprovalTeamCoverage($record);
@@ -147,19 +156,22 @@ class LeaveRequestController extends Controller
         $record = $this->decorateLeaveRequest(
             $this->findOrFail($this->resolveRouteRecordId($request))
         );
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
         return Inertia::render(self::PAGE_ROOT.'/Edit', [
             'module' => $this->moduleMeta(),
             'record' => $record,
-            'employees' => $this->employeeOptions(),
+            'employees' => $this->employeeOptions($request),
         ]);
     }
 
     public function update(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
         $validated = $request->validate($this->validationRules($record));
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
         $record->update($validated);
 
         $slug = Arr::get($this->moduleConfig(), 'slug');
@@ -172,6 +184,7 @@ class LeaveRequestController extends Controller
     public function destroy(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
         $record->delete();
 
         return redirect()
@@ -182,6 +195,7 @@ class LeaveRequestController extends Controller
     public function approve(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
         $before = [
             'status' => $record->status,
             'approver_name' => $record->approver_name,
@@ -213,6 +227,7 @@ class LeaveRequestController extends Controller
     public function deny(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
         $before = [
             'status' => $record->status,
             'approver_name' => $record->approver_name,
@@ -248,6 +263,7 @@ class LeaveRequestController extends Controller
         ]);
 
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
         $before = [
             'status' => $record->status,
             'approver_name' => $record->approver_name,
@@ -288,6 +304,7 @@ class LeaveRequestController extends Controller
         ]);
 
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
         app(AuditLogger::class)->logCustom('add_note', $record, [
             'module' => 'leave',
@@ -418,18 +435,9 @@ class LeaveRequestController extends Controller
         return $leaveRequest;
     }
 
-    private function employeeOptions()
+    private function employeeOptions(Request $request)
     {
-        return Employee::query()
-            ->orderBy('first_name')
-            ->orderBy('surname')
-            ->get([
-                'id',
-                'staff_number',
-                'first_name',
-                'middle_name',
-                'surname',
-            ])
+        return $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_LEAVE)
             ->map(function (Employee $employee) {
                 return [
                     'id' => $employee->id,

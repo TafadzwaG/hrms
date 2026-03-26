@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +16,8 @@ use Inertia\Inertia;
 
 class AttendanceRecordController extends Controller
 {
+    use ResolvesRolePageScope;
+
     private const MODULE_KEY = 'attendance_records';
 
     private const PAGE_ROOT = 'AttendanceRecords';
@@ -47,6 +51,7 @@ class AttendanceRecordController extends Controller
 
         $query = AttendanceRecord::query()
             ->with(['employee']);
+        $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_ATTENDANCE);
 
         if ($search !== '') {
             $query->where(function (Builder $builder) use ($search) {
@@ -84,11 +89,12 @@ class AttendanceRecordController extends Controller
         return Inertia::render(self::PAGE_ROOT.'/Index', [
             'module' => $this->moduleMeta(),
             'records' => $records,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'sort' => $sorting['sort'],
                 'direction' => $sorting['direction'],
-            ],
+            ], $scope),
+            'scope' => $scope,
         ]);
     }
 
@@ -103,6 +109,7 @@ class AttendanceRecordController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate($this->validationRules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_ATTENDANCE, $validated['employee_id'] ?? null);
 
         AttendanceRecord::create($validated);
 
@@ -114,6 +121,7 @@ class AttendanceRecordController extends Controller
     public function show(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ATTENDANCE, $record);
 
         if ($record->relationLoaded('employee') && $record->employee) {
             $record->employee->append('full_name');
@@ -128,6 +136,7 @@ class AttendanceRecordController extends Controller
     public function edit(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ATTENDANCE, $record);
 
         if ($record->relationLoaded('employee') && $record->employee) {
             $record->employee->append('full_name');
@@ -142,8 +151,10 @@ class AttendanceRecordController extends Controller
     public function update(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ATTENDANCE, $record);
 
         $validated = $request->validate($this->validationRules($record));
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_ATTENDANCE, $validated['employee_id'] ?? null);
         $record->update($validated);
 
         $slug = Arr::get($this->moduleConfig(), 'slug');
@@ -156,6 +167,7 @@ class AttendanceRecordController extends Controller
     public function destroy(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ATTENDANCE, $record);
         $record->delete();
 
         return redirect()

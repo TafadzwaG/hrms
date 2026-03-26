@@ -18,6 +18,7 @@ import {
     IndexTablePagination,
     SortableTableHead,
 } from '@/components/index-table';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -36,6 +37,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Eye,
@@ -114,11 +116,13 @@ type AssetsPageProps = {
         location_id?: number | string | null;
         sort?: string | null;
         direction?: 'asc' | 'desc' | null;
+        scope_view?: string | null;
     };
     statuses: string[];
     categories: AssetCategoryOption[];
     locations: AssetLocationOption[];
     stats?: AssetStats;
+    scope?: PageRoleScope;
 };
 
 const statusStyles: Record<string, string> = {
@@ -167,6 +171,7 @@ export default function AssetIndex() {
         statuses = [],
         categories = [],
         locations = [],
+        scope,
     } = usePage<AssetsPageProps>().props;
 
     const [view, setView] = useState<'grid' | 'table'>('table');
@@ -325,6 +330,12 @@ export default function AssetIndex() {
                         </Button>
                     </Link>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/assets"
+                    filters={filters}
+                />
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {[

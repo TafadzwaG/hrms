@@ -22,6 +22,7 @@ import {
     IndexTablePagination,
     SortableTableHead,
 } from '@/components/index-table';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -33,6 +34,7 @@ import {
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import {
     CheckCircle2,
     Eye,
@@ -88,10 +90,12 @@ type BenefitsPageProps = {
         active?: string | null;
         sort?: string | null;
         direction?: 'asc' | 'desc' | null;
+        scope_view?: string | null;
     };
     categories: string[];
     benefit_types: string[];
     stats?: BenefitStats;
+    scope?: PageRoleScope;
 };
 
 type BadgeVariant = NonNullable<ComponentProps<typeof Badge>['variant']>;
@@ -123,6 +127,7 @@ export default function BenefitIndex() {
         stats,
         categories = [],
         benefit_types = [],
+        scope,
     } = usePage<BenefitsPageProps>().props;
 
     const [view, setView] = useState<'grid' | 'table'>('table');
@@ -206,6 +211,12 @@ export default function BenefitIndex() {
                         </Button>
                     </Link>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/benefits"
+                    filters={filters}
+                />
 
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                     <StatCard icon={Shield} label="Total Benefits" value={computedStats.total} />

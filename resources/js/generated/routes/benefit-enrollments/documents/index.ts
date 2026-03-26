@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::store
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 export const store = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::store
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 store.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { enrollment: number | { id: number } } | [enrollment: number
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::store
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 store.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.post = (args: { enrollment: number | { id: number } } | [enrollment: numbe
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::store
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
     const storeForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -69,7 +69,7 @@ store.post = (args: { enrollment: number | { id: number } } | [enrollment: numbe
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::store
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:261
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
         storeForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -80,7 +80,7 @@ store.post = (args: { enrollment: number | { id: number } } | [enrollment: numbe
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 export const download = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -95,7 +95,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 download.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ download.url = (args: { enrollment: number | { id: number }, document: number | 
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 download.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ download.get = (args: { enrollment: number | { id: number }, document: number | 
 })
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 download.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -144,7 +144,7 @@ download.head = (args: { enrollment: number | { id: number }, document: number |
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
     const downloadForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ download.head = (args: { enrollment: number | { id: number }, document: number |
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
         downloadForm.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ download.head = (args: { enrollment: number | { id: number }, document: number |
         })
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::download
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:284
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
         downloadForm.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -179,7 +179,7 @@ download.head = (args: { enrollment: number | { id: number }, document: number |
     download.form = downloadForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroy
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 export const destroy = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -194,7 +194,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroy
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 destroy.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ destroy.url = (args: { enrollment: number | { id: number }, document: number | {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroy
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 destroy.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -234,7 +234,7 @@ destroy.delete = (args: { enrollment: number | { id: number }, document: number 
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroy
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
     const destroyForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -249,7 +249,7 @@ destroy.delete = (args: { enrollment: number | { id: number }, document: number 
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroy
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:296
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
         destroyForm.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

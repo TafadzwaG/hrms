@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 const BenefitsDashboardController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ BenefitsDashboardController.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 BenefitsDashboardController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ BenefitsDashboardController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 BenefitsDashboardController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ BenefitsDashboardController.get = (options?: RouteQueryOptions): RouteDefinition
 })
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 BenefitsDashboardController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ BenefitsDashboardController.head = (options?: RouteQueryOptions): RouteDefinitio
 
     /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
     const BenefitsDashboardControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ BenefitsDashboardController.head = (options?: RouteQueryOptions): RouteDefinitio
 
             /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
         BenefitsDashboardControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ BenefitsDashboardController.head = (options?: RouteQueryOptions): RouteDefinitio
         })
             /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
         BenefitsDashboardControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

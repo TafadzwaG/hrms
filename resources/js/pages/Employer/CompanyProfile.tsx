@@ -152,7 +152,7 @@ export default function EmployerCompanyProfilePage() {
                             <div className="pt-3">
                                 <Button 
                                     className="w-full sm:w-auto bg-black text-white px-8 py-5 h-auto rounded-sm font-bold text-[10px] uppercase tracking-widest active:scale-[0.98] transition-all hover:bg-zinc-800 flex items-center justify-center gap-2"
-                                    onClick={() => form.put('/employer/company-profile')}
+                                    onClick={() => form.put('/employer/company')}
                                     disabled={form.processing}
                                 >
                                     <Save className="h-3.5 w-3.5" /> Update Profile

@@ -82,7 +82,7 @@ export default function EmployerCandidateProfilePage() {
 
     const submitInterview = (e: React.FormEvent) => {
         e.preventDefault();
-        scheduleForm.post(`/employer/applications/${application.id}/interviews`, {
+        scheduleForm.post(`/employer/interviews/${application.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 scheduleForm.reset('scheduled_at', 'ends_at', 'location', 'instructions');
@@ -93,7 +93,7 @@ export default function EmployerCandidateProfilePage() {
     };
 
     const updateStatus = (applicationId: number, status: string) => {
-        router.patch(`/employer/applications/${applicationId}/status`, { status }, { preserveScroll: true });
+        router.patch(`/employer/candidates/${applicationId}/status`, { status }, { preserveScroll: true });
     };
 
     const activeDocument = useMemo(

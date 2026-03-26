@@ -1,8 +1,14 @@
-﻿import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Briefcase, Building, Building2, FileText, Folder, Heart, History, LayoutGrid, Package, Proportions, Settings, ShieldCheck, Target, User, UserRoundCheckIcon, Users } from 'lucide-react';
+
+import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { useAuthorization } from '@/lib/authorization';
+import { iconFor } from '@/lib/lucide-icons';
+import type { Auth } from '@/types/auth';
+import type { NavItem } from '@/types';
 import {
     Sidebar,
     SidebarContent,
@@ -12,9 +18,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
-import AppLogo from '@/components/app-logo';
-import { useAuthorization } from '@/lib/authorization';
 
 type SidebarNavItem = NavItem & {
     permissionsAny?: string[];
@@ -127,6 +130,17 @@ const footerNavGroups: SidebarNavGroup[] = [
 
 export function RbacSidebar() {
     const { canAny } = useAuthorization();
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const pinnedItems: NavItem[] = (auth.user?.pinned_shortcuts ?? [])
+        .filter((item) => item.href)
+        .map((item) => ({
+            title: item.title,
+            href: item.href,
+            icon: iconFor(item.icon),
+            badge: item.badge ?? null,
+        }));
+
     const visibleMain = mainNavItems.filter((item) => !item.permissionsAny || canAny(item.permissionsAny));
     const visibleFooterGroups = footerNavGroups
         .map((group) => ({
@@ -150,6 +164,7 @@ export function RbacSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
+                {pinnedItems.length > 0 ? <NavMain items={pinnedItems} label="Pinned" /> : null}
                 <NavMain items={visibleMain} />
             </SidebarContent>
 

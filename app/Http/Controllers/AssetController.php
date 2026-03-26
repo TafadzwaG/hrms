@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Asset;
 use App\Models\AssetAssignment;
 use App\Models\AssetCategory;
@@ -11,6 +12,7 @@ use App\Models\AssetMaintenanceRecord;
 use App\Models\AssetStatusHistory;
 use App\Models\AssetVendor;
 use App\Models\Employee;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\IndexTables\IndexTableSorter;
 use App\Support\Audit\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +24,8 @@ use Inertia\Inertia;
 
 class AssetController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -85,6 +89,7 @@ class AssetController extends Controller
             ->when($status, fn ($q) => $q->where('status', $status))
             ->when($categoryId, fn ($q) => $q->where('asset_category_id', $categoryId))
             ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId));
+        $scope = $this->applyRolePageScope($baseQuery, $request, RolePageScopeResolver::MODULE_ASSETS);
 
         $assets = (clone $baseQuery)
             ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
@@ -100,6 +105,7 @@ class AssetController extends Controller
             }))
             ->when($categoryId, fn ($q) => $q->where('asset_category_id', $categoryId))
             ->when($locationId, fn ($q) => $q->where('asset_location_id', $locationId));
+        $this->applyRolePageScope($statsBaseQuery, $request, RolePageScopeResolver::MODULE_ASSETS);
 
         $categories = AssetCategory::query()
             ->select(['id', 'name'])
@@ -114,14 +120,14 @@ class AssetController extends Controller
 
         return Inertia::render('Assets/Index', [
             'assets' => $assets,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'status' => $status,
                 'category_id' => $categoryId,
                 'location_id' => $locationId,
                 'sort' => $sorting['sort'],
                 'direction' => $sorting['direction'],
-            ],
+            ], $scope),
             'statuses' => Asset::STATUSES,
             'categories' => $categories,
             'locations' => $locations,
@@ -133,6 +139,7 @@ class AssetController extends Controller
                     ->whereIn('status', ['maintenance', 'in_maintenance'])
                     ->count(),
             ],
+            'scope' => $scope,
         ]);
     }
 
@@ -178,8 +185,9 @@ class AssetController extends Controller
             ->with('success', 'Asset created successfully.');
     }
 
-    public function show(Asset $asset)
+    public function show(Request $request, Asset $asset)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $asset->load([
             'category:id,name',
             'vendor:id,name',
@@ -197,11 +205,7 @@ class AssetController extends Controller
 
         return Inertia::render('Assets/Show', [
             'asset' => $this->mapAssetDetail($asset),
-            'employees' => Employee::withoutGlobalScopes()
-                ->where('organization_id', $asset->organization_id)
-                ->select(['id', 'first_name', 'surname', 'staff_number'])
-                ->orderBy('first_name')
-                ->get()
+            'employees' => $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_ASSETS)
                 ->map(fn (Employee $e) => [
                     'id' => $e->id,
                     'full_name' => $e->full_name,
@@ -211,8 +215,9 @@ class AssetController extends Controller
         ]);
     }
 
-    public function edit(Asset $asset)
+    public function edit(Request $request, Asset $asset)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $asset->load(['category:id,name', 'vendor:id,name', 'location:id,name']);
 
         return Inertia::render('Assets/Edit', [
@@ -223,6 +228,7 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $data = $this->validateAsset($request, $asset);
         $request->validate(['image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120']]);
         $oldStatus = $asset->status;
@@ -258,8 +264,9 @@ class AssetController extends Controller
             ->with('success', 'Asset updated successfully.');
     }
 
-    public function destroy(Asset $asset): RedirectResponse
+    public function destroy(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $asset->delete();
 
         return redirect('/assets')
@@ -270,12 +277,15 @@ class AssetController extends Controller
 
     public function assign(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $request->validate([
             'employee_id' => ['required', 'integer', 'exists:employees,id'],
             'condition_on_assignment' => ['nullable', 'string', Rule::in(Asset::CONDITIONS)],
             'expected_return_date' => ['nullable', 'date', 'after:today'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_ASSETS, $request->integer('employee_id'));
 
         if ($asset->status !== 'available') {
             return back()->with('error', 'Only available assets can be assigned.');
@@ -317,6 +327,7 @@ class AssetController extends Controller
 
     public function returnAsset(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $request->validate([
             'condition_on_return' => ['nullable', 'string', Rule::in(Asset::CONDITIONS)],
             'return_notes' => ['nullable', 'string', 'max:2000'],
@@ -363,6 +374,7 @@ class AssetController extends Controller
 
     public function dispose(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -400,6 +412,7 @@ class AssetController extends Controller
 
     public function storeDocument(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         $request->validate([
             'file' => ['required', 'file', 'max:20480'],
             'document_type' => ['nullable', 'string', Rule::in(AssetDocument::DOCUMENT_TYPES)],
@@ -420,8 +433,9 @@ class AssetController extends Controller
         return back()->with('success', 'Document uploaded successfully.');
     }
 
-    public function downloadDocument(Asset $asset, AssetDocument $document)
+    public function downloadDocument(Request $request, Asset $asset, AssetDocument $document)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         abort_unless((int) $document->asset_id === (int) $asset->id, 404);
 
         app(AuditLogger::class)->logCustom('export', $document, [
@@ -438,8 +452,9 @@ class AssetController extends Controller
         return back()->with('error', 'The requested document file could not be located.');
     }
 
-    public function destroyDocument(Asset $asset, AssetDocument $document): RedirectResponse
+    public function destroyDocument(Request $request, Asset $asset, AssetDocument $document): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_ASSETS, $asset);
         abort_unless((int) $document->asset_id === (int) $asset->id, 404);
 
         Storage::disk('public')->delete($document->file_path);

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Employee;
 use App\Models\Timesheet;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\Audit\AuditContext;
 use App\Support\Audit\AuditLogger;
 use Carbon\Carbon;
@@ -17,6 +19,8 @@ use Inertia\Inertia;
 
 class TimesheetController extends Controller
 {
+    use ResolvesRolePageScope;
+
     private const PAGE_ROOT = 'Timesheets';
 
     public function index(Request $request)
@@ -26,6 +30,7 @@ class TimesheetController extends Controller
 
         $query = Timesheet::query()
             ->with($this->timesheetRelations());
+        $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_TIMESHEETS);
 
         if ($search !== '') {
             $query->where(function (Builder $builder) use ($search) {
@@ -58,19 +63,20 @@ class TimesheetController extends Controller
 
         return Inertia::render(self::PAGE_ROOT.'/Index', [
             'records' => $records,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'status' => $status,
-            ],
+            ], $scope),
             'stats' => $this->buildIndexStats(),
             'statusOptions' => $this->statusOptions(),
+            'scope' => $scope,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render(self::PAGE_ROOT.'/Create', [
-            'employees' => $this->employeeOptions(),
+            'employees' => $this->employeeOptions($request),
             'statusOptions' => $this->statusOptions(),
             'defaults' => [
                 'employee_id' => '',
@@ -87,6 +93,7 @@ class TimesheetController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate($this->validationRules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_TIMESHEETS, $validated['employee_id'] ?? null);
 
         Timesheet::create($validated);
 
@@ -100,6 +107,7 @@ class TimesheetController extends Controller
         $record = $this->decorateTimesheet(
             $this->findOrFail($this->resolveRouteRecordId($request))
         );
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
 
         return Inertia::render(self::PAGE_ROOT.'/Show', [
             'record' => $record,
@@ -113,10 +121,11 @@ class TimesheetController extends Controller
         $record = $this->decorateTimesheet(
             $this->findOrFail($this->resolveRouteRecordId($request))
         );
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
 
         return Inertia::render(self::PAGE_ROOT.'/Edit', [
             'record' => $record,
-            'employees' => $this->employeeOptions(),
+            'employees' => $this->employeeOptions($request),
             'statusOptions' => $this->statusOptions(),
         ]);
     }
@@ -124,8 +133,10 @@ class TimesheetController extends Controller
     public function update(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
 
         $validated = $request->validate($this->validationRules($record));
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_TIMESHEETS, $validated['employee_id'] ?? null);
         $record->update($validated);
 
         return redirect()
@@ -136,6 +147,7 @@ class TimesheetController extends Controller
     public function destroy(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
         $record->delete();
 
         return redirect()
@@ -146,6 +158,7 @@ class TimesheetController extends Controller
     public function approve(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
         $before = [
             'status' => $record->status,
             'approved_by' => $record->approved_by,
@@ -177,6 +190,7 @@ class TimesheetController extends Controller
     public function reject(Request $request)
     {
         $record = $this->findOrFail($this->resolveRouteRecordId($request));
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_TIMESHEETS, $record);
         $before = [
             'status' => $record->status,
             'approved_by' => $record->approved_by,
@@ -250,21 +264,9 @@ class TimesheetController extends Controller
         return $timesheet;
     }
 
-    private function employeeOptions()
+    private function employeeOptions(Request $request)
     {
-        return Employee::query()
-            ->with(['position', 'orgUnit'])
-            ->orderBy('first_name')
-            ->orderBy('surname')
-            ->get([
-                'id',
-                'staff_number',
-                'first_name',
-                'middle_name',
-                'surname',
-                'position_id',
-                'org_unit_id',
-            ])
+        return $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_TIMESHEETS)
             ->map(function (Employee $employee) {
                 $employee->append('full_name');
 

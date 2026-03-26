@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AssetController::store
- * @see app/Http/Controllers/AssetController.php:401
+ * @see app/Http/Controllers/AssetController.php:413
  * @route '/assets/{asset}/documents'
  */
 export const store = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\AssetController::store
- * @see app/Http/Controllers/AssetController.php:401
+ * @see app/Http/Controllers/AssetController.php:413
  * @route '/assets/{asset}/documents'
  */
 store.url = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { asset: number | { id: number } } | [asset: number | { id: n
 
 /**
 * @see \App\Http\Controllers\AssetController::store
- * @see app/Http/Controllers/AssetController.php:401
+ * @see app/Http/Controllers/AssetController.php:413
  * @route '/assets/{asset}/documents'
  */
 store.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.post = (args: { asset: number | { id: number } } | [asset: number | { id: 
 
     /**
 * @see \App\Http\Controllers\AssetController::store
- * @see app/Http/Controllers/AssetController.php:401
+ * @see app/Http/Controllers/AssetController.php:413
  * @route '/assets/{asset}/documents'
  */
     const storeForm = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -69,7 +69,7 @@ store.post = (args: { asset: number | { id: number } } | [asset: number | { id: 
 
             /**
 * @see \App\Http\Controllers\AssetController::store
- * @see app/Http/Controllers/AssetController.php:401
+ * @see app/Http/Controllers/AssetController.php:413
  * @route '/assets/{asset}/documents'
  */
         storeForm.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -80,7 +80,7 @@ store.post = (args: { asset: number | { id: number } } | [asset: number | { id: 
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
 export const download = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -95,7 +95,7 @@ download.definition = {
 
 /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
 download.url = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ download.url = (args: { asset: number | { id: number }, document: number | { id:
 
 /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
 download.get = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ download.get = (args: { asset: number | { id: number }, document: number | { id:
 })
 /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
 download.head = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -144,7 +144,7 @@ download.head = (args: { asset: number | { id: number }, document: number | { id
 
     /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
     const downloadForm = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ download.head = (args: { asset: number | { id: number }, document: number | { id
 
             /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
         downloadForm.get = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ download.head = (args: { asset: number | { id: number }, document: number | { id
         })
             /**
 * @see \App\Http\Controllers\AssetController::download
- * @see app/Http/Controllers/AssetController.php:423
+ * @see app/Http/Controllers/AssetController.php:436
  * @route '/assets/{asset}/documents/{document}/download'
  */
         downloadForm.head = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -179,7 +179,7 @@ download.head = (args: { asset: number | { id: number }, document: number | { id
     download.form = downloadForm
 /**
 * @see \App\Http\Controllers\AssetController::destroy
- * @see app/Http/Controllers/AssetController.php:441
+ * @see app/Http/Controllers/AssetController.php:455
  * @route '/assets/{asset}/documents/{document}'
  */
 export const destroy = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -194,7 +194,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\AssetController::destroy
- * @see app/Http/Controllers/AssetController.php:441
+ * @see app/Http/Controllers/AssetController.php:455
  * @route '/assets/{asset}/documents/{document}'
  */
 destroy.url = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -224,7 +224,7 @@ destroy.url = (args: { asset: number | { id: number }, document: number | { id: 
 
 /**
 * @see \App\Http\Controllers\AssetController::destroy
- * @see app/Http/Controllers/AssetController.php:441
+ * @see app/Http/Controllers/AssetController.php:455
  * @route '/assets/{asset}/documents/{document}'
  */
 destroy.delete = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -234,7 +234,7 @@ destroy.delete = (args: { asset: number | { id: number }, document: number | { i
 
     /**
 * @see \App\Http\Controllers\AssetController::destroy
- * @see app/Http/Controllers/AssetController.php:441
+ * @see app/Http/Controllers/AssetController.php:455
  * @route '/assets/{asset}/documents/{document}'
  */
     const destroyForm = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -249,7 +249,7 @@ destroy.delete = (args: { asset: number | { id: number }, document: number | { i
 
             /**
 * @see \App\Http\Controllers\AssetController::destroy
- * @see app/Http/Controllers/AssetController.php:441
+ * @see app/Http/Controllers/AssetController.php:455
  * @route '/assets/{asset}/documents/{document}'
  */
         destroyForm.delete = (args: { asset: number | { id: number }, document: number | { id: number } } | [asset: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

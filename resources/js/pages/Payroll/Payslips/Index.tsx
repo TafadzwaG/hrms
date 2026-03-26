@@ -11,6 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Select,
     SelectContent,
@@ -28,6 +29,8 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Download,
@@ -92,10 +95,11 @@ type FilterState = {
     pay_point?: string;
     email_status?: string;
     sms_status?: string;
+    scope_view?: string;
 };
 
 export default function PayslipIndex() {
-    const { payslips, filters, periods, departments, payPoints, deliveryStatuses } =
+    const { payslips, filters, periods, departments, payPoints, deliveryStatuses, scope } =
         usePage<{
             payslips: PaginatedPayslips;
             filters: FilterState;
@@ -103,6 +107,7 @@ export default function PayslipIndex() {
             departments: string[];
             payPoints: string[];
             deliveryStatuses: string[];
+            scope?: PageRoleScope;
         }>().props;
 
     const { canAny } = useAuthorization();
@@ -133,14 +138,14 @@ export default function PayslipIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/payroll/payslips',
-                {
+                buildIndexParams(filters, {
                     search,
                     payroll_period_id: payrollPeriodId === 'all' ? '' : payrollPeriodId,
                     department: department === 'all' ? '' : department,
                     pay_point: payPoint === 'all' ? '' : payPoint,
                     email_status: emailStatus === 'all' ? '' : emailStatus,
                     sms_status: smsStatus === 'all' ? '' : smsStatus,
-                },
+                }),
                 { preserveState: true, preserveScroll: true, replace: true },
             );
         }, 300);
@@ -175,15 +180,19 @@ export default function PayslipIndex() {
     const handlePageChange = (selectedItem: { selected: number }) => {
         router.get(
             '/payroll/payslips',
-            {
-                page: selectedItem.selected + 1,
-                search,
-                payroll_period_id: payrollPeriodId === 'all' ? '' : payrollPeriodId,
-                department: department === 'all' ? '' : department,
-                pay_point: payPoint === 'all' ? '' : payPoint,
-                email_status: emailStatus === 'all' ? '' : emailStatus,
-                sms_status: smsStatus === 'all' ? '' : smsStatus,
-            },
+            buildIndexParams(
+                filters,
+                {
+                    page: selectedItem.selected + 1,
+                    search,
+                    payroll_period_id: payrollPeriodId === 'all' ? '' : payrollPeriodId,
+                    department: department === 'all' ? '' : department,
+                    pay_point: payPoint === 'all' ? '' : payPoint,
+                    email_status: emailStatus === 'all' ? '' : emailStatus,
+                    sms_status: smsStatus === 'all' ? '' : smsStatus,
+                },
+                { resetPage: false },
+            ),
             { preserveScroll: true, preserveState: true },
         );
     };
@@ -277,6 +286,12 @@ export default function PayslipIndex() {
                         )}
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/payroll/payslips"
+                    filters={filters}
+                />
 
                 <Card className="flex h-[calc(100vh-220px)] flex-col overflow-hidden border-border bg-background shadow-sm">
                     <div className="flex shrink-0 flex-col gap-4 border-b border-border/50 p-4 md:p-6">

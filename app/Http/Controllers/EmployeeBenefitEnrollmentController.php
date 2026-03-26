@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Benefit;
 use App\Models\BenefitChangeLog;
 use App\Models\BenefitDocument;
 use App\Models\BenefitPlan;
 use App\Models\Employee;
 use App\Models\EmployeeBenefitEnrollment;
+use App\Support\Access\RolePageScopeResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,8 @@ use Inertia\Inertia;
 
 class EmployeeBenefitEnrollmentController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -27,7 +31,7 @@ class EmployeeBenefitEnrollmentController extends Controller
             ->with([
                 'employee:id,first_name,surname,staff_number',
                 'benefit:id,name,code,category',
-                'plan:id,name,code',
+                'benefitPlan:id,name,code',
             ])
             ->when($search, fn ($q) => $q->whereHas('employee', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -36,6 +40,7 @@ class EmployeeBenefitEnrollmentController extends Controller
             }))
             ->when($benefitId, fn ($q) => $q->where('benefit_id', $benefitId))
             ->when($status, fn ($q) => $q->where('status', $status));
+        $scope = $this->applyRolePageScope($baseQuery, $request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS);
 
         $enrollments = (clone $baseQuery)
             ->orderByDesc('updated_at')
@@ -50,6 +55,7 @@ class EmployeeBenefitEnrollmentController extends Controller
                     ->orWhere('staff_number', 'like', "%{$search}%");
             }))
             ->when($benefitId, fn ($q) => $q->where('benefit_id', $benefitId));
+        $this->applyRolePageScope($statsBaseQuery, $request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS);
 
         $benefits = Benefit::query()
             ->select(['id', 'name', 'code'])
@@ -59,11 +65,11 @@ class EmployeeBenefitEnrollmentController extends Controller
 
         return Inertia::render('Benefits/Enrollments/Index', [
             'enrollments' => $enrollments,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'benefit_id' => $benefitId,
                 'status' => $status,
-            ],
+            ], $scope),
             'benefits' => $benefits,
             'statuses' => EmployeeBenefitEnrollment::STATUSES,
             'stats' => [
@@ -72,19 +78,21 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'total_employee_contribution' => (clone $statsBaseQuery)->where('status', 'active')->sum('employee_contribution'),
                 'pending' => (clone $statsBaseQuery)->where('status', 'pending')->count(),
             ],
+            'scope' => $scope,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('Benefits/Enrollments/Create', [
-            'options' => $this->enrollmentFormOptions(),
+            'options' => $this->enrollmentFormOptions($request),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validateEnrollment($request);
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $data['employee_id'] ?? null);
 
         $enrollment = DB::transaction(function () use ($data, $request) {
             $enrollment = EmployeeBenefitEnrollment::create([
@@ -106,21 +114,23 @@ class EmployeeBenefitEnrollmentController extends Controller
             return $enrollment;
         });
 
-        return redirect("/benefits/enrollments/{$enrollment->id}")
+        return redirect("/benefit-enrollments/{$enrollment->id}")
             ->with('success', 'Enrollment created successfully.');
     }
 
-    public function show(EmployeeBenefitEnrollment $enrollment)
+    public function show(Request $request, EmployeeBenefitEnrollment $benefit_enrollment)
     {
+        $enrollment = $benefit_enrollment;
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $enrollment->load([
             'employee:id,first_name,surname,staff_number',
             'benefit:id,name,code,category,benefit_type',
-            'plan:id,name,code',
+            'benefitPlan:id,name,code',
             'dependants',
             'documents',
             'changeLogs.changer:id,name',
-            'createdBy:id,name',
-            'updatedBy:id,name',
+            'creator:id,name',
+            'updater:id,name',
         ]);
 
         return Inertia::render('Benefits/Enrollments/Show', [
@@ -128,23 +138,28 @@ class EmployeeBenefitEnrollmentController extends Controller
         ]);
     }
 
-    public function edit(EmployeeBenefitEnrollment $enrollment)
+    public function edit(Request $request, EmployeeBenefitEnrollment $benefit_enrollment)
     {
+        $enrollment = $benefit_enrollment;
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $enrollment->load([
             'employee:id,first_name,surname,staff_number',
             'benefit:id,name,code',
-            'plan:id,name,code',
+            'benefitPlan:id,name,code',
         ]);
 
         return Inertia::render('Benefits/Enrollments/Edit', [
             'enrollment' => $this->mapEnrollmentDetail($enrollment),
-            'options' => $this->enrollmentFormOptions(),
+            'options' => $this->enrollmentFormOptions($request),
         ]);
     }
 
-    public function update(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
+    public function update(Request $request, EmployeeBenefitEnrollment $benefit_enrollment): RedirectResponse
     {
+        $enrollment = $benefit_enrollment;
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $data = $this->validateEnrollment($request, $enrollment);
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $data['employee_id'] ?? null);
         $oldStatus = $enrollment->status;
 
         DB::transaction(function () use ($enrollment, $data, $request, $oldStatus) {
@@ -166,12 +181,13 @@ class EmployeeBenefitEnrollmentController extends Controller
             }
         });
 
-        return redirect("/benefits/enrollments/{$enrollment->id}")
+        return redirect("/benefit-enrollments/{$enrollment->id}")
             ->with('success', 'Enrollment updated successfully.');
     }
 
     public function suspend(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -200,6 +216,7 @@ class EmployeeBenefitEnrollmentController extends Controller
 
     public function terminate(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -229,6 +246,7 @@ class EmployeeBenefitEnrollmentController extends Controller
 
     public function reinstate(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -260,6 +278,7 @@ class EmployeeBenefitEnrollmentController extends Controller
 
     public function storeDocument(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $request->validate([
             'file' => ['required', 'file', 'max:20480'],
             'document_type' => ['nullable', 'string', 'max:50'],
@@ -281,8 +300,9 @@ class EmployeeBenefitEnrollmentController extends Controller
         return back()->with('success', 'Document uploaded successfully.');
     }
 
-    public function downloadDocument(EmployeeBenefitEnrollment $enrollment, BenefitDocument $document)
+    public function downloadDocument(Request $request, EmployeeBenefitEnrollment $enrollment, BenefitDocument $document)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         abort_unless((int) $document->employee_benefit_enrollment_id === (int) $enrollment->id, 404);
 
         $disk = Storage::disk('public');
@@ -293,8 +313,9 @@ class EmployeeBenefitEnrollmentController extends Controller
         return back()->with('error', 'The requested document file could not be located.');
     }
 
-    public function destroyDocument(EmployeeBenefitEnrollment $enrollment, BenefitDocument $document): RedirectResponse
+    public function destroyDocument(Request $request, EmployeeBenefitEnrollment $enrollment, BenefitDocument $document): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         abort_unless((int) $document->employee_benefit_enrollment_id === (int) $enrollment->id, 404);
 
         Storage::disk('public')->delete($document->file_path);
@@ -337,10 +358,10 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'code' => $enrollment->benefit->code,
                 'category' => $enrollment->benefit->category,
             ] : null,
-            'plan' => $enrollment->plan ? [
-                'id' => $enrollment->plan->id,
-                'name' => $enrollment->plan->name,
-                'code' => $enrollment->plan->code,
+            'plan' => $enrollment->benefitPlan ? [
+                'id' => $enrollment->benefitPlan->id,
+                'name' => $enrollment->benefitPlan->name,
+                'code' => $enrollment->benefitPlan->code,
             ] : null,
             'status' => $enrollment->status,
             'effective_date' => optional($enrollment->effective_date)->toDateString(),
@@ -349,8 +370,8 @@ class EmployeeBenefitEnrollmentController extends Controller
             'employer_contribution' => $enrollment->employer_contribution,
             'updated_at' => optional($enrollment->updated_at)->toDateTimeString(),
             'links' => [
-                'show' => "/benefits/enrollments/{$enrollment->id}",
-                'edit' => "/benefits/enrollments/{$enrollment->id}/edit",
+                'show' => "/benefit-enrollments/{$enrollment->id}",
+                'edit' => "/benefit-enrollments/{$enrollment->id}/edit",
             ],
         ];
     }
@@ -363,8 +384,8 @@ class EmployeeBenefitEnrollmentController extends Controller
             'enrollment_reference' => $enrollment->enrollment_reference,
             'notes' => $enrollment->notes,
             'metadata' => $enrollment->metadata,
-            'created_by' => $enrollment->createdBy ? ['id' => $enrollment->createdBy->id, 'name' => $enrollment->createdBy->name] : null,
-            'updated_by' => $enrollment->updatedBy ? ['id' => $enrollment->updatedBy->id, 'name' => $enrollment->updatedBy->name] : null,
+            'created_by' => $enrollment->creator ? ['id' => $enrollment->creator->id, 'name' => $enrollment->creator->name] : null,
+            'updated_by' => $enrollment->updater ? ['id' => $enrollment->updater->id, 'name' => $enrollment->updater->name] : null,
             'created_at' => optional($enrollment->created_at)->toDateTimeString(),
             'dependants' => $enrollment->relationLoaded('dependants') ? $enrollment->dependants->map(fn ($dep) => [
                 'id' => $dep->id,
@@ -385,8 +406,8 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'size' => $doc->size,
                 'document_type' => $doc->document_type,
                 'created_at' => optional($doc->created_at)->toDateTimeString(),
-                'download_url' => "/benefits/enrollments/{$enrollment->id}/documents/{$doc->id}/download",
-                'delete_url' => "/benefits/enrollments/{$enrollment->id}/documents/{$doc->id}",
+                'download_url' => "/benefit-enrollments/{$enrollment->id}/documents/{$doc->id}/download",
+                'delete_url' => "/benefit-enrollments/{$enrollment->id}/documents/{$doc->id}",
             ])->values()->all() : [],
             'change_logs' => $enrollment->relationLoaded('changeLogs') ? $enrollment->changeLogs->map(fn (BenefitChangeLog $log) => [
                 'id' => $log->id,
@@ -398,22 +419,19 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'created_at' => optional($log->created_at)->toDateTimeString(),
             ])->values()->all() : [],
             'links' => [
-                'show' => "/benefits/enrollments/{$enrollment->id}",
-                'edit' => "/benefits/enrollments/{$enrollment->id}/edit",
-                'suspend' => "/benefits/enrollments/{$enrollment->id}/suspend",
-                'terminate' => "/benefits/enrollments/{$enrollment->id}/terminate",
-                'reinstate' => "/benefits/enrollments/{$enrollment->id}/reinstate",
-                'document_store' => "/benefits/enrollments/{$enrollment->id}/documents",
+                'show' => "/benefit-enrollments/{$enrollment->id}",
+                'edit' => "/benefit-enrollments/{$enrollment->id}/edit",
+                'suspend' => "/benefit-enrollments/{$enrollment->id}/suspend",
+                'terminate' => "/benefit-enrollments/{$enrollment->id}/terminate",
+                'reinstate' => "/benefit-enrollments/{$enrollment->id}/reinstate",
+                'document_store' => "/benefit-enrollments/{$enrollment->id}/documents",
             ],
         ];
     }
 
-    private function enrollmentFormOptions(): array
+    private function enrollmentFormOptions(Request $request): array
     {
-        $employees = Employee::query()
-            ->select(['id', 'first_name', 'surname', 'staff_number'])
-            ->orderBy('first_name')
-            ->get()
+        $employees = $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS)
             ->map(fn (Employee $e) => [
                 'id' => $e->id,
                 'full_name' => $e->full_name,

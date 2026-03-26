@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -32,6 +33,14 @@ export function NavMain({
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
+                                {item.badge ? (
+                                    <Badge
+                                        variant="secondary"
+                                        className="ml-auto h-5 rounded-full px-1.5 text-[10px] font-semibold shadow-none group-data-[collapsible=icon]:hidden"
+                                    >
+                                        {item.badge}
+                                    </Badge>
+                                ) : null}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

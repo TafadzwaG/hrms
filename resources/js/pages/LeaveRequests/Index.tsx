@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Table,
     TableBody,
@@ -13,6 +14,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
@@ -77,11 +80,12 @@ type PageProps = {
         name: string;
     };
     records: PaginatedRecords;
-    filters: { search?: string };
+    filters: { search?: string; scope_view?: string };
+    scope?: PageRoleScope;
 };
 
 export default function LeaveRequestIndex() {
-    const { module, records, filters } = usePage<PageProps>().props;
+    const { module, records, filters, scope } = usePage<PageProps>().props;
 
     const [search, setSearch] = useState<string>(filters?.search ?? '');
     const [activeTab, setActiveTab] = useState('Queue');
@@ -90,7 +94,7 @@ export default function LeaveRequestIndex() {
         const timer = setTimeout(() => {
             router.get(
                 `${API}/${module.slug}`,
-                { search },
+                buildIndexParams(filters, { search }),
                 { preserveState: true, replace: true, preserveScroll: true },
             );
         }, 300);
@@ -101,7 +105,7 @@ export default function LeaveRequestIndex() {
     const handlePageChange = (page: number) => {
         router.get(
             `${API}/${module.slug}`,
-            { page, search },
+            buildIndexParams(filters, { page, search }, { resetPage: false }),
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -325,6 +329,12 @@ export default function LeaveRequestIndex() {
                         </CardContent>
                     </Card>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path={`${API}/${module.slug}`}
+                    filters={filters}
+                />
 
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <Card className="flex flex-col shadow-sm xl:col-span-2">

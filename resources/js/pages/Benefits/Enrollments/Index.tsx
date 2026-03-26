@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
     Select,
     SelectContent,
@@ -28,6 +29,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Banknote,
@@ -86,10 +89,12 @@ type EnrollmentsPageProps = {
         search?: string | null;
         benefit_id?: number | string | null;
         status?: string | null;
+        scope_view?: string | null;
     };
     benefits: BenefitOption[];
     statuses: string[];
     stats?: EnrollmentStats;
+    scope?: PageRoleScope;
 };
 
 const statusStyles: Record<string, string> = {
@@ -126,6 +131,7 @@ export default function EnrollmentIndex() {
         stats,
         benefits = [],
         statuses = [],
+        scope,
     } = usePage<EnrollmentsPageProps>().props;
 
     const [search, setSearch] = useState(filters.search ?? '');
@@ -154,11 +160,11 @@ export default function EnrollmentIndex() {
         const timer = window.setTimeout(() => {
             router.get(
                 '/benefit-enrollments',
-                {
+                buildIndexParams(filters, {
                     search: search || undefined,
                     benefit_id: benefitId !== 'all' ? benefitId : undefined,
                     status: status !== 'all' ? status : undefined,
-                },
+                }),
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -189,12 +195,12 @@ export default function EnrollmentIndex() {
     const handlePageChange = ({ selected }: { selected: number }) => {
         router.get(
             '/benefit-enrollments',
-            {
+            buildIndexParams(filters, {
                 page: selected + 1,
                 search: search || undefined,
                 benefit_id: benefitId !== 'all' ? benefitId : undefined,
                 status: status !== 'all' ? status : undefined,
-            },
+            }, { resetPage: false }),
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -219,6 +225,12 @@ export default function EnrollmentIndex() {
             <Head title="Benefit Enrollments" />
 
             <div className="w-full space-y-6 bg-white p-4 lg:p-8">
+                <RoleScopeBar
+                    scope={scope}
+                    path="/benefit-enrollments"
+                    filters={filters}
+                />
+
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
                         <h1 className="text-4xl font-bold tracking-tight text-zinc-900">

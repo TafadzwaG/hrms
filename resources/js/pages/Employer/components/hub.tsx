@@ -49,7 +49,7 @@ export const employerLinks = {
     candidates: '/employer/candidates',
     interviews: '/employer/interviews',
     reports: '/employer/reports',
-    company: '/employer/company-profile',
+    company: '/employer/company',
     billing: '/employer/billing',
 } as const;
 
@@ -153,7 +153,25 @@ export function EmployerHubLayout({
             breadcrumbs={breadcrumbs}
             badge="Employer hub"
             heroMeta={
-                <EmployerStatusBadge status={company.status || 'Active'} />
+                <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                        variant="outline"
+                        className="h-7 rounded-md border border-border bg-background px-2.5 text-[11px] text-muted-foreground shadow-none"
+                    >
+                        <Building2 className="mr-1.5 h-3.5 w-3.5" />
+                        {company.company_name}
+                    </Badge>
+                    <EmployerStatusBadge status={company.status || 'Active'} />
+                    {company.industry ? (
+                        <Badge
+                            variant="outline"
+                            className="h-7 rounded-md border border-border bg-background px-2.5 text-[11px] text-muted-foreground shadow-none"
+                        >
+                            <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
+                            {company.industry}
+                        </Badge>
+                    ) : null}
+                </div>
             }
             headerActions={headerActions}
             brand={{
@@ -194,21 +212,25 @@ export function EmployerSectionCard({
 }) {
     return (
         <Card className={className ?? 'border-border/70 bg-background/95 shadow-sm'}>
-            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
-                <div className="space-y-1.5">
-                    <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 px-4 py-3">
+                <div className="space-y-0.5">
+                    <CardTitle className="flex items-center gap-2 text-sm font-semibold leading-none">
                         {icon ? (
-                            <span className="text-muted-foreground">{icon}</span>
+                            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                {icon}
+                            </span>
                         ) : null}
                         <span>{title}</span>
                     </CardTitle>
                     {description ? (
-                        <CardDescription>{description}</CardDescription>
+                        <CardDescription className="pl-9 text-[11px] leading-4">
+                            {description}
+                        </CardDescription>
                     ) : null}
                 </div>
                 {action}
             </CardHeader>
-            <CardContent>{children}</CardContent>
+            <CardContent className="px-4 pb-4 pt-0">{children}</CardContent>
         </Card>
     );
 }
@@ -218,7 +240,8 @@ export function EmployerStatusBadge({ status }: { status: string }) {
 
     return (
         <Badge
-            className={`rounded-md border px-3 py-1 shadow-none ${
+            variant="outline"
+            className={`h-7 rounded-md border px-2.5 text-[11px] shadow-none ${
                 employerStatusColor[normalized] ||
                 'border-border bg-muted text-muted-foreground'
             }`}
@@ -231,11 +254,11 @@ export function EmployerStatusBadge({ status }: { status: string }) {
 export function EmployerEmptyState({ message }: { message: string }) {
     return (
         <Card className="border-dashed border-border/70 bg-background/80 shadow-sm">
-            <CardContent className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Briefcase className="h-5 w-5" />
+            <CardContent className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <Briefcase className="h-4 w-4" />
                 </div>
-                <p className="max-w-lg text-sm leading-6 text-muted-foreground">
+                <p className="max-w-lg text-sm leading-5 text-muted-foreground">
                     {message}
                 </p>
             </CardContent>
@@ -277,6 +300,39 @@ export function EmployerMetricCard({
     );
 }
 
+export function EmployerInfoField({
+    label,
+    value,
+    icon,
+}: {
+    label: string;
+    value: ReactNode | null | undefined;
+    icon?: ReactNode;
+}) {
+    return (
+        <div className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-muted/10 px-2.5 py-2 transition-colors hover:bg-muted/20">
+            {icon ? (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground shadow-sm ring-1 ring-border/50">
+                    {icon}
+                </div>
+            ) : null}
+
+            <div className="flex min-w-0 flex-col">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                    {label}
+                </span>
+                <div className="truncate text-[13px] font-medium leading-tight text-foreground">
+                    {value ?? (
+                        <span className="text-[11px] font-normal italic text-muted-foreground/60">
+                            Not provided
+                        </span>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function EmployerPrimaryButton({
     href,
     children,
@@ -291,7 +347,7 @@ export function EmployerPrimaryButton({
             <Button
                 className={
                     className ??
-                    'h-auto rounded-md px-6 py-3 text-sm font-medium shadow-sm'
+                    'h-9 rounded-md px-3 text-sm font-medium shadow-sm'
                 }
             >
                 {children}
@@ -311,13 +367,25 @@ export function EmployerGhostActionButton({
             size="sm"
             className={
                 className ??
-                'border-border/70 bg-background text-foreground shadow-sm hover:bg-muted'
+                'h-7 border-border/70 bg-background px-2.5 text-[11px] font-medium text-foreground shadow-sm hover:bg-muted'
             }
             {...props}
         >
             {children}
         </Button>
     );
+}
+
+export function formatEmployerDate(date: string | null | undefined): string {
+    if (!date) {
+        return 'N/A';
+    }
+
+    return new Date(date).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+        day: date.length > 7 ? 'numeric' : undefined,
+    });
 }
 
 function getEmployerInitials(name?: string | null): string {

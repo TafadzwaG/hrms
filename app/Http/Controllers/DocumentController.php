@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Employee;
+use App\Support\Access\RolePageScopeResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -13,6 +15,8 @@ use Inertia\Response;
 
 class DocumentController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
@@ -21,7 +25,7 @@ class DocumentController extends Controller
         $ownerEmployeeId = $request->input('owner_employee_id', 'all');
         $expiryState = (string) $request->input('expiry_state', 'all');
 
-        $documents = Document::query()
+        $documentsQuery = Document::query()
             ->with([
                 'documentType:id,code,name,sensitivity_level',
                 'ownerEmployee:id,first_name,middle_name,surname,staff_number',
@@ -30,27 +34,30 @@ class DocumentController extends Controller
             ->accessPolicy($accessPolicy)
             ->documentTypeFilter($documentTypeId)
             ->ownerFilter($ownerEmployeeId)
-            ->expiryState($expiryState)
+            ->expiryState($expiryState);
+        $scope = $this->applyRolePageScope($documentsQuery, $request, RolePageScopeResolver::MODULE_DOCUMENTS);
+        $documents = $documentsQuery
             ->orderByDesc('issue_date')
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
         $statsBase = Document::query();
+        $this->applyRolePageScope($statsBase, $request, RolePageScopeResolver::MODULE_DOCUMENTS);
 
         return Inertia::render('Documents/Index', [
             'documents' => $documents,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'access_policy' => $accessPolicy,
                 'document_type_id' => (string) $documentTypeId,
                 'owner_employee_id' => (string) $ownerEmployeeId,
                 'expiry_state' => $expiryState,
-            ],
+            ], $scope),
             'accessPolicyOptions' => $this->accessPolicyOptions(),
             'expiryStateOptions' => $this->expiryStateOptions(),
             'documentTypes' => $this->documentTypes(),
-            'employees' => $this->employees(),
+            'employees' => $this->employees($request),
             'stats' => [
                 'total' => (clone $statsBase)->count(),
                 'expired' => (clone $statsBase)->whereDate('expiry_date', '<', now()->startOfDay())->count(),
@@ -60,13 +67,14 @@ class DocumentController extends Controller
                     ->count(),
                 'restricted' => (clone $statsBase)->where('access_policy', 'restricted')->count(),
             ],
+            'scope' => $scope,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Documents/Create', [
-            'employees' => $this->employees(),
+            'employees' => $this->employees($request),
             'documentTypes' => $this->documentTypes(),
             'accessPolicyOptions' => $this->accessPolicyOptions(),
         ]);
@@ -75,6 +83,7 @@ class DocumentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validatedPayload($request);
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_DOCUMENTS, $validated['owner_employee_id'] ?? null);
 
         $document = Document::create($validated);
 
@@ -83,8 +92,9 @@ class DocumentController extends Controller
             ->with('success', 'Document created successfully.');
     }
 
-    public function show(Document $document): Response
+    public function show(Request $request, Document $document): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $document->load([
             'documentType:id,code,name,retention_policy,sensitivity_level',
             'ownerEmployee:id,first_name,middle_name,surname,staff_number',
@@ -100,8 +110,9 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function edit(Document $document): Response
+    public function edit(Request $request, Document $document): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $document->load([
             'documentType:id,code,name,sensitivity_level',
             'ownerEmployee:id,first_name,middle_name,surname,staff_number',
@@ -112,7 +123,7 @@ class DocumentController extends Controller
                 ...$document->toArray(),
                 'metadata_pretty' => $document->metadata_pretty,
             ],
-            'employees' => $this->employees(),
+            'employees' => $this->employees($request),
             'documentTypes' => $this->documentTypes(),
             'accessPolicyOptions' => $this->accessPolicyOptions(),
         ]);
@@ -120,7 +131,9 @@ class DocumentController extends Controller
 
     public function update(Request $request, Document $document): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $validated = $this->validatedPayload($request);
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_DOCUMENTS, $validated['owner_employee_id'] ?? null);
 
         $document->update($validated);
 
@@ -129,8 +142,9 @@ class DocumentController extends Controller
             ->with('success', 'Document updated successfully.');
     }
 
-    public function destroy(Document $document): RedirectResponse
+    public function destroy(Request $request, Document $document): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $document->delete();
 
         return redirect()
@@ -142,42 +156,49 @@ class DocumentController extends Controller
     {
         $search = trim((string) $request->input('search', ''));
 
-        $documents = Document::onlyTrashed()
+        $documentsQuery = Document::onlyTrashed()
             ->with([
                 'documentType:id,code,name',
                 'ownerEmployee:id,first_name,middle_name,surname,staff_number',
             ])
             ->search($search)
-            ->orderByDesc('deleted_at')
+            ->orderByDesc('deleted_at');
+        $scope = $this->applyRolePageScope($documentsQuery, $request, RolePageScopeResolver::MODULE_DOCUMENTS);
+        $documents = $documentsQuery
             ->paginate(10)
             ->withQueryString();
 
+        $statsBase = Document::onlyTrashed()->search($search);
+        $this->applyRolePageScope($statsBase, $request, RolePageScopeResolver::MODULE_DOCUMENTS);
+
         return Inertia::render('Documents/Index', [
             'documents' => $documents,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'access_policy' => 'all',
                 'document_type_id' => 'all',
                 'owner_employee_id' => 'all',
                 'expiry_state' => 'all',
-            ],
+            ], $scope),
             'accessPolicyOptions' => $this->accessPolicyOptions(),
             'expiryStateOptions' => $this->expiryStateOptions(),
             'documentTypes' => $this->documentTypes(),
-            'employees' => $this->employees(),
+            'employees' => $this->employees($request),
             'stats' => [
-                'total' => Document::onlyTrashed()->count(),
+                'total' => (clone $statsBase)->count(),
                 'expired' => 0,
                 'expiring_30' => 0,
-                'restricted' => 0,
+                'restricted' => (clone $statsBase)->where('access_policy', 'restricted')->count(),
             ],
             'isTrashView' => true,
+            'scope' => $scope,
         ]);
     }
 
-    public function restore(int $id): RedirectResponse
+    public function restore(Request $request, int $id): RedirectResponse
     {
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $document->restore();
 
         return redirect()
@@ -185,9 +206,10 @@ class DocumentController extends Controller
             ->with('success', 'Document restored successfully.');
     }
 
-    public function forceDestroy(int $id): RedirectResponse
+    public function forceDestroy(Request $request, int $id): RedirectResponse
     {
         $document = Document::withTrashed()->findOrFail($id);
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_DOCUMENTS, $document);
         $document->forceDelete();
 
         return redirect()
@@ -195,13 +217,9 @@ class DocumentController extends Controller
             ->with('success', 'Document permanently deleted successfully.');
     }
 
-    private function employees()
+    private function employees(Request $request)
     {
-        return Employee::query()
-            ->select('id', 'first_name', 'middle_name', 'surname', 'staff_number')
-            ->orderBy('first_name')
-            ->orderBy('surname')
-            ->get();
+        return $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_DOCUMENTS);
     }
 
     private function documentTypes()

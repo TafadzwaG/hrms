@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\PayslipDelivery;
 use App\Models\PayrollExport;
 use App\Models\PayrollPeriod;
 use App\Models\PayrollResult;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\Audit\AuditLogger;
 use App\Support\Payslips\PayslipPdfService;
 use App\Support\Payslips\PayslipViewService;
@@ -18,6 +20,8 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class PayslipController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request, PayslipViewService $viewService): Response
     {
         abort_unless($this->tenantId(), 403, 'An active organization is required to access payslips.');
@@ -46,6 +50,7 @@ class PayslipController extends Controller
                     ->limit(1)
             )
             ->orderByDesc('payroll_results.id');
+        $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_PAYSLIPS);
 
         $query->when($filters['search'] ?? null, function ($builder, string $search): void {
             $builder->where(function ($nested) use ($search): void {
@@ -112,52 +117,55 @@ class PayslipController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
             ],
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $filters['search'] ?? '',
                 'payroll_period_id' => $filters['payroll_period_id'] ?? '',
                 'department' => $filters['department'] ?? '',
                 'pay_point' => $filters['pay_point'] ?? '',
                 'email_status' => $filters['email_status'] ?? '',
                 'sms_status' => $filters['sms_status'] ?? '',
-            ],
-            'periods' => PayrollPeriod::query()
+            ], $scope),
+            'periods' => tap(PayrollPeriod::query()
                 ->orderByDesc('period_end')
-                ->get(['id', 'code', 'name', 'pay_date'])
+                ->get(['id', 'code', 'name', 'pay_date']))
                 ->map(fn (PayrollPeriod $period) => [
                     'id' => $period->id,
                     'label' => trim(($period->name ?: $period->code).' ('.optional($period->pay_date)->toDateString().')'),
                 ])
                 ->values(),
-            'departments' => PayrollResult::query()
+            'departments' => tap(PayrollResult::query()
                 ->whereNotNull('department_snapshot')
-                ->distinct()
+                ->distinct(), fn ($builder) => $this->applyRolePageScope($builder, $request, RolePageScopeResolver::MODULE_PAYSLIPS))
                 ->orderBy('department_snapshot')
                 ->pluck('department_snapshot')
                 ->values(),
-            'payPoints' => PayrollResult::query()
+            'payPoints' => tap(PayrollResult::query()
                 ->whereNotNull('pay_point_snapshot')
-                ->distinct()
+                ->distinct(), fn ($builder) => $this->applyRolePageScope($builder, $request, RolePageScopeResolver::MODULE_PAYSLIPS))
                 ->orderBy('pay_point_snapshot')
                 ->pluck('pay_point_snapshot')
                 ->values(),
             'deliveryStatuses' => ['NOT_SENT', 'PENDING', 'SENT', 'FAILED'],
+            'scope' => $scope,
         ]);
     }
 
-    public function show(int $result, PayslipViewService $viewService): Response
+    public function show(Request $request, int $result, PayslipViewService $viewService): Response
     {
         /** @var PayrollResult $result */
         $result = $this->findTenantModelOrFail(PayrollResult::class, $result);
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_PAYSLIPS, $result);
 
         return Inertia::render('Payroll/Payslips/Show', [
             'payslip' => $viewService->payload($result),
         ]);
     }
 
-    public function download(int $result, PayslipPdfService $pdfService, PayslipViewService $viewService, AuditLogger $auditLogger): HttpResponse
+    public function download(Request $request, int $result, PayslipPdfService $pdfService, PayslipViewService $viewService, AuditLogger $auditLogger): HttpResponse
     {
         /** @var PayrollResult $result */
         $result = $this->findTenantModelOrFail(PayrollResult::class, $result);
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_PAYSLIPS, $result);
         $payslip = $viewService->payload($result);
 
         PayrollExport::query()->create([
@@ -171,7 +179,7 @@ class PayslipController extends Controller
             'exported_at' => now(),
             'file_reference' => sprintf('payroll/payslips/%s-%s.pdf', $result->id, now()->format('YmdHis')),
             'export_type' => 'PAYSLIP',
-            'generated_by' => request()->user()?->id,
+            'generated_by' => $request->user()?->id,
             'notes' => 'Generated payroll payslip PDF.',
             'summary_json' => [
                 'payroll_result_id' => $result->id,

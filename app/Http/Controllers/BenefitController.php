@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Benefit;
 use App\Models\BenefitContributionRule;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +15,8 @@ use Inertia\Inertia;
 
 class BenefitController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -40,6 +44,7 @@ class BenefitController extends Controller
             ->when($category, fn ($q) => $q->where('category', $category))
             ->when($benefitType, fn ($q) => $q->where('benefit_type', $benefitType))
             ->when($active !== null && $active !== '', fn ($q) => $q->where('active', (bool) $active));
+        $scope = $this->applyRolePageScope($baseQuery, $request, RolePageScopeResolver::MODULE_BENEFITS);
 
         $benefits = (clone $baseQuery)
             ->tap(fn ($query) => IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']))
@@ -54,23 +59,24 @@ class BenefitController extends Controller
             }))
             ->when($category, fn ($q) => $q->where('category', $category))
             ->when($benefitType, fn ($q) => $q->where('benefit_type', $benefitType));
+        $this->applyRolePageScope($statsBaseQuery, $request, RolePageScopeResolver::MODULE_BENEFITS);
 
-        $categoryCountsRaw = Benefit::query()
+        $categoryCountsQuery = Benefit::query()
             ->selectRaw('category, count(*) as cnt')
-            ->groupBy('category')
-            ->pluck('cnt', 'category')
-            ->all();
+            ->groupBy('category');
+        $this->applyRolePageScope($categoryCountsQuery, $request, RolePageScopeResolver::MODULE_BENEFITS);
+        $categoryCountsRaw = $categoryCountsQuery->pluck('cnt', 'category')->all();
 
         return Inertia::render('Benefits/Index', [
             'benefits' => $benefits,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'category' => $category,
                 'benefit_type' => $benefitType,
                 'active' => $active,
                 'sort' => $sorting['sort'],
                 'direction' => $sorting['direction'],
-            ],
+            ], $scope),
             'categories' => Benefit::CATEGORIES,
             'benefit_types' => Benefit::TYPES,
             'types' => Benefit::TYPES,
@@ -81,6 +87,7 @@ class BenefitController extends Controller
                 'retirement' => (int) ($categoryCountsRaw['retirement'] ?? 0),
                 'by_category' => $categoryCountsRaw,
             ],
+            'scope' => $scope,
         ]);
     }
 
@@ -107,8 +114,9 @@ class BenefitController extends Controller
             ->with('success', 'Benefit created successfully.');
     }
 
-    public function show(Benefit $benefit)
+    public function show(Request $request, Benefit $benefit)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFITS, $benefit);
         $benefit->load([
             'plans',
             'enrollments.employee:id,first_name,surname,staff_number',
@@ -122,8 +130,9 @@ class BenefitController extends Controller
         ]);
     }
 
-    public function edit(Benefit $benefit)
+    public function edit(Request $request, Benefit $benefit)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFITS, $benefit);
         return Inertia::render('Benefits/Edit', [
             'benefit' => $this->mapBenefitDetail($benefit),
             'options' => $this->benefitFormOptions(),
@@ -132,6 +141,7 @@ class BenefitController extends Controller
 
     public function update(Request $request, Benefit $benefit): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFITS, $benefit);
         $data = $this->validateBenefit($request, $benefit);
 
         DB::transaction(function () use ($benefit, $data, $request) {
@@ -145,8 +155,9 @@ class BenefitController extends Controller
             ->with('success', 'Benefit updated successfully.');
     }
 
-    public function destroy(Benefit $benefit): RedirectResponse
+    public function destroy(Request $request, Benefit $benefit): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFITS, $benefit);
         $activeEnrollments = $benefit->enrollments()->where('status', 'active')->count();
 
         if ($activeEnrollments > 0) {

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
 const PerformanceDashboardController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ PerformanceDashboardController.definition = {
 
 /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
 PerformanceDashboardController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ PerformanceDashboardController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
 PerformanceDashboardController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ PerformanceDashboardController.get = (options?: RouteQueryOptions): RouteDefinit
 })
 /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
 PerformanceDashboardController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ PerformanceDashboardController.head = (options?: RouteQueryOptions): RouteDefini
 
     /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
     const PerformanceDashboardControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ PerformanceDashboardController.head = (options?: RouteQueryOptions): RouteDefini
 
             /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
         PerformanceDashboardControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ PerformanceDashboardController.head = (options?: RouteQueryOptions): RouteDefini
         })
             /**
 * @see \App\Http\Controllers\PerformanceDashboardController::__invoke
- * @see app/Http/Controllers/PerformanceDashboardController.php:14
+ * @see app/Http/Controllers/PerformanceDashboardController.php:18
  * @route '/performance'
  */
         PerformanceDashboardControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

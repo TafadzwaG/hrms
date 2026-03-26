@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Employee;
@@ -17,6 +18,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\Audit\AuditContext;
 use App\Support\Audit\AuditLogger;
+use App\Support\Access\RolePageScopeResolver;
 use App\Support\IndexTables\IndexTableSorter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +34,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request)
     {
         $filters = [
@@ -59,6 +63,7 @@ class EmployeeController extends Controller
                 'position:id,name',
                 'location:id,name',
             ]);
+        $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_EMPLOYEES);
 
         if (!empty($filters['search'])) {
             $s = $filters['search'];
@@ -138,13 +143,14 @@ class EmployeeController extends Controller
 
         return Inertia::render('Employees/Index', [
             'employees' => $employees,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $filters['search'] ?? '',
                 'pay_point' => $filters['pay_point'] ?: 'all',
                 'sort' => $sorting['sort'],
                 'direction' => $sorting['direction'],
-            ],
+            ], $scope),
             'payPoints' => $payPoints,
+            'scope' => $scope,
         ]);
     }
 
@@ -192,6 +198,7 @@ class EmployeeController extends Controller
 
     public function show(Request $request, Employee $employee)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->load([
             'user.roles:id,code,name',
             'orgUnit:id,name,type',
@@ -375,8 +382,9 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function edit(Employee $employee)
+    public function edit(Request $request, Employee $employee)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $departments = OrgUnit::query()
             ->select(['id', 'name', 'type'])
             ->where('type', 'DEPARTMENT')
@@ -421,6 +429,7 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $data = $this->validateEmployee($request, $employee);
 
         DB::transaction(function () use ($employee, $data) {
@@ -440,8 +449,9 @@ class EmployeeController extends Controller
             ->with('success', 'Employee updated successfully.');
     }
 
-    public function destroy(Employee $employee)
+    public function destroy(Request $request, Employee $employee)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->delete();
 
         return redirect()
@@ -451,6 +461,7 @@ class EmployeeController extends Controller
 
     public function storeDocument(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $validated = $this->validateEmployeeDocument($request);
         $metadata = $this->parseMetadataInput($validated['metadata_json'] ?? null) ?? [];
 
@@ -484,8 +495,9 @@ class EmployeeController extends Controller
         return back()->with('success', 'Employee document attached successfully.');
     }
 
-    public function downloadDocument(Employee $employee, Document $document)
+    public function downloadDocument(Request $request, Employee $employee, Document $document)
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsDocument($employee, $document);
 
         app(AuditLogger::class)->logCustom('export', $document, [
@@ -510,8 +522,9 @@ class EmployeeController extends Controller
         return back()->with('error', 'The requested document file could not be located.');
     }
 
-    public function destroyDocument(Employee $employee, Document $document): RedirectResponse
+    public function destroyDocument(Request $request, Employee $employee, Document $document): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsDocument($employee, $document);
         $document->delete();
 
@@ -520,6 +533,7 @@ class EmployeeController extends Controller
 
     public function storeNextOfKin(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $validated = $this->validateNextOfKin($request);
         $isPrimary = (bool) ($validated['is_primary'] ?? false) || !$employee->nextOfKin()->exists();
 
@@ -539,6 +553,7 @@ class EmployeeController extends Controller
 
     public function updateNextOfKin(Request $request, Employee $employee, EmployeeNextOfKin $nextOfKin): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsNextOfKin($employee, $nextOfKin);
         $validated = $this->validateNextOfKin($request);
         $isPrimary = (bool) ($validated['is_primary'] ?? false);
@@ -559,8 +574,9 @@ class EmployeeController extends Controller
         return back()->with('success', 'Next of kin information updated successfully.');
     }
 
-    public function destroyNextOfKin(Employee $employee, EmployeeNextOfKin $nextOfKin): RedirectResponse
+    public function destroyNextOfKin(Request $request, Employee $employee, EmployeeNextOfKin $nextOfKin): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsNextOfKin($employee, $nextOfKin);
         $wasPrimary = $nextOfKin->is_primary;
         $nextOfKin->delete();
@@ -577,6 +593,7 @@ class EmployeeController extends Controller
 
     public function storePhysicalProfile(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->physicalProfile()->updateOrCreate(
             ['employee_id' => $employee->id],
             $this->validatePhysicalProfile($request),
@@ -587,6 +604,7 @@ class EmployeeController extends Controller
 
     public function storeSkill(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->skills()->create($this->validateSkill($request));
 
         return back()->with('success', 'Skill added successfully.');
@@ -594,14 +612,16 @@ class EmployeeController extends Controller
 
     public function updateSkill(Request $request, Employee $employee, EmployeeSkill $skill): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsSkill($employee, $skill);
         $skill->update($this->validateSkill($request));
 
         return back()->with('success', 'Skill updated successfully.');
     }
 
-    public function destroySkill(Employee $employee, EmployeeSkill $skill): RedirectResponse
+    public function destroySkill(Request $request, Employee $employee, EmployeeSkill $skill): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsSkill($employee, $skill);
         $skill->delete();
 
@@ -610,6 +630,7 @@ class EmployeeController extends Controller
 
     public function storeJobProfile(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->jobProfile()->updateOrCreate(
             ['employee_id' => $employee->id],
             $this->validateJobProfile($request),
@@ -620,6 +641,7 @@ class EmployeeController extends Controller
 
     public function storeKpi(Request $request, Employee $employee): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $employee->kpis()->create($this->validateKpi($request));
 
         return back()->with('success', 'KPI added successfully.');
@@ -627,14 +649,16 @@ class EmployeeController extends Controller
 
     public function updateKpi(Request $request, Employee $employee, EmployeeKpi $kpi): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsKpi($employee, $kpi);
         $kpi->update($this->validateKpi($request));
 
         return back()->with('success', 'KPI updated successfully.');
     }
 
-    public function destroyKpi(Employee $employee, EmployeeKpi $kpi): RedirectResponse
+    public function destroyKpi(Request $request, Employee $employee, EmployeeKpi $kpi): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
         $this->ensureEmployeeOwnsKpi($employee, $kpi);
         $kpi->delete();
 

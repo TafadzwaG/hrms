@@ -7,8 +7,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
+import type { PageRoleScope } from '@/types/auth';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
@@ -166,10 +168,11 @@ function ChartTooltip({ active, payload, label }: any) {
 /* ------------------------------------------------------------------ */
 
 export default function PerformanceDashboard() {
-    const { metrics, scoreDistribution, perspectiveAverages } = usePage<{
+    const { metrics, scoreDistribution, perspectiveAverages, scope } = usePage<{
         metrics: Metrics;
         scoreDistribution: ScoreDistribution;
         perspectiveAverages: PerspectiveAverages;
+        scope?: PageRoleScope;
     }>().props;
 
     const scoreData = Object.entries(scoreDistribution).map(
@@ -225,6 +228,11 @@ export default function PerformanceDashboard() {
                         </Link>
                     </div>
                 </div>
+
+                <RoleScopeBar
+                    scope={scope}
+                    path="/performance"
+                />
 
                 {/* -- KPI Cards ------------------------------------- */}
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

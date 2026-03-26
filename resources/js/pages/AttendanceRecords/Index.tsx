@@ -20,10 +20,12 @@ import {
     IndexTablePagination,
     SortableTableHead,
 } from '@/components/index-table';
+import { RoleScopeBar } from '@/components/role-scope-bar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { buildIndexParams } from '@/lib/index-table';
+import type { PageRoleScope } from '@/types/auth';
 import {
     Select,
     SelectContent,
@@ -82,11 +84,13 @@ type PageProps = {
         search?: string;
         sort?: string;
         direction?: 'asc' | 'desc';
+        scope_view?: string;
     };
+    scope?: PageRoleScope;
 };
 
 export default function AttendanceRecordsIndex() {
-    const { module, records, filters } = usePage<PageProps>().props;
+    const { module, records, filters, scope } = usePage<PageProps>().props;
 
     const [search, setSearch] = useState(filters?.search ?? '');
     const [exceptionFilter, setExceptionFilter] = useState('all');
@@ -395,6 +399,13 @@ export default function AttendanceRecordsIndex() {
                             Manual Entry
                         </Button>
                     </div>
+
+                    <RoleScopeBar
+                        scope={scope}
+                        path={`${API}/${module.slug}`}
+                        filters={tableFilters}
+                        className="mb-6"
+                    />
 
                     <div className="mb-6 flex flex-wrap items-center gap-3">
                         <Button

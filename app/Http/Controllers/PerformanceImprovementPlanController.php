@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesRolePageScope;
 use App\Models\Employee;
 use App\Models\EmployeeScorecard;
 use App\Models\PerformanceImprovementPlan;
+use App\Support\Access\RolePageScopeResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,12 +15,14 @@ use Inertia\Response;
 
 class PerformanceImprovementPlanController extends Controller
 {
+    use ResolvesRolePageScope;
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
         $status = trim((string) $request->input('status', '')) ?: 'all';
 
-        $plans = PerformanceImprovementPlan::query()
+        $plansQuery = PerformanceImprovementPlan::query()
             ->with([
                 'employee:id,first_name,middle_name,surname,staff_number',
                 'scorecard.cycle:id,title',
@@ -36,7 +40,9 @@ class PerformanceImprovementPlanController extends Controller
                         });
                 });
             })
-            ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status))
+            ->when($status !== 'all', fn (Builder $q) => $q->where('status', $status));
+        $scope = $this->applyRolePageScope($plansQuery, $request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS);
+        $plans = $plansQuery
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate(15)
@@ -44,19 +50,20 @@ class PerformanceImprovementPlanController extends Controller
 
         return Inertia::render('Performance/ImprovementPlans/Index', [
             'plans' => $plans,
-            'filters' => [
+            'filters' => $this->roleScopedFilters([
                 'search' => $search,
                 'status' => $status,
-            ],
+            ], $scope),
             'statuses' => PerformanceImprovementPlan::STATUSES,
+            'scope' => $scope,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Performance/ImprovementPlans/Create', [
-            'employees' => $this->employees(),
-            'scorecards' => $this->eligibleScorecards(),
+            'employees' => $this->employees($request),
+            'scorecards' => $this->eligibleScorecards($request),
             'statuses' => PerformanceImprovementPlan::STATUSES,
         ]);
     }
@@ -64,6 +71,7 @@ class PerformanceImprovementPlanController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate($this->rules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $validated['employee_id'] ?? null);
         $validated['created_by'] = $request->user()?->id;
 
         $plan = PerformanceImprovementPlan::create($validated);
@@ -73,8 +81,9 @@ class PerformanceImprovementPlanController extends Controller
             ->with('success', 'Performance improvement plan created successfully.');
     }
 
-    public function show(PerformanceImprovementPlan $performanceImprovementPlan): Response
+    public function show(Request $request, PerformanceImprovementPlan $performanceImprovementPlan): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $performanceImprovementPlan);
         $performanceImprovementPlan->load([
             'employee:id,first_name,middle_name,surname,staff_number',
             'scorecard.cycle:id,title',
@@ -88,8 +97,9 @@ class PerformanceImprovementPlanController extends Controller
         ]);
     }
 
-    public function edit(PerformanceImprovementPlan $performanceImprovementPlan): Response
+    public function edit(Request $request, PerformanceImprovementPlan $performanceImprovementPlan): Response
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $performanceImprovementPlan);
         $performanceImprovementPlan->load([
             'employee:id,first_name,middle_name,surname,staff_number',
             'scorecard.cycle:id,title',
@@ -97,15 +107,17 @@ class PerformanceImprovementPlanController extends Controller
 
         return Inertia::render('Performance/ImprovementPlans/Edit', [
             'plan' => $performanceImprovementPlan,
-            'employees' => $this->employees(),
-            'scorecards' => $this->eligibleScorecards(),
+            'employees' => $this->employees($request),
+            'scorecards' => $this->eligibleScorecards($request),
             'statuses' => PerformanceImprovementPlan::STATUSES,
         ]);
     }
 
     public function update(Request $request, PerformanceImprovementPlan $performanceImprovementPlan): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $performanceImprovementPlan);
         $validated = $request->validate($this->rules());
+        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $validated['employee_id'] ?? null);
 
         $performanceImprovementPlan->update($validated);
 
@@ -114,8 +126,9 @@ class PerformanceImprovementPlanController extends Controller
             ->with('success', 'Performance improvement plan updated successfully.');
     }
 
-    public function destroy(PerformanceImprovementPlan $performanceImprovementPlan): RedirectResponse
+    public function destroy(Request $request, PerformanceImprovementPlan $performanceImprovementPlan): RedirectResponse
     {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS, $performanceImprovementPlan);
         $performanceImprovementPlan->delete();
 
         return redirect()
@@ -123,18 +136,14 @@ class PerformanceImprovementPlanController extends Controller
             ->with('success', 'Performance improvement plan deleted successfully.');
     }
 
-    private function employees()
+    private function employees(Request $request)
     {
-        return Employee::query()
-            ->select('id', 'first_name', 'middle_name', 'surname', 'staff_number')
-            ->orderBy('first_name')
-            ->orderBy('surname')
-            ->get();
+        return $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_IMPROVEMENT_PLANS);
     }
 
-    private function eligibleScorecards()
+    private function eligibleScorecards(Request $request)
     {
-        return EmployeeScorecard::query()
+        $query = EmployeeScorecard::query()
             ->with([
                 'employee:id,first_name,middle_name,surname,staff_number',
                 'cycle:id,title',
@@ -145,8 +154,10 @@ class PerformanceImprovementPlanController extends Controller
                     ->orWhere('overall_rating', 'Unsatisfactory');
             })
             ->select('id', 'employee_id', 'performance_cycle_id', 'overall_score', 'overall_rating')
-            ->orderByDesc('finalized_at')
-            ->get();
+            ->orderByDesc('finalized_at');
+        $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_SCORECARDS);
+
+        return $query->get();
     }
 
     private function rules(): array

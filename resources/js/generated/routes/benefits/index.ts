@@ -3,7 +3,7 @@ import plans from './plans'
 import contributionRules from './contribution-rules'
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
     const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
         dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\BenefitsDashboardController::__invoke
- * @see app/Http/Controllers/BenefitsDashboardController.php:14
+ * @see app/Http/Controllers/BenefitsDashboardController.php:18
  * @route '/benefits/dashboard'
  */
         dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     dashboard.form = dashboardForm
 /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -124,7 +124,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -134,7 +134,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -143,7 +143,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\BenefitController::index
- * @see app/Http/Controllers/BenefitController.php:16
+ * @see app/Http/Controllers/BenefitController.php:20
  * @route '/benefits'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -159,7 +159,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -174,7 +174,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -183,7 +183,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +192,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -202,7 +202,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -212,7 +212,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -221,7 +221,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\BenefitController::create
- * @see app/Http/Controllers/BenefitController.php:87
+ * @see app/Http/Controllers/BenefitController.php:94
  * @route '/benefits/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -237,7 +237,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\BenefitController::store
- * @see app/Http/Controllers/BenefitController.php:94
+ * @see app/Http/Controllers/BenefitController.php:101
  * @route '/benefits'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -252,7 +252,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::store
- * @see app/Http/Controllers/BenefitController.php:94
+ * @see app/Http/Controllers/BenefitController.php:101
  * @route '/benefits'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -261,7 +261,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\BenefitController::store
- * @see app/Http/Controllers/BenefitController.php:94
+ * @see app/Http/Controllers/BenefitController.php:101
  * @route '/benefits'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -271,7 +271,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\BenefitController::store
- * @see app/Http/Controllers/BenefitController.php:94
+ * @see app/Http/Controllers/BenefitController.php:101
  * @route '/benefits'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -281,7 +281,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\BenefitController::store
- * @see app/Http/Controllers/BenefitController.php:94
+ * @see app/Http/Controllers/BenefitController.php:101
  * @route '/benefits'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -292,7 +292,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
 export const show = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -307,7 +307,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
 show.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -340,7 +340,7 @@ show.url = (args: { benefit: number | { id: number } } | [benefit: number | { id
 
 /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
 show.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -349,7 +349,7 @@ show.get = (args: { benefit: number | { id: number } } | [benefit: number | { id
 })
 /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
 show.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -359,7 +359,7 @@ show.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
 
     /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
     const showForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -369,7 +369,7 @@ show.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
 
             /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
         showForm.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -378,7 +378,7 @@ show.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
         })
             /**
 * @see \App\Http\Controllers\BenefitController::show
- * @see app/Http/Controllers/BenefitController.php:110
+ * @see app/Http/Controllers/BenefitController.php:117
  * @route '/benefits/{benefit}'
  */
         showForm.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -394,7 +394,7 @@ show.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
     show.form = showForm
 /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
 export const edit = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -409,7 +409,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
 edit.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -442,7 +442,7 @@ edit.url = (args: { benefit: number | { id: number } } | [benefit: number | { id
 
 /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
 edit.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -451,7 +451,7 @@ edit.get = (args: { benefit: number | { id: number } } | [benefit: number | { id
 })
 /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
 edit.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -461,7 +461,7 @@ edit.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
 
     /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
     const editForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -471,7 +471,7 @@ edit.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
 
             /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
         editForm.get = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -480,7 +480,7 @@ edit.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
         })
             /**
 * @see \App\Http\Controllers\BenefitController::edit
- * @see app/Http/Controllers/BenefitController.php:125
+ * @see app/Http/Controllers/BenefitController.php:133
  * @route '/benefits/{benefit}/edit'
  */
         editForm.head = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -496,7 +496,7 @@ edit.head = (args: { benefit: number | { id: number } } | [benefit: number | { i
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
 export const update = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -511,7 +511,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
 update.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -544,7 +544,7 @@ update.url = (args: { benefit: number | { id: number } } | [benefit: number | { 
 
 /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
 update.put = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -553,7 +553,7 @@ update.put = (args: { benefit: number | { id: number } } | [benefit: number | { 
 })
 /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
 update.patch = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -563,7 +563,7 @@ update.patch = (args: { benefit: number | { id: number } } | [benefit: number | 
 
     /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
     const updateForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -578,7 +578,7 @@ update.patch = (args: { benefit: number | { id: number } } | [benefit: number | 
 
             /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
         updateForm.put = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -592,7 +592,7 @@ update.patch = (args: { benefit: number | { id: number } } | [benefit: number | 
         })
             /**
 * @see \App\Http\Controllers\BenefitController::update
- * @see app/Http/Controllers/BenefitController.php:133
+ * @see app/Http/Controllers/BenefitController.php:142
  * @route '/benefits/{benefit}'
  */
         updateForm.patch = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -608,7 +608,7 @@ update.patch = (args: { benefit: number | { id: number } } | [benefit: number | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\BenefitController::destroy
- * @see app/Http/Controllers/BenefitController.php:148
+ * @see app/Http/Controllers/BenefitController.php:158
  * @route '/benefits/{benefit}'
  */
 export const destroy = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -623,7 +623,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\BenefitController::destroy
- * @see app/Http/Controllers/BenefitController.php:148
+ * @see app/Http/Controllers/BenefitController.php:158
  * @route '/benefits/{benefit}'
  */
 destroy.url = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -656,7 +656,7 @@ destroy.url = (args: { benefit: number | { id: number } } | [benefit: number | {
 
 /**
 * @see \App\Http\Controllers\BenefitController::destroy
- * @see app/Http/Controllers/BenefitController.php:148
+ * @see app/Http/Controllers/BenefitController.php:158
  * @route '/benefits/{benefit}'
  */
 destroy.delete = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -666,7 +666,7 @@ destroy.delete = (args: { benefit: number | { id: number } } | [benefit: number 
 
     /**
 * @see \App\Http\Controllers\BenefitController::destroy
- * @see app/Http/Controllers/BenefitController.php:148
+ * @see app/Http/Controllers/BenefitController.php:158
  * @route '/benefits/{benefit}'
  */
     const destroyForm = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -681,7 +681,7 @@ destroy.delete = (args: { benefit: number | { id: number } } | [benefit: number 
 
             /**
 * @see \App\Http\Controllers\BenefitController::destroy
- * @see app/Http/Controllers/BenefitController.php:148
+ * @see app/Http/Controllers/BenefitController.php:158
  * @route '/benefits/{benefit}'
  */
         destroyForm.delete = (args: { benefit: number | { id: number } } | [benefit: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
