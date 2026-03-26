@@ -7,11 +7,23 @@ use App\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Schema;
 
 class Document extends Model
 {
     use Auditable, BelongsToOrganization, SoftDeletes;
+
+    private static ?bool $ocrSupportCached = null;
+
+    public const OCR_STATUSES = [
+        'uploaded',
+        'queued',
+        'processing',
+        'completed',
+        'failed',
+    ];
 
     protected $fillable = [
         'owner_employee_id',
@@ -22,12 +34,26 @@ class Document extends Model
         'expiry_date',
         'metadata_json',
         'access_policy',
+        'ocr_status',
+        'ocr_engine',
+        'ocr_language',
+        'ocr_page_count',
+        'ocr_avg_confidence',
+        'ocr_error_message',
+        'ocr_processed_at',
+        'ocr_full_text',
+        'ocr_raw_json',
+        'ocr_metadata_json',
     ];
 
     protected $casts = [
         'issue_date' => 'date',
         'expiry_date' => 'date',
         'metadata_json' => 'array',
+        'ocr_processed_at' => 'datetime',
+        'ocr_raw_json' => 'array',
+        'ocr_metadata_json' => 'array',
+        'ocr_avg_confidence' => 'float',
     ];
 
     public function documentType(): BelongsTo
@@ -38,6 +64,34 @@ class Document extends Model
     public function ownerEmployee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'owner_employee_id');
+    }
+
+    public function ocrResults(): HasMany
+    {
+        return $this->hasMany(OcrResult::class)->orderBy('page_number');
+    }
+
+    public static function supportsOcr(): bool
+    {
+        if (self::$ocrSupportCached !== null) {
+            return self::$ocrSupportCached;
+        }
+
+        self::$ocrSupportCached = Schema::hasTable('ocr_results')
+            && Schema::hasColumns('documents', [
+                'ocr_status',
+                'ocr_engine',
+                'ocr_language',
+                'ocr_page_count',
+                'ocr_avg_confidence',
+                'ocr_error_message',
+                'ocr_processed_at',
+                'ocr_full_text',
+                'ocr_raw_json',
+                'ocr_metadata_json',
+            ]);
+
+        return self::$ocrSupportCached;
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder
@@ -137,5 +191,12 @@ class Document extends Model
         return empty($this->metadata_json)
             ? ''
             : json_encode($this->metadata_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    public function getOcrRawJsonPrettyAttribute(): string
+    {
+        return empty($this->ocr_raw_json)
+            ? ''
+            : json_encode($this->ocr_raw_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
 }

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { OcrStatusBadge } from '@/components/employees/ocr-status-badge';
 import {
     Collapsible,
     CollapsibleContent,
@@ -42,6 +43,8 @@ import {
     CreditCard,
     Download,
     FileText,
+    RefreshCcw,
+    ScanSearch,
     ArrowRight,
     Heart,
     Mail,
@@ -88,9 +91,20 @@ type DocumentItem = {
     access_policy: string;
     metadata_json: Record<string, unknown> | null;
     created_at: string | null;
+    ocr_status: 'uploaded' | 'queued' | 'processing' | 'completed' | 'failed' | null;
+    ocr_engine: string | null;
+    ocr_language: string | null;
+    ocr_page_count: number | null;
+    ocr_avg_confidence: number | null;
+    ocr_error_message: string | null;
+    ocr_processed_at: string | null;
+    ocr_enabled?: boolean;
     document_type: DocumentTypeItem | null;
     download_url: string;
     delete_url: string;
+    show_url: string;
+    ocr_result_url: string;
+    retry_ocr_url: string;
 };
 type NextOfKinItem = {
     id: number;
@@ -259,7 +273,10 @@ type EmployeePayload = {
         benefit_enrollments_count: number;
     };
     links: {
+        document_index: string;
+        document_upload: string;
         document_store: string;
+        ocr_enabled?: boolean;
         next_of_kin_store: string;
         physical_profile_store: string;
         skill_store: string;
@@ -1538,14 +1555,24 @@ function DocumentsTab({
                     title="Employee Documents"
                     description="Manage contracts, identification, and permits."
                     action={
-                        canCreateDocuments && (
-                            <CollapsibleTrigger asChild>
-                                <Button className="h-10 shrink-0 bg-foreground font-bold text-background shadow-sm hover:bg-foreground/90">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Document
+                        <div className="flex flex-wrap gap-2">
+                            {employee.links.ocr_enabled !== false && (
+                                <Button asChild variant="outline">
+                                    <Link href={employee.links.document_index}>
+                                        <ScanSearch className="mr-2 h-4 w-4" />
+                                        OCR Workspace
+                                    </Link>
                                 </Button>
-                            </CollapsibleTrigger>
-                        )
+                            )}
+                            {canCreateDocuments && (
+                                <CollapsibleTrigger asChild>
+                                    <Button className="h-10 shrink-0 bg-foreground font-bold text-background shadow-sm hover:bg-foreground/90">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Document
+                                    </Button>
+                                </CollapsibleTrigger>
+                            )}
+                        </div>
                     }
                 />
                 <CollapsibleContent className="space-y-4">
@@ -1776,7 +1803,27 @@ function DocumentsTab({
                                                 document.access_policy,
                                             )}
                                         </Badge>
+                                        {document.ocr_enabled !== false && (
+                                            <OcrStatusBadge
+                                                status={document.ocr_status}
+                                            />
+                                        )}
                                         <span>{document.file_name}</span>
+                                        {document.ocr_page_count ? (
+                                            <span>
+                                                {document.ocr_page_count}{' '}
+                                                page(s)
+                                            </span>
+                                        ) : null}
+                                        {document.ocr_avg_confidence != null ? (
+                                            <span>
+                                                {Math.round(
+                                                    document.ocr_avg_confidence *
+                                                        100,
+                                                )}
+                                                % confidence
+                                            </span>
+                                        ) : null}
                                         <span>
                                             Uploaded{' '}
                                             {formatDateTime(
@@ -1784,9 +1831,59 @@ function DocumentsTab({
                                             )}
                                         </span>
                                     </div>
+                                    {document.ocr_error_message ? (
+                                        <p className="text-xs text-destructive">
+                                            {document.ocr_error_message}
+                                        </p>
+                                    ) : null}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    <Link href={document.show_url}>
+                                        <ScanSearch className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                {document.ocr_enabled !== false &&
+                                    document.ocr_status === 'completed' && (
+                                    <Button
+                                        asChild
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-muted-foreground hover:text-foreground"
+                                    >
+                                        <Link href={document.ocr_result_url}>
+                                            <ArrowRight className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )}
+                                {document.ocr_enabled !== false &&
+                                    document.ocr_status === 'failed' &&
+                                    canCreateDocuments && (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground hover:text-foreground"
+                                            onClick={() =>
+                                                router.post(
+                                                    document.retry_ocr_url,
+                                                    {},
+                                                    {
+                                                        preserveScroll: true,
+                                                        preserveState: true,
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            <RefreshCcw className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 <Button
                                     asChild
                                     variant="ghost"

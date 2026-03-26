@@ -265,9 +265,7 @@ export default function EmployeeIndex() {
                                     >
                                         Assignment
                                     </SortableTableHead>
-                                    <IndexTableHead>
-                                        Contact
-                                    </IndexTableHead>
+                                    <IndexTableHead>Contact</IndexTableHead>
                                     <SortableTableHead
                                         path="/employees"
                                         filters={filters}
@@ -275,7 +273,10 @@ export default function EmployeeIndex() {
                                     >
                                         Pay Point
                                     </SortableTableHead>
-                                    <IndexTableHead align="right" className="pr-6">
+                                    <IndexTableHead
+                                        align="right"
+                                        className="pr-6"
+                                    >
                                         Actions
                                     </IndexTableHead>
                                 </IndexTableHeaderRow>
@@ -302,25 +303,25 @@ export default function EmployeeIndex() {
                                                             )}
                                                         </AvatarFallback>
                                                     </Avatar>
-                                                        <div className="space-y-1">
-                                                            <Link
-                                                                href={`/employees/${employee.id}`}
-                                                                className="text-sm font-bold text-foreground hover:underline"
-                                                            >
-                                                                {employee.full_name}
-                                                            </Link>
-                                                            <div className="font-mono text-xs text-muted-foreground">
-                                                                STF-
-                                                                {
-                                                                    employee.staff_number
-                                                                }
-                                                            </div>
-                                                            <div className="text-xs font-medium text-muted-foreground">
-                                                                {employee.national_id ||
-                                                                    'No national ID'}
-                                                            </div>
+                                                    <div className="space-y-1">
+                                                        <Link
+                                                            href={`/employees/${employee.id}`}
+                                                            className="text-sm font-bold text-foreground hover:underline"
+                                                        >
+                                                            {employee.full_name}
+                                                        </Link>
+                                                        <div className="font-mono text-xs text-muted-foreground">
+                                                            STF-
+                                                            {
+                                                                employee.staff_number
+                                                            }
+                                                        </div>
+                                                        <div className="text-xs font-medium text-muted-foreground">
+                                                            {employee.national_id ||
+                                                                'No national ID'}
                                                         </div>
                                                     </div>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="space-y-1">
@@ -335,8 +336,11 @@ export default function EmployeeIndex() {
                                                             'No Position'}
                                                     </div>
                                                     <div className="text-xs font-medium text-muted-foreground">
-                                                        {employee.occupation ||
-                                                            'No occupation'}
+                                                        Occu: {'   '}
+                                                        <Badge color=''>
+                                                            {employee.occupation ||
+                                                                'No occupation'}
+                                                        </Badge>
                                                     </div>
                                                 </div>
                                             </TableCell>

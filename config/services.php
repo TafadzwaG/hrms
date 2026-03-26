@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'ocr' => [
+        'url' => env('OCR_SERVICE_URL'),
+        'token' => env('OCR_SERVICE_TOKEN'),
+        'default_engine' => env('OCR_DEFAULT_ENGINE', 'paddleocr'),
+        'default_language' => env('OCR_DEFAULT_LANGUAGE', 'en'),
+        'timeout' => (int) env('OCR_HTTP_TIMEOUT', 120),
+    ],
+
 ];

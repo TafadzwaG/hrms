@@ -1,0 +1,11 @@
+--extra-index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic-settings
+paddleocr
+paddlepaddle
+pymupdf
+pillow
+opencv-python-headless
+numpy

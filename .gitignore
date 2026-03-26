@@ -1,3 +1,17 @@
+# Python / OCR service
+ocr-service/.venv/
+ocr-service/__pycache__/
+ocr-service/**/__pycache__/
+ocr-service/**/*.pyc
+ocr-service/**/*.pyo
+ocr-service/.env
+ocr-service/.pytest_cache/
+ocr-service/*.egg-info/
+ocr-service/dist/
+ocr-service/build/
+ocr-service/.mypy_cache/
+ocr-service/.ruff_cache/
+
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules

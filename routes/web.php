@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeDocumentController;
 use App\Http\Controllers\EmployeeContractController;
 use App\Http\Controllers\CurrentOrganizationController;
 use App\Http\Controllers\JobRequisitionController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\LearningCourseController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\OffboardingTaskController;
+use App\Http\Controllers\OcrController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OnboardingTaskController;
 use App\Http\Controllers\OrgUnitController;
@@ -327,13 +329,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/employees/import', [EmployeeController::class, 'import'])
         ->middleware('permission:employees.bulk_upload')
         ->name('employees.import');
-    Route::post('/employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])
+    Route::get('/employees/{employee}/documents', [EmployeeDocumentController::class, 'index'])
+        ->middleware('permission:employees.view')
+        ->name('employees.documents.index');
+    Route::get('/employees/{employee}/documents/upload', [EmployeeDocumentController::class, 'create'])
+        ->middleware('permission:documents.create')
+        ->name('employees.documents.upload');
+    Route::post('/employees/{employee}/documents', [EmployeeDocumentController::class, 'store'])
         ->middleware('permission:documents.create')
         ->name('employees.documents.store');
-    Route::get('/employees/{employee}/documents/{document}/download', [EmployeeController::class, 'downloadDocument'])
+    Route::get('/employees/{employee}/documents/{document}/ocr', [OcrController::class, 'show'])
+        ->middleware('permission:employees.view')
+        ->name('employees.documents.ocr.show');
+    Route::post('/employees/{employee}/documents/{document}/ocr/retry', [OcrController::class, 'retry'])
+        ->middleware('permission:documents.create')
+        ->name('employees.documents.ocr.retry');
+    Route::post('/employees/{employee}/documents/{document}/ocr/process-now', [OcrController::class, 'processNow'])
+        ->middleware('permission:documents.create')
+        ->name('employees.documents.ocr.process-now');
+    Route::get('/employees/{employee}/documents/{document}/download', [EmployeeDocumentController::class, 'download'])
         ->middleware('permission:documents.view')
         ->name('employees.documents.download');
-    Route::delete('/employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])
+    Route::get('/employees/{employee}/documents/{document}', [EmployeeDocumentController::class, 'show'])
+        ->middleware('permission:employees.view')
+        ->name('employees.documents.show');
+    Route::delete('/employees/{employee}/documents/{document}', [EmployeeDocumentController::class, 'destroy'])
         ->middleware('permission:documents.delete')
         ->name('employees.documents.destroy');
     Route::post('/employees/{employee}/next-of-kin', [EmployeeController::class, 'storeNextOfKin'])

@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(php artisan:*)",
-      "Bash(grep -n \"image\\\\|photo\\\\|picture\\\\|asset_images\\\\|getImages\\\\|image_path\" app/Models/Asset*.php app/Http/Controllers/AssetController.php)"
+      "Bash(grep -n \"image\\\\|photo\\\\|picture\\\\|asset_images\\\\|getImages\\\\|image_path\" app/Models/Asset*.php app/Http/Controllers/AssetController.php)",
+      "Bash(curl -s --max-time 3 http://localhost:8002/health)",
+      "Bash(.venv/Scripts/python.exe -c \"import fastapi, paddleocr, uvicorn; print\\(''deps ok''\\)\")",
+      "Bash(curl -s --max-time 3 http://localhost:8002/v1/ocr/extract)",
+      "Bash(netstat -ano)",
+      "Bash(powershell -Command \"Get-Process -Id 58020, 29680 2>&1 | Select-Object Id, ProcessName, MainWindowTitle\" 2>&1)",
+      "Bash(cd:*)"
     ]
   }
 }

@@ -349,8 +349,11 @@ class EmployeeController extends Controller
                     'benefit_enrollments_count' => $employee->benefitEnrollments->count(),
                 ],
                 'links' => [
-                    'document_store' => "/employees/{$employee->id}/documents",
-                    'next_of_kin_store' => "/employees/{$employee->id}/next-of-kin",
+                'document_index' => "/employees/{$employee->id}/documents",
+                'document_upload' => "/employees/{$employee->id}/documents/upload",
+                'document_store' => "/employees/{$employee->id}/documents",
+                'ocr_enabled' => Document::supportsOcr(),
+                'next_of_kin_store' => "/employees/{$employee->id}/next-of-kin",
                     'physical_profile_store' => "/employees/{$employee->id}/physical-profile",
                     'skill_store' => "/employees/{$employee->id}/skills",
                     'job_profile_store' => "/employees/{$employee->id}/job-profile",
@@ -845,6 +848,8 @@ class EmployeeController extends Controller
 
     private function mapDocument(Employee $employee, Document $document): array
     {
+        $ocrEnabled = Document::supportsOcr();
+
         return [
             'id' => $document->id,
             'document_type_id' => $document->document_type_id,
@@ -856,6 +861,14 @@ class EmployeeController extends Controller
             'access_policy' => $document->access_policy,
             'metadata_json' => $document->metadata_json,
             'created_at' => optional($document->created_at)->toDateTimeString(),
+            'ocr_status' => $ocrEnabled ? $document->ocr_status : null,
+            'ocr_engine' => $ocrEnabled ? $document->ocr_engine : null,
+            'ocr_language' => $ocrEnabled ? $document->ocr_language : null,
+            'ocr_page_count' => $ocrEnabled ? $document->ocr_page_count : null,
+            'ocr_avg_confidence' => $ocrEnabled && $document->ocr_avg_confidence !== null ? (float) $document->ocr_avg_confidence : null,
+            'ocr_error_message' => $ocrEnabled ? $document->ocr_error_message : null,
+            'ocr_processed_at' => $ocrEnabled ? optional($document->ocr_processed_at)->toDateTimeString() : null,
+            'ocr_enabled' => $ocrEnabled,
             'document_type' => $document->documentType ? [
                 'id' => $document->documentType->id,
                 'code' => $document->documentType->code,
@@ -864,6 +877,9 @@ class EmployeeController extends Controller
             ] : null,
             'download_url' => "/employees/{$employee->id}/documents/{$document->id}/download",
             'delete_url' => "/employees/{$employee->id}/documents/{$document->id}",
+            'show_url' => "/employees/{$employee->id}/documents/{$document->id}",
+            'ocr_result_url' => "/employees/{$employee->id}/documents/{$document->id}/ocr",
+            'retry_ocr_url' => "/employees/{$employee->id}/documents/{$document->id}/ocr/retry",
         ];
     }
 

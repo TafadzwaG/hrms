@@ -13,6 +13,8 @@ import PermissionMatrixController from './PermissionMatrixController'
 import RoleController from './RoleController'
 import PositionController from './PositionController'
 import EmployeeController from './EmployeeController'
+import EmployeeDocumentController from './EmployeeDocumentController'
+import OcrController from './OcrController'
 import EmployeeContractController from './EmployeeContractController'
 import AssetController from './AssetController'
 import AssetMaintenanceController from './AssetMaintenanceController'
@@ -82,6 +84,8 @@ PermissionMatrixController: Object.assign(PermissionMatrixController, Permission
 RoleController: Object.assign(RoleController, RoleController),
 PositionController: Object.assign(PositionController, PositionController),
 EmployeeController: Object.assign(EmployeeController, EmployeeController),
+EmployeeDocumentController: Object.assign(EmployeeDocumentController, EmployeeDocumentController),
+OcrController: Object.assign(OcrController, OcrController),
 EmployeeContractController: Object.assign(EmployeeContractController, EmployeeContractController),
 AssetController: Object.assign(AssetController, AssetController),
 AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaintenanceController),
