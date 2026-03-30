@@ -10,7 +10,8 @@
       "Bash(powershell -Command \"Get-Process -Id 58020, 29680 2>&1 | Select-Object Id, ProcessName, MainWindowTitle\" 2>&1)",
       "Bash(cd:*)",
       "Bash(composer show:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(grep -A 30 '```mermaid' \"C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/docs/asset-management-module.md\")"
     ]
   }
 }

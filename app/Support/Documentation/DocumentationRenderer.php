@@ -40,10 +40,15 @@ class DocumentationRenderer
                 continue;
             }
 
+            $diagram = $this->parseFlowchart($source);
+
             $blocks[] = [
                 'type' => 'flowchart',
                 'source' => $source,
                 'svg' => $this->renderFlowchartSvg($source),
+                'nodes' => $diagram['nodes'],
+                'edges' => $diagram['edges'],
+                'direction' => $diagram['direction'],
             ];
         }
 
@@ -259,8 +264,13 @@ class DocumentationRenderer
             $from = $this->parseNodeToken(trim($matches[1]));
             $to = $this->parseNodeToken(trim($matches[3]));
 
-            $nodes[$from['id']] = $from;
-            $nodes[$to['id']] = $to;
+            // Only overwrite an existing node entry if the new token carries a real label
+            if (! isset($nodes[$from['id']]) || $from['label'] !== $from['id']) {
+                $nodes[$from['id']] = $from;
+            }
+            if (! isset($nodes[$to['id']]) || $to['label'] !== $to['id']) {
+                $nodes[$to['id']] = $to;
+            }
             $edges[] = [
                 'from' => $from['id'],
                 'to' => $to['id'],

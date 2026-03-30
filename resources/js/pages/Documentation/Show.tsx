@@ -1,5 +1,5 @@
 import { DocumentationMarkdown } from '@/components/documentation/documentation-markdown';
-import { MermaidDiagram } from '@/components/documentation/mermaid-diagram';
+import { FlowDiagram } from '@/components/documentation/flow-diagram';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -7,11 +7,14 @@ import { sectionTitles, type DocumentationEntry, type DocumentationSections } fr
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, BookOpen, Download, FileCode2 } from 'lucide-react';
 
+type FlowNode = { id: string; label: string; type: string };
+type FlowEdge = { from: string; to: string; label: string | null };
+
 type DocumentationDocument = DocumentationEntry & {
     markdown: string;
     blocks: Array<
         | { type: 'markdown'; html: string }
-        | { type: 'flowchart'; source: string; svg: string }
+        | { type: 'flowchart'; source: string; svg: string; nodes: FlowNode[]; edges: FlowEdge[]; direction: string }
     >;
 };
 
@@ -71,12 +74,12 @@ export default function DocumentationShow() {
                                     block.type === 'markdown' ? (
                                         <DocumentationMarkdown key={`md-${index}`} html={block.html} />
                                     ) : (
-                                        <div
+                                        <FlowDiagram
                                             key={`flow-${index}`}
-                                            className="overflow-x-auto rounded-xl border border-border/70 bg-card p-6"
-                                        >
-                                            <MermaidDiagram source={block.source} />
-                                        </div>
+                                            nodes={block.nodes}
+                                            edges={block.edges}
+                                            direction={block.direction}
+                                        />
                                     ),
                                 )}
                             </div>

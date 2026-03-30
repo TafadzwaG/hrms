@@ -23,14 +23,14 @@ function ensureInit() {
             titleColor: '#0f172a',
             edgeLabelBackground: '#ffffff',
             fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-            fontSize: '14px',
+            fontSize: '3px',
         },
         flowchart: {
             curve: 'basis',
-            padding: 24,
+            padding: 2,
             htmlLabels: false,
-            nodeSpacing: 60,
-            rankSpacing: 80,
+            nodeSpacing: 6,
+            rankSpacing: 8,
         },
         securityLevel: 'loose',
     });
@@ -42,6 +42,7 @@ function normalizeSvg(raw: string): string {
         const cleaned = inner.replace(/max-width:[^;]*;?\s*/g, '').trim();
         return cleaned ? `style="${cleaned}"` : '';
     });
+
     // Force responsive width / auto height
     svg = svg.replace(/<svg([^>]*)>/, (_, attrs) => {
         let a = attrs
@@ -50,6 +51,28 @@ function normalizeSvg(raw: string): string {
             .trim();
         return `<svg${a ? ' ' + a : ''} width="100%" style="height:auto;display:block;">`;
     });
+
+    // Thin node borders: stroke-width on rect/polygon/circle elements
+    svg = svg.replace(/(<(?:rect|polygon|circle|ellipse|path)[^>]*)\bstroke-width="[^"]*"/g, '$1stroke-width="0.4"');
+    svg = svg.replace(/(<(?:rect|polygon|circle|ellipse|path)[^>]*)(?=\s*\/>|\s*>)(?![^>]*stroke-width)/g, (m) =>
+        m.includes('stroke=') ? m.replace('>', ' stroke-width="0.4">') : m,
+    );
+
+    // Thin edge lines
+    svg = svg.replace(/(<(?:line|polyline)[^>]*)\bstroke-width="[^"]*"/g, '$1stroke-width="0.4"');
+
+    // Thin arrowhead markers
+    svg = svg.replace(/(<marker[^>]*>[\s\S]*?<\/marker>)/g, (marker) =>
+        marker.replace(/\bstroke-width="[^"]*"/g, 'stroke-width="0.4"'),
+    );
+
+    // Inject a global style override to catch any stroke-width set via CSS class
+    svg = svg.replace('</defs>', `<style>
+        .flowchart-link { stroke-width: 0.4px !important; }
+        .node rect, .node circle, .node ellipse, .node polygon, .node path { stroke-width: 0.4px !important; }
+        marker path { stroke-width: 0.4px !important; }
+    </style></defs>`);
+
     return svg;
 }
 
@@ -96,10 +119,11 @@ export function MermaidDiagram({ source }: { source: string }) {
     }
 
     return (
-        <div
-            ref={ref}
-            className="w-full overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: svg }}
-        />
+        <div ref={ref} className="w-full overflow-x-auto">
+            <div
+                style={{ transform: 'scale(0.5)', transformOrigin: 'top left', width: '200%' }}
+                dangerouslySetInnerHTML={{ __html: svg }}
+            />
+        </div>
     );
 }
