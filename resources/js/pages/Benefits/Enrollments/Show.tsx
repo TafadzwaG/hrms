@@ -98,9 +98,18 @@ type EnrollmentPayload = {
     notes: string | null;
     dependants: DependantRecord[];
     documents: DocumentItem[];
-    change_log: ChangeLogEntry[];
+    change_log?: ChangeLogEntry[];
+    change_logs?: ChangeLogEntry[];
     created_at: string | null;
     updated_at: string | null;
+    links: {
+        show: string;
+        edit: string;
+        suspend: string;
+        terminate: string;
+        reinstate: string;
+        document_store: string;
+    };
 };
 
 type ShowProps = {
@@ -108,21 +117,21 @@ type ShowProps = {
 };
 
 const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    suspended: 'border-transparent bg-amber-100 text-amber-700',
-    terminated: 'border-transparent bg-red-100 text-red-700',
-    expired: 'border-transparent bg-slate-100 text-slate-600',
-    cancelled: 'border-transparent bg-rose-100 text-rose-600',
+    active: 'badge-tone-success',
+    draft: 'badge-tone-muted',
+    suspended: 'badge-tone-warning',
+    terminated: 'badge-tone-danger',
+    expired: 'badge-tone-muted',
+    cancelled: 'badge-tone-danger',
 };
 
 const eventStyles: Record<string, string> = {
-    created: 'border-transparent bg-blue-100 text-blue-700',
-    activated: 'border-transparent bg-emerald-100 text-emerald-700',
-    suspended: 'border-transparent bg-amber-100 text-amber-700',
-    terminated: 'border-transparent bg-red-100 text-red-700',
-    reinstated: 'border-transparent bg-teal-100 text-teal-700',
-    updated: 'border-transparent bg-zinc-100 text-zinc-600',
+    created: 'badge-tone-info',
+    activated: 'badge-tone-success',
+    suspended: 'badge-tone-warning',
+    terminated: 'badge-tone-danger',
+    reinstated: 'badge-tone-success',
+    updated: 'badge-tone-muted',
 };
 
 function formatLabel(value: string) {
@@ -177,8 +186,8 @@ function FieldError({ message }: { message?: string }) {
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="flex justify-between gap-3 text-sm">
-            <span className="text-zinc-400">{label}</span>
-            <span className="text-right font-semibold text-zinc-700">{children}</span>
+            <span className="text-muted-foreground">{label}</span>
+            <span className="text-right font-semibold text-foreground">{children}</span>
         </div>
     );
 }
@@ -248,7 +257,7 @@ export default function EnrollmentShow() {
 
     const handleUploadDocument = (e: FormEvent) => {
         e.preventDefault();
-        documentForm.post(`/benefit-enrollments/${enrollment.id}/documents`, {
+        documentForm.post(enrollment.links.document_store, {
             preserveScroll: true,
             forceFormData: true,
             onSuccess: () => documentForm.reset(),
@@ -261,13 +270,13 @@ export default function EnrollmentShow() {
         });
     };
 
-    const handleStatusChange = (action: string) => {
-        router.put(
-            `/benefit-enrollments/${enrollment.id}/${action}`,
-            {},
-            { preserveScroll: true },
-        );
+    const handleStatusChange = (
+        action: 'suspend' | 'terminate' | 'reinstate',
+    ) => {
+        router.post(enrollment.links[action], {}, { preserveScroll: true });
     };
+
+    const changeLogEntries = enrollment.change_logs ?? enrollment.change_log ?? [];
 
     const canSuspend = enrollment.status === 'active';
     const canTerminate = enrollment.status === 'active' || enrollment.status === 'suspended';
@@ -299,7 +308,7 @@ export default function EnrollmentShow() {
                                 </h1>
                                 <Badge
                                     variant="outline"
-                                    className={`${statusStyles[enrollment.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
+                                    className={`${statusStyles[enrollment.status] ?? 'badge-tone-muted'} font-semibold`}
                                 >
                                     {formatLabel(enrollment.status)}
                                 </Badge>
@@ -317,7 +326,7 @@ export default function EnrollmentShow() {
                             </Button>
                         )}
                         {canTerminate && (
-                            <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50" onClick={() => handleStatusChange('terminate')} type="button">
+                            <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => handleStatusChange('terminate')} type="button">
                                 <XCircle className="mr-2 h-4 w-4" /> Terminate
                             </Button>
                         )}
@@ -340,7 +349,7 @@ export default function EnrollmentShow() {
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="dependants">Dependants ({enrollment.dependants?.length ?? 0})</TabsTrigger>
                         <TabsTrigger value="documents">Documents ({enrollment.documents?.length ?? 0})</TabsTrigger>
-                        <TabsTrigger value="change-log">Change Log ({enrollment.change_log?.length ?? 0})</TabsTrigger>
+                        <TabsTrigger value="change-log">Change Log ({changeLogEntries.length})</TabsTrigger>
                     </TabsList>
 
                     {/* Overview Tab */}
@@ -421,7 +430,7 @@ export default function EnrollmentShow() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-6">
-                                    <p className="text-zinc-600 whitespace-pre-wrap">{enrollment.notes}</p>
+                                    <p className="whitespace-pre-wrap text-muted-foreground">{enrollment.notes}</p>
                                 </CardContent>
                             </Card>
                         )}
@@ -442,42 +451,42 @@ export default function EnrollmentShow() {
                             </Button>
                         </div>
 
-                        <div className="overflow-hidden rounded-md border border-zinc-200">
+                        <div className="overflow-hidden rounded-md border border-border">
                             <Table>
-                                <TableHeader className="bg-zinc-50">
+                                <TableHeader className="bg-muted/10">
                                     <TableRow>
-                                        <TableHead className="font-bold text-zinc-900">Name</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Relationship</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Date of Birth</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">National ID</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Status</TableHead>
-                                        <TableHead className="text-right font-bold text-zinc-900">Actions</TableHead>
+                                        <TableHead className="font-bold text-foreground">Name</TableHead>
+                                        <TableHead className="font-bold text-foreground">Relationship</TableHead>
+                                        <TableHead className="font-bold text-foreground">Date of Birth</TableHead>
+                                        <TableHead className="font-bold text-foreground">National ID</TableHead>
+                                        <TableHead className="font-bold text-foreground">Status</TableHead>
+                                        <TableHead className="text-right font-bold text-foreground">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {(enrollment.dependants ?? []).length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="py-8 text-center text-zinc-400">No dependants found.</TableCell>
+                                            <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">No dependants found.</TableCell>
                                         </TableRow>
                                     ) : (
                                         enrollment.dependants.map((dep) => (
-                                            <TableRow key={dep.id} className="hover:bg-zinc-50/50">
-                                                <TableCell className="font-bold text-zinc-900">{dep.full_name}</TableCell>
-                                                <TableCell className="text-zinc-500">{formatLabel(dep.relationship)}</TableCell>
-                                                <TableCell className="text-zinc-500">{formatDate(dep.date_of_birth)}</TableCell>
-                                                <TableCell className="text-zinc-500">{dep.national_id ?? '---'}</TableCell>
+                                            <TableRow key={dep.id} className="hover:bg-muted/20">
+                                                <TableCell className="font-bold text-foreground">{dep.full_name}</TableCell>
+                                                <TableCell className="text-muted-foreground">{formatLabel(dep.relationship)}</TableCell>
+                                                <TableCell className="text-muted-foreground">{formatDate(dep.date_of_birth)}</TableCell>
+                                                <TableCell className="text-muted-foreground">{dep.national_id ?? '---'}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline" className={`${statusStyles[dep.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}>
+                                                    <Badge variant="outline" className={`${statusStyles[dep.status] ?? 'badge-tone-muted'} font-semibold`}>
                                                         {formatLabel(dep.status)}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
                                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditDependant(dep)} type="button">
-                                                            <Pencil className="h-4 w-4 text-zinc-400" />
+                                                            <Pencil className="h-4 w-4 text-muted-foreground" />
                                                         </Button>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveDependant(dep.id)} type="button">
-                                                            <Trash2 className="h-4 w-4 text-red-400" />
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -531,31 +540,31 @@ export default function EnrollmentShow() {
                             </CardContent>
                         </Card>
 
-                        <div className="overflow-hidden rounded-md border border-zinc-200">
+                        <div className="overflow-hidden rounded-md border border-border">
                             <Table>
-                                <TableHeader className="bg-zinc-50">
+                                <TableHeader className="bg-muted/10">
                                     <TableRow>
-                                        <TableHead className="font-bold text-zinc-900">File Name</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Type</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Size</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Uploaded</TableHead>
-                                        <TableHead className="text-right font-bold text-zinc-900">Actions</TableHead>
+                                        <TableHead className="font-bold text-foreground">File Name</TableHead>
+                                        <TableHead className="font-bold text-foreground">Type</TableHead>
+                                        <TableHead className="font-bold text-foreground">Size</TableHead>
+                                        <TableHead className="font-bold text-foreground">Uploaded</TableHead>
+                                        <TableHead className="text-right font-bold text-foreground">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {(enrollment.documents ?? []).length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="py-8 text-center text-zinc-400">No documents found.</TableCell>
+                                            <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No documents found.</TableCell>
                                         </TableRow>
                                     ) : (
                                         enrollment.documents.map((doc) => (
-                                            <TableRow key={doc.id} className="hover:bg-zinc-50/50">
-                                                <TableCell className="font-bold text-zinc-900">{doc.file_name}</TableCell>
-                                                <TableCell className="text-zinc-500">{doc.document_type ? formatLabel(doc.document_type) : '---'}</TableCell>
-                                                <TableCell className="text-zinc-500">
+                                            <TableRow key={doc.id} className="hover:bg-muted/20">
+                                                <TableCell className="font-bold text-foreground">{doc.file_name}</TableCell>
+                                                <TableCell className="text-muted-foreground">{doc.document_type ? formatLabel(doc.document_type) : '---'}</TableCell>
+                                                <TableCell className="text-muted-foreground">
                                                     {doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : '---'}
                                                 </TableCell>
-                                                <TableCell className="text-zinc-500">{formatDate(doc.created_at)}</TableCell>
+                                                <TableCell className="text-muted-foreground">{formatDate(doc.created_at)}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
                                                         <Button variant="ghost" size="sm" asChild>
@@ -570,7 +579,7 @@ export default function EnrollmentShow() {
                                                             onClick={() => handleDeleteDocument(doc.id)}
                                                             type="button"
                                                         >
-                                                            <Trash2 className="h-4 w-4 text-red-400" />
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -585,18 +594,18 @@ export default function EnrollmentShow() {
                     {/* Change Log Tab */}
                     <TabsContent value="change-log" className="space-y-6">
                         <div className="space-y-4">
-                            {(enrollment.change_log ?? []).length === 0 ? (
-                                <Card className="border-zinc-200 shadow-none">
-                                    <CardContent className="py-8 text-center text-zinc-400">
+                            {changeLogEntries.length === 0 ? (
+                                <Card className="border-border bg-card shadow-none">
+                                    <CardContent className="py-8 text-center text-muted-foreground">
                                         No change log entries found.
                                     </CardContent>
                                 </Card>
                             ) : (
-                                enrollment.change_log.map((entry) => (
-                                    <Card key={entry.id} className="border-zinc-200 shadow-none">
+                                changeLogEntries.map((entry) => (
+                                    <Card key={entry.id} className="border-border bg-card shadow-none">
                                         <CardContent className="flex items-start gap-4 p-6">
                                             <div className="mt-0.5">
-                                                <Clock className="h-5 w-5 text-zinc-400" />
+                                                <Clock className="h-5 w-5 text-muted-foreground" />
                                             </div>
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex flex-wrap items-center gap-2">
@@ -607,7 +616,7 @@ export default function EnrollmentShow() {
                                                         {formatLabel(entry.event)}
                                                     </Badge>
                                                     {entry.from_status && entry.to_status && (
-                                                        <span className="text-sm text-zinc-500">
+                                                        <span className="text-sm text-muted-foreground">
                                                             <Badge variant="outline" className={`${statusStyles[entry.from_status] ?? ''} mr-1 font-semibold`}>
                                                                 {formatLabel(entry.from_status)}
                                                             </Badge>
@@ -619,9 +628,9 @@ export default function EnrollmentShow() {
                                                     )}
                                                 </div>
                                                 {entry.reason && (
-                                                    <p className="text-sm text-zinc-600">{entry.reason}</p>
+                                                    <p className="text-sm text-muted-foreground">{entry.reason}</p>
                                                 )}
-                                                <div className="flex items-center gap-4 text-xs text-zinc-400">
+                                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                                     <span>{formatDateTime(entry.created_at)}</span>
                                                     {entry.changed_by && (
                                                         <span>by {entry.changed_by.name}</span>
@@ -645,12 +654,12 @@ export default function EnrollmentShow() {
                     dependantForm.reset();
                 }
             }}>
-                <AlertDialogContent className="max-w-lg border-zinc-200">
+                <AlertDialogContent className="max-w-lg border-border bg-popover">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-2xl font-bold">
                             {editingDependant ? 'Edit Dependant' : 'Add Dependant'}
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-zinc-500">
+                        <AlertDialogDescription className="text-muted-foreground">
                             {editingDependant ? 'Update dependant details.' : 'Add a new dependant to this enrollment.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -716,7 +725,7 @@ export default function EnrollmentShow() {
                             />
                         </div>
                         <AlertDialogFooter>
-                            <AlertDialogCancel className="border-zinc-200" type="button">Cancel</AlertDialogCancel>
+                            <AlertDialogCancel className="border-border" type="button">Cancel</AlertDialogCancel>
                             <Button type="submit" disabled={dependantForm.processing}>
                                 {dependantForm.processing ? 'Saving...' : editingDependant ? 'Update Dependant' : 'Add Dependant'}
                             </Button>

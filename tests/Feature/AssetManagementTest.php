@@ -440,6 +440,29 @@ test('can create and list vendors', function () {
 
 // ── Locations ───────────────────────────────────────────
 
+test('asset vendor show page loads for authorized user', function () {
+    $user = User::factory()->create();
+    $org = grantAssetPermissions($user, ['assets.vendors.view']);
+
+    $vendor = AssetVendor::withoutGlobalScopes()->create([
+        'organization_id' => $org->id,
+        'name' => 'Dell Technologies',
+        'code' => 'DEL-001',
+        'email' => 'vendor@example.com',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get("/asset-vendors/{$vendor->id}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('AssetVendors/Show')
+            ->where('vendor.id', $vendor->id)
+            ->where('vendor.name', 'Dell Technologies')
+            ->has('vendor.recent_assets')
+        );
+});
+
 test('can create and list asset locations', function () {
     $user = User::factory()->create();
     grantAssetPermissions($user, ['assets.locations.view', 'assets.locations.manage']);

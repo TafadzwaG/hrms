@@ -1,4 +1,5 @@
 import PasswordResetController from './PasswordResetController'
+import DocumentationController from './DocumentationController'
 import Candidate from './Candidate'
 import Employer from './Employer'
 import CurrentOrganizationController from './CurrentOrganizationController'
@@ -17,6 +18,7 @@ import EmployeeDocumentController from './EmployeeDocumentController'
 import OcrController from './OcrController'
 import EmployeeContractController from './EmployeeContractController'
 import AssetController from './AssetController'
+import AssetImportController from './AssetImportController'
 import AssetMaintenanceController from './AssetMaintenanceController'
 import AssetCategoryController from './AssetCategoryController'
 import AssetVendorController from './AssetVendorController'
@@ -70,6 +72,7 @@ import PortalAuthController from './PortalAuthController'
 import Settings from './Settings'
 const Controllers = {
     PasswordResetController: Object.assign(PasswordResetController, PasswordResetController),
+DocumentationController: Object.assign(DocumentationController, DocumentationController),
 Candidate: Object.assign(Candidate, Candidate),
 Employer: Object.assign(Employer, Employer),
 CurrentOrganizationController: Object.assign(CurrentOrganizationController, CurrentOrganizationController),
@@ -88,6 +91,7 @@ EmployeeDocumentController: Object.assign(EmployeeDocumentController, EmployeeDo
 OcrController: Object.assign(OcrController, OcrController),
 EmployeeContractController: Object.assign(EmployeeContractController, EmployeeContractController),
 AssetController: Object.assign(AssetController, AssetController),
+AssetImportController: Object.assign(AssetImportController, AssetImportController),
 AssetMaintenanceController: Object.assign(AssetMaintenanceController, AssetMaintenanceController),
 AssetCategoryController: Object.assign(AssetCategoryController, AssetCategoryController),
 AssetVendorController: Object.assign(AssetVendorController, AssetVendorController),

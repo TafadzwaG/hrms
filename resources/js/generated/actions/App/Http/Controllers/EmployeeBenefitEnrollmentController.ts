@@ -314,7 +314,7 @@ show.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_en
     show.form = showForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
 export const edit = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -329,7 +329,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
 edit.url = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -362,7 +362,7 @@ edit.url = (args: { benefit_enrollment: number | { id: number } } | [benefit_enr
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
 edit.get = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -371,7 +371,7 @@ edit.get = (args: { benefit_enrollment: number | { id: number } } | [benefit_enr
 })
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
 edit.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -381,7 +381,7 @@ edit.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_en
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
     const editForm = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -391,7 +391,7 @@ edit.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_en
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
         editForm.get = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -400,7 +400,7 @@ edit.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_en
         })
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::edit
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:141
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:142
  * @route '/benefit-enrollments/{benefit_enrollment}/edit'
  */
         editForm.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -416,7 +416,7 @@ edit.head = (args: { benefit_enrollment: number | { id: number } } | [benefit_en
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
 export const update = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -431,7 +431,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
 update.url = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -464,7 +464,7 @@ update.url = (args: { benefit_enrollment: number | { id: number } } | [benefit_e
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
 update.put = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -473,7 +473,7 @@ update.put = (args: { benefit_enrollment: number | { id: number } } | [benefit_e
 })
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
 update.patch = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -483,7 +483,7 @@ update.patch = (args: { benefit_enrollment: number | { id: number } } | [benefit
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
     const updateForm = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -498,7 +498,7 @@ update.patch = (args: { benefit_enrollment: number | { id: number } } | [benefit
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
         updateForm.put = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -512,7 +512,7 @@ update.patch = (args: { benefit_enrollment: number | { id: number } } | [benefit
         })
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::update
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:157
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:158
  * @route '/benefit-enrollments/{benefit_enrollment}'
  */
         updateForm.patch = (args: { benefit_enrollment: number | { id: number } } | [benefit_enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -612,7 +612,7 @@ destroy.delete = (args: { benefit_enrollment: string | number } | [benefit_enrol
     destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::suspend
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:188
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:189
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
 export const suspend = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -627,7 +627,7 @@ suspend.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::suspend
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:188
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:189
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
 suspend.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -660,7 +660,7 @@ suspend.url = (args: { enrollment: number | { id: number } } | [enrollment: numb
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::suspend
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:188
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:189
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
 suspend.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -670,7 +670,7 @@ suspend.post = (args: { enrollment: number | { id: number } } | [enrollment: num
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::suspend
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:188
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:189
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
     const suspendForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -680,7 +680,7 @@ suspend.post = (args: { enrollment: number | { id: number } } | [enrollment: num
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::suspend
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:188
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:189
  * @route '/benefit-enrollments/{enrollment}/suspend'
  */
         suspendForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -691,7 +691,7 @@ suspend.post = (args: { enrollment: number | { id: number } } | [enrollment: num
     suspend.form = suspendForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::terminate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:217
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:218
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
 export const terminate = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -706,7 +706,7 @@ terminate.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::terminate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:217
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:218
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
 terminate.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -739,7 +739,7 @@ terminate.url = (args: { enrollment: number | { id: number } } | [enrollment: nu
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::terminate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:217
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:218
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
 terminate.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -749,7 +749,7 @@ terminate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::terminate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:217
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:218
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
     const terminateForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -759,7 +759,7 @@ terminate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::terminate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:217
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:218
  * @route '/benefit-enrollments/{enrollment}/terminate'
  */
         terminateForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -770,7 +770,7 @@ terminate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
     terminate.form = terminateForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::reinstate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:247
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:248
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
 export const reinstate = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -785,7 +785,7 @@ reinstate.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::reinstate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:247
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:248
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
 reinstate.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -818,7 +818,7 @@ reinstate.url = (args: { enrollment: number | { id: number } } | [enrollment: nu
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::reinstate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:247
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:248
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
 reinstate.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -828,7 +828,7 @@ reinstate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::reinstate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:247
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:248
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
     const reinstateForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -838,7 +838,7 @@ reinstate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::reinstate
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:247
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:248
  * @route '/benefit-enrollments/{enrollment}/reinstate'
  */
         reinstateForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -849,7 +849,7 @@ reinstate.post = (args: { enrollment: number | { id: number } } | [enrollment: n
     reinstate.form = reinstateForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::storeDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:280
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 export const storeDocument = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -864,7 +864,7 @@ storeDocument.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::storeDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:280
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 storeDocument.url = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -897,7 +897,7 @@ storeDocument.url = (args: { enrollment: number | { id: number } } | [enrollment
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::storeDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:280
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
 storeDocument.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -907,7 +907,7 @@ storeDocument.post = (args: { enrollment: number | { id: number } } | [enrollmen
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::storeDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:280
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
     const storeDocumentForm = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -917,7 +917,7 @@ storeDocument.post = (args: { enrollment: number | { id: number } } | [enrollmen
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::storeDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:279
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:280
  * @route '/benefit-enrollments/{enrollment}/documents'
  */
         storeDocumentForm.post = (args: { enrollment: number | { id: number } } | [enrollment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -928,7 +928,7 @@ storeDocument.post = (args: { enrollment: number | { id: number } } | [enrollmen
     storeDocument.form = storeDocumentForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 export const downloadDocument = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -943,7 +943,7 @@ downloadDocument.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 downloadDocument.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -973,7 +973,7 @@ downloadDocument.url = (args: { enrollment: number | { id: number }, document: n
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 downloadDocument.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -982,7 +982,7 @@ downloadDocument.get = (args: { enrollment: number | { id: number }, document: n
 })
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
 downloadDocument.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -992,7 +992,7 @@ downloadDocument.head = (args: { enrollment: number | { id: number }, document: 
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
     const downloadDocumentForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1002,7 +1002,7 @@ downloadDocument.head = (args: { enrollment: number | { id: number }, document: 
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
         downloadDocumentForm.get = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1011,7 +1011,7 @@ downloadDocument.head = (args: { enrollment: number | { id: number }, document: 
         })
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::downloadDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:303
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:304
  * @route '/benefit-enrollments/{enrollment}/documents/{document}/download'
  */
         downloadDocumentForm.head = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1027,7 +1027,7 @@ downloadDocument.head = (args: { enrollment: number | { id: number }, document: 
     downloadDocument.form = downloadDocumentForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroyDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:317
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 export const destroyDocument = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1042,7 +1042,7 @@ destroyDocument.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroyDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:317
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 destroyDocument.url = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -1072,7 +1072,7 @@ destroyDocument.url = (args: { enrollment: number | { id: number }, document: nu
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroyDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:317
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
 destroyDocument.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1082,7 +1082,7 @@ destroyDocument.delete = (args: { enrollment: number | { id: number }, document:
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroyDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:317
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
     const destroyDocumentForm = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -1097,7 +1097,7 @@ destroyDocument.delete = (args: { enrollment: number | { id: number }, document:
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitEnrollmentController::destroyDocument
- * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:316
+ * @see app/Http/Controllers/EmployeeBenefitEnrollmentController.php:317
  * @route '/benefit-enrollments/{enrollment}/documents/{document}'
  */
         destroyDocumentForm.delete = (args: { enrollment: number | { id: number }, document: number | { id: number } } | [enrollment: number | { id: number }, document: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

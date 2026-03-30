@@ -33,4 +33,9 @@ class BenefitChangeLog extends Model
     {
         return $this->belongsTo(User::class, 'changed_by');
     }
+
+    public function changer(): BelongsTo
+    {
+        return $this->changedByUser();
+    }
 }

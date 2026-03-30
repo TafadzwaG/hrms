@@ -12,6 +12,7 @@ import type { BreadcrumbItem, NavItem } from '@/types';
 import {
     Activity,
     Bell,
+    BookOpen,
     Briefcase,
     FileText,
     Gauge,
@@ -167,6 +168,11 @@ export function CandidateHubLayout({
                     title: 'Settings',
                     href: candidateLinks.settings,
                     icon: Settings,
+                },
+                {
+                    title: 'Documentation',
+                    href: '/documentation',
+                    icon: BookOpen,
                 },
             ],
         },

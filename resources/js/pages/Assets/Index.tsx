@@ -45,6 +45,7 @@ import {
     Plus,
     Search,
     Trash2,
+    Upload,
     LayoutGrid,
     List,
     Box,
@@ -324,11 +325,18 @@ export default function AssetIndex() {
                             visual-first approach.
                         </p>
                     </div>
-                    <Link href="/assets/create">
-                        <Button className="h-11 rounded-md px-6 shadow-sm">
-                            <Plus className="mr-2 h-5 w-5" /> New Asset
-                        </Button>
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Link href="/assets/import">
+                            <Button variant="outline" className="h-11 px-4">
+                                <Upload className="mr-2 h-4 w-4" /> Import
+                            </Button>
+                        </Link>
+                        <Link href="/assets/create">
+                            <Button className="h-11 px-4 shadow-sm">
+                                <Plus className="mr-2 h-4 w-4" /> New Asset
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 <RoleScopeBar

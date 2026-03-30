@@ -8,7 +8,9 @@
       "Bash(curl -s --max-time 3 http://localhost:8002/v1/ocr/extract)",
       "Bash(netstat -ano)",
       "Bash(powershell -Command \"Get-Process -Id 58020, 29680 2>&1 | Select-Object Id, ProcessName, MainWindowTitle\" 2>&1)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(composer show:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -31,6 +31,7 @@ type SidebarNavGroup = {
 
 const mainNavItems: SidebarNavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permissionsAny: ['dashboard.view'] },
+    { title: 'Documentation', href: '/documentation', icon: BookOpen },
     { title: 'Employees', href: '/employees', icon: Users, permissionsAny: ['employees.view'] },
     { title: 'Leave Requests', href: '/leave-requests', icon: BookOpen, permissionsAny: ['leave.view'] },
     { title: 'Attendance', href: '/attendance-records', icon: User, permissionsAny: ['attendance.view'] },

@@ -904,7 +904,7 @@ export default function EmployeeShow() {
                             className="w-full"
                         >
                             <div className="border-b border-border/60">
-                                <TabsList className="flex h-auto w-full justify-start gap-6 rounded-none bg-transparent p-0">
+                                <TabsList className="flex h-auto w-full justify-start gap-6 rounded-none bg-transparent p-0 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                     <TabsTrigger
                                         value="documents"
                                         className={tabClass}

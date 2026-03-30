@@ -11,6 +11,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    IndexTableCard,
+    IndexTableEmptyRow,
+    IndexTableHead,
+    IndexTableHeaderRow,
+    IndexTablePagination,
+} from '@/components/index-table';
 import { Input } from '@/components/ui/input';
 import { RoleScopeBar } from '@/components/role-scope-bar';
 import {
@@ -24,7 +31,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
@@ -46,7 +52,6 @@ import {
     Users,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import ReactPaginate from 'react-paginate';
 
 type EnrollmentRow = {
     id: number;
@@ -98,12 +103,12 @@ type EnrollmentsPageProps = {
 };
 
 const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    suspended: 'border-transparent bg-amber-100 text-amber-700',
-    terminated: 'border-transparent bg-red-100 text-red-700',
-    expired: 'border-transparent bg-slate-100 text-slate-600',
-    cancelled: 'border-transparent bg-rose-100 text-rose-600',
+    active: 'badge-tone-success',
+    draft: 'badge-tone-muted',
+    suspended: 'badge-tone-warning',
+    terminated: 'badge-tone-danger',
+    expired: 'badge-tone-muted',
+    cancelled: 'badge-tone-danger',
 };
 
 function formatLabel(value: string) {
@@ -114,14 +119,21 @@ function formatMoney(value: string | number | null | undefined) {
     if (value === null || value === undefined || value === '') return '---';
     const amount = Number(value);
     if (Number.isNaN(amount)) return String(value);
-    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return amount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 function formatDate(value: string | null) {
     if (!value) return '---';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
 }
 
 export default function EnrollmentIndex() {
@@ -140,7 +152,8 @@ export default function EnrollmentIndex() {
     );
     const [status, setStatus] = useState(filters.status ?? 'all');
     const [showFilters, setShowFilters] = useState(false);
-    const [enrollmentToDelete, setEnrollmentToDelete] = useState<EnrollmentRow | null>(null);
+    const [enrollmentToDelete, setEnrollmentToDelete] =
+        useState<EnrollmentRow | null>(null);
 
     const initialRender = useRef(true);
 
@@ -192,28 +205,12 @@ export default function EnrollmentIndex() {
         });
     };
 
-    const handlePageChange = ({ selected }: { selected: number }) => {
-        router.get(
-            '/benefit-enrollments',
-            buildIndexParams(filters, {
-                page: selected + 1,
-                search: search || undefined,
-                benefit_id: benefitId !== 'all' ? benefitId : undefined,
-                status: status !== 'all' ? status : undefined,
-            }, { resetPage: false }),
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
+    const activeFilters = {
+        ...filters,
+        search: search || undefined,
+        benefit_id: benefitId !== 'all' ? benefitId : undefined,
+        status: status !== 'all' ? status : undefined,
     };
-
-    const perPage = enrollments.per_page ?? (enrollments.data.length || 1);
-    const showingFrom =
-        enrollments.from ??
-        (enrollments.total === 0 ? 0 : (enrollments.current_page - 1) * perPage + 1);
-    const showingTo =
-        enrollments.to ?? Math.min(enrollments.current_page * perPage, enrollments.total);
 
     return (
         <AppLayout
@@ -224,7 +221,7 @@ export default function EnrollmentIndex() {
         >
             <Head title="Benefit Enrollments" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
                 <RoleScopeBar
                     scope={scope}
                     path="/benefit-enrollments"
@@ -233,50 +230,66 @@ export default function EnrollmentIndex() {
 
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+                        <h1 className="text-4xl font-bold tracking-tight text-foreground">
                             Benefit Enrollments
                         </h1>
-                        <p className="text-lg text-zinc-500">
+                        <p className="text-lg text-muted-foreground">
                             Manage employee benefit enrollments and contributions.
                         </p>
                     </div>
                     <Link href="/benefit-enrollments/create">
-                        <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
+                        <Button className="h-11 px-6 shadow-sm">
                             <Plus className="mr-2 h-5 w-5" /> New Enrollment
                         </Button>
                     </Link>
                 </div>
 
-                {/* Stats */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {[
-                        { label: 'Active Enrollments', val: computedStats.active, icon: Users },
-                        { label: 'Total Employer Contributions', val: formatMoney(computedStats.total_employer), icon: DollarSign },
-                        { label: 'Total Employee Deductions', val: formatMoney(computedStats.total_employee), icon: Banknote },
-                        { label: 'Pending', val: computedStats.pending, icon: Clock },
+                        {
+                            label: 'Active Enrollments',
+                            val: computedStats.active,
+                            icon: Users,
+                        },
+                        {
+                            label: 'Total Employer Contributions',
+                            val: formatMoney(computedStats.total_employer),
+                            icon: DollarSign,
+                        },
+                        {
+                            label: 'Total Employee Deductions',
+                            val: formatMoney(computedStats.total_employee),
+                            icon: Banknote,
+                        },
+                        {
+                            label: 'Pending',
+                            val: computedStats.pending,
+                            icon: Clock,
+                        },
                     ].map((item, index) => (
-                        <Card key={index} className="border-zinc-200 shadow-none">
+                        <Card key={index} className="border-border bg-card shadow-none">
                             <CardContent className="flex items-center justify-between p-6">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
+                                    <p className="text-sm font-medium tracking-wider text-muted-foreground uppercase">
                                         {item.label}
                                     </p>
-                                    <p className="text-2xl font-semibold text-zinc-900">{item.val}</p>
+                                    <p className="text-2xl font-semibold text-foreground">
+                                        {item.val}
+                                    </p>
                                 </div>
-                                <item.icon className="h-6 w-6 text-zinc-400" />
+                                <item.icon className="h-6 w-6 text-muted-foreground" />
                             </CardContent>
                         </Card>
                     ))}
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4">
+                <div className="flex flex-col gap-4 border-t border-border/50 pt-4">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="relative w-full max-w-md">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search by employee name or staff number..."
-                                className="h-11 border-zinc-200 pl-10 focus:ring-zinc-900"
+                                className="h-11 bg-background pl-10"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -284,7 +297,7 @@ export default function EnrollmentIndex() {
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
-                                className="h-11 border-zinc-200"
+                                className="h-11"
                                 onClick={() => setShowFilters((c) => !c)}
                                 type="button"
                             >
@@ -292,7 +305,7 @@ export default function EnrollmentIndex() {
                             </Button>
                             <Button
                                 variant="ghost"
-                                className="h-11 text-zinc-500"
+                                className="h-11 text-muted-foreground"
                                 onClick={handleResetFilters}
                                 type="button"
                             >
@@ -302,34 +315,38 @@ export default function EnrollmentIndex() {
                     </div>
 
                     {showFilters && (
-                        <div className="grid grid-cols-1 gap-4 rounded-md border border-zinc-200 bg-zinc-50/40 p-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 rounded-md border border-border bg-muted/20 p-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Benefit</p>
+                                <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                                    Benefit
+                                </p>
                                 <Select value={benefitId} onValueChange={setBenefitId}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
+                                    <SelectTrigger className="h-11 bg-background">
                                         <SelectValue placeholder="All benefits" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All benefits</SelectItem>
-                                        {benefits.map((b) => (
-                                            <SelectItem key={b.id} value={String(b.id)}>
-                                                {b.name}
+                                        {benefits.map((benefit) => (
+                                            <SelectItem key={benefit.id} value={String(benefit.id)}>
+                                                {benefit.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Status</p>
+                                <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                                    Status
+                                </p>
                                 <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="h-11 border-zinc-200 bg-white">
+                                    <SelectTrigger className="h-11 bg-background">
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">All statuses</SelectItem>
-                                        {statuses.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {formatLabel(s)}
+                                        {statuses.map((item) => (
+                                            <SelectItem key={item} value={item}>
+                                                {formatLabel(item)}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -339,70 +356,93 @@ export default function EnrollmentIndex() {
                     )}
                 </div>
 
-                {/* Table */}
-                <div className="overflow-hidden rounded-md border border-zinc-200">
+                <IndexTableCard>
                     <Table>
-                        <TableHeader className="bg-zinc-50">
-                            <TableRow>
-                                <TableHead className="font-bold text-zinc-900">Employee</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Benefit</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Plan</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Status</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Effective Date</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Employee Contrib.</TableHead>
-                                <TableHead className="font-bold text-zinc-900">Employer Contrib.</TableHead>
-                                <TableHead className="px-6 text-right font-bold text-zinc-900">Actions</TableHead>
-                            </TableRow>
+                        <TableHeader>
+                            <IndexTableHeaderRow>
+                                <IndexTableHead>Employee</IndexTableHead>
+                                <IndexTableHead>Benefit</IndexTableHead>
+                                <IndexTableHead>Plan</IndexTableHead>
+                                <IndexTableHead>Status</IndexTableHead>
+                                <IndexTableHead>Effective Date</IndexTableHead>
+                                <IndexTableHead>Employee Contrib.</IndexTableHead>
+                                <IndexTableHead>Employer Contrib.</IndexTableHead>
+                                <IndexTableHead align="right" className="px-6">
+                                    Actions
+                                </IndexTableHead>
+                            </IndexTableHeaderRow>
                         </TableHeader>
                         <TableBody>
                             {enrollments.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="py-8 text-center text-zinc-400">
-                                        No enrollments found.
-                                    </TableCell>
-                                </TableRow>
+                                <IndexTableEmptyRow colSpan={8}>
+                                    No enrollments found.
+                                </IndexTableEmptyRow>
                             ) : (
                                 enrollments.data.map((enrollment) => (
-                                    <TableRow key={enrollment.id} className="hover:bg-zinc-50/50">
+                                    <TableRow key={enrollment.id} className="hover:bg-muted/20">
                                         <TableCell>
                                             <div>
-                                                <p className="font-bold text-zinc-900">{enrollment.employee.full_name}</p>
-                                                <p className="text-xs text-zinc-400">{enrollment.employee.staff_number}</p>
+                                                <p className="font-bold text-foreground">
+                                                    {enrollment.employee.full_name}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {enrollment.employee.staff_number}
+                                                </p>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="font-medium text-zinc-700">{enrollment.benefit.name}</TableCell>
-                                        <TableCell className="text-zinc-500">{enrollment.plan?.name ?? '---'}</TableCell>
+                                        <TableCell className="font-medium text-foreground">
+                                            {enrollment.benefit.name}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {enrollment.plan?.name ?? '---'}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
-                                                className={`${statusStyles[enrollment.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
+                                                className={`${statusStyles[enrollment.status] ?? 'badge-tone-muted'} font-semibold`}
                                             >
                                                 {formatLabel(enrollment.status)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-zinc-500">{formatDate(enrollment.effective_date)}</TableCell>
-                                        <TableCell>{formatMoney(enrollment.employee_contribution)}</TableCell>
-                                        <TableCell>{formatMoney(enrollment.employer_contribution)}</TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {formatDate(enrollment.effective_date)}
+                                        </TableCell>
+                                        <TableCell className="font-medium text-foreground">
+                                            {formatMoney(enrollment.employee_contribution)}
+                                        </TableCell>
+                                        <TableCell className="font-medium text-foreground">
+                                            {formatMoney(enrollment.employer_contribution)}
+                                        </TableCell>
                                         <TableCell className="px-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                    asChild
+                                                >
                                                     <Link href={enrollment.links.show}>
-                                                        <Eye className="h-4 w-4 text-zinc-400" />
-                                                    </Link>
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                                                    <Link href={enrollment.links.edit}>
-                                                        <Pencil className="h-4 w-4 text-zinc-400" />
+                                                        <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                    asChild
+                                                >
+                                                    <Link href={enrollment.links.edit}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                                     onClick={() => setEnrollmentToDelete(enrollment)}
                                                     type="button"
                                                 >
-                                                    <Trash2 className="h-4 w-4 text-red-400" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -411,55 +451,37 @@ export default function EnrollmentIndex() {
                             )}
                         </TableBody>
                     </Table>
-                </div>
 
-                {/* Pagination */}
-                <div className="flex flex-col items-center justify-between gap-4 border-t border-zinc-100 pt-6 md:flex-row">
-                    <p className="text-sm font-medium text-zinc-500">
-                        Showing{' '}
-                        <span className="text-zinc-900">{showingFrom}-{showingTo}</span>{' '}
-                        of <span className="text-zinc-900">{enrollments.total}</span> enrollments
-                    </p>
-                    <ReactPaginate
-                        pageCount={enrollments.last_page}
-                        forcePage={Math.max((enrollments.current_page ?? 1) - 1, 0)}
-                        onPageChange={handlePageChange}
-                        containerClassName="flex gap-1"
-                        pageLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold transition-colors hover:bg-zinc-50"
-                        activeLinkClassName="!border-zinc-900 !bg-zinc-900 !text-white"
-                        previousLabel="←"
-                        nextLabel="→"
-                        previousLinkClassName="mr-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        nextLinkClassName="ml-2 flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
-                        disabledClassName="pointer-events-none opacity-30"
-                        breakLabel="..."
-                        breakLinkClassName="flex h-10 w-10 items-center justify-center rounded-md border text-sm font-bold"
-                        marginPagesDisplayed={1}
-                        pageRangeDisplayed={3}
+                    <IndexTablePagination
+                        pagination={enrollments}
+                        filters={activeFilters}
+                        path="/benefit-enrollments"
+                        label="enrollments"
                     />
-                </div>
+                </IndexTableCard>
             </div>
 
-            {/* Delete Alert */}
             <AlertDialog
                 open={!!enrollmentToDelete}
                 onOpenChange={() => setEnrollmentToDelete(null)}
             >
-                <AlertDialogContent className="rounded-none border-zinc-200">
+                <AlertDialogContent className="rounded-none border-border bg-popover">
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-2xl font-bold">
                             Confirm Deletion
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-zinc-500">
+                        <AlertDialogDescription className="text-muted-foreground">
                             You are about to remove the enrollment for{' '}
-                            <span className="font-bold text-zinc-900">
+                            <span className="font-bold text-foreground">
                                 {enrollmentToDelete?.employee.full_name}
                             </span>
                             . This action is permanent and cannot be reversed.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel className="border-zinc-200">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="border-border">
+                            Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                             className="border-none bg-red-600 text-white hover:bg-red-700"
                             onClick={handleDeleteEnrollment}

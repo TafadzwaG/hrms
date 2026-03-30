@@ -338,6 +338,24 @@ test('can update an employee enrollment', function () {
 
 // ── Enrollment Suspend / Terminate / Reinstate Workflow ─
 
+test('benefit enrollment show page loads for authorized user', function () {
+    $user = User::factory()->create();
+    $org = grantBenefitPermissions($user, ['benefits.view', 'benefits.enrollments.manage']);
+    $benefit = createTestBenefit($org);
+    $employee = createBenefitEmployee($org);
+    $enrollment = createTestEnrollment($org, $employee, $benefit);
+
+    $this->actingAs($user)
+        ->get("/benefit-enrollments/{$enrollment->id}")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Benefits/Enrollments/Show')
+            ->has('enrollment')
+            ->where('enrollment.id', $enrollment->id)
+            ->has('enrollment.links')
+        );
+});
+
 test('can suspend an enrollment', function () {
     $user = User::factory()->create();
     $org = grantBenefitPermissions($user, ['benefits.view', 'benefits.enrollments.manage']);

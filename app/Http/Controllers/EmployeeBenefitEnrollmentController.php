@@ -123,7 +123,8 @@ class EmployeeBenefitEnrollmentController extends Controller
         $enrollment = $benefit_enrollment;
         $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_BENEFIT_ENROLLMENTS, $enrollment);
         $enrollment->load([
-            'employee:id,first_name,surname,staff_number',
+            'employee:id,first_name,surname,staff_number,org_unit_id',
+            'employee.orgUnit:id,name',
             'benefit:id,name,code,category,benefit_type',
             'benefitPlan:id,name,code',
             'dependants',
@@ -351,6 +352,9 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'id' => $enrollment->employee->id,
                 'full_name' => $enrollment->employee->full_name,
                 'staff_number' => $enrollment->employee->staff_number,
+                'department' => $enrollment->employee->relationLoaded('orgUnit')
+                    ? $enrollment->employee->orgUnit?->name
+                    : null,
             ] : null,
             'benefit' => $enrollment->benefit ? [
                 'id' => $enrollment->benefit->id,
@@ -410,6 +414,15 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'delete_url' => "/benefit-enrollments/{$enrollment->id}/documents/{$doc->id}",
             ])->values()->all() : [],
             'change_logs' => $enrollment->relationLoaded('changeLogs') ? $enrollment->changeLogs->map(fn (BenefitChangeLog $log) => [
+                'id' => $log->id,
+                'event' => $log->event,
+                'from_status' => $log->from_status,
+                'to_status' => $log->to_status,
+                'reason' => $log->reason,
+                'changed_by' => $log->changer ? ['id' => $log->changer->id, 'name' => $log->changer->name] : null,
+                'created_at' => optional($log->created_at)->toDateTimeString(),
+            ])->values()->all() : [],
+            'change_log' => $enrollment->relationLoaded('changeLogs') ? $enrollment->changeLogs->map(fn (BenefitChangeLog $log) => [
                 'id' => $log->id,
                 'event' => $log->event,
                 'from_status' => $log->from_status,

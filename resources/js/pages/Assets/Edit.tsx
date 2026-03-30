@@ -42,13 +42,13 @@ type AssetPayload = {
     id: number;
     asset_tag: string;
     name: string;
-    asset_category_id: number | null;
+    category: { id: number; name: string } | null;
     serial_number: string | null;
     description: string | null;
     purchase_date: string | null;
     purchase_price: string | null;
     currency: string | null;
-    asset_vendor_id: number | null;
+    vendor: { id: number; name: string } | null;
     warranty_expiry_date: string | null;
     warranty_notes: string | null;
     depreciation_method: string | null;
@@ -56,7 +56,7 @@ type AssetPayload = {
     depreciation_rate: string | null;
     salvage_value: string | null;
     book_value: string | null;
-    asset_location_id: number | null;
+    location: { id: number; name: string } | null;
     status: string;
     condition: string;
     barcode: string | null;
@@ -96,19 +96,19 @@ export default function AssetEdit() {
         options: AssetOptions;
     }>().props;
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         asset_tag: asset.asset_tag ?? '',
         name: asset.name ?? '',
-        asset_category_id: asset.asset_category_id
-            ? String(asset.asset_category_id)
+        asset_category_id: asset.category?.id
+            ? String(asset.category.id)
             : '',
         serial_number: asset.serial_number ?? '',
         description: asset.description ?? '',
         purchase_date: asset.purchase_date ?? '',
         purchase_price: asset.purchase_price ?? '',
         currency: asset.currency ?? options.currencies[0] ?? 'USD',
-        asset_vendor_id: asset.asset_vendor_id
-            ? String(asset.asset_vendor_id)
+        asset_vendor_id: asset.vendor?.id
+            ? String(asset.vendor.id)
             : '',
         warranty_expiry_date: asset.warranty_expiry_date ?? '',
         warranty_notes: asset.warranty_notes ?? '',
@@ -122,8 +122,8 @@ export default function AssetEdit() {
         depreciation_rate: asset.depreciation_rate ?? '',
         salvage_value: asset.salvage_value ?? '',
         book_value: asset.book_value ?? '',
-        asset_location_id: asset.asset_location_id
-            ? String(asset.asset_location_id)
+        asset_location_id: asset.location?.id
+            ? String(asset.location.id)
             : '',
         status: asset.status ?? options.statuses[0] ?? 'available',
         condition: asset.condition ?? options.conditions[0] ?? 'new',
@@ -150,7 +150,7 @@ export default function AssetEdit() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        put(`/assets/${asset.id}`, { preserveScroll: true, forceFormData: true });
+        post(`/assets/${asset.id}`, { preserveScroll: true, forceFormData: true });
     };
 
     return (

@@ -211,6 +211,108 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     
     store.form = storeForm
 /**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+export const show = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+show.definition = {
+    methods: ["get","head"],
+    url: '/asset-vendors/{assetVendor}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+show.url = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { assetVendor: args }
+    }
+
+            if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+            args = { assetVendor: args.id }
+        }
+    
+    if (Array.isArray(args)) {
+        args = {
+                    assetVendor: args[0],
+                }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+                        assetVendor: typeof args.assetVendor === 'object'
+                ? args.assetVendor.id
+                : args.assetVendor,
+                }
+
+    return show.definition.url
+            .replace('{assetVendor}', parsedArgs.assetVendor.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+show.get = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+show.head = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+    const showForm = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+        showForm.get = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\AssetVendorController::show
+ * @see app/Http/Controllers/AssetVendorController.php:59
+ * @route '/asset-vendors/{assetVendor}'
+ */
+        showForm.head = (args: { assetVendor: number | { id: number } } | [assetVendor: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
+/**
 * @see \App\Http\Controllers\AssetVendorController::edit
  * @see app/Http/Controllers/AssetVendorController.php:98
  * @route '/asset-vendors/{assetVendor}/edit'
@@ -490,6 +592,6 @@ destroy.delete = (args: { assetVendor: number | { id: number } } | [assetVendor:
         })
     
     destroy.form = destroyForm
-const AssetVendorController = { index, create, store, edit, update, destroy }
+const AssetVendorController = { index, create, store, show, edit, update, destroy }
 
 export default AssetVendorController

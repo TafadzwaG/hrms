@@ -425,9 +425,9 @@ export const update = (args: { asset: number | { id: number } } | [asset: number
 })
 
 update.definition = {
-    methods: ["put"],
+    methods: ["put","post"],
     url: '/assets/{asset}',
-} satisfies RouteDefinition<["put"]>
+} satisfies RouteDefinition<["put","post"]>
 
 /**
 * @see \App\Http\Controllers\AssetController::update
@@ -471,6 +471,15 @@ update.put = (args: { asset: number | { id: number } } | [asset: number | { id: 
     url: update.url(args, options),
     method: 'put',
 })
+/**
+* @see \App\Http\Controllers\AssetController::update
+ * @see app/Http/Controllers/AssetController.php:230
+ * @route '/assets/{asset}'
+ */
+update.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: update.url(args, options),
+    method: 'post',
+})
 
     /**
 * @see \App\Http\Controllers\AssetController::update
@@ -499,6 +508,15 @@ update.put = (args: { asset: number | { id: number } } | [asset: number | { id: 
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
                     }),
+            method: 'post',
+        })
+            /**
+* @see \App\Http\Controllers\AssetController::update
+ * @see app/Http/Controllers/AssetController.php:230
+ * @route '/assets/{asset}'
+ */
+        updateForm.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, options),
             method: 'post',
         })
     

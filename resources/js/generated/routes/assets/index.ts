@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
+import importMethod7367d2 from './import'
 import documents from './documents'
 import maintenance from './maintenance'
 /**
@@ -212,6 +213,84 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
         })
     
     store.form = storeForm
+/**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+export const importMethod = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: importMethod.url(options),
+    method: 'get',
+})
+
+importMethod.definition = {
+    methods: ["get","head"],
+    url: '/assets/import',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+importMethod.url = (options?: RouteQueryOptions) => {
+    return importMethod.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+importMethod.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: importMethod.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+importMethod.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: importMethod.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: importMethod.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+        importMethodForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: importMethod.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\AssetImportController::importMethod
+ * @see app/Http/Controllers/AssetImportController.php:21
+ * @route '/assets/import'
+ */
+        importMethodForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: importMethod.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    importMethod.form = importMethodForm
 /**
 * @see \App\Http\Controllers\AssetController::show
  * @see app/Http/Controllers/AssetController.php:189
@@ -427,9 +506,9 @@ export const update = (args: { asset: number | { id: number } } | [asset: number
 })
 
 update.definition = {
-    methods: ["put"],
+    methods: ["put","post"],
     url: '/assets/{asset}',
-} satisfies RouteDefinition<["put"]>
+} satisfies RouteDefinition<["put","post"]>
 
 /**
 * @see \App\Http\Controllers\AssetController::update
@@ -473,6 +552,15 @@ update.put = (args: { asset: number | { id: number } } | [asset: number | { id: 
     url: update.url(args, options),
     method: 'put',
 })
+/**
+* @see \App\Http\Controllers\AssetController::update
+ * @see app/Http/Controllers/AssetController.php:230
+ * @route '/assets/{asset}'
+ */
+update.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: update.url(args, options),
+    method: 'post',
+})
 
     /**
 * @see \App\Http\Controllers\AssetController::update
@@ -501,6 +589,15 @@ update.put = (args: { asset: number | { id: number } } | [asset: number | { id: 
                             ...(options?.query ?? options?.mergeQuery ?? {}),
                         }
                     }),
+            method: 'post',
+        })
+            /**
+* @see \App\Http\Controllers\AssetController::update
+ * @see app/Http/Controllers/AssetController.php:230
+ * @route '/assets/{asset}'
+ */
+        updateForm.post = (args: { asset: number | { id: number } } | [asset: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, options),
             method: 'post',
         })
     
@@ -835,6 +932,7 @@ const assets = {
     index: Object.assign(index, index),
 create: Object.assign(create, create),
 store: Object.assign(store, store),
+import: Object.assign(importMethod, importMethod7367d2),
 show: Object.assign(show, show),
 edit: Object.assign(edit, edit),
 update: Object.assign(update, update),

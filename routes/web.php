@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssetCategoryController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\AssetImportController;
 use App\Http\Controllers\AssetLocationController;
 use App\Http\Controllers\AssetMaintenanceController;
 use App\Http\Controllers\AssetVendorController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\ControlCenterController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\EmployeeController;
@@ -112,6 +114,15 @@ Route::post('/reset-password', [PasswordResetController::class, 'store'])->name(
 
 // Candidate & Employer Hubs
 Route::middleware('auth')->group(function () {
+    Route::get('/documentation', [DocumentationController::class, 'index'])
+        ->name('documentation.index');
+    Route::get('/documentation/{section}/{slug}/pdf', [DocumentationController::class, 'download'])
+        ->whereIn('section', ['modules', 'roles', 'references'])
+        ->name('documentation.download');
+    Route::get('/documentation/{section}/{slug}', [DocumentationController::class, 'show'])
+        ->whereIn('section', ['modules', 'roles', 'references'])
+        ->name('documentation.show');
+
     Route::prefix('candidate')->name('candidate.')->group(function () {
         Route::get('/dashboard', \App\Http\Controllers\Candidate\DashboardController::class)->name('dashboard');
         Route::get('/applications', [\App\Http\Controllers\Candidate\ApplicationsController::class, 'index'])->name('applications');
@@ -449,13 +460,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [AssetController::class, 'store'])
                 ->middleware('permission:assets.create')
                 ->name('store');
+            // Import (must be before /{asset} wildcard)
+            Route::get('/import', [AssetImportController::class, 'create'])
+                ->middleware('permission:assets.create')
+                ->name('import');
+            Route::get('/import/template', [AssetImportController::class, 'template'])
+                ->middleware('permission:assets.create')
+                ->name('import.template');
+            Route::post('/import', [AssetImportController::class, 'store'])
+                ->middleware('permission:assets.create')
+                ->name('import.store');
+
             Route::get('/{asset}', [AssetController::class, 'show'])
                 ->middleware('permission:assets.view')
                 ->name('show');
             Route::get('/{asset}/edit', [AssetController::class, 'edit'])
                 ->middleware('permission:assets.update')
                 ->name('edit');
-            Route::put('/{asset}', [AssetController::class, 'update'])
+            Route::match(['PUT', 'POST'], '/{asset}', [AssetController::class, 'update'])
                 ->middleware('permission:assets.update')
                 ->name('update');
             Route::delete('/{asset}', [AssetController::class, 'destroy'])
@@ -548,6 +570,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/', [AssetVendorController::class, 'store'])
                 ->middleware('permission:assets.vendors.manage')
                 ->name('store');
+            Route::get('/{assetVendor}', [AssetVendorController::class, 'show'])
+                ->middleware('permission:assets.vendors.view')
+                ->name('show');
             Route::get('/{assetVendor}/edit', [AssetVendorController::class, 'edit'])
                 ->middleware('permission:assets.vendors.manage')
                 ->name('edit');
@@ -1280,4 +1305,3 @@ Route::post('/webhooks/paynow', [PaymentWebhookController::class, 'handlePaynow'
 
 require __DIR__.'/auth.php';
 require __DIR__.'/settings.php';
-

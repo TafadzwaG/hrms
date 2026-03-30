@@ -60,23 +60,23 @@ type DashboardProps = {
 };
 
 const statusStyles: Record<string, string> = {
-    active: 'border-transparent bg-emerald-100 text-emerald-700',
-    draft: 'border-transparent bg-zinc-100 text-zinc-600',
-    suspended: 'border-transparent bg-amber-100 text-amber-700',
-    terminated: 'border-transparent bg-red-100 text-red-700',
-    expired: 'border-transparent bg-slate-100 text-slate-600',
-    cancelled: 'border-transparent bg-rose-100 text-rose-600',
+    active: 'badge-tone-success',
+    draft: 'badge-tone-muted',
+    suspended: 'badge-tone-warning',
+    terminated: 'badge-tone-danger',
+    expired: 'badge-tone-muted',
+    cancelled: 'badge-tone-danger',
 };
 
 const categoryStyles: Record<string, string> = {
-    health: 'border-transparent bg-blue-100 text-blue-700',
-    retirement: 'border-transparent bg-purple-100 text-purple-700',
-    allowance: 'border-transparent bg-green-100 text-green-700',
-    insurance: 'border-transparent bg-indigo-100 text-indigo-700',
-    wellness: 'border-transparent bg-teal-100 text-teal-700',
-    education: 'border-transparent bg-orange-100 text-orange-700',
-    loan: 'border-transparent bg-pink-100 text-pink-700',
-    other: 'border-transparent bg-zinc-100 text-zinc-600',
+    health: 'badge-tone-info',
+    retirement: 'badge-tone-accent',
+    allowance: 'badge-tone-success',
+    insurance: 'badge-tone-info',
+    wellness: 'badge-tone-success',
+    education: 'badge-tone-warning',
+    loan: 'badge-tone-danger',
+    other: 'badge-tone-muted',
 };
 
 function formatLabel(value: string) {
@@ -127,29 +127,29 @@ export default function BenefitsDashboard() {
         >
             <Head title="Benefits Dashboard" />
 
-            <div className="w-full space-y-6 bg-white p-4 lg:p-8">
+            <div className="w-full space-y-6 bg-muted/10 p-4 lg:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+                        <h1 className="text-4xl font-bold tracking-tight text-foreground">
                             Benefits Dashboard
                         </h1>
-                        <p className="text-lg text-zinc-500">
+                        <p className="text-lg text-muted-foreground">
                             Overview of employee benefits, enrollments, and costs.
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
                         <Link href="/benefits/create">
-                            <Button className="h-11 rounded-md bg-zinc-900 px-6 text-white shadow-sm transition-all hover:bg-zinc-800">
+                            <Button className="h-11 px-6 shadow-sm">
                                 <Plus className="mr-2 h-5 w-5" /> Add Benefit
                             </Button>
                         </Link>
                         <Link href="/benefit-enrollments/create">
-                            <Button variant="outline" className="h-11 border-zinc-200">
+                            <Button variant="outline" className="h-11">
                                 <Users className="mr-2 h-5 w-5" /> New Enrollment
                             </Button>
                         </Link>
                         <Link href="/benefits/reports">
-                            <Button variant="outline" className="h-11 border-zinc-200">
+                            <Button variant="outline" className="h-11">
                                 <ClipboardList className="mr-2 h-5 w-5" /> View Reports
                             </Button>
                         </Link>
@@ -192,17 +192,17 @@ export default function BenefitsDashboard() {
                             icon: AlertTriangle,
                         },
                     ].map((item, index) => (
-                        <Card key={index} className="border-zinc-200 shadow-none">
+                        <Card key={index} className="border-border bg-card shadow-none">
                             <CardContent className="flex items-center justify-between p-6">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium tracking-wider text-zinc-500 uppercase">
+                                    <p className="text-sm font-medium tracking-wider text-muted-foreground uppercase">
                                         {item.label}
                                     </p>
-                                    <p className="text-2xl font-semibold text-zinc-900">
+                                    <p className="text-2xl font-semibold text-foreground">
                                         {item.val}
                                     </p>
                                 </div>
-                                <item.icon className="h-6 w-6 text-zinc-400" />
+                                <item.icon className="h-6 w-6 text-muted-foreground" />
                             </CardContent>
                         </Card>
                     ))}
@@ -211,7 +211,7 @@ export default function BenefitsDashboard() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Recent Enrollments */}
                     <div className="lg:col-span-2">
-                        <Card className="border-zinc-200 shadow-none">
+                        <Card className="border-border bg-card shadow-none">
                             <CardHeader className="bg-muted/30">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -227,34 +227,34 @@ export default function BenefitsDashboard() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <Table>
-                                    <TableHeader className="bg-zinc-50">
+                                    <TableHeader className="bg-muted/10">
                                         <TableRow>
-                                            <TableHead className="font-bold text-zinc-900">Employee</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">Benefit</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">Status</TableHead>
-                                            <TableHead className="font-bold text-zinc-900">Effective Date</TableHead>
-                                            <TableHead className="text-right font-bold text-zinc-900">Employer</TableHead>
+                                            <TableHead className="font-bold text-foreground">Employee</TableHead>
+                                            <TableHead className="font-bold text-foreground">Benefit</TableHead>
+                                            <TableHead className="font-bold text-foreground">Status</TableHead>
+                                            <TableHead className="font-bold text-foreground">Effective Date</TableHead>
+                                            <TableHead className="text-right font-bold text-foreground">Employer</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {recent_enrollments.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="py-8 text-center text-zinc-400">
+                                                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                                                     No recent enrollments found.
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             recent_enrollments.map((enrollment) => (
-                                                <TableRow key={enrollment.id} className="hover:bg-zinc-50/50">
+                                                <TableRow key={enrollment.id} className="hover:bg-muted/20">
                                                     <TableCell>
                                                         <div>
-                                                            <p className="font-bold text-zinc-900">{enrollment.employee.full_name}</p>
-                                                            <p className="text-xs text-zinc-400">{enrollment.employee.staff_number}</p>
+                                                            <p className="font-bold text-foreground">{enrollment.employee.full_name}</p>
+                                                            <p className="text-xs text-muted-foreground">{enrollment.employee.staff_number}</p>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="space-y-1">
-                                                            <p className="font-medium text-zinc-700">{enrollment.benefit.name}</p>
+                                                            <p className="font-medium text-foreground">{enrollment.benefit.name}</p>
                                                             <Badge
                                                                 variant="outline"
                                                                 className={`${categoryStyles[enrollment.benefit.category] ?? categoryStyles.other} text-xs font-semibold`}
@@ -266,15 +266,15 @@ export default function BenefitsDashboard() {
                                                     <TableCell>
                                                         <Badge
                                                             variant="outline"
-                                                            className={`${statusStyles[enrollment.status] ?? 'border-zinc-200 bg-zinc-50 text-zinc-700'} font-semibold`}
+                                                            className={`${statusStyles[enrollment.status] ?? 'badge-tone-muted'} font-semibold`}
                                                         >
                                                             {formatLabel(enrollment.status)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-zinc-500">
+                                                    <TableCell className="text-muted-foreground">
                                                         {formatDate(enrollment.effective_date)}
                                                     </TableCell>
-                                                    <TableCell className="text-right font-bold">
+                                                    <TableCell className="text-right font-bold text-foreground">
                                                         {formatMoney(enrollment.employer_contribution)}
                                                     </TableCell>
                                                 </TableRow>
@@ -288,7 +288,7 @@ export default function BenefitsDashboard() {
 
                     {/* Enrollments by Category */}
                     <div>
-                        <Card className="border-zinc-200 shadow-none">
+                        <Card className="border-border bg-card shadow-none">
                             <CardHeader className="bg-muted/30">
                                 <CardTitle className="flex items-center gap-2 text-lg">
                                     <Heart className="h-5 w-5 text-muted-foreground" />
@@ -297,12 +297,12 @@ export default function BenefitsDashboard() {
                             </CardHeader>
                             <CardContent className="space-y-4 p-6">
                                 {category_summary.length === 0 ? (
-                                    <p className="py-4 text-center text-sm text-zinc-400">
+                                    <p className="py-4 text-center text-sm text-muted-foreground">
                                         No category data available.
                                     </p>
                                 ) : (
                                     category_summary.map((cat, index) => (
-                                        <div key={index} className="flex items-center justify-between rounded-lg border border-zinc-100 p-4">
+                                        <div key={index} className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-4">
                                             <div className="space-y-1">
                                                 <Badge
                                                     variant="outline"
@@ -310,13 +310,13 @@ export default function BenefitsDashboard() {
                                                 >
                                                     {formatLabel(cat.category)}
                                                 </Badge>
-                                                <p className="text-xs text-zinc-400">
+                                                <p className="text-xs text-muted-foreground">
                                                     {cat.count} benefit{cat.count !== 1 ? 's' : ''}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-lg font-bold text-zinc-900">{cat.active_enrollments}</p>
-                                                <p className="text-xs text-zinc-400">enrollments</p>
+                                                <p className="text-lg font-bold text-foreground">{cat.active_enrollments}</p>
+                                                <p className="text-xs text-muted-foreground">enrollments</p>
                                             </div>
                                         </div>
                                     ))

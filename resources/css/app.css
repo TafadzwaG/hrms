@@ -460,4 +460,34 @@
     .dark [data-dashboard-scope] .focus-visible\:ring-black:focus-visible {
         --tw-ring-color: color-mix(in oklch, var(--ring) 75%, transparent) !important;
     }
+
+    .documentation-scroll,
+    .documentation-markdown pre {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklch, var(--muted-foreground) 50%, transparent) transparent;
+    }
+
+    .documentation-scroll::-webkit-scrollbar,
+    .documentation-markdown pre::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+
+    .documentation-scroll::-webkit-scrollbar-track,
+    .documentation-markdown pre::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .documentation-scroll::-webkit-scrollbar-thumb,
+    .documentation-markdown pre::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background-color: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .documentation-scroll::-webkit-scrollbar-thumb:hover,
+    .documentation-markdown pre::-webkit-scrollbar-thumb:hover {
+        background-color: color-mix(in oklch, var(--foreground) 40%, transparent);
+    }
 }

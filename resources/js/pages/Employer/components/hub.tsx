@@ -13,6 +13,7 @@ import type { BreadcrumbItem, NavItem } from '@/types';
 import {
     Activity,
     BarChart3,
+    BookOpen,
     Briefcase,
     Building2,
     Calendar,
@@ -140,6 +141,11 @@ export function EmployerHubLayout({
                     title: 'Billing',
                     href: employerLinks.billing,
                     icon: CreditCard,
+                },
+                {
+                    title: 'Documentation',
+                    href: '/documentation',
+                    icon: BookOpen,
                 },
             ],
         },
