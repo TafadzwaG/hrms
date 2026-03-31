@@ -74,11 +74,11 @@ class RoleSidebarShortcutBuilder
                 $this->shortcut('Users', '/users', 'shield'),
             ],
             default => [
-                $this->shortcut('My Leave', '/leave-requests', 'calendar-days', (string) $this->employeeLeaveCount($user)),
-                $this->shortcut('My Attendance', '/attendance-records', 'clock-3', (string) $this->employeeAttendanceCount($user)),
-                $this->shortcut('My Timesheets', '/timesheets', 'clock-3', (string) $this->employeeTimesheetCount($user)),
-                $this->shortcut('My Payslips', '/payroll/payslips', 'mail', (string) $this->employeePayslipCount($user)),
-                $this->shortcut('My Benefits', '/benefits/dashboard', 'heart', (string) $this->employeeBenefitCount($user)),
+                $this->shortcut('Leave Management', '/leave-requests', 'calendar-days', (string) $this->employeeLeaveCount($user)),
+                $this->shortcut('Attendance', '/attendance-records', 'clock-3', (string) $this->employeeAttendanceCount($user)),
+                $this->shortcut('Timesheets', '/timesheets', 'clock-3', (string) $this->employeeTimesheetCount($user)),
+                $this->shortcut('Payslips', '/payroll/payslips', 'mail', (string) $this->employeePayslipCount($user)),
+                $this->shortcut('Benefits', '/benefits/dashboard', 'heart', (string) $this->employeeBenefitCount($user)),
             ],
         };
 

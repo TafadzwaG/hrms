@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Auth\PortalAccessResolver;
+use App\Support\Rbac\PermissionRegistry;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -296,7 +297,12 @@ class User extends Authenticatable
             return $this->rbacCache[$cacheKey];
         }
 
-        $result = $this->allPermissions($organization)->pluck('name')->unique()->values();
+        $result = $this->allPermissions($organization)
+            ->pluck('name')
+            ->concat($this->employeeSelfServicePermissionNames())
+            ->filter()
+            ->unique()
+            ->values();
 
         $this->rbacCache[$cacheKey] = $result;
 
@@ -323,6 +329,20 @@ class User extends Authenticatable
     public function canAccess(string|array $permissions): bool
     {
         return $this->hasPermission($permissions);
+    }
+
+    private function employeeSelfServicePermissionNames(): Collection
+    {
+        if (! $this->shouldReceiveEmployeeSelfServicePermissions()) {
+            return collect();
+        }
+
+        return collect(PermissionRegistry::defaultsForRole('EMPLOYEE'));
+    }
+
+    private function shouldReceiveEmployeeSelfServicePermissions(): bool
+    {
+        return ($this->relationLoaded('employee') && $this->employee !== null) || $this->employee()->exists();
     }
 
     /**

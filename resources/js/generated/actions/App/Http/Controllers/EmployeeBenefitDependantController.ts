@@ -80,7 +80,7 @@ store.post = (args: { enrollment: number | { id: number } } | [enrollment: numbe
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::update
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:31
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:25
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 export const update = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -95,7 +95,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::update
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:31
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:25
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 update.url = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ update.url = (args: { enrollment: number | { id: number }, dependant: number | {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::update
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:31
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:25
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 update.put = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -135,7 +135,7 @@ update.put = (args: { enrollment: number | { id: number }, dependant: number | {
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::update
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:31
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:25
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
     const updateForm = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -150,7 +150,7 @@ update.put = (args: { enrollment: number | { id: number }, dependant: number | {
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::update
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:31
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:25
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
         updateForm.put = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -166,7 +166,7 @@ update.put = (args: { enrollment: number | { id: number }, dependant: number | {
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::destroy
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:42
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:36
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 export const destroy = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -181,7 +181,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::destroy
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:42
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:36
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 destroy.url = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ destroy.url = (args: { enrollment: number | { id: number }, dependant: number | 
 
 /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::destroy
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:42
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:36
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
 destroy.delete = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -221,7 +221,7 @@ destroy.delete = (args: { enrollment: number | { id: number }, dependant: number
 
     /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::destroy
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:42
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:36
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
     const destroyForm = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -236,7 +236,7 @@ destroy.delete = (args: { enrollment: number | { id: number }, dependant: number
 
             /**
 * @see \App\Http\Controllers\EmployeeBenefitDependantController::destroy
- * @see app/Http/Controllers/EmployeeBenefitDependantController.php:42
+ * @see app/Http/Controllers/EmployeeBenefitDependantController.php:36
  * @route '/benefit-enrollments/{enrollment}/dependants/{dependant}'
  */
         destroyForm.delete = (args: { enrollment: number | { id: number }, dependant: number | { id: number } } | [enrollment: number | { id: number }, dependant: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

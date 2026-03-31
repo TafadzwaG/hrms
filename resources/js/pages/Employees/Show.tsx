@@ -40,13 +40,20 @@ import {
     Briefcase,
     Building2,
     Calendar,
+    CheckCircle2,
+    Clock,
     CreditCard,
     Download,
+    Droplets,
     FileText,
+    HardHat,
+    KeyRound,
     RefreshCcw,
     ScanSearch,
     ArrowRight,
     Heart,
+    Loader2,
+    Lock,
     Mail,
     MapPin,
     Pencil,
@@ -54,10 +61,17 @@ import {
     Plus,
     Ruler,
     Save,
+    Scale,
+    Shirt,
+    ShieldAlert,
+    ShieldCheck,
     Target,
+    TrendingUp,
     Trash2,
     UserCircle2,
+    UserCog,
     Users,
+    XCircle,
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { useMemo, useState } from 'react';
@@ -377,6 +391,11 @@ export default function EmployeeShow() {
     const [skillFormOpen, setSkillFormOpen] = useState(false);
     const [jobFormOpen, setJobFormOpen] = useState(false);
     const [kpiFormOpen, setKpiFormOpen] = useState(false);
+    const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+    const [pdfDownloading, setPdfDownloading] = useState(false);
+    const [pdfDownloadError, setPdfDownloadError] = useState<string | null>(
+        null,
+    );
     const [editingNextOfKinId, setEditingNextOfKinId] = useState<number | null>(
         null,
     );
@@ -505,6 +524,53 @@ export default function EmployeeShow() {
 
     const destroyEmployee = () => {
         router.delete(`/employees/${employee.id}`, { preserveScroll: true });
+    };
+
+    const downloadEmployeePdf = async () => {
+        setPdfDownloading(true);
+        setPdfDownloadError(null);
+
+        try {
+            const response = await fetch(`/employees/${employee.id}/pdf`, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `Download failed with status ${response.status}.`,
+                );
+            }
+
+            const blob = await response.blob();
+            const disposition = response.headers.get('content-disposition');
+            const matchedFileName = disposition?.match(
+                /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i,
+            )?.[1];
+            const fileName = decodeURIComponent(
+                matchedFileName || `${employee.full_name}-profile.pdf`,
+            );
+            const objectUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            link.href = objectUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(objectUrl);
+            setPdfDialogOpen(false);
+        } catch (error) {
+            setPdfDownloadError(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to download the employee PDF.',
+            );
+        } finally {
+            setPdfDownloading(false);
+        }
     };
 
     const submitDocument = (event: FormEvent) => {
@@ -709,6 +775,68 @@ export default function EmployeeShow() {
                         </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-3">
+                        <AlertDialog
+                            open={pdfDialogOpen}
+                            onOpenChange={(open) => {
+                                if (pdfDownloading) {
+                                    return;
+                                }
+
+                                setPdfDialogOpen(open);
+
+                                if (!open) {
+                                    setPdfDownloadError(null);
+                                }
+                            }}
+                        >
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 border-border bg-background px-6 font-bold shadow-sm"
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export PDF
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Download employee PDF
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Generate and download the latest employee
+                                        profile PDF for {employee.full_name}.
+                                    </AlertDialogDescription>
+                                    {pdfDownloadError && (
+                                        <p className="text-sm font-medium text-destructive">
+                                            {pdfDownloadError}
+                                        </p>
+                                    )}
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={pdfDownloading}>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <Button
+                                        type="button"
+                                        onClick={() => void downloadEmployeePdf()}
+                                        disabled={pdfDownloading}
+                                    >
+                                        {pdfDownloading ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Preparing PDF...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Download className="mr-2 h-4 w-4" />
+                                                Download PDF
+                                            </>
+                                        )}
+                                    </Button>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         {canManageEmployee && (
                             <Button
                                 asChild
@@ -1334,78 +1462,118 @@ function LinkedUserCard({
     canCreateUser: boolean;
     getInitials: (value: string) => string;
 }) {
+    const user = employee.user;
     return (
         <Card className="border-border bg-background shadow-sm">
             <CardHeader className="border-b border-border/50 pb-4">
-                <CardTitle className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                    <UserCog className="h-3.5 w-3.5" />
                     Linked User Account
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 p-6">
-                {employee.user ? (
+            <CardContent className="p-0">
+                {user ? (
                     <>
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-12 w-12 border border-border shadow-sm">
-                                <AvatarFallback className="bg-muted font-bold text-foreground">
-                                    {getInitials(employee.user.name)}
+                        {/* Avatar + name block */}
+                        <div className="flex items-center gap-4 p-6 pb-5">
+                            <Avatar className="h-14 w-14 border-2 border-border shadow-sm">
+                                <AvatarFallback className="bg-primary/10 text-base font-bold text-primary">
+                                    {getInitials(user.name)}
                                 </AvatarFallback>
                             </Avatar>
-                            <div>
-                                <p className="text-sm font-bold text-foreground">
-                                    {employee.user.name}
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-bold text-foreground">
+                                    {user.name}
                                 </p>
-                                <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-                                    {employee.user.email}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="space-y-3 pt-2">
-                            <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                                Access Roles
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {employee.user.roles.length > 0 ? (
-                                    employee.user.roles.map((role) => (
-                                        <Badge
-                                            key={role.id}
-                                            variant="outline"
-                                            className={`px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase shadow-none ${roleBadgeClass(role.code, role.name)}`}
-                                        >
-                                            {role.code}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <span className="text-xs text-muted-foreground">
-                                        No roles assigned
-                                    </span>
+                                {user.username && (
+                                    <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+                                        @{user.username}
+                                    </p>
                                 )}
+                                <div className="mt-1 flex items-center gap-1">
+                                    {user.email_verified_at ? (
+                                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                    ) : (
+                                        <XCircle className="h-3 w-3 text-amber-500" />
+                                    )}
+                                    <span className="text-[10px] font-semibold text-muted-foreground">
+                                        {user.email_verified_at ? 'Verified' : 'Unverified'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Detail rows */}
+                        <div className="divide-y divide-border/60 border-t border-border/60">
+                            <div className="flex items-center gap-3 px-6 py-3">
+                                <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <span className="truncate text-xs font-medium text-foreground">{user.email}</span>
+                            </div>
+                            {user.created_at && (
+                                <div className="flex items-center gap-3 px-6 py-3">
+                                    <Calendar className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    <span className="text-xs font-medium text-foreground">
+                                        Joined {new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="flex items-start gap-3 px-6 py-3">
+                                <KeyRound className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <div className="flex flex-wrap gap-1.5">
+                                    {user.roles.length > 0 ? (
+                                        user.roles.map((role) => (
+                                            <Badge
+                                                key={role.id}
+                                                variant="outline"
+                                                className={`px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase shadow-none ${roleBadgeClass(role.code, role.name)}`}
+                                            >
+                                                {role.code}
+                                            </Badge>
+                                        ))
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">No roles assigned</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer action */}
                         {canAny(['users.view', 'users.update']) && (
-                            <Button
-                                asChild
-                                variant="outline"
-                                className="h-10 w-full border-border font-bold shadow-sm"
-                            >
-                                <Link href={`/users/${employee.user.id}`}>
-                                    Manage Permissions
-                                </Link>
-                            </Button>
+                            <div className="border-t border-border/60 p-4">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="h-9 w-full border-border font-bold shadow-sm"
+                                >
+                                    <Link href={`/users/${user.id}`} className="flex items-center gap-2">
+                                        <ShieldCheck className="h-3.5 w-3.5" />
+                                        Manage Permissions
+                                    </Link>
+                                </Button>
+                            </div>
                         )}
                     </>
                 ) : (
-                    <div className="space-y-3 py-4 text-center">
-                        <p className="text-sm font-medium text-muted-foreground">
-                            No system account is linked to this employee
-                            profile.
-                        </p>
+                    <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                            <Lock className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">No account linked</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                This employee doesn't have a system login yet.
+                            </p>
+                        </div>
                         {canCreateUser && (
                             <Button
                                 asChild
                                 variant="outline"
-                                className="h-10 w-full border-border font-bold shadow-sm"
+                                className="h-9 w-full border-border font-bold shadow-sm"
                             >
-                                <Link href="/users/create">Create Account</Link>
+                                <Link href="/users/create" className="flex items-center gap-2">
+                                    <UserCog className="h-3.5 w-3.5" />
+                                    Create Account
+                                </Link>
                             </Button>
                         )}
                     </div>
@@ -1416,37 +1584,96 @@ function LinkedUserCard({
 }
 
 function PhysicalSummaryCard({ employee }: { employee: EmployeePayload }) {
+    const p = employee.physical_profile;
+    const rows: { icon: ReactNode; label: string; value: string }[] = [
+        {
+            icon: <Ruler className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Height',
+            value: p?.height_cm ? `${p.height_cm} cm` : '—',
+        },
+        {
+            icon: <Scale className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Weight',
+            value: p?.weight_kg ? `${p.weight_kg} kg` : '—',
+        },
+        {
+            icon: <Droplets className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Blood Type',
+            value: p?.blood_type ?? '—',
+        },
+        {
+            icon: <Shirt className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Uniform',
+            value: p?.uniform_size ?? '—',
+        },
+        {
+            icon: <Shirt className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Shirt / Trouser',
+            value: p ? `${p.shirt_size || '—'} / ${p.trouser_size || '—'}` : '—',
+        },
+        {
+            icon: <Ruler className="h-3.5 w-3.5 text-muted-foreground" />,
+            label: 'Shoe Size',
+            value: p?.shoe_size ?? '—',
+        },
+    ];
     return (
         <Card className="border-border bg-background shadow-sm">
             <CardHeader className="border-b border-border/50 pb-4">
                 <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                    <Ruler className="h-4 w-4" />
+                    <Ruler className="h-3.5 w-3.5" />
                     Physical Attributes
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1 rounded-xl border border-border bg-muted/10 p-4">
-                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                            Uniform Size
-                        </p>
-                        <p className="text-base font-bold text-foreground">
-                            {employee.physical_profile?.uniform_size ||
-                                'Not set'}
-                        </p>
-                    </div>
-                    <div className="space-y-1 rounded-xl border border-border bg-muted/10 p-4">
-                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                            Shoe Size
-                        </p>
-                        <p className="text-base font-bold text-foreground">
-                            {employee.physical_profile?.shoe_size || 'Not set'}
-                        </p>
-                    </div>
+            <CardContent className="p-0">
+                <div className="divide-y divide-border/60">
+                    {rows.map(({ icon, label, value }) => (
+                        <div key={label} className="flex items-center justify-between gap-3 px-6 py-3">
+                            <div className="flex items-center gap-2.5">
+                                {icon}
+                                <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                            </div>
+                            <span className="text-xs font-bold text-foreground">{value}</span>
+                        </div>
+                    ))}
                 </div>
             </CardContent>
         </Card>
     );
+}
+
+function skillLevelColors(level: string): { badge: string; bar: string; text: string } {
+    const l = level.toLowerCase();
+    if (l.includes('expert') || l.includes('master'))
+        return {
+            badge: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400',
+            bar: '[&>div]:bg-emerald-500',
+            text: 'text-emerald-600 dark:text-emerald-400',
+        };
+    if (l.includes('advanced'))
+        return {
+            badge: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400',
+            bar: '[&>div]:bg-violet-500',
+            text: 'text-violet-600 dark:text-violet-400',
+        };
+    if (l.includes('intermediate'))
+        return {
+            badge: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400',
+            bar: '[&>div]:bg-amber-500',
+            text: 'text-amber-600 dark:text-amber-400',
+        };
+    if (l.includes('elementary') || l.includes('basic'))
+        return {
+            badge: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400',
+            bar: '[&>div]:bg-blue-500',
+            text: 'text-blue-600 dark:text-blue-400',
+        };
+    // Beginner / Novice / fallback
+    return {
+        badge: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400',
+        bar: '[&>div]:bg-slate-400',
+        text: 'text-slate-500 dark:text-slate-400',
+    };
 }
 
 function SkillsSummaryCard({ topSkills }: { topSkills: SkillItem[] }) {
@@ -1464,62 +1691,129 @@ function SkillsSummaryCard({ topSkills }: { topSkills: SkillItem[] }) {
                         No skills recorded yet.
                     </p>
                 ) : (
-                    topSkills.map((skill) => (
-                        <div key={skill.id} className="space-y-2">
-                            <div className="flex items-center justify-between text-xs font-bold">
-                                <span className="text-foreground">
-                                    {skill.name}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    {skill.proficiency_level}
-                                </span>
+                    topSkills.map((skill) => {
+                        const colors = skillLevelColors(skill.proficiency_level);
+                        return (
+                            <div key={skill.id} className="space-y-2">
+                                <div className="flex items-center justify-between text-xs font-bold">
+                                    <span className="text-foreground">{skill.name}</span>
+                                    <span className={`text-[10px] font-bold ${colors.text}`}>
+                                        {skill.proficiency_level}
+                                    </span>
+                                </div>
+                                <Progress
+                                    value={skill.proficiency_percent}
+                                    className={`h-1.5 border border-border/50 bg-muted ${colors.bar}`}
+                                />
                             </div>
-                            <Progress
-                                value={skill.proficiency_percent}
-                                className="h-1.5 border border-border/50 bg-muted [&>div]:bg-foreground"
-                            />
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </CardContent>
         </Card>
     );
 }
 
+function kpiBarColor(status: string) {
+    const s = status.toLowerCase();
+    if (s === 'completed') return '[&>div]:bg-emerald-500';
+    if (s === 'on_track' || s === 'active') return '[&>div]:bg-primary';
+    if (s === 'at_risk') return '[&>div]:bg-amber-500';
+    return '[&>div]:bg-foreground';
+}
+
 function KpiSnapshotCard({ employee }: { employee: EmployeePayload }) {
+    const kpis = employee.kpis;
+    const avgProgress = kpis.length
+        ? Math.round(kpis.reduce((sum, k) => sum + k.progress_percent, 0) / kpis.length)
+        : 0;
+    const onTrackCount = kpis.filter((k) =>
+        ['on_track', 'active', 'completed'].includes(k.status.toLowerCase()),
+    ).length;
+
     return (
         <Card className="border-border bg-background shadow-sm">
             <CardHeader className="border-b border-border/50 pb-4">
                 <CardTitle className="flex items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                    <Target className="h-4 w-4" />
+                    <Target className="h-3.5 w-3.5" />
                     KPI Snapshot
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-6">
-                <div className="grid grid-cols-2 gap-4">
-                    <SummaryTile
-                        icon={<Target className="h-3 w-3" />}
-                        label="KPIs"
-                        value={employee.stats.kpis_count.toString()}
-                    />
-                    <SummaryTile
-                        icon={<FileText className="h-3 w-3" />}
-                        label="Documents"
-                        value={employee.stats.documents_count.toString()}
-                    />
+            <CardContent className="p-0">
+                {/* Aggregate stats */}
+                <div className="grid grid-cols-3 divide-x divide-border/60 border-b border-border/60">
+                    <div className="flex flex-col items-center gap-0.5 py-4">
+                        <span className="text-xl font-bold text-foreground">{kpis.length}</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Total</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-0.5 py-4">
+                        <span className="text-xl font-bold text-foreground">{avgProgress}%</span>
+                        <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Avg</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-0.5 py-4">
+                        <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{onTrackCount}</span>
+                        <div className="flex items-center gap-1">
+                            <TrendingUp className="h-2.5 w-2.5 text-emerald-500" />
+                            <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">On Track</span>
+                        </div>
+                    </div>
                 </div>
-                {employee.kpis[0] && (
-                    <div className="rounded-xl border border-border/60 p-4">
-                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                            Lead KPI
-                        </p>
-                        <p className="mt-1 text-sm font-bold text-foreground">
-                            {employee.kpis[0].title}
-                        </p>
+
+                {/* Overall progress bar */}
+                {kpis.length > 0 && (
+                    <div className="px-5 pt-4 pb-2">
+                        <div className="mb-1.5 flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                            <span>Overall Progress</span>
+                            <span>{avgProgress}%</span>
+                        </div>
                         <Progress
-                            value={employee.kpis[0].progress_percent}
-                            className="mt-3 h-1.5 border border-border/50 bg-muted [&>div]:bg-foreground"
+                            value={avgProgress}
+                            className="h-2 border border-border/50 bg-muted [&>div]:bg-primary"
                         />
+                    </div>
+                )}
+
+                {/* KPI list */}
+                {kpis.length === 0 ? (
+                    <div className="px-6 py-8 text-center">
+                        <Target className="mx-auto mb-2 h-6 w-6 text-muted-foreground/40" />
+                        <p className="text-xs font-medium text-muted-foreground">No KPIs recorded yet.</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-border/60 pt-2">
+                        {kpis.slice(0, 3).map((kpi) => (
+                            <div key={kpi.id} className="space-y-2 px-5 py-3.5">
+                                <div className="flex items-start justify-between gap-2">
+                                    <p className="text-xs font-bold leading-snug text-foreground">
+                                        {kpi.title}
+                                    </p>
+                                    <Badge
+                                        variant="outline"
+                                        className={statusBadgeClass(kpi.status)}
+                                    >
+                                        {formatLabel(kpi.status)}
+                                    </Badge>
+                                </div>
+                                <Progress
+                                    value={kpi.progress_percent}
+                                    className={`h-1.5 border border-border/50 bg-muted ${kpiBarColor(kpi.status)}`}
+                                />
+                                <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
+                                    <span>{kpi.progress_percent}% complete</span>
+                                    {kpi.due_date && (
+                                        <span className="flex items-center gap-1">
+                                            <Calendar className="h-2.5 w-2.5" />
+                                            {formatDate(kpi.due_date)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        {kpis.length > 3 && (
+                            <p className="px-5 py-3 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                +{kpis.length - 3} more KPI{kpis.length - 3 > 1 ? 's' : ''} — see Job Profile tab
+                            </p>
+                        )}
                     </div>
                 )}
             </CardContent>
@@ -1974,14 +2268,44 @@ function FamilyTab({
                                         }
                                         error={form.errors.full_name}
                                     />
-                                    <InlineInputField
+                                    <FormField
                                         label="Relationship"
-                                        value={form.data.relationship}
-                                        onChange={(value) =>
-                                            form.setData('relationship', value)
-                                        }
                                         error={form.errors.relationship}
-                                    />
+                                    >
+                                        <Select
+                                            value={form.data.relationship}
+                                            onValueChange={(value) =>
+                                                form.setData('relationship', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 bg-background">
+                                                <SelectValue placeholder="Select relationship" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {[
+                                                    'Spouse',
+                                                    'Parent',
+                                                    'Child',
+                                                    'Sibling',
+                                                    'Grandparent',
+                                                    'Grandchild',
+                                                    'Aunt',
+                                                    'Uncle',
+                                                    'Niece',
+                                                    'Nephew',
+                                                    'Cousin',
+                                                    'In-Law',
+                                                    'Guardian',
+                                                    'Friend',
+                                                    'Other',
+                                                ].map((rel) => (
+                                                    <SelectItem key={rel} value={rel}>
+                                                        {rel}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormField>
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <InlineInputField
@@ -2267,14 +2591,28 @@ function PhysicalTab({
                                         error={form.errors.weight_kg}
                                         type="number"
                                     />
-                                    <InlineInputField
+                                    <FormField
                                         label="Blood Type"
-                                        value={form.data.blood_type}
-                                        onChange={(value) =>
-                                            form.setData('blood_type', value)
-                                        }
                                         error={form.errors.blood_type}
-                                    />
+                                    >
+                                        <Select
+                                            value={form.data.blood_type}
+                                            onValueChange={(value) =>
+                                                form.setData('blood_type', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 bg-background">
+                                                <SelectValue placeholder="Select blood type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((type) => (
+                                                    <SelectItem key={type} value={type}>
+                                                        {type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </FormField>
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <FormField
@@ -2336,56 +2674,84 @@ function PhysicalTab({
                     </Card>
                 </CollapsibleContent>
             </Collapsible>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Uniform Size"
-                    value={
-                        employee.physical_profile?.uniform_size ||
-                        'Not recorded'
-                    }
-                />
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Shoe Size"
-                    value={
-                        employee.physical_profile?.shoe_size || 'Not recorded'
-                    }
-                />
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Blood Type"
-                    value={
-                        employee.physical_profile?.blood_type || 'Not recorded'
-                    }
-                />
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Height"
-                    value={
-                        employee.physical_profile?.height_cm
-                            ? `${employee.physical_profile.height_cm} cm`
-                            : 'Not recorded'
-                    }
-                />
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Weight"
-                    value={
-                        employee.physical_profile?.weight_kg
-                            ? `${employee.physical_profile.weight_kg} kg`
-                            : 'Not recorded'
-                    }
-                />
-                <SummaryTile
-                    icon={<Ruler className="h-3 w-3" />}
-                    label="Shirt / Trouser"
-                    value={
-                        employee.physical_profile
-                            ? `${employee.physical_profile.shirt_size || 'N/A'} / ${employee.physical_profile.trouser_size || 'N/A'}`
-                            : 'Not recorded'
-                    }
-                />
+            <div className="space-y-4">
+                {/* Body measurements + blood type */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <SummaryTile
+                        icon={<Ruler className="h-3 w-3" />}
+                        label="Height"
+                        value={
+                            employee.physical_profile?.height_cm
+                                ? `${employee.physical_profile.height_cm} cm`
+                                : 'Not recorded'
+                        }
+                    />
+                    <SummaryTile
+                        icon={<Scale className="h-3 w-3" />}
+                        label="Weight"
+                        value={
+                            employee.physical_profile?.weight_kg
+                                ? `${employee.physical_profile.weight_kg} kg`
+                                : 'Not recorded'
+                        }
+                    />
+                    <div className="space-y-1.5 rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                            <Droplets className="h-3 w-3" />
+                            Blood Type
+                        </p>
+                        {employee.physical_profile?.blood_type ? (
+                            <span className="inline-flex items-center rounded-full bg-red-100 px-3 py-0.5 text-lg font-bold text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                {employee.physical_profile.blood_type}
+                            </span>
+                        ) : (
+                            <p className="text-lg font-bold text-foreground">Not recorded</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sizing */}
+                <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                    <p className="mb-4 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                        <Shirt className="h-3 w-3" />
+                        Uniform &amp; Sizing
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        {[
+                            { label: 'Uniform', value: employee.physical_profile?.uniform_size },
+                            { label: 'Shirt', value: employee.physical_profile?.shirt_size },
+                            { label: 'Trouser', value: employee.physical_profile?.trouser_size },
+                            { label: 'Shoe', value: employee.physical_profile?.shoe_size },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="space-y-1">
+                                <p className="text-xs text-muted-foreground">{label}</p>
+                                <p className="text-base font-semibold text-foreground">{value || '—'}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Medical notes */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                            <ShieldAlert className="h-3 w-3" />
+                            Emergency Medical Notes
+                        </p>
+                        <p className="text-sm leading-relaxed font-medium text-foreground">
+                            {employee.physical_profile?.emergency_medical_notes || 'Not recorded'}
+                        </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-background p-5 shadow-sm">
+                        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                            <HardHat className="h-3 w-3" />
+                            PPE Notes
+                        </p>
+                        <p className="text-sm leading-relaxed font-medium text-foreground">
+                            {employee.physical_profile?.ppe_notes || 'Not recorded'}
+                        </p>
+                    </div>
+                </div>
             </div>
         </>
     );
@@ -2601,72 +2967,75 @@ function SkillsTab({
             ) : (
                 <Card className="border-border bg-background shadow-sm">
                     <CardContent className="space-y-6 p-6">
-                        {employee.skills.map((skill) => (
-                            <div
-                                key={skill.id}
-                                className="space-y-3 rounded-xl border border-border/60 p-4"
-                            >
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-sm font-bold text-foreground">
-                                                {skill.name}
-                                            </span>
-                                            <Badge
-                                                variant="secondary"
-                                                className="border-transparent bg-muted text-[10px] tracking-widest text-muted-foreground uppercase shadow-none"
-                                            >
-                                                {skill.proficiency_level}
-                                            </Badge>
+                        {employee.skills.map((skill) => {
+                            const colors = skillLevelColors(skill.proficiency_level);
+                            return (
+                                <div
+                                    key={skill.id}
+                                    className="space-y-3 rounded-xl border border-border/60 p-4"
+                                >
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                        <div className="space-y-1">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="text-sm font-bold text-foreground">
+                                                    {skill.name}
+                                                </span>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`text-[10px] tracking-widest uppercase shadow-none ${colors.badge}`}
+                                                >
+                                                    {skill.proficiency_level}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-xs font-medium text-muted-foreground">
+                                                {skill.certification_name
+                                                    ? `${skill.certification_name}${skill.certification_issuer ? ` • ${skill.certification_issuer}` : ''}`
+                                                    : 'No certification metadata'}
+                                            </p>
                                         </div>
-                                        <p className="text-xs font-medium text-muted-foreground">
-                                            {skill.certification_name
-                                                ? `${skill.certification_name}${skill.certification_issuer ? ` • ${skill.certification_issuer}` : ''}`
-                                                : 'No certification metadata'}
-                                        </p>
+                                        {canManageEmployee && (
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground"
+                                                    onClick={() => onEdit(skill)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <DeleteActionButton
+                                                    title="Delete skill"
+                                                    description={`Remove ${skill.name} from ${employee.full_name}.`}
+                                                    onConfirm={() =>
+                                                        router.delete(
+                                                            skill.delete_url,
+                                                            {
+                                                                preserveScroll: true,
+                                                                preserveState: true,
+                                                            },
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        )}
                                     </div>
-                                    {canManageEmployee && (
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-muted-foreground"
-                                                onClick={() => onEdit(skill)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <DeleteActionButton
-                                                title="Delete skill"
-                                                description={`Remove ${skill.name} from ${employee.full_name}.`}
-                                                onConfirm={() =>
-                                                    router.delete(
-                                                        skill.delete_url,
-                                                        {
-                                                            preserveScroll: true,
-                                                            preserveState: true,
-                                                        },
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                    )}
+                                    <Progress
+                                        value={skill.proficiency_percent}
+                                        className={`h-2 border border-border/50 bg-muted ${colors.bar}`}
+                                    />
+                                    <div className="flex flex-wrap justify-between gap-2 text-xs font-medium text-muted-foreground">
+                                        <span className={colors.text}>
+                                            {skill.proficiency_percent}% proficiency
+                                        </span>
+                                        <span>
+                                            {skill.certified_at
+                                                ? `Certified ${formatDate(skill.certified_at)}`
+                                                : 'Certification date not recorded'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <Progress
-                                    value={skill.proficiency_percent}
-                                    className="h-2 border border-border/50 bg-muted [&>div]:bg-foreground"
-                                />
-                                <div className="flex flex-wrap justify-between gap-2 text-xs font-medium text-muted-foreground">
-                                    <span>
-                                        {skill.proficiency_percent}% proficiency
-                                    </span>
-                                    <span>
-                                        {skill.certified_at
-                                            ? `Certified ${formatDate(skill.certified_at)}`
-                                            : 'Certification date not recorded'}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </CardContent>
                 </Card>
             )}
@@ -2887,75 +3256,125 @@ function JobTab({
                     </Card>
                 </CollapsibleContent>
             </Collapsible>
-            <Card className="border-border bg-background shadow-sm">
-                <CardContent className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
-                    <SummaryTile
-                        icon={<Briefcase className="h-3 w-3" />}
-                        label="Title"
-                        value={
-                            employee.job_profile?.title ||
-                            employee.position?.name ||
-                            'Not recorded'
-                        }
-                    />
-                    <SummaryTile
-                        icon={<Briefcase className="h-3 w-3" />}
-                        label="Employment Type"
-                        value={
-                            employee.job_profile?.employment_type ||
-                            'Not recorded'
-                        }
-                    />
-                    <SummaryTile
-                        icon={<Users className="h-3 w-3" />}
-                        label="Reports To"
-                        value={
-                            employee.job_profile?.reports_to ||
-                            employee.manager?.full_name ||
-                            'Not recorded'
-                        }
-                    />
-                    <SummaryTile
-                        icon={<Calendar className="h-3 w-3" />}
-                        label="Review Date"
-                        value={
-                            employee.job_profile?.review_date
-                                ? formatDate(employee.job_profile.review_date)
-                                : 'Not recorded'
-                        }
-                    />
-                    <SummaryTile
-                        icon={<Building2 className="h-3 w-3" />}
-                        label="Location Summary"
-                        value={
-                            employee.job_profile?.location_summary ||
-                            'Not recorded'
-                        }
-                    />
-                    <SummaryTile
-                        icon={<Calendar className="h-3 w-3" />}
-                        label="Working Hours"
-                        value={
-                            employee.job_profile?.working_hours ||
-                            'Not recorded'
-                        }
-                    />
-                    <NotesCard
-                        title="Summary"
-                        content={employee.job_profile?.summary}
-                    />
-                    <NotesCard
-                        title="Responsibilities"
-                        content={employee.job_profile?.responsibilities}
-                    />
-                    <div className="md:col-span-2">
-                        <NotesCard
-                            title="Requirements"
-                            content={employee.job_profile?.requirements}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+            {employee.job_profile || employee.position ? (
+                <div className="space-y-4">
+                    {/* Header card */}
+                    <Card className="border-border bg-background shadow-sm">
+                        <CardContent className="p-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="space-y-1.5">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                        <h3 className="text-lg font-bold text-foreground">
+                                            {employee.job_profile?.title || employee.position?.name || 'No title set'}
+                                        </h3>
+                                    </div>
+                                    {employee.job_profile?.employment_type && (
+                                        <Badge variant="outline" className="text-[10px] font-bold tracking-widest uppercase">
+                                            {employee.job_profile.employment_type}
+                                        </Badge>
+                                    )}
+                                </div>
+                                {employee.job_profile?.review_date && (
+                                    <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs font-medium text-muted-foreground">
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        Review: {formatDate(employee.job_profile.review_date)}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Key details row */}
+                            <div className="mt-5 grid grid-cols-1 gap-3 border-t border-border/60 pt-5 sm:grid-cols-3">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Reports To</p>
+                                        <p className="text-xs font-semibold text-foreground">
+                                            {employee.job_profile?.reports_to || employee.manager?.full_name || '—'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Working Hours</p>
+                                        <p className="text-xs font-semibold text-foreground">
+                                            {employee.job_profile?.working_hours || '—'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Location</p>
+                                        <p className="text-xs font-semibold text-foreground">
+                                            {employee.job_profile?.location_summary || '—'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Summary */}
+                    {employee.job_profile?.summary && (
+                        <Card className="border-border bg-background shadow-sm">
+                            <CardContent className="p-6">
+                                <p className="mb-2 flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    Summary
+                                </p>
+                                <p className="text-sm leading-relaxed text-foreground">
+                                    {employee.job_profile.summary}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* Responsibilities & Requirements */}
+                    {(employee.job_profile?.responsibilities || employee.job_profile?.requirements) && (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {employee.job_profile?.responsibilities && (
+                                <Card className="border-border bg-background shadow-sm">
+                                    <CardContent className="p-6">
+                                        <p className="mb-3 flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                            Responsibilities
+                                        </p>
+                                        <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
+                                            {employee.job_profile.responsibilities}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {employee.job_profile?.requirements && (
+                                <Card className="border-border bg-background shadow-sm">
+                                    <CardContent className="p-6">
+                                        <p className="mb-3 flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                            <Award className="h-3.5 w-3.5 text-violet-500" />
+                                            Requirements
+                                        </p>
+                                        <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
+                                            {employee.job_profile.requirements}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <EmptyState
+                    title="No job description recorded"
+                    description="Add a job title, responsibilities, reporting line, and review dates."
+                />
+            )}
             <Collapsible
                 open={kpiOpen}
                 onOpenChange={(value) => {

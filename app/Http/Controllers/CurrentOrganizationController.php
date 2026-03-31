@@ -50,7 +50,7 @@ class CurrentOrganizationController extends Controller
         ]);
 
         return redirect()
-            ->to($validated['redirect_to'] ?: route('dashboard', [], false))
+            ->to(($validated['redirect_to'] ?? null) ?: route('dashboard', [], false))
             ->with('success', 'Active organization switched successfully.');
     }
 }

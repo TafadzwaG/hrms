@@ -8,14 +8,19 @@ use App\Models\LeaveRequest;
 use App\Support\Access\RolePageScopeResolver;
 use App\Support\Audit\AuditContext;
 use App\Support\Audit\AuditLogger;
+use App\Support\Dashboard\RoleDashboardResolver;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class LeaveRequestController extends Controller
 {
@@ -27,11 +32,19 @@ class LeaveRequestController extends Controller
 
     public function index(Request $request)
     {
+        try {
+        $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'month'  => ['nullable', 'string', 'max:32'],
+            'page'   => ['nullable', 'integer', 'min:1'],
+        ]);
+
         $search = $request->string('search')->toString();
         $config = $this->moduleConfig();
+        $calendarMonth = $this->resolveCalendarMonth($request);
 
         $query = LeaveRequest::query()
-            ->with($this->leaveRequestRelations());
+            ->with($this->leaveRequestIndexRelations());
         $scope = $this->applyRolePageScope($query, $request, RolePageScopeResolver::MODULE_LEAVE);
 
         $searchable = Arr::get($config, 'searchable', []);
@@ -65,6 +78,9 @@ class LeaveRequestController extends Controller
             });
         }
 
+        $stats = $this->buildIndexStats(clone $query, $calendarMonth);
+        $calendar = $this->buildScopedCalendar(clone $query, $calendarMonth);
+
         $records = $query
             ->orderByDesc('id')
             ->paginate(12)
@@ -79,252 +95,338 @@ class LeaveRequestController extends Controller
             'records' => $records,
             'filters' => $this->roleScopedFilters([
                 'search' => $search,
+                'month' => $calendarMonth->format('Y-m'),
             ], $scope),
             'scope' => $scope,
+            'stats' => $stats,
+            'calendar' => $calendar,
         ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to load leave requests: '.$e->getMessage());
+        }
     }
 
     public function create(Request $request)
     {
-        return Inertia::render(self::PAGE_ROOT.'/Create', [
-            'module' => $this->moduleMeta(),
-            'record' => null,
-            'employees' => $this->employeeOptions($request),
-        ]);
+        try {
+            $workspace = $this->buildLeaveWorkspace($request);
+
+            return Inertia::render(self::PAGE_ROOT.'/Create', [
+                'module' => $this->moduleMeta(),
+                'record' => null,
+                ...$workspace,
+            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('error', 'Failed to load the leave form: '.$e->getMessage());
+        }
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate($this->validationRules());
-        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
+        try {
+            $validated = $request->validate($this->validationRules());
+            $validated = $this->prepareLeavePayload($validated);
+            $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
 
-        LeaveRequest::create($validated);
+            LeaveRequest::create($validated);
 
-        return redirect()
-            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name').' created successfully.');
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('success', Arr::get($this->moduleConfig(), 'name').' created successfully.');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withInput()->with('error', 'Failed to submit leave request: '.$e->getMessage());
+        }
     }
 
     public function show(Request $request)
     {
-        $record = $this->decorateLeaveRequest(
-            $this->findOrFail($this->resolveRouteRecordId($request))
-        );
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+        try {
+            $record = $this->decorateLeaveRequest(
+                $this->findOrFail($this->resolveRouteRecordId($request))
+            );
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
-        $leaveBalances = $this->buildLeaveBalances($record);
-        $recentHistory = $this->buildRecentHistory($record);
-        $usageStats = $this->buildUsageStats($record, $recentHistory);
+            $leaveBalances = $this->buildLeaveBalances($record);
+            $recentHistory = $this->buildRecentHistory($record);
+            $usageStats = $this->buildUsageStats($record, $recentHistory);
 
-        return Inertia::render(self::PAGE_ROOT.'/Show', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
-            'requestCode' => $this->requestCode($record),
-            'leaveBalances' => $leaveBalances,
-            'systemChecks' => $this->buildSystemChecks($record, $leaveBalances),
-            'teamAvailability' => $this->buildTeamAvailability($record),
-            'auditTrail' => $this->buildAuditTrail($record),
-            'usageStats' => $usageStats,
-            'recentHistory' => $recentHistory,
-            'savedNote' => session('saved_leave_note', ''),
-        ]);
+            return Inertia::render(self::PAGE_ROOT.'/Show', [
+                'module' => $this->moduleMeta(),
+                'record' => $record,
+                'requestCode' => $this->requestCode($record),
+                'leaveBalances' => $leaveBalances,
+                'systemChecks' => $this->buildSystemChecks($record, $leaveBalances),
+                'teamAvailability' => $this->buildTeamAvailability($record),
+                'auditTrail' => $this->buildAuditTrail($record),
+                'usageStats' => $usageStats,
+                'recentHistory' => $recentHistory,
+                'savedNote' => session('saved_leave_note', ''),
+            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('error', 'Failed to load leave request: '.$e->getMessage());
+        }
     }
 
     public function approval(Request $request)
     {
-        $record = $this->decorateLeaveRequest(
-            $this->findOrFail($this->resolveRouteRecordId($request))
-        );
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+        try {
+            $record = $this->decorateLeaveRequest(
+                $this->findOrFail($this->resolveRouteRecordId($request))
+            );
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
-        $approvalData = $this->buildApprovalData($record);
-        $teamCoverage = $this->buildApprovalTeamCoverage($record);
+            $approvalData = $this->buildApprovalData($record);
+            $teamCoverage = $this->buildApprovalTeamCoverage($record);
 
-        return Inertia::render(self::PAGE_ROOT.'/Approval', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
-            'approvalData' => $approvalData,
-            'history' => $this->buildApprovalHistory($record),
-            'teamCoverage' => $teamCoverage,
-            'systemChecks' => $this->buildApprovalSystemChecks($record, $approvalData, $teamCoverage),
-            'requestActivity' => $this->buildApprovalRequestActivity($record),
-        ]);
+            return Inertia::render(self::PAGE_ROOT.'/Approval', [
+                'module' => $this->moduleMeta(),
+                'record' => $record,
+                'approvalData' => $approvalData,
+                'history' => $this->buildApprovalHistory($record),
+                'teamCoverage' => $teamCoverage,
+                'systemChecks' => $this->buildApprovalSystemChecks($record, $approvalData, $teamCoverage),
+                'requestActivity' => $this->buildApprovalRequestActivity($record),
+            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('error', 'Failed to load approval page: '.$e->getMessage());
+        }
     }
 
     public function edit(Request $request)
     {
-        $record = $this->decorateLeaveRequest(
-            $this->findOrFail($this->resolveRouteRecordId($request))
-        );
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+        try {
+            $record = $this->decorateLeaveRequest(
+                $this->findOrFail($this->resolveRouteRecordId($request))
+            );
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $workspace = $this->buildLeaveWorkspace($request, $record);
 
-        return Inertia::render(self::PAGE_ROOT.'/Edit', [
-            'module' => $this->moduleMeta(),
-            'record' => $record,
-            'employees' => $this->employeeOptions($request),
-        ]);
+            return Inertia::render(self::PAGE_ROOT.'/Edit', [
+                'module' => $this->moduleMeta(),
+                'record' => $record,
+                ...$workspace,
+            ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('error', 'Failed to load the edit form: '.$e->getMessage());
+        }
     }
 
     public function update(Request $request)
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+        try {
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
-        $validated = $request->validate($this->validationRules($record));
-        $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
-        $record->update($validated);
+            $validated = $request->validate($this->validationRules($record));
+            $validated = $this->prepareLeavePayload($validated, $record);
+            $this->ensureRoleScopedEmployeeIdAllowed($request, RolePageScopeResolver::MODULE_LEAVE, $validated['employee_id'] ?? null);
+            $record->update($validated);
 
-        $slug = Arr::get($this->moduleConfig(), 'slug');
+            $slug = Arr::get($this->moduleConfig(), 'slug');
 
-        return redirect()
-            ->to('/'.$slug.'/'.$record->id)
-            ->with('success', Arr::get($this->moduleConfig(), 'name').' updated successfully.');
+            return redirect()
+                ->to('/'.$slug.'/'.$record->id)
+                ->with('success', Arr::get($this->moduleConfig(), 'name').' updated successfully.');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->withInput()->with('error', 'Failed to update leave request: '.$e->getMessage());
+        }
     }
 
     public function destroy(Request $request)
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
-        $record->delete();
+        try {
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $record->delete();
 
-        return redirect()
-            ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
-            ->with('success', Arr::get($this->moduleConfig(), 'name').' deleted successfully.');
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug'))
+                ->with('success', Arr::get($this->moduleConfig(), 'name').' deleted successfully.');
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to delete leave request: '.$e->getMessage());
+        }
     }
 
     public function approve(Request $request)
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
-        $before = [
-            'status' => $record->status,
-            'approver_name' => $record->approver_name,
-        ];
+        try {
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $before = ['status' => $record->status, 'approver_name' => $record->approver_name];
 
-        AuditContext::withoutAuditing(function () use ($record, $request): void {
-            $record->update([
-                'status' => 'Approved',
-                'approver_name' => $this->actorName($request),
+            AuditContext::withoutAuditing(function () use ($record, $request): void {
+                $record->update(['status' => 'Approved', 'approver_name' => $this->actorName($request)]);
+            });
+
+            app(AuditLogger::class)->logCustom('approve', $record, [
+                'module' => 'leave',
+                'category' => 'workflow',
+                'description' => 'Approved leave request.',
+                'old_values' => $before,
+                'new_values' => ['status' => $record->status, 'approver_name' => $record->approver_name],
             ]);
-        });
 
-        app(AuditLogger::class)->logCustom('approve', $record, [
-            'module' => 'leave',
-            'category' => 'workflow',
-            'description' => 'Approved leave request.',
-            'old_values' => $before,
-            'new_values' => [
-                'status' => $record->status,
-                'approver_name' => $record->approver_name,
-            ],
-        ]);
-
-        return redirect()
-            ->route('leave-requests.approval', $record->id)
-            ->with('success', 'Leave request approved successfully.');
+            return redirect()
+                ->route('leave-requests.approval', $record->id)
+                ->with('success', 'Leave request approved successfully.');
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to approve leave request: '.$e->getMessage());
+        }
     }
 
     public function deny(Request $request)
     {
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
-        $before = [
-            'status' => $record->status,
-            'approver_name' => $record->approver_name,
-        ];
+        try {
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $before = ['status' => $record->status, 'approver_name' => $record->approver_name];
 
-        AuditContext::withoutAuditing(function () use ($record, $request): void {
-            $record->update([
-                'status' => 'Rejected',
-                'approver_name' => $this->actorName($request),
+            AuditContext::withoutAuditing(function () use ($record, $request): void {
+                $record->update(['status' => 'Rejected', 'approver_name' => $this->actorName($request)]);
+            });
+
+            app(AuditLogger::class)->logCustom('reject', $record, [
+                'module' => 'leave',
+                'category' => 'workflow',
+                'description' => 'Rejected leave request.',
+                'old_values' => $before,
+                'new_values' => ['status' => $record->status, 'approver_name' => $record->approver_name],
             ]);
-        });
 
-        app(AuditLogger::class)->logCustom('reject', $record, [
-            'module' => 'leave',
-            'category' => 'workflow',
-            'description' => 'Rejected leave request.',
-            'old_values' => $before,
-            'new_values' => [
-                'status' => $record->status,
-                'approver_name' => $record->approver_name,
-            ],
-        ]);
-
-        return redirect()
-            ->route('leave-requests.approval', $record->id)
-            ->with('success', 'Leave request denied successfully.');
+            return redirect()
+                ->route('leave-requests.approval', $record->id)
+                ->with('success', 'Leave request denied successfully.');
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to deny leave request: '.$e->getMessage());
+        }
     }
 
     public function requestChanges(Request $request)
     {
-        $request->validate([
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        try {
+            $request->validate(['note' => ['nullable', 'string', 'max:1000']]);
 
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
-        $before = [
-            'status' => $record->status,
-            'approver_name' => $record->approver_name,
-        ];
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $before = ['status' => $record->status, 'approver_name' => $record->approver_name];
 
-        AuditContext::withoutAuditing(function () use ($record, $request): void {
-            $record->update([
-                'status' => 'Changes Requested',
-                'approver_name' => $this->actorName($request),
+            AuditContext::withoutAuditing(function () use ($record, $request): void {
+                $record->update(['status' => 'Changes Requested', 'approver_name' => $this->actorName($request)]);
+            });
+
+            app(AuditLogger::class)->logCustom('request_changes', $record, [
+                'module' => 'leave',
+                'category' => 'workflow',
+                'description' => 'Requested changes on leave request.',
+                'old_values' => $before,
+                'new_values' => ['status' => $record->status, 'approver_name' => $record->approver_name],
+                'metadata' => ['note' => (string) $request->input('note', '')],
             ]);
-        });
 
-        app(AuditLogger::class)->logCustom('request_changes', $record, [
-            'module' => 'leave',
-            'category' => 'workflow',
-            'description' => 'Requested changes on leave request.',
-            'old_values' => $before,
-            'new_values' => [
-                'status' => $record->status,
-                'approver_name' => $record->approver_name,
-            ],
-            'metadata' => [
-                'note' => (string) $request->input('note', ''),
-            ],
-        ]);
-
-        return redirect()
-            ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$record->id)
-            ->with('success', 'Change request sent successfully.')
-            ->with('saved_leave_note', (string) $request->input('note', ''));
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$record->id)
+                ->with('success', 'Change request sent successfully.')
+                ->with('saved_leave_note', (string) $request->input('note', ''));
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to request changes: '.$e->getMessage());
+        }
     }
 
     public function saveNote(Request $request)
     {
-        $validated = $request->validate([
-            'note' => ['required', 'string', 'max:1000'],
-            'notify_manager' => ['nullable', 'boolean'],
-        ]);
+        try {
+            $validated = $request->validate([
+                'note' => ['required', 'string', 'max:1000'],
+                'notify_manager' => ['nullable', 'boolean'],
+            ]);
 
-        $record = $this->findOrFail($this->resolveRouteRecordId($request));
-        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
+            $record = $this->findOrFail($this->resolveRouteRecordId($request));
+            $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_LEAVE, $record);
 
-        app(AuditLogger::class)->logCustom('add_note', $record, [
-            'module' => 'leave',
-            'category' => 'workflow',
-            'description' => 'Saved an internal note on a leave request.',
-            'metadata' => [
-                'note' => $validated['note'],
-                'notify_manager' => (bool) ($validated['notify_manager'] ?? false),
-            ],
-        ]);
+            app(AuditLogger::class)->logCustom('add_note', $record, [
+                'module' => 'leave',
+                'category' => 'workflow',
+                'description' => 'Saved an internal note on a leave request.',
+                'metadata' => [
+                    'note' => $validated['note'],
+                    'notify_manager' => (bool) ($validated['notify_manager'] ?? false),
+                ],
+            ]);
 
-        return redirect()
-            ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$record->id)
-            ->with(
-                'success',
-                ($validated['notify_manager'] ?? false)
-                    ? 'Internal note saved and manager notification queued.'
-                    : 'Internal note saved.'
-            )
-            ->with('saved_leave_note', $validated['note']);
+            return redirect()
+                ->to('/'.Arr::get($this->moduleConfig(), 'slug').'/'.$record->id)
+                ->with(
+                    'success',
+                    ($validated['notify_manager'] ?? false)
+                        ? 'Internal note saved and manager notification queued.'
+                        : 'Internal note saved.'
+                )
+                ->with('saved_leave_note', $validated['note']);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (HttpException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            report($e);
+            return back()->with('error', 'Failed to save note: '.$e->getMessage());
+        }
     }
 
     private function moduleMeta(): array
@@ -383,6 +485,10 @@ class LeaveRequestController extends Controller
             $rules[$name] = $fieldRules;
         }
 
+        $rules['employee_id'] = ['required', 'integer', 'min:1'];
+        $rules['days'] = ['nullable', 'numeric', 'min:0'];
+        $rules['status'] = ['nullable', 'string', 'max:100'];
+
         return $rules;
     }
 
@@ -422,6 +528,14 @@ class LeaveRequestController extends Controller
         ];
     }
 
+    private function leaveRequestIndexRelations(): array
+    {
+        return [
+            'employee:id,staff_number,first_name,middle_name,surname,position_id',
+            'employee.position:id,name',
+        ];
+    }
+
     private function decorateLeaveRequest(LeaveRequest $leaveRequest): LeaveRequest
     {
         if ($leaveRequest->relationLoaded('employee') && $leaveRequest->employee) {
@@ -432,12 +546,17 @@ class LeaveRequestController extends Controller
             }
         }
 
+        $leaveRequest->setAttribute('requested_days', $this->requestedDays($leaveRequest));
+        $leaveRequest->setAttribute('status_bucket', $this->statusBucket($leaveRequest->status));
+        $leaveRequest->setAttribute('status_tone', $this->statusTone($leaveRequest->status));
+        $leaveRequest->setAttribute('employee_name', $this->employeeDisplayName($leaveRequest->employee));
+
         return $leaveRequest;
     }
 
-    private function employeeOptions(Request $request)
+    private function employeeOptions(Collection $employees): Collection
     {
-        return $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_LEAVE)
+        return $employees
             ->map(function (Employee $employee) {
                 return [
                     'id' => $employee->id,
@@ -446,9 +565,146 @@ class LeaveRequestController extends Controller
                     'middle_name' => $employee->middle_name,
                     'surname' => $employee->surname,
                     'full_name' => $employee->full_name,
+                    'department' => $employee->orgUnit?->name,
+                    'position' => $employee->position?->name ?? $employee->position?->title,
                 ];
             })
             ->values();
+    }
+
+    private function buildLeaveWorkspace(Request $request, ?LeaveRequest $record = null): array
+    {
+        $scope = $this->rolePageScopeContext($request, RolePageScopeResolver::MODULE_LEAVE);
+        $calendarMonth = $this->resolveCalendarMonth($request);
+        $employees = $this->scopedEmployees($request);
+        $selectedEmployee = $this->resolveSelectedEmployee($request, $employees, $record);
+        $excludeRequestId = $record?->id;
+
+        return [
+            'scope' => $scope,
+            'employees' => $this->employeeOptions($employees),
+            'defaultEmployeeId' => $selectedEmployee?->id,
+            'lockedEmployeeSelection' => ($scope['mode'] ?? null) === 'self'
+                && ($scope['role'] ?? null) === RoleDashboardResolver::EMPLOYEE,
+            'employeeContext' => $selectedEmployee
+                ? $this->buildEmployeeContext($selectedEmployee, $excludeRequestId)
+                : null,
+            'stats' => $selectedEmployee
+                ? $this->buildEmployeeStats($selectedEmployee, $excludeRequestId)
+                : $this->emptyEmployeeStats(),
+            'calendar' => $selectedEmployee
+                ? $this->buildEmployeeCalendar($selectedEmployee, $calendarMonth)
+                : $this->emptyCalendar($calendarMonth),
+            'leaveTypes' => $this->leaveTypeOptions($record?->leave_type),
+        ];
+    }
+
+    private function scopedEmployees(Request $request): Collection
+    {
+        $scoped = $this->roleScopedEmployees($request, RolePageScopeResolver::MODULE_LEAVE);
+
+        if ($scoped->isEmpty()) {
+            return collect();
+        }
+
+        $ids = $scoped->pluck('id')->map(fn (mixed $id) => (int) $id)->values();
+        $details = Employee::query()
+            ->with([
+                'orgUnit:id,name',
+                'position:id,name',
+                'manager:id,first_name,middle_name,surname',
+            ])
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        return $ids
+            ->map(function (int $id) use ($details) {
+                /** @var Employee|null $employee */
+                $employee = $details->get($id);
+
+                if (! $employee) {
+                    return null;
+                }
+
+                $employee->append('full_name');
+
+                if ($employee->relationLoaded('manager') && $employee->manager) {
+                    $employee->manager->append('full_name');
+                }
+
+                return $employee;
+            })
+            ->filter()
+            ->values();
+    }
+
+    private function resolveSelectedEmployee(
+        Request $request,
+        Collection $employees,
+        ?LeaveRequest $record = null,
+    ): ?Employee {
+        if ($employees->isEmpty()) {
+            return null;
+        }
+
+        $previewEmployeeId = $request->integer('preview_employee_id');
+
+        if ($previewEmployeeId > 0) {
+            $previewEmployee = $employees->firstWhere('id', $previewEmployeeId);
+
+            if ($previewEmployee instanceof Employee) {
+                return $previewEmployee;
+            }
+        }
+
+        if ($record && $record->employee_id) {
+            $recordEmployee = $employees->firstWhere('id', (int) $record->employee_id);
+
+            if ($recordEmployee instanceof Employee) {
+                return $recordEmployee;
+            }
+        }
+
+        $currentEmployee = $this->rolePageScopeResolver()->employee($request->user());
+
+        if ($currentEmployee) {
+            $matched = $employees->firstWhere('id', (int) $currentEmployee->id);
+
+            if ($matched instanceof Employee) {
+                return $matched;
+            }
+        }
+
+        return $employees->first();
+    }
+
+    private function resolveCalendarMonth(Request $request): CarbonInterface
+    {
+        $month = trim((string) $request->input('month', ''));
+
+        if ($month === '' || ! preg_match('/^\d{4}-\d{2}$/', $month)) {
+            return now()->startOfMonth();
+        }
+
+        try {
+            return Carbon::parse($month . '-01')->startOfMonth();
+        } catch (\Throwable) {
+            return now()->startOfMonth();
+        }
+    }
+
+    private function prepareLeavePayload(array $validated, ?LeaveRequest $record = null): array
+    {
+        $validated['employee_id'] = (int) ($validated['employee_id'] ?? $record?->employee_id ?? 0);
+        $validated['days'] = $this->calculateBusinessDays(
+            $validated['start_date'] ?? $record?->start_date?->toDateString() ?? null,
+            $validated['end_date'] ?? $record?->end_date?->toDateString() ?? null,
+        );
+        $validated['status'] = (string) ($validated['status'] ?? $record?->status ?? 'PENDING');
+        $validated['approver_name'] = $validated['approver_name'] ?? $record?->approver_name;
+
+        return $validated;
     }
 
     private function actorName(Request $request): string
@@ -487,6 +743,436 @@ class LeaveRequestController extends Controller
             ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
             ->take(2)
             ->implode('') ?: 'U';
+    }
+
+    private function leaveAllowanceMap(): array
+    {
+        return [
+            'Annual Leave' => 22.0,
+            'Sick Leave' => 10.0,
+            'Compensatory' => 4.0,
+        ];
+    }
+
+    private function leaveTypeOptions(?string $currentType = null): array
+    {
+        $defaults = collect(array_keys($this->leaveAllowanceMap()))
+            ->merge([
+                'Unpaid Leave',
+                'Maternity Leave',
+                'Paternity Leave',
+                'Study Leave',
+                'Bereavement Leave',
+            ])
+            ->push($this->normalizeLeaveType($currentType))
+            ->merge(
+                LeaveRequest::query()
+                    ->whereNotNull('leave_type')
+                    ->distinct()
+                    ->pluck('leave_type')
+                    ->map(fn (mixed $value) => $this->normalizeLeaveType((string) $value))
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+        return $defaults->map(fn (string $label) => [
+            'value' => $label,
+            'label' => $label,
+        ])->all();
+    }
+
+    private function normalizeLeaveType(?string $type): string
+    {
+        $normalized = strtolower(trim((string) $type));
+
+        return match ($normalized) {
+            '', 'annual', 'annual leave' => 'Annual Leave',
+            'sick', 'sick leave' => 'Sick Leave',
+            'compensatory', 'compensatory leave', 'comp leave' => 'Compensatory',
+            'unpaid', 'unpaid leave' => 'Unpaid Leave',
+            'maternity', 'maternity leave' => 'Maternity Leave',
+            'paternity', 'paternity leave' => 'Paternity Leave',
+            'study', 'study leave' => 'Study Leave',
+            'bereavement', 'bereavement leave' => 'Bereavement Leave',
+            default => trim((string) $type),
+        };
+    }
+
+    private function statusBucket(?string $status): string
+    {
+        $normalized = strtolower(trim((string) $status));
+
+        if ($normalized === '') {
+            return 'pending';
+        }
+
+        return match (true) {
+            str_contains($normalized, 'approve') => 'approved',
+            str_contains($normalized, 'reject') || str_contains($normalized, 'deny') => 'rejected',
+            str_contains($normalized, 'cancel') => 'cancelled',
+            str_contains($normalized, 'change') || str_contains($normalized, 'request') => 'changes_requested',
+            str_contains($normalized, 'conflict') => 'conflict',
+            str_contains($normalized, 'submitted'), str_contains($normalized, 'pending') => 'pending',
+            default => 'other',
+        };
+    }
+
+    private function statusTone(?string $status): string
+    {
+        return match ($this->statusBucket($status)) {
+            'approved' => 'approved',
+            'rejected', 'cancelled' => 'rejected',
+            'changes_requested', 'conflict' => 'warning',
+            default => 'pending',
+        };
+    }
+
+    private function displayStatus(?string $status): string
+    {
+        return match ($this->statusBucket($status)) {
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'cancelled' => 'Cancelled',
+            'changes_requested' => 'Changes Requested',
+            'conflict' => 'Conflict',
+            default => 'Pending',
+        };
+    }
+
+    private function calculateBusinessDays(?string $startDate, ?string $endDate): float
+    {
+        if (blank($startDate) || blank($endDate)) {
+            return 0;
+        }
+
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->startOfDay();
+
+        if ($end->lt($start)) {
+            return 0;
+        }
+
+        $days = 0;
+
+        foreach (CarbonPeriod::create($start, $end) as $date) {
+            if (! $date->isWeekend()) {
+                $days++;
+            }
+        }
+
+        return (float) $days;
+    }
+
+    private function approvedRequestsForEmployee(int $employeeId, ?int $excludeRequestId = null): Collection
+    {
+        return LeaveRequest::query()
+            ->where('employee_id', $employeeId)
+            ->when($excludeRequestId, fn (Builder $query, int $id) => $query->whereKeyNot($id))
+            ->get()
+            ->filter(fn (LeaveRequest $item) => $this->statusBucket($item->status) === 'approved')
+            ->values();
+    }
+
+    private function leaveBalancesForEmployee(
+        int $employeeId,
+        ?string $currentType = null,
+        float $requestedDays = 0,
+        ?int $excludeRequestId = null,
+    ): array {
+        $allowances = $this->leaveAllowanceMap();
+        $approvedRequests = $this->approvedRequestsForEmployee($employeeId, $excludeRequestId);
+        $takenByType = $approvedRequests
+            ->groupBy(fn (LeaveRequest $item) => $this->normalizeLeaveType($item->leave_type))
+            ->map(fn (Collection $items) => $this->sumLeaveDays($items));
+
+        $currentType = $this->normalizeLeaveType($currentType);
+        $balances = collect($allowances)
+            ->map(function (float $total, string $type) use ($takenByType) {
+                $taken = (float) ($takenByType->get($type, 0));
+
+                return [
+                    'key' => str($type)->snake()->toString(),
+                    'type' => $type,
+                    'total' => $total,
+                    'taken' => $taken,
+                    'remaining' => max(0, $total - $taken),
+                ];
+            })
+            ->values();
+
+        if ($currentType !== '' && ! $balances->contains(fn (array $balance) => $balance['type'] === $currentType)) {
+            $balances->push([
+                'key' => str($currentType)->snake()->toString(),
+                'type' => $currentType,
+                'total' => 0,
+                'taken' => (float) ($takenByType->get($currentType, 0)),
+                'remaining' => 0,
+            ]);
+        }
+
+        $currentBalance = $balances
+            ->firstWhere('type', $currentType)
+            ?? $balances->first()
+            ?? [
+                'key' => 'annual_leave',
+                'type' => 'Annual Leave',
+                'total' => 0,
+                'taken' => 0,
+                'remaining' => 0,
+            ];
+
+        return [
+            'current' => [
+                'type' => $currentBalance['type'],
+                'total' => (float) $currentBalance['total'],
+                'taken' => (float) $currentBalance['taken'],
+                'remaining' => (float) $currentBalance['remaining'],
+                'requested' => $requestedDays,
+                'remaining_after_request' => max(0, (float) $currentBalance['remaining'] - $requestedDays),
+                'progress' => (float) $currentBalance['total'] > 0
+                    ? min(100, round(((float) $currentBalance['taken'] / (float) $currentBalance['total']) * 100, 2))
+                    : 0,
+            ],
+            'balances' => $balances->all(),
+            'annual' => $balances->firstWhere('type', 'Annual Leave') ?? ['total' => 22, 'taken' => 0, 'remaining' => 22],
+            'sick' => $balances->firstWhere('type', 'Sick Leave') ?? ['total' => 10, 'taken' => 0, 'remaining' => 10],
+            'compensatory' => $balances->firstWhere('type', 'Compensatory') ?? ['total' => 4, 'taken' => 0, 'remaining' => 4],
+        ];
+    }
+
+    private function buildEmployeeContext(Employee $employee, ?int $excludeRequestId = null): array
+    {
+        $balances = $this->leaveBalancesForEmployee($employee->id, null, 0, $excludeRequestId);
+
+        return [
+            'id' => $employee->id,
+            'full_name' => $this->employeeDisplayName($employee),
+            'initials' => $this->employeeInitials($employee),
+            'staff_number' => $employee->staff_number,
+            'department' => $employee->orgUnit?->name,
+            'position' => $employee->position?->name ?? $employee->position?->title,
+            'manager' => $employee->manager?->full_name
+                ?? trim(($employee->manager?->first_name ?? '').' '.($employee->manager?->surname ?? ''))
+                ?: null,
+            'balances' => $balances['balances'],
+            'recent_requests' => $this->recentHistoryForEmployee($employee->id, $excludeRequestId, 4),
+        ];
+    }
+
+    private function buildEmployeeStats(Employee $employee, ?int $excludeRequestId = null): array
+    {
+        $requests = LeaveRequest::query()
+            ->where('employee_id', $employee->id)
+            ->when($excludeRequestId, fn (Builder $query, int $id) => $query->whereKeyNot($id))
+            ->get();
+
+        $approved = $requests->filter(fn (LeaveRequest $item) => $this->statusBucket($item->status) === 'approved');
+        $pending = $requests->filter(fn (LeaveRequest $item) => in_array($this->statusBucket($item->status), ['pending', 'changes_requested'], true));
+        $upcoming = $requests->filter(function (LeaveRequest $item) {
+            $start = $item->start_date ? Carbon::parse($item->start_date) : null;
+
+            return $start && $start->gte(now()->startOfDay());
+        });
+
+        return [
+            'total_requests' => $requests->count(),
+            'pending_requests' => $pending->count(),
+            'approved_days' => $this->sumLeaveDays($approved),
+            'upcoming_requests' => $upcoming->count(),
+        ];
+    }
+
+    private function emptyEmployeeStats(): array
+    {
+        return [
+            'total_requests' => 0,
+            'pending_requests' => 0,
+            'approved_days' => 0,
+            'upcoming_requests' => 0,
+        ];
+    }
+
+    private function buildIndexStats(Builder $query, CarbonInterface $calendarMonth): array
+    {
+        $requests = $query
+            ->setEagerLoads([])
+            ->select(['id', 'employee_id', 'leave_type', 'start_date', 'end_date', 'days', 'status'])
+            ->get();
+        $pending = $requests->filter(fn (LeaveRequest $item) => in_array($this->statusBucket($item->status), ['pending', 'changes_requested'], true));
+        $active = $requests->filter(function (LeaveRequest $item) {
+            $start = $item->start_date ? Carbon::parse($item->start_date) : null;
+            $end = $item->end_date ? Carbon::parse($item->end_date) : null;
+
+            if (! $start || ! $end) {
+                return false;
+            }
+
+            return now()->betweenIncluded($start->startOfDay(), $end->endOfDay())
+                && in_array($this->statusBucket($item->status), ['approved', 'pending', 'changes_requested'], true);
+        });
+        $monthStart = $calendarMonth->copy()->startOfMonth();
+        $monthEnd = $calendarMonth->copy()->endOfMonth();
+        $upcoming = $requests->filter(function (LeaveRequest $item) use ($monthStart, $monthEnd) {
+            $start = $item->start_date ? Carbon::parse($item->start_date) : null;
+
+            return $start && $start->betweenIncluded($monthStart, $monthEnd);
+        });
+
+        return [
+            'total_requests' => $requests->count(),
+            'pending_requests' => $pending->count(),
+            'active_absences' => $active->count(),
+            'upcoming_requests' => $upcoming->count(),
+        ];
+    }
+
+    private function buildEmployeeCalendar(Employee $employee, CarbonInterface $calendarMonth): array
+    {
+        $requests = LeaveRequest::query()
+            ->select(['id', 'employee_id', 'leave_type', 'start_date', 'end_date', 'status'])
+            ->where('employee_id', $employee->id)
+            ->whereDate('start_date', '<=', $calendarMonth->copy()->endOfMonth()->toDateString())
+            ->whereDate('end_date', '>=', $calendarMonth->copy()->startOfMonth()->toDateString())
+            ->orderBy('start_date')
+            ->get();
+
+        return $this->buildCalendarPayload($requests, $calendarMonth, false);
+    }
+
+    private function buildScopedCalendar(Builder $query, CarbonInterface $calendarMonth): array
+    {
+        $requests = $query
+            ->setEagerLoads([])
+            ->with([
+                'employee:id,first_name,middle_name,surname',
+            ])
+            ->select(['id', 'employee_id', 'leave_type', 'start_date', 'end_date', 'status'])
+            ->whereDate('start_date', '<=', $calendarMonth->copy()->endOfMonth()->toDateString())
+            ->whereDate('end_date', '>=', $calendarMonth->copy()->startOfMonth()->toDateString())
+            ->orderBy('start_date')
+            ->get();
+
+        return $this->buildCalendarPayload($requests, $calendarMonth, true);
+    }
+
+    private function buildCalendarPayload(Collection $requests, CarbonInterface $calendarMonth, bool $includeEmployeeName): array
+    {
+        $monthStart = $calendarMonth->copy()->startOfMonth();
+        $monthEnd = $calendarMonth->copy()->endOfMonth();
+        $gridStart = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
+        $gridEnd = $monthEnd->copy()->endOfWeek(Carbon::SUNDAY);
+        $entryMap = [];
+
+        $requests->each(function (LeaveRequest $request) use ($includeEmployeeName, $monthStart, $monthEnd, &$entryMap): void {
+            $start = $this->asCarbonDate($request->start_date)?->startOfDay();
+            $end = $this->asCarbonDate($request->end_date)?->endOfDay();
+
+            if (! $start || ! $end) {
+                return;
+            }
+
+            if ($end->lt($monthStart) || $start->gt($monthEnd)) {
+                return;
+            }
+
+            $entry = [
+                'id' => $request->id,
+                'title' => $includeEmployeeName
+                    ? $this->employeeDisplayName($request->employee)
+                    : $this->normalizeLeaveType($request->leave_type),
+                'subtitle' => $includeEmployeeName
+                    ? $this->normalizeLeaveType($request->leave_type)
+                    : $this->displayStatus($request->status),
+                'status' => $this->displayStatus($request->status),
+                'tone' => $this->statusTone($request->status),
+            ];
+
+            $cursor = $start->copy()->lt($monthStart)
+                ? $monthStart->copy()
+                : $start->copy();
+            $lastDay = $end->copy()->gt($monthEnd)
+                ? $monthEnd->copy()
+                : $end->copy();
+
+            while ($cursor->lte($lastDay)) {
+                $entryMap[$cursor->toDateString()][] = $entry;
+                $cursor = $cursor->copy()->addDay();
+            }
+        });
+
+        $weeks = [];
+        $cursor = $gridStart->copy();
+
+        while ($cursor->lte($gridEnd)) {
+            $week = [];
+
+            for ($index = 0; $index < 7; $index++) {
+                $day = $cursor->copy();
+                $entries = $entryMap[$day->toDateString()] ?? [];
+
+                $week[] = [
+                    'date' => $day->toDateString(),
+                    'label' => $day->format('j'),
+                    'current_month' => $day->isSameMonth($calendarMonth),
+                    'is_today' => $day->isToday(),
+                    'is_weekend' => $day->isWeekend(),
+                    'entries' => $entries,
+                ];
+
+                $cursor = $cursor->copy()->addDay();
+            }
+
+            $weeks[] = $week;
+        }
+
+        return [
+            'month' => $calendarMonth->format('Y-m'),
+            'label' => $calendarMonth->format('F Y'),
+            'entry_count' => $requests->count(),
+            'weeks' => $weeks,
+        ];
+    }
+
+    private function emptyCalendar(CarbonInterface $calendarMonth): array
+    {
+        return $this->buildCalendarPayload(collect(), $calendarMonth, false);
+    }
+
+    private function asCarbonDate(mixed $value): ?CarbonInterface
+    {
+        if ($value instanceof CarbonInterface) {
+            return $value->copy();
+        }
+
+        if (blank($value)) {
+            return null;
+        }
+
+        return Carbon::parse($value);
+    }
+
+    private function recentHistoryForEmployee(int $employeeId, ?int $excludeRequestId = null, int $limit = 5): array
+    {
+        return LeaveRequest::query()
+            ->where('employee_id', $employeeId)
+            ->when($excludeRequestId, fn (Builder $query, int $id) => $query->whereKeyNot($id))
+            ->orderByDesc('start_date')
+            ->limit($limit)
+            ->get()
+            ->map(function (LeaveRequest $item) {
+                return [
+                    'id' => $item->id,
+                    'leave_type' => $this->normalizeLeaveType($item->leave_type),
+                    'days' => $this->requestedDays($item),
+                    'status' => $this->displayStatus($item->status),
+                    'status_tone' => $this->statusTone($item->status),
+                    'start_date' => $item->start_date ? Carbon::parse($item->start_date)->toDateString() : null,
+                    'end_date' => $item->end_date ? Carbon::parse($item->end_date)->toDateString() : null,
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function requestedDays(LeaveRequest $record): float
@@ -528,75 +1214,12 @@ class LeaveRequestController extends Controller
 
     private function buildLeaveBalances(LeaveRequest $record): array
     {
-        $employeeId = $record->employee_id;
-        $currentType = (string) ($record->leave_type ?? 'Annual Leave');
-
-        $allowances = [
-            'Annual Leave' => 22,
-            'Sick Leave' => 10,
-            'Compensatory' => 4,
-        ];
-
-        $approvedRequests = LeaveRequest::query()
-            ->where('employee_id', $employeeId)
-            ->where(function (Builder $query) {
-                $query->where('status', 'like', '%approve%')
-                    ->orWhere('status', 'Approved');
-            })
-            ->get();
-
-        $annualTaken = $this->sumLeaveDays(
-            $approvedRequests->filter(fn (LeaveRequest $item) => strcasecmp((string) $item->leave_type, 'Annual Leave') === 0)
+        return $this->leaveBalancesForEmployee(
+            (int) $record->employee_id,
+            $record->leave_type,
+            $this->requestedDays($record),
+            $record->id,
         );
-
-        $sickTaken = $this->sumLeaveDays(
-            $approvedRequests->filter(fn (LeaveRequest $item) => strcasecmp((string) $item->leave_type, 'Sick Leave') === 0)
-        );
-
-        $compTaken = $this->sumLeaveDays(
-            $approvedRequests->filter(function (LeaveRequest $item) {
-                return in_array(strtolower((string) $item->leave_type), ['compensatory', 'comp leave', 'compensatory leave'], true);
-            })
-        );
-
-        $requested = $this->requestedDays($record);
-        $currentAllowance = $allowances[$currentType] ?? 0;
-
-        $currentTakenBeforeThisRequest = match ($currentType) {
-            'Annual Leave' => $annualTaken,
-            'Sick Leave' => $sickTaken,
-            'Compensatory' => $compTaken,
-            default => 0,
-        };
-
-        return [
-            'current' => [
-                'type' => $currentType,
-                'total' => $currentAllowance,
-                'taken' => $currentTakenBeforeThisRequest,
-                'remaining' => max(0, $currentAllowance - $currentTakenBeforeThisRequest),
-                'requested' => $requested,
-                'remaining_after_request' => max(0, $currentAllowance - $currentTakenBeforeThisRequest - $requested),
-                'progress' => $currentAllowance > 0
-                    ? min(100, round(($currentTakenBeforeThisRequest / $currentAllowance) * 100, 2))
-                    : 0,
-            ],
-            'annual' => [
-                'total' => 22,
-                'taken' => $annualTaken,
-                'remaining' => max(0, 22 - $annualTaken),
-            ],
-            'sick' => [
-                'total' => 10,
-                'taken' => $sickTaken,
-                'remaining' => max(0, 10 - $sickTaken),
-            ],
-            'compensatory' => [
-                'total' => 4,
-                'taken' => $compTaken,
-                'remaining' => max(0, 4 - $compTaken),
-            ],
-        ];
     }
 
     private function buildSystemChecks(LeaveRequest $record, array $leaveBalances): array
@@ -878,14 +1501,9 @@ class LeaveRequestController extends Controller
 
     private function buildRecentHistory(LeaveRequest $record): array
     {
-        $history = LeaveRequest::query()
-            ->where('employee_id', $record->employee_id)
-            ->where('id', '!=', $record->id)
-            ->orderByDesc('start_date')
-            ->limit(5)
-            ->get();
+        $history = $this->recentHistoryForEmployee((int) $record->employee_id, $record->id, 5);
 
-        if ($history->isEmpty()) {
+        if (empty($history)) {
             return [
                 [
                     'id' => 0,
@@ -906,16 +1524,7 @@ class LeaveRequestController extends Controller
             ];
         }
 
-        return $history->map(function (LeaveRequest $item) {
-            return [
-                'id' => $item->id,
-                'leave_type' => $item->leave_type,
-                'days' => $this->requestedDays($item),
-                'status' => $item->status,
-                'start_date' => $item->start_date ? Carbon::parse($item->start_date)->toDateString() : null,
-                'end_date' => $item->end_date ? Carbon::parse($item->end_date)->toDateString() : null,
-            ];
-        })->values()->all();
+        return $history;
     }
 
     private function buildUsageStats(LeaveRequest $record, array $recentHistory): array
@@ -928,7 +1537,7 @@ class LeaveRequestController extends Controller
             ->get();
 
         $approved = $requests->filter(function (LeaveRequest $item) {
-            return stripos((string) $item->status, 'approve') !== false;
+            return $this->statusBucket($item->status) === 'approved';
         });
 
         $totalDays = $this->sumLeaveDays($approved);
@@ -949,7 +1558,7 @@ class LeaveRequestController extends Controller
             : 0;
 
         $sickDays = $this->sumLeaveDays(
-            $approved->filter(fn (LeaveRequest $item) => stripos((string) $item->leave_type, 'sick') !== false)
+            $approved->filter(fn (LeaveRequest $item) => $this->normalizeLeaveType($item->leave_type) === 'Sick Leave')
         );
 
         $ratio = $totalDays > 0

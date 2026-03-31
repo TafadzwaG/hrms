@@ -340,6 +340,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/employees/import', [EmployeeController::class, 'import'])
         ->middleware('permission:employees.bulk_upload')
         ->name('employees.import');
+    Route::post('/employees/export-selected', [EmployeeController::class, 'exportSelected'])
+        ->middleware('permission:employees.view')
+        ->name('employees.export-selected');
+    Route::get('/employees/{employee}/pdf', [EmployeeController::class, 'exportPdf'])
+        ->middleware('permission:employees.view')
+        ->name('employees.pdf');
     Route::get('/employees/{employee}/documents', [EmployeeDocumentController::class, 'index'])
         ->middleware('permission:employees.view')
         ->name('employees.documents.index');
@@ -650,7 +656,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('leave-requests', LeaveRequestController::class)
         ->middlewareFor(['index', 'show'], 'permission:leave.view')
         ->middlewareFor(['create', 'store'], 'permission:leave.create')
-        ->middlewareFor(['edit', 'update'], 'permission:leave.manage')
+        ->middlewareFor(['edit', 'update'], 'permission:leave.update,leave.manage')
         ->middlewareFor(['destroy'], 'permission:leave.delete');
 
     Route::resource('attendance-records', AttendanceRecordController::class)

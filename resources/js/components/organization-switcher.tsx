@@ -22,19 +22,7 @@ export function OrganizationSwitcher() {
     }
 
     const switchOrganization = (organizationId: number) => {
-        router.post(
-            '/organizations/switch',
-            {
-                organization_id: organizationId,
-                redirect_to:
-                    typeof window !== 'undefined'
-                        ? `${window.location.pathname}${window.location.search}`
-                        : '/dashboard',
-            },
-            {
-                preserveScroll: true,
-            },
-        );
+        router.post('/organizations/switch', { organization_id: organizationId });
     };
 
     return (

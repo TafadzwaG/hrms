@@ -368,9 +368,9 @@ test('dashboard shares role-pinned shortcuts for employees', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.dashboard_role', 'employee')
             ->has('auth.user.pinned_shortcuts', 5)
-            ->where('auth.user.pinned_shortcuts.0.title', 'My Leave')
+            ->where('auth.user.pinned_shortcuts.0.title', 'Leave Management')
             ->where('auth.user.pinned_shortcuts.0.badge', '1')
-            ->where('auth.user.pinned_shortcuts.4.title', 'My Benefits')
+            ->where('auth.user.pinned_shortcuts.4.title', 'Benefits')
             ->where('auth.user.pinned_shortcuts.4.badge', '1')
         );
 });

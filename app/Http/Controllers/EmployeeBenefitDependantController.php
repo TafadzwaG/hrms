@@ -12,12 +12,6 @@ class EmployeeBenefitDependantController extends Controller
 {
     public function store(Request $request, EmployeeBenefitEnrollment $enrollment): RedirectResponse
     {
-        $enrollment->load('benefit');
-
-        if ($enrollment->benefit && ! $enrollment->benefit->requires_dependants) {
-            return back()->with('error', 'This benefit does not support dependants.');
-        }
-
         $data = $this->validateDependant($request);
 
         $enrollment->dependants()->create([

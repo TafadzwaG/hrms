@@ -11,7 +11,15 @@
       "Bash(cd:*)",
       "Bash(composer show:*)",
       "Bash(npm install:*)",
-      "Bash(grep -A 30 '```mermaid' \"C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/docs/asset-management-module.md\")"
+      "Bash(grep -A 30 '```mermaid' \"C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/docs/asset-management-module.md\")",
+      "Bash(find /c/Users/tafad/Documents/PROJECTS/HRMS/hrms/public -name *.png -o -name *.svg -o -name *.jpg)",
+      "Bash(npx tsc:*)",
+      "Bash(php:*)",
+      "Bash(grep -rn flash C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/resources/js/ --include=*.tsx --include=*.ts -l)",
+      "Bash(grep -rn \"flash\\\\|toast\\\\|success.*error\\\\|error.*success\" C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/resources/js/components/ --include=*.tsx -l)",
+      "Bash(grep -rn \"flash\\\\|usePage.*flash\\\\|props\\\\.flash\" C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/resources/js/ --include=*.tsx --include=*.ts)",
+      "Bash(grep -rn \"toast\\\\|Toaster\\\\|sonner\\\\|notification\" C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/resources/js/ --include=*.tsx --include=*.ts -l)",
+      "Bash(grep -rn \"FlashMessage\\\\|flash-message\\\\|AlertBanner\\\\|useFlash\" C:/Users/tafad/Documents/PROJECTS/HRMS/hrms/resources/js/ --include=*.tsx -l)"
     ]
   }
 }

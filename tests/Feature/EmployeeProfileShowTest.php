@@ -249,6 +249,29 @@ test('employee profile tabs can create related records', function () {
     ]);
 });
 
+test('employee profile pdf exports with the redesigned template', function () {
+    $viewer = User::factory()->create();
+    $organization = grantEmployeeProfilePermissions($viewer, ['employees.view']);
+    $this->actingAs($viewer);
+
+    $employee = Employee::withoutGlobalScopes()->create([
+        'organization_id' => $organization->id,
+        'staff_number' => 'EMP-9010',
+        'first_name' => 'Johnathan',
+        'surname' => 'Doe',
+        'email' => 'johnathan.doe@example.com',
+        'national_id' => '12-345678-A-10',
+        'gender' => 'Male',
+        'marital_status' => 'Married',
+        'contact_number' => '+263700000100',
+        'status' => 'active',
+    ]);
+
+    $this->get("/employees/{$employee->id}/pdf")
+        ->assertOk()
+        ->assertDownload('employee_profile_EMP-9010_'.now()->format('Ymd').'.pdf');
+});
+
 test('employee documents can be uploaded downloaded and deleted', function () {
     Storage::fake('public');
 

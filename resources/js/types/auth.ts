@@ -45,6 +45,7 @@ export type TenantOrganization = {
 
 export type AuthUser = {
     id: number;
+    employee_id?: number | null;
     name: string;
     email: string;
     avatar?: string;

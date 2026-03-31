@@ -10,7 +10,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Table,
@@ -26,20 +32,29 @@ import { useAuthorization } from '@/lib/authorization';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Briefcase,
     Building2,
     Calendar,
+    CheckCircle2,
     Clock,
     CreditCard,
     Download,
     FileText,
+    Hash,
     Pencil,
     Power,
     Trash2,
     Upload,
+    UploadCloud,
+    User,
+    UserSquare2,
+    Wallet,
+    X,
     XCircle,
 } from 'lucide-react';
-import type { FormEvent } from 'react';
-import { useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 type EmployeeSummary = {
     id: number;
@@ -137,6 +152,25 @@ function formatStatus(status: string) {
     return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function formatDate(value: string | null) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value.substring(0, 10);
+
+    return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
+}
+
+function formatMoney(amount: string | null, currency?: string | null) {
+    if (!amount) return '—';
+
+    return `${currency || ''} ${Number(amount).toLocaleString()}`.trim();
+}
+
 function formatFileSize(bytes: number | null) {
     if (!bytes) return '—';
     if (bytes < 1024) return `${bytes} B`;
@@ -144,19 +178,163 @@ function formatFileSize(bytes: number | null) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function DetailRow({
+function SectionCard({
+    title,
+    description,
+    icon,
+    children,
+    className = '',
+}: {
+    title: string;
+    description?: string;
+    icon: React.ComponentType<{ className?: string }>;
+    children: ReactNode;
+    className?: string;
+}) {
+    const Icon = icon;
+
+    return (
+        <Card className={`border-border/60 shadow-sm ${className}`}>
+            <CardHeader className="pb-4">
+                <div className="flex items-start gap-3">
+                    <div className="rounded-xl border bg-muted/50 p-2.5">
+                        <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+                        {description && (
+                            <CardDescription className="mt-1">
+                                {description}
+                            </CardDescription>
+                        )}
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+        </Card>
+    );
+}
+
+function DetailBlock({
     label,
     value,
 }: {
     label: string;
-    value: React.ReactNode;
+    value?: ReactNode;
 }) {
-    if (!value && value !== 0) return null;
+    const hasValue =
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === 'string' && value.trim() === '');
+
     return (
-        <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-sm font-medium">{value}</p>
+        <div className="rounded-xl border bg-muted/30 p-4">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                {label}
+            </p>
+            <div className="mt-1 text-sm font-medium text-foreground">
+                {hasValue ? value : 'Not set'}
+            </div>
         </div>
+    );
+}
+
+function SummaryItem({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon?: React.ComponentType<{ className?: string }>;
+    label: string;
+    value?: ReactNode;
+}) {
+    const hasValue =
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === 'string' && value.trim() === '');
+
+    return (
+        <div className="flex items-center justify-between gap-3 py-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+                {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+                <span className="text-sm text-muted-foreground truncate">{label}</span>
+            </div>
+            <span className="max-w-[55%] text-right text-sm font-medium text-foreground shrink-0">
+                {hasValue ? value : '—'}
+            </span>
+        </div>
+    );
+}
+
+function ContractDocumentDropzone({
+    form,
+    onSubmit,
+}: {
+    form: ReturnType<typeof useForm<{ file: File | null }>>;
+    onSubmit: (e: FormEvent) => void;
+}) {
+    const onDrop = useCallback(
+        (accepted: File[]) => form.setData('file', accepted[0] ?? null),
+        [form],
+    );
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        multiple: false,
+        maxFiles: 1,
+    });
+
+    return (
+        <form onSubmit={onSubmit} className="space-y-3 rounded-xl border bg-muted/20 p-4">
+            <div
+                {...getRootProps()}
+                className={[
+                    'cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors',
+                    isDragActive
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/40',
+                ].join(' ')}
+            >
+                <input {...getInputProps()} />
+                <UploadCloud className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="text-sm font-medium text-foreground">
+                    {isDragActive ? 'Drop the file here...' : 'Drag & drop or click to select'}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">PDF, images, or any document</p>
+            </div>
+
+            {form.data.file && (
+                <div className="flex items-center justify-between rounded-lg border bg-background px-3 py-2">
+                    <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="max-w-[240px] truncate text-sm font-medium">{form.data.file.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                            {(form.data.file.size / 1024 / 1024).toFixed(2)} MB
+                        </span>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => form.setData('file', null)}
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </Button>
+                </div>
+            )}
+
+            {form.errors.file && (
+                <p className="text-sm text-destructive">{form.errors.file}</p>
+            )}
+
+            <div className="flex justify-end">
+                <Button type="submit" disabled={form.processing || !form.data.file}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    {form.processing ? 'Uploading...' : 'Upload'}
+                </Button>
+            </div>
+        </form>
     );
 }
 
@@ -195,12 +373,10 @@ export default function ContractShow() {
     };
 
     const handleDelete = () => {
-        router.delete(
-            `/employees/${employee.id}/contracts/${contract.id}`,
-            {
-                onFinish: () => setShowDeleteDialog(false),
-            },
-        );
+        router.delete(`/employees/${employee.id}/contracts/${contract.id}`, {
+            preserveScroll: true,
+            onFinish: () => setShowDeleteDialog(false),
+        });
     };
 
     const handleUpload = (e: FormEvent) => {
@@ -238,445 +414,672 @@ export default function ContractShow() {
                 title={`Contract ${contract.contract_number} - ${employee.full_name}`}
             />
 
-            <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
-                {/* Header */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href={`/employees/${employee.id}/contracts`}
-                        >
-                            <Button variant="ghost" size="icon">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                        </Link>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-2xl font-bold tracking-tight">
-                                    {contract.contract_number}
-                                </h1>
-                                {contract.is_current && (
-                                    <Badge variant="default">Current</Badge>
-                                )}
-                                <Badge
-                                    variant={statusBadgeVariant(
-                                        contract.status,
-                                    )}
-                                >
-                                    {formatStatus(contract.status)}
-                                </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {employee.full_name} &middot;{' '}
-                                {employee.staff_number}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {canActivate &&
-                            !contract.is_current &&
-                            contract.status !== 'terminated' && (
-                                <Button
-                                    variant="outline"
-                                    onClick={handleActivate}
-                                >
-                                    <Power className="mr-2 h-4 w-4" />
-                                    Set as Current
-                                </Button>
-                            )}
-                        {canTerminate && contract.status === 'active' && (
-                            <Button
-                                variant="outline"
-                                onClick={() => setShowTerminateDialog(true)}
-                            >
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Terminate
-                            </Button>
-                        )}
-                        {canUpdate && (
-                            <Link href={contract.links.edit}>
-                                <Button variant="outline">
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Edit
-                                </Button>
-                            </Link>
-                        )}
-                        {canDelete && (
-                            <Button
-                                variant="destructive"
-                                onClick={() => setShowDeleteDialog(true)}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </Button>
-                        )}
-                    </div>
-                </div>
+            <div className="min-h-screen w-full bg-muted/20">
+                <div className="flex min-h-screen flex-col">
+                    <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                        <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="flex items-start gap-3">
+                                    <Link href={`/employees/${employee.id}/contracts`}>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="shrink-0"
+                                        >
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
 
-                {/* Contract Details */}
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-primary" />
-                                <CardTitle className="text-lg">
-                                    Contract Details
-                                </CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <DetailRow
-                                label="Contract Number"
-                                value={contract.contract_number}
-                            />
-                            <DetailRow
-                                label="Contract Type"
-                                value={
-                                    CONTRACT_TYPE_LABELS[
-                                        contract.contract_type
-                                    ] || contract.contract_type
-                                }
-                            />
-                            <DetailRow
-                                label="Job Title"
-                                value={contract.job_title}
-                            />
-                            <DetailRow
-                                label="Signed At"
-                                value={
-                                    contract.signed_at
-                                        ? contract.signed_at.substring(0, 10)
-                                        : null
-                                }
-                            />
-                        </CardContent>
-                    </Card>
+                                    <div className="min-w-0">
+                                        <div className="mb-2 inline-flex items-center rounded-full border bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                                            Contract Management
+                                        </div>
 
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                <CardTitle className="text-lg">
-                                    Dates
-                                </CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <DetailRow
-                                label="Start Date"
-                                value={contract.start_date}
-                            />
-                            <DetailRow
-                                label="End Date"
-                                value={contract.end_date || 'Open-ended'}
-                            />
-                            <DetailRow
-                                label="Probation End"
-                                value={contract.probation_end_date}
-                            />
-                            {contract.terminated_at && (
-                                <DetailRow
-                                    label="Terminated At"
-                                    value={contract.terminated_at.substring(
-                                        0,
-                                        10,
-                                    )}
-                                />
-                            )}
-                        </CardContent>
-                    </Card>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                                                {contract.contract_number}
+                                            </h1>
+                                            {contract.is_current && (
+                                                <Badge variant="default">Current</Badge>
+                                            )}
+                                            <Badge
+                                                variant={statusBadgeVariant(contract.status)}
+                                            >
+                                                {formatStatus(contract.status)}
+                                            </Badge>
+                                        </div>
 
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                                <Building2 className="h-5 w-5 text-primary" />
-                                <CardTitle className="text-lg">
-                                    Organisation
-                                </CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <DetailRow
-                                label="Department"
-                                value={contract.department?.name}
-                            />
-                            <DetailRow
-                                label="Position"
-                                value={contract.position?.name}
-                            />
-                            <DetailRow
-                                label="Pay Point"
-                                value={contract.pay_point}
-                            />
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center gap-2">
-                                <CreditCard className="h-5 w-5 text-primary" />
-                                <CardTitle className="text-lg">
-                                    Compensation
-                                </CardTitle>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <DetailRow
-                                label="Basic Salary"
-                                value={
-                                    contract.basic_salary
-                                        ? `${contract.currency || ''} ${Number(contract.basic_salary).toLocaleString()}`
-                                        : null
-                                }
-                            />
-                            <DetailRow
-                                label="Pay Frequency"
-                                value={
-                                    contract.pay_frequency
-                                        ? PAY_FREQUENCY_LABELS[
-                                              contract.pay_frequency
-                                          ] || contract.pay_frequency
-                                        : null
-                                }
-                            />
-                            <DetailRow
-                                label="Working Hours / Week"
-                                value={
-                                    contract.working_hours_per_week
-                                        ? `${contract.working_hours_per_week}h`
-                                        : null
-                                }
-                            />
-                            <DetailRow
-                                label="Notice Period"
-                                value={
-                                    contract.notice_period_days != null
-                                        ? `${contract.notice_period_days} days`
-                                        : null
-                                }
-                            />
-                            <DetailRow
-                                label="Leave Days / Year"
-                                value={
-                                    contract.leave_days_per_year != null
-                                        ? `${contract.leave_days_per_year} days`
-                                        : null
-                                }
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Termination / Notes */}
-                {(contract.termination_reason || contract.renewal_notes) && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-lg">Notes</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {contract.termination_reason && (
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        Termination Reason
-                                    </p>
-                                    <p className="text-sm">
-                                        {contract.termination_reason}
-                                    </p>
-                                </div>
-                            )}
-                            {contract.renewal_notes && (
-                                <div>
-                                    <p className="text-xs text-muted-foreground">
-                                        Renewal Notes
-                                    </p>
-                                    <p className="text-sm">
-                                        {contract.renewal_notes}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Documents */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-primary" />
-                                <CardTitle className="text-lg">
-                                    Contract Documents
-                                </CardTitle>
-                            </div>
-                            {canManageDocs && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                        setShowUploadForm(!showUploadForm)
-                                    }
-                                >
-                                    <Upload className="mr-2 h-4 w-4" />
-                                    Upload
-                                </Button>
-                            )}
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {showUploadForm && canManageDocs && (
-                            <form
-                                onSubmit={handleUpload}
-                                className="mb-4 flex items-end gap-3 rounded-lg border p-4"
-                            >
-                                <div className="flex-1">
-                                    <label className="mb-2 block text-sm font-medium">
-                                        Select File
-                                    </label>
-                                    <Input
-                                        type="file"
-                                        onChange={(e) =>
-                                            uploadForm.setData(
-                                                'file',
-                                                e.target.files?.[0] ?? null,
-                                            )
-                                        }
-                                    />
-                                    {uploadForm.errors.file && (
-                                        <p className="mt-1 text-sm text-destructive">
-                                            {uploadForm.errors.file}
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {employee.full_name} · {employee.staff_number}
                                         </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                                    <Link href={`/employees/${employee.id}`}>
+                                        <Button variant="outline" className="w-full sm:w-auto">
+                                            <User className="mr-2 h-4 w-4" />
+                                            Employee Profile
+                                        </Button>
+                                    </Link>
+
+                                    {canActivate &&
+                                        !contract.is_current &&
+                                        contract.status !== 'terminated' && (
+                                            <Button
+                                                variant="outline"
+                                                onClick={handleActivate}
+                                            >
+                                                <Power className="mr-2 h-4 w-4" />
+                                                Set as Current
+                                            </Button>
+                                        )}
+
+                                    {canTerminate && contract.status === 'active' && (
+                                        <Button
+                                            variant="outline"
+                                            onClick={() =>
+                                                setShowTerminateDialog(true)
+                                            }
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4" />
+                                            Terminate
+                                        </Button>
+                                    )}
+
+                                    {canUpdate && (
+                                        <Link href={contract.links.edit}>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full sm:w-auto"
+                                            >
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </Button>
+                                        </Link>
+                                    )}
+
+                                    {canDelete && (
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() => setShowDeleteDialog(true)}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </Button>
                                     )}
                                 </div>
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        uploadForm.processing ||
-                                        !uploadForm.data.file
-                                    }
-                                    size="sm"
-                                >
-                                    {uploadForm.processing
-                                        ? 'Uploading...'
-                                        : 'Upload'}
-                                </Button>
-                            </form>
-                        )}
-
-                        {contract.documents.length === 0 ? (
-                            <div className="py-8 text-center text-sm text-muted-foreground">
-                                No documents uploaded yet.
                             </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>File Name</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Size</TableHead>
-                                        <TableHead>Uploaded</TableHead>
-                                        <TableHead className="text-right">
-                                            Actions
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {contract.documents.map((doc) => (
-                                        <TableRow key={doc.id}>
-                                            <TableCell className="font-medium">
-                                                {doc.file_name}
-                                            </TableCell>
-                                            <TableCell>
-                                                {doc.mime_type || '—'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatFileSize(doc.size)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {doc.created_at
-                                                    ? doc.created_at.substring(
-                                                          0,
-                                                          10,
-                                                      )
-                                                    : '—'}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    <a
-                                                        href={
-                                                            doc.download_url
-                                                        }
-                                                    >
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            title="Download"
-                                                        >
-                                                            <Download className="h-4 w-4" />
-                                                        </Button>
-                                                    </a>
-                                                    {canManageDocs && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            title="Delete"
-                                                            onClick={() =>
-                                                                handleDeleteDocument(
-                                                                    doc,
-                                                                )
-                                                            }
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                                        </Button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_380px]">
+                            <div className="space-y-6">
+                                <Card className="border-border/60 shadow-sm">
+                                    <CardContent className="p-6">
+                                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Contract overview
+                                                    </p>
+                                                    <h2 className="text-2xl font-semibold tracking-tight">
+                                                        {CONTRACT_TYPE_LABELS[
+                                                            contract.contract_type
+                                                        ] || contract.contract_type}
+                                                    </h2>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {contract.job_title ||
+                                                            'No job title recorded'}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-2">
+                                                    <Badge variant="outline">
+                                                        {contract.department?.name ||
+                                                            'No department'}
+                                                    </Badge>
+                                                    <Badge variant="outline">
+                                                        {contract.position?.name ||
+                                                            'No position'}
+                                                    </Badge>
+                                                    {contract.pay_frequency && (
+                                                        <Badge variant="secondary">
+                                                            {PAY_FREQUENCY_LABELS[
+                                                                contract.pay_frequency
+                                                            ] || contract.pay_frequency}
+                                                        </Badge>
                                                     )}
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </CardContent>
-                </Card>
+                                            </div>
 
-                {/* Audit info */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <div className="flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-muted-foreground" />
-                            <CardTitle className="text-lg">
-                                Audit Information
-                            </CardTitle>
+                                            <div className="grid gap-3 sm:grid-cols-2 lg:w-[360px]">
+                                                <DetailBlock
+                                                    label="Start Date"
+                                                    value={formatDate(contract.start_date)}
+                                                />
+                                                <DetailBlock
+                                                    label="End Date"
+                                                    value={
+                                                        contract.end_date
+                                                            ? formatDate(contract.end_date)
+                                                            : 'Open-ended'
+                                                    }
+                                                />
+                                                <DetailBlock
+                                                    label="Salary"
+                                                    value={formatMoney(
+                                                        contract.basic_salary,
+                                                        contract.currency,
+                                                    )}
+                                                />
+                                                <DetailBlock
+                                                    label="Status"
+                                                    value={formatStatus(contract.status)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <div className="grid gap-6 2xl:grid-cols-2">
+                                    <SectionCard
+                                        title="Contract Details"
+                                        description="Core details and signing information."
+                                        icon={FileText}
+                                    >
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <DetailBlock
+                                                label="Contract Number"
+                                                value={contract.contract_number}
+                                            />
+                                            <DetailBlock
+                                                label="Contract Type"
+                                                value={
+                                                    CONTRACT_TYPE_LABELS[
+                                                        contract.contract_type
+                                                    ] || contract.contract_type
+                                                }
+                                            />
+                                            <DetailBlock
+                                                label="Job Title"
+                                                value={contract.job_title}
+                                            />
+                                            <DetailBlock
+                                                label="Signed At"
+                                                value={formatDate(contract.signed_at)}
+                                            />
+                                        </div>
+                                    </SectionCard>
+
+                                    <SectionCard
+                                        title="Dates"
+                                        description="Employment timeline and termination dates."
+                                        icon={Calendar}
+                                    >
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <DetailBlock
+                                                label="Start Date"
+                                                value={formatDate(contract.start_date)}
+                                            />
+                                            <DetailBlock
+                                                label="End Date"
+                                                value={
+                                                    contract.end_date
+                                                        ? formatDate(contract.end_date)
+                                                        : 'Open-ended'
+                                                }
+                                            />
+                                            <DetailBlock
+                                                label="Probation End"
+                                                value={formatDate(
+                                                    contract.probation_end_date,
+                                                )}
+                                            />
+                                            <DetailBlock
+                                                label="Terminated At"
+                                                value={formatDate(
+                                                    contract.terminated_at,
+                                                )}
+                                            />
+                                        </div>
+                                    </SectionCard>
+
+                                    <SectionCard
+                                        title="Organisation"
+                                        description="Department, position, and pay point."
+                                        icon={Building2}
+                                    >
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <DetailBlock
+                                                label="Department"
+                                                value={contract.department?.name}
+                                            />
+                                            <DetailBlock
+                                                label="Position"
+                                                value={contract.position?.name}
+                                            />
+                                            <DetailBlock
+                                                label="Pay Point"
+                                                value={contract.pay_point}
+                                            />
+                                        </div>
+                                    </SectionCard>
+
+                                    <SectionCard
+                                        title="Compensation"
+                                        description="Salary, frequency, hours, and leave terms."
+                                        icon={CreditCard}
+                                    >
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <DetailBlock
+                                                label="Basic Salary"
+                                                value={formatMoney(
+                                                    contract.basic_salary,
+                                                    contract.currency,
+                                                )}
+                                            />
+                                            <DetailBlock
+                                                label="Pay Frequency"
+                                                value={
+                                                    contract.pay_frequency
+                                                        ? PAY_FREQUENCY_LABELS[
+                                                              contract.pay_frequency
+                                                          ] || contract.pay_frequency
+                                                        : null
+                                                }
+                                            />
+                                            <DetailBlock
+                                                label="Working Hours / Week"
+                                                value={
+                                                    contract.working_hours_per_week
+                                                        ? `${contract.working_hours_per_week}h`
+                                                        : null
+                                                }
+                                            />
+                                            <DetailBlock
+                                                label="Notice Period"
+                                                value={
+                                                    contract.notice_period_days !=
+                                                    null
+                                                        ? `${contract.notice_period_days} days`
+                                                        : null
+                                                }
+                                            />
+                                            <DetailBlock
+                                                label="Leave Days / Year"
+                                                value={
+                                                    contract.leave_days_per_year !=
+                                                    null
+                                                        ? `${contract.leave_days_per_year} days`
+                                                        : null
+                                                }
+                                            />
+                                        </div>
+                                    </SectionCard>
+                                </div>
+
+                                {(contract.termination_reason ||
+                                    contract.renewal_notes) && (
+                                    <SectionCard
+                                        title="Notes"
+                                        description="Termination and renewal notes attached to this contract."
+                                        icon={FileText}
+                                    >
+                                        <div className="space-y-4">
+                                            {contract.termination_reason && (
+                                                <div className="rounded-xl border bg-muted/30 p-4">
+                                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                        Termination Reason
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-foreground">
+                                                        {contract.termination_reason}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {contract.renewal_notes && (
+                                                <div className="rounded-xl border bg-muted/30 p-4">
+                                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                        Renewal Notes
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-foreground">
+                                                        {contract.renewal_notes}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </SectionCard>
+                                )}
+
+                                <SectionCard
+                                    title="Contract Documents"
+                                    description="Manage uploaded files linked to this contract."
+                                    icon={FileText}
+                                >
+                                    <div className="space-y-4">
+                                        {canManageDocs && (
+                                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 p-4">
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        Documents
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Upload, download, or remove files.
+                                                    </p>
+                                                </div>
+
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setShowUploadForm(
+                                                            !showUploadForm,
+                                                        )
+                                                    }
+                                                >
+                                                    {showUploadForm ? (
+                                                        <>
+                                                            <X className="mr-2 h-4 w-4" />
+                                                            Close Upload
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Upload className="mr-2 h-4 w-4" />
+                                                            Upload Document
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                        {showUploadForm && canManageDocs && (
+                                            <ContractDocumentDropzone
+                                                form={uploadForm}
+                                                onSubmit={handleUpload}
+                                            />
+                                        )}
+
+                                        {contract.documents.length === 0 ? (
+                                            <div className="rounded-xl border border-dashed bg-muted/20 py-12 text-center">
+                                                <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+                                                <p className="text-sm font-medium">
+                                                    No documents uploaded yet
+                                                </p>
+                                                <p className="mt-1 text-sm text-muted-foreground">
+                                                    Attach signed contracts, amendments, or supporting files.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="hidden overflow-x-auto lg:block">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead>
+                                                                    File Name
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    Type
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    Size
+                                                                </TableHead>
+                                                                <TableHead>
+                                                                    Uploaded
+                                                                </TableHead>
+                                                                <TableHead className="text-right">
+                                                                    Actions
+                                                                </TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {contract.documents.map(
+                                                                (doc) => (
+                                                                    <TableRow
+                                                                        key={doc.id}
+                                                                    >
+                                                                        <TableCell className="font-medium">
+                                                                            {doc.file_name}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {doc.mime_type ||
+                                                                                '—'}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {formatFileSize(
+                                                                                doc.size,
+                                                                            )}
+                                                                        </TableCell>
+                                                                        <TableCell>
+                                                                            {formatDate(
+                                                                                doc.created_at,
+                                                                            )}
+                                                                        </TableCell>
+                                                                        <TableCell className="text-right">
+                                                                            <div className="flex items-center justify-end gap-1">
+                                                                                <a
+                                                                                    href={
+                                                                                        doc.download_url
+                                                                                    }
+                                                                                >
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        title="Download"
+                                                                                    >
+                                                                                        <Download className="h-4 w-4" />
+                                                                                    </Button>
+                                                                                </a>
+
+                                                                                {canManageDocs && (
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        title="Delete"
+                                                                                        onClick={() =>
+                                                                                            handleDeleteDocument(
+                                                                                                doc,
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                                                    </Button>
+                                                                                )}
+                                                                            </div>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                ),
+                                                            )}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+
+                                                <div className="grid gap-4 lg:hidden">
+                                                    {contract.documents.map((doc) => (
+                                                        <Card
+                                                            key={doc.id}
+                                                            className="border-border/60 shadow-none"
+                                                        >
+                                                            <CardContent className="space-y-4 p-5">
+                                                                <div className="space-y-1">
+                                                                    <p className="font-medium">
+                                                                        {doc.file_name}
+                                                                    </p>
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {doc.mime_type || 'Unknown type'}
+                                                                    </p>
+                                                                </div>
+
+                                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                                    <DetailBlock
+                                                                        label="Size"
+                                                                        value={formatFileSize(
+                                                                            doc.size,
+                                                                        )}
+                                                                    />
+                                                                    <DetailBlock
+                                                                        label="Uploaded"
+                                                                        value={formatDate(
+                                                                            doc.created_at,
+                                                                        )}
+                                                                    />
+                                                                </div>
+
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    <a href={doc.download_url}>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                        >
+                                                                            <Download className="mr-2 h-4 w-4" />
+                                                                            Download
+                                                                        </Button>
+                                                                    </a>
+
+                                                                    {canManageDocs && (
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() =>
+                                                                                handleDeleteDocument(
+                                                                                    doc,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                                                                            Delete
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </SectionCard>
+                            </div>
+
+                            <div className="space-y-6 xl:sticky xl:top-28 xl:self-start">
+                                <Card className="border-border/60 shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="rounded-xl border bg-muted/50 p-2.5">
+                                                <UserSquare2 className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-base sm:text-lg">
+                                                    Contract Snapshot
+                                                </CardTitle>
+                                                <p className="mt-1 text-sm text-muted-foreground">
+                                                    Quick summary of this contract.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="divide-y divide-border/60 p-0 px-6 pb-4">
+                                        <SummaryItem icon={User} label="Employee" value={employee.full_name} />
+                                        <SummaryItem icon={Hash} label="Staff Number" value={employee.staff_number} />
+                                        <SummaryItem icon={FileText} label="Contract No." value={contract.contract_number} />
+                                        <SummaryItem
+                                            icon={Briefcase}
+                                            label="Type"
+                                            value={CONTRACT_TYPE_LABELS[contract.contract_type] || contract.contract_type}
+                                        />
+                                        <SummaryItem
+                                            icon={CheckCircle2}
+                                            label="Status"
+                                            value={
+                                                <Badge variant={statusBadgeVariant(contract.status)} className="text-[10px]">
+                                                    {formatStatus(contract.status)}
+                                                </Badge>
+                                            }
+                                        />
+                                        <SummaryItem
+                                            icon={Building2}
+                                            label="Department"
+                                            value={contract.department?.name}
+                                        />
+                                        <SummaryItem
+                                            icon={Briefcase}
+                                            label="Position"
+                                            value={contract.position?.name}
+                                        />
+                                        <SummaryItem
+                                            icon={Wallet}
+                                            label="Salary"
+                                            value={formatMoney(contract.basic_salary, contract.currency)}
+                                        />
+                                        <SummaryItem
+                                            icon={Calendar}
+                                            label="Start Date"
+                                            value={formatDate(contract.start_date)}
+                                        />
+                                        <SummaryItem
+                                            icon={Calendar}
+                                            label="End Date"
+                                            value={contract.end_date ? formatDate(contract.end_date) : 'Open-ended'}
+                                        />
+                                        <SummaryItem
+                                            icon={FileText}
+                                            label="Documents"
+                                            value={contract.documents.length.toString()}
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-border/60 shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="rounded-xl border bg-muted/50 p-2.5">
+                                                <Clock className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-base sm:text-lg">
+                                                    Audit Information
+                                                </CardTitle>
+                                                <p className="mt-1 text-sm text-muted-foreground">
+                                                    Record creation and update details.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-1">
+                                        <SummaryItem
+                                            label="Created At"
+                                            value={formatDate(contract.created_at)}
+                                        />
+                                        <SummaryItem
+                                            label="Created By"
+                                            value={contract.created_by?.name}
+                                        />
+                                        <SummaryItem
+                                            label="Updated At"
+                                            value={formatDate(contract.updated_at)}
+                                        />
+                                        <SummaryItem
+                                            label="Updated By"
+                                            value={contract.updated_by?.name}
+                                        />
+                                        <SummaryItem
+                                            label="Signed At"
+                                            value={formatDate(contract.signed_at)}
+                                        />
+                                        <SummaryItem
+                                            label="Terminated At"
+                                            value={formatDate(contract.terminated_at)}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
-                    </CardHeader>
-                    <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <DetailRow
-                            label="Created At"
-                            value={
-                                contract.created_at
-                                    ? contract.created_at.substring(0, 10)
-                                    : null
-                            }
-                        />
-                        <DetailRow
-                            label="Created By"
-                            value={contract.created_by?.name}
-                        />
-                        <DetailRow
-                            label="Updated At"
-                            value={
-                                contract.updated_at
-                                    ? contract.updated_at.substring(0, 10)
-                                    : null
-                            }
-                        />
-                        <DetailRow
-                            label="Updated By"
-                            value={contract.updated_by?.name}
-                        />
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
 
-            {/* Terminate dialog */}
             <AlertDialog
                 open={showTerminateDialog}
                 onOpenChange={setShowTerminateDialog}
@@ -684,15 +1087,14 @@ export default function ContractShow() {
                 <AlertDialogContent>
                     <form onSubmit={handleTerminate}>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                Terminate Contract
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>Terminate Contract</AlertDialogTitle>
                             <AlertDialogDescription>
                                 This will terminate contract{' '}
                                 <strong>{contract.contract_number}</strong> and
                                 remove it as the current contract.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
+
                         <div className="my-4">
                             <label className="mb-2 block text-sm font-medium">
                                 Reason (optional)
@@ -707,8 +1109,10 @@ export default function ContractShow() {
                                 }
                                 rows={3}
                                 placeholder="Reason for termination..."
+                                className="resize-none"
                             />
                         </div>
+
                         <AlertDialogFooter>
                             <AlertDialogCancel type="button">
                                 Cancel
@@ -724,7 +1128,6 @@ export default function ContractShow() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            {/* Delete dialog */}
             <AlertDialog
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
@@ -734,10 +1137,11 @@ export default function ContractShow() {
                         <AlertDialogTitle>Delete Contract</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to delete contract{' '}
-                            <strong>{contract.contract_number}</strong>? This
-                            action cannot be undone.
+                            <strong>{contract.contract_number}</strong>? This action
+                            cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete}>

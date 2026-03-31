@@ -1,13 +1,22 @@
-import { API } from '@/config';
+﻿import { API } from '@/config';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
     Briefcase,
     Building2,
+    Calendar,
     CheckCircle2,
+    Globe2,
+    GraduationCap,
     Hash,
+    Heart,
+    Lightbulb,
+    Mail,
+    MapPin,
     Phone,
+    Save,
+    ShieldCheck,
     User,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,7 +32,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-/* ─── types ──────────────────────────────────────────────────── */
+/* â”€â”€â”€ types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface Step {
     id: number;
     label: string;
@@ -99,16 +108,23 @@ const STEPS: Step[] = [
     },
 ];
 
-/* ─── helpers ─────────────────────────────────────────────────── */
+/* â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function FieldLabel({
     children,
     required,
+    icon,
 }: {
     children: React.ReactNode;
     required?: boolean;
+    icon?: React.ReactNode;
 }) {
     return (
-        <label className="mb-2 block text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label className="mb-2 flex items-center gap-2 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            {icon && (
+                <span className="flex h-4 w-4 items-center justify-center text-muted-foreground">
+                    {icon}
+                </span>
+            )}
             {children}
             {required && <span className="ml-1 text-destructive">*</span>}
         </label>
@@ -125,7 +141,7 @@ function FieldError({ message }: { message?: string }) {
 function FieldHint({ children }: { children: React.ReactNode }) {
     return (
         <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-            ℹ {children}
+            â„¹ {children}
         </p>
     );
 }
@@ -137,14 +153,18 @@ function InstructionItem({
 }: {
     children: React.ReactNode;
     required?: boolean;
-    icon?: string;
+    icon?: React.ReactNode;
 }) {
     return (
         <li className="flex items-start gap-2 text-sm text-muted-foreground">
             <span
-                className={`mt-0.5 shrink-0 text-xs font-bold ${required ? 'text-destructive' : icon ? 'text-primary' : 'text-muted-foreground/50'}`}
+                className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center ${required ? 'text-destructive' : icon ? 'text-foreground' : 'text-muted-foreground/50'}`}
             >
-                {icon ?? (required ? '●' : '○')}
+                {icon ?? (
+                    <span className="text-[10px] font-bold">
+                        {required ? '•' : '·'}
+                    </span>
+                )}
             </span>
             <span>
                 {children}
@@ -154,7 +174,7 @@ function InstructionItem({
     );
 }
 
-/* ─── main component ─────────────────────────────────────────── */
+/* â”€â”€â”€ main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export default function EmployeeEdit() {
     const { employee, departments, positions, options } =
         usePage<EmployeeEditPageProps>().props;
@@ -205,12 +225,16 @@ export default function EmployeeEdit() {
         if (step > 1) setStep(step - 1);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const submitChanges = () => {
         put(PATHS.update, { preserveScroll: true });
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+    };
+
     const progressPercent = (step / 4) * 100;
+    const ActiveStepIcon = STEPS[step - 1].icon;
 
     const stepTitles = [
         'Review and update personal identity information.',
@@ -222,6 +246,13 @@ export default function EmployeeEdit() {
     const fullName = [employee.first_name, employee.surname]
         .filter(Boolean)
         .join(' ');
+    const selectedDepartmentName =
+        departments.find(
+            (department) => String(department.id) === data.department_id,
+        )?.name ?? '—';
+    const selectedPositionName =
+        positions.find((position) => String(position.id) === data.position_id)
+            ?.name ?? '—';
 
     return (
         <AppLayout
@@ -234,14 +265,14 @@ export default function EmployeeEdit() {
             <Head title={`Edit ${fullName}`} />
 
             <div className="mx-2 my-6 space-y-6 sm:mx-4 md:mx-8">
-                {/* ── Page header ── */}
+                {/* â”€â”€ Page header â”€â”€ */}
                 <div className="flex items-start justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">
                             Edit Profile
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Step {step} of 4: {STEPS[step - 1].description} —{' '}
+                            Step {step} of 4: {STEPS[step - 1].description} â€”{' '}
                             <span className="font-semibold text-primary">
                                 {fullName}
                             </span>
@@ -255,12 +286,14 @@ export default function EmployeeEdit() {
                             Cancel
                         </Button>
                         <Button
+                            type="button"
                             variant="default"
+                            disabled={processing}
                             onClick={() => {
                                 if (step < 4) {
                                     setStep(4);
                                 } else {
-                                    handleSubmit(new Event('submit') as any);
+                                    submitChanges();
                                 }
                             }}
                         >
@@ -269,7 +302,7 @@ export default function EmployeeEdit() {
                     </div>
                 </div>
 
-                {/* ── Step indicator ── */}
+                {/* â”€â”€ Step indicator â”€â”€ */}
                 <div className="flex items-center gap-0">
                     {STEPS.map((s, idx) => {
                         const isCompleted = step > s.id;
@@ -329,7 +362,7 @@ export default function EmployeeEdit() {
                     })}
                 </div>
 
-                {/* ── Step content + instructions ── */}
+                {/* â”€â”€ Step content + instructions â”€â”€ */}
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,1fr)]">
                         {/* Left: form card */}
@@ -358,11 +391,16 @@ export default function EmployeeEdit() {
 
                                 {/* Card body */}
                                 <div className="px-8 py-7">
-                                    {/* ── Step 1: Identity ── */}
+                                    {/* â”€â”€ Step 1: Identity â”€â”€ */}
                                     {step === 1 && (
                                         <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <User className="h-4 w-4" />
+                                                    }
+                                                >
                                                     First Name
                                                 </FieldLabel>
                                                 <Input
@@ -380,7 +418,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <User className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Middle Name
                                                 </FieldLabel>
                                                 <Input
@@ -395,7 +437,12 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <User className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Surname
                                                 </FieldLabel>
                                                 <Input
@@ -413,7 +460,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Calendar className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Date of Birth
                                                 </FieldLabel>
                                                 <Input
@@ -433,7 +484,12 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <ShieldCheck className="h-4 w-4" />
+                                                    }
+                                                >
                                                     National ID
                                                 </FieldLabel>
                                                 <Input
@@ -453,7 +509,12 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <User className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Gender
                                                 </FieldLabel>
                                                 <Select
@@ -490,7 +551,12 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <Heart className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Marital Status
                                                 </FieldLabel>
                                                 <Select
@@ -529,7 +595,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div className="sm:col-span-2">
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Mail className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Email Address
                                                 </FieldLabel>
                                                 <Input
@@ -555,11 +625,16 @@ export default function EmployeeEdit() {
                                         </div>
                                     )}
 
-                                    {/* ── Step 2: Employment ── */}
+                                    {/* â”€â”€ Step 2: Employment â”€â”€ */}
                                     {step === 2 && (
                                         <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                                             <div>
-                                                <FieldLabel required>
+                                                <FieldLabel
+                                                    required
+                                                    icon={
+                                                        <Hash className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Staff Number
                                                 </FieldLabel>
                                                 <Input
@@ -583,7 +658,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Briefcase className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Occupation
                                                 </FieldLabel>
                                                 <Input
@@ -603,7 +682,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <GraduationCap className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Educational Level
                                                 </FieldLabel>
                                                 <Select
@@ -644,7 +727,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Building2 className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Pay Point
                                                 </FieldLabel>
                                                 <Select
@@ -674,7 +761,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Building2 className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Department
                                                 </FieldLabel>
                                                 <Select
@@ -711,7 +802,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Briefcase className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Position
                                                 </FieldLabel>
                                                 <Select
@@ -748,11 +843,15 @@ export default function EmployeeEdit() {
                                         </div>
                                     )}
 
-                                    {/* ── Step 3: Contact ── */}
+                                    {/* â”€â”€ Step 3: Contact â”€â”€ */}
                                     {step === 3 && (
                                         <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Phone className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Contact Number
                                                 </FieldLabel>
                                                 <Input
@@ -772,7 +871,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Phone className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Alternate Phone Number
                                                 </FieldLabel>
                                                 <Input
@@ -794,7 +897,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div>
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <Globe2 className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Nationality
                                                 </FieldLabel>
                                                 <Input
@@ -814,7 +921,11 @@ export default function EmployeeEdit() {
                                                 />
                                             </div>
                                             <div className="sm:col-span-2">
-                                                <FieldLabel>
+                                                <FieldLabel
+                                                    icon={
+                                                        <MapPin className="h-4 w-4" />
+                                                    }
+                                                >
                                                     Home Address
                                                 </FieldLabel>
                                                 <Input
@@ -834,114 +945,155 @@ export default function EmployeeEdit() {
                                         </div>
                                     )}
 
-                                    {/* ── Step 4: Review & Save ── */}
+                                    {/* â”€â”€ Step 4: Review & Save â”€â”€ */}
                                     {step === 4 && (
                                         <div className="space-y-8">
-                                            <p className="text-sm text-muted-foreground">
-                                                Review the updated information
-                                                below. Use{' '}
-                                                <strong>Previous</strong> to go
-                                                back and make changes, or click{' '}
-                                                <strong>Save Changes</strong> to
-                                                apply.
-                                            </p>
+                                            <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-background text-foreground shadow-sm">
+                                                    <Save className="h-4 w-4" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Review the updated information
+                                                    below. Use{' '}
+                                                    <strong>Previous</strong> to go
+                                                    back and make changes, or click{' '}
+                                                    <strong>Save Changes</strong> to
+                                                    apply.
+                                                </p>
+                                            </div>
 
                                             <div className="grid gap-6 sm:grid-cols-2">
                                                 {[
                                                     {
                                                         label: 'First Name',
                                                         value: data.first_name,
+                                                        icon: User,
                                                     },
                                                     {
                                                         label: 'Middle Name',
                                                         value:
                                                             data.middle_name ||
-                                                            '—',
+                                                            'â€”',
+                                                        icon: User,
                                                     },
                                                     {
                                                         label: 'Surname',
                                                         value: data.surname,
+                                                        icon: User,
                                                     },
                                                     {
                                                         label: 'Date of Birth',
                                                         value:
                                                             data.date_of_birth ||
-                                                            '—',
+                                                            'â€”',
+                                                        icon: Calendar,
                                                     },
                                                     {
                                                         label: 'Email',
                                                         value:
-                                                            data.email || '—',
+                                                            data.email || 'â€”',
+                                                        icon: Mail,
                                                     },
                                                     {
                                                         label: 'Staff Number',
                                                         value:
                                                             data.staff_number ||
-                                                            '—',
+                                                            'â€”',
+                                                        icon: Hash,
                                                     },
                                                     {
                                                         label: 'Pay Point',
                                                         value:
                                                             data.pay_point ||
-                                                            '—',
+                                                            'â€”',
+                                                        icon: Building2,
                                                     },
                                                     {
                                                         label: 'Contact Number',
                                                         value:
                                                             data.contact_number ||
-                                                            '—',
+                                                            'â€”',
+                                                        icon: Phone,
                                                     },
                                                     {
                                                         label: 'Address',
                                                         value:
-                                                            data.address || '—',
+                                                            data.address || 'â€”',
+                                                        icon: MapPin,
                                                     },
                                                     {
                                                         label: 'National ID',
                                                         value:
                                                             data.national_id ||
                                                             '-',
+                                                        icon: ShieldCheck,
                                                     },
                                                     {
                                                         label: 'Gender',
                                                         value:
                                                             data.gender || '-',
+                                                        icon: User,
                                                     },
                                                     {
                                                         label: 'Marital Status',
                                                         value:
                                                             data.marital_status ||
                                                             '-',
+                                                        icon: Heart,
                                                     },
                                                     {
                                                         label: 'Occupation',
                                                         value:
                                                             data.occupation ||
                                                             '-',
+                                                        icon: Briefcase,
                                                     },
                                                     {
                                                         label: 'Educational Level',
                                                         value:
                                                             data.educational_level ||
                                                             '-',
+                                                        icon: GraduationCap,
+                                                    },
+                                                    {
+                                                        label: 'Department',
+                                                        value:
+                                                            selectedDepartmentName,
+                                                        icon: Building2,
+                                                    },
+                                                    {
+                                                        label: 'Position',
+                                                        value:
+                                                            selectedPositionName,
+                                                        icon: Briefcase,
                                                     },
                                                     {
                                                         label: 'Alternate Phone',
                                                         value:
                                                             data.alt_phone_number ||
                                                             '-',
+                                                        icon: Phone,
                                                     },
                                                     {
                                                         label: 'Nationality',
                                                         value:
                                                             data.nationality ||
                                                             '-',
+                                                        icon: Globe2,
                                                     },
-                                                ].map(({ label, value }) => (
-                                                    <div key={label}>
-                                                        <p className="mb-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                                                            {label}
-                                                        </p>
+                                                ].map(({ label, value, icon: Icon }) => (
+                                                    <div
+                                                        key={label}
+                                                        className="rounded-lg border bg-background/70 p-4 shadow-sm"
+                                                    >
+                                                        <div className="mb-2 flex items-center gap-2">
+                                                            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                                                <Icon className="h-4 w-4" />
+                                                            </span>
+                                                            <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                                                                {label}
+                                                            </p>
+                                                        </div>
                                                         <p className="text-sm font-semibold">
                                                             {value}
                                                         </p>
@@ -949,11 +1101,14 @@ export default function EmployeeEdit() {
                                                 ))}
                                             </div>
 
-                                            <div className="rounded-md border border-border bg-muted px-5 py-4 text-sm text-muted-foreground">
-                                                <strong>Note:</strong> Changing
-                                                the email address will update
-                                                the employee's system login
-                                                credentials.
+                                            <div className="flex items-start gap-3 rounded-md border border-border bg-muted px-5 py-4 text-sm text-muted-foreground">
+                                                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                                                <div>
+                                                    <strong>Note:</strong> Changing
+                                                    the email address will update
+                                                    the employee's system login
+                                                    credentials.
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -966,6 +1121,9 @@ export default function EmployeeEdit() {
                             <div className="sticky top-6 space-y-4">
                                 {/* Step header */}
                                 <Card className="p-5">
+                                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                                        <ActiveStepIcon className="h-5 w-5" />
+                                    </div>
                                     <p className="mb-1 text-xs font-bold tracking-widest text-primary uppercase">
                                         Step {step} of 4
                                     </p>
@@ -994,82 +1152,176 @@ export default function EmployeeEdit() {
                                     <ul className="space-y-2.5">
                                         {step === 1 && (
                                             <>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <User className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     First Name
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <User className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Middle Name
                                                 </InstructionItem>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <User className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Surname
                                                 </InstructionItem>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <ShieldCheck className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     National ID
                                                 </InstructionItem>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <User className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Gender
                                                 </InstructionItem>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <Heart className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Marital Status
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Calendar className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Date of Birth
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Mail className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Email Address
                                                 </InstructionItem>
                                             </>
                                         )}
                                         {step === 2 && (
                                             <>
-                                                <InstructionItem required>
+                                                <InstructionItem
+                                                    required
+                                                    icon={
+                                                        <Hash className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Staff Number
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Briefcase className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Occupation
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <GraduationCap className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Educational Level
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Building2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Pay Point
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Building2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Department
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Briefcase className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Position
                                                 </InstructionItem>
                                             </>
                                         )}
                                         {step === 3 && (
                                             <>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Phone className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Contact Number
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Phone className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Alternate Phone
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <Globe2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Nationality
                                                 </InstructionItem>
-                                                <InstructionItem>
+                                                <InstructionItem
+                                                    icon={
+                                                        <MapPin className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Home Address
                                                 </InstructionItem>
                                             </>
                                         )}
                                         {step === 4 && (
                                             <>
-                                                <InstructionItem icon="✓">
+                                                <InstructionItem
+                                                    icon={
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Personal identity details
                                                 </InstructionItem>
-                                                <InstructionItem icon="✓">
+                                                <InstructionItem
+                                                    icon={
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Employment role & department
                                                 </InstructionItem>
-                                                <InstructionItem icon="✓">
+                                                <InstructionItem
+                                                    icon={
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Contact information
                                                 </InstructionItem>
-                                                <InstructionItem icon="✓">
+                                                <InstructionItem
+                                                    icon={
+                                                        <CheckCircle2 className="h-3.5 w-3.5" />
+                                                    }
+                                                >
                                                     Login credentials (if email
                                                     changed)
                                                 </InstructionItem>
@@ -1080,9 +1332,12 @@ export default function EmployeeEdit() {
 
                                 {/* Tip box */}
                                 <Card className="bg-muted p-5">
-                                    <p className="mb-2 text-xs font-bold tracking-widest text-foreground uppercase">
-                                        💡 Tip
-                                    </p>
+                                    <div className="mb-2 flex items-center gap-2">
+                                        <Lightbulb className="h-4 w-4 text-foreground" />
+                                        <p className="text-xs font-bold tracking-widest text-foreground uppercase">
+                                            Tip
+                                        </p>
+                                    </div>
                                     <p className="text-sm leading-relaxed text-muted-foreground">
                                         {step === 1 &&
                                             "Employee email stays synchronized with the linked user account, so changes here also affect login access when an account exists."}
@@ -1098,7 +1353,7 @@ export default function EmployeeEdit() {
                         </div>
                     </div>
 
-                    {/* ── Navigation row ── */}
+                    {/* â”€â”€ Navigation row â”€â”€ */}
                     <div className="mt-6 flex items-center justify-between">
                         <p className="text-sm text-muted-foreground italic">
                             Fields marked with{' '}
@@ -1126,14 +1381,15 @@ export default function EmployeeEdit() {
                                 </Button>
                             ) : (
                                 <Button
-                                    type="submit"
+                                    type="button"
                                     disabled={processing}
                                     className="flex items-center gap-2"
+                                    onClick={submitChanges}
                                 >
                                     {processing ? (
                                         <>
                                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                                            Saving…
+                                            Savingâ€¦
                                         </>
                                     ) : (
                                         <>
@@ -1146,7 +1402,7 @@ export default function EmployeeEdit() {
                         </div>
                     </div>
 
-                    {/* ── Progress card ── */}
+                    {/* â”€â”€ Progress card â”€â”€ */}
                     <Card className="mt-5 flex items-center gap-5 px-6 py-5">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-secondary">
                             <Hash className="h-5 w-5 text-secondary-foreground" />
@@ -1174,3 +1430,5 @@ export default function EmployeeEdit() {
         </AppLayout>
     );
 }
+
+

@@ -5,6 +5,56 @@ import { ImpersonationBanner } from '@/components/impersonation-banner';
 import type { AppLayoutProps } from '@/types';
 import { RbacSidebar } from '@/lib/app-sidebar-rbac';
 import { usePage } from '@inertiajs/react';
+import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+type FlashProps = {
+    flash?: { success?: string | null; error?: string | null };
+};
+
+function FlashToast() {
+    const { flash } = usePage<FlashProps>().props;
+    const [visible, setVisible] = useState<'success' | 'error' | null>(null);
+
+    useEffect(() => {
+        if (flash?.error) {
+            setVisible('error');
+        } else if (flash?.success) {
+            setVisible('success');
+        } else {
+            setVisible(null);
+        }
+    }, [flash?.success, flash?.error]);
+
+    if (!visible) return null;
+
+    const isError = visible === 'error';
+    const message = isError ? flash?.error : flash?.success;
+
+    return (
+        <div
+            className={`fixed bottom-5 right-5 z-[9999] flex w-full max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-lg transition-all ${
+                isError
+                    ? 'border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/20'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+            }`}
+        >
+            {isError ? (
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            ) : (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            )}
+            <p className="flex-1 text-sm font-medium">{message}</p>
+            <button
+                type="button"
+                onClick={() => setVisible(null)}
+                className="shrink-0 opacity-60 hover:opacity-100"
+            >
+                <X className="h-4 w-4" />
+            </button>
+        </div>
+    );
+}
 
 export default function AppSidebarLayout({
     children,
@@ -37,6 +87,7 @@ export default function AppSidebarLayout({
                 >
                     <AppSidebarHeader breadcrumbs={breadcrumbs} />
                     <ImpersonationBanner />
+                    <FlashToast />
                     {children}
                 </div>
             </AppContent>

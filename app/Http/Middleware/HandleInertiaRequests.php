@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'roles.permissions:id,name,module,label,description',
                 'currentOrganization:id,name,slug,code,status,timezone',
                 'portalAccesses:id,user_id,portal',
+                'employee:id,user_id',
             ]);
 
             $orgId = $activeOrganization?->id;
@@ -102,6 +103,7 @@ class HandleInertiaRequests extends Middleware
 
             $userPayload = [
                 'id' => $user->id,
+                'employee_id' => $user->employee?->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'email_verified_at' => optional($user->email_verified_at)->toDateTimeString(),

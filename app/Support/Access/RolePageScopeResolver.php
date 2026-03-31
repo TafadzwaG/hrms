@@ -55,6 +55,10 @@ class RolePageScopeResolver
             }
         }
 
+        if ($this->hasEmployeeContext($user)) {
+            return RoleDashboardResolver::EMPLOYEE;
+        }
+
         return self::TENANT_OPERATOR;
     }
 
@@ -472,5 +476,10 @@ class RolePageScopeResolver
         $record->loadMissing(['currentAssignment']);
 
         return (int) optional($record->currentAssignment)->employee_id;
+    }
+
+    private function hasEmployeeContext(User $user): bool
+    {
+        return ($user->relationLoaded('employee') && $user->employee !== null) || $user->employee()->exists();
     }
 }

@@ -12,8 +12,19 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { ArrowLeft, Save, X } from 'lucide-react';
-import type { FormEvent } from 'react';
+import {
+    ArrowLeft,
+    Briefcase,
+    CalendarDays,
+    ClipboardList,
+    DollarSign,
+    FileText,
+    Save,
+    UserSquare2,
+    X,
+} from 'lucide-react';
+import type { FormEvent, ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 type EmployeeSummary = {
     id: number;
@@ -51,11 +62,11 @@ function FieldLabel({
     children,
     required,
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
     required?: boolean;
 }) {
     return (
-        <label className="mb-2 block text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label className="mb-2 block text-sm font-medium text-foreground">
             {children}
             {required && <span className="ml-1 text-destructive">*</span>}
         </label>
@@ -64,8 +75,70 @@ function FieldLabel({
 
 function FieldError({ message }: { message?: string }) {
     if (!message) return null;
+
+    return <p className="mt-1.5 text-sm font-medium text-destructive">{message}</p>;
+}
+
+function SectionCard({
+    title,
+    description,
+    icon: Icon,
+    children,
+    className = '',
+}: {
+    title: string;
+    description?: string;
+    icon: LucideIcon;
+    children: ReactNode;
+    className?: string;
+}) {
     return (
-        <p className="mt-1.5 text-sm font-medium text-destructive">{message}</p>
+        <Card
+            className={`border-border/60 shadow-sm transition-shadow hover:shadow-md ${className}`}
+        >
+            <CardHeader className="space-y-3 pb-4">
+                <div className="flex items-start gap-3">
+                    <div className="rounded-xl border bg-muted/50 p-2.5">
+                        <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                        <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
+                        {description && (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {description}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+        </Card>
+    );
+}
+
+function SummaryItem({
+    label,
+    value,
+}: {
+    label: string;
+    value?: string | number | boolean;
+}) {
+    const displayValue =
+        value === true
+            ? 'Yes'
+            : value === false
+              ? 'No'
+              : value && String(value).trim() !== ''
+                ? String(value)
+                : 'Not set';
+
+    return (
+        <div className="flex items-start justify-between gap-3 py-2">
+            <span className="text-sm text-muted-foreground">{label}</span>
+            <span className="max-w-[60%] text-right text-sm font-medium text-foreground">
+                {displayValue}
+            </span>
+        </div>
     );
 }
 
@@ -102,6 +175,14 @@ export default function ContractCreate() {
         post(`/employees/${employee.id}/contracts`, { preserveScroll: true });
     };
 
+    const selectedDepartment = options.departments.find(
+        (d) => String(d.id) === data.department_id,
+    )?.name;
+
+    const selectedPosition = options.positions.find(
+        (p) => String(p.id) === data.position_id,
+    )?.name;
+
     return (
         <AppLayout
             breadcrumbs={[
@@ -119,411 +200,595 @@ export default function ContractCreate() {
         >
             <Head title={`New Contract - ${employee.full_name}`} />
 
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-6">
-                <div className="flex items-center gap-3">
-                    <Link href={`/employees/${employee.id}/contracts`}>
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            New Contract
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            {employee.full_name} &middot;{' '}
-                            {employee.staff_number}
-                        </p>
+            <div className="min-h-screen w-full bg-muted/20">
+                <form onSubmit={handleSubmit} className="flex min-h-screen flex-col">
+                    <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+                        <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="flex items-start gap-3">
+                                    <Link href={`/employees/${employee.id}/contracts`}>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            type="button"
+                                            className="shrink-0"
+                                        >
+                                            <ArrowLeft className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
+
+                                    <div className="min-w-0">
+                                        <div className="mb-2 inline-flex items-center rounded-full border bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+                                            Contract Management
+                                        </div>
+                                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                                            New Contract
+                                        </h1>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            Create a new contract for{' '}
+                                            <span className="font-medium text-foreground">
+                                                {employee.full_name}
+                                            </span>{' '}
+                                            · {employee.staff_number}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 sm:flex-row">
+                                    <Link href={`/employees/${employee.id}/contracts`}>
+                                        <Button
+                                            variant="outline"
+                                            type="button"
+                                            className="w-full sm:w-auto"
+                                        >
+                                            <X className="mr-2 h-4 w-4" />
+                                            Cancel
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        <Save className="mr-2 h-4 w-4" />
+                                        {processing ? 'Saving...' : 'Save Contract'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Contract Details */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contract Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <FieldLabel required>
-                                    Contract Number
-                                </FieldLabel>
-                                <Input
-                                    value={data.contract_number}
-                                    onChange={(e) =>
-                                        setData(
-                                            'contract_number',
-                                            e.target.value,
-                                        )
-                                    }
-                                    placeholder="e.g. CON-2026-001"
-                                />
-                                <FieldError
-                                    message={errors.contract_number}
-                                />
-                            </div>
-                            <div>
-                                <FieldLabel required>Contract Type</FieldLabel>
-                                <Select
-                                    value={data.contract_type}
-                                    onValueChange={(v) =>
-                                        setData('contract_type', v)
-                                    }
+                    <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.8fr)_380px]">
+                            <div className="grid gap-6 2xl:grid-cols-2">
+                                <SectionCard
+                                    title="Contract Details"
+                                    description="Core information that identifies and classifies the contract."
+                                    icon={FileText}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.contract_types.map((t) => (
-                                            <SelectItem key={t} value={t}>
-                                                {CONTRACT_TYPE_LABELS[t] || t}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.contract_type} />
-                            </div>
-                            <div>
-                                <FieldLabel required>Status</FieldLabel>
-                                <Select
-                                    value={data.status}
-                                    onValueChange={(v) =>
-                                        setData('status', v)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.statuses.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {s
-                                                    .replace(/_/g, ' ')
-                                                    .replace(/\b\w/g, (c) =>
-                                                        c.toUpperCase(),
-                                                    )}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.status} />
-                            </div>
-                            <div>
-                                <FieldLabel>Job Title</FieldLabel>
-                                <Input
-                                    value={data.job_title}
-                                    onChange={(e) =>
-                                        setData('job_title', e.target.value)
-                                    }
-                                    placeholder="e.g. Senior Developer"
-                                />
-                                <FieldError message={errors.job_title} />
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    <div className="grid gap-5 md:grid-cols-2">
+                                        <div className="md:col-span-2">
+                                            <FieldLabel required>
+                                                Contract Number
+                                            </FieldLabel>
+                                            <Input
+                                                value={data.contract_number}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'contract_number',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. CON-2026-001"
+                                                className="h-11"
+                                            />
+                                            <FieldError
+                                                message={errors.contract_number}
+                                            />
+                                        </div>
 
-                    {/* Dates */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Contract Dates</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <div>
-                                <FieldLabel required>Start Date</FieldLabel>
-                                <Input
-                                    type="date"
-                                    value={data.start_date}
-                                    onChange={(e) =>
-                                        setData('start_date', e.target.value)
-                                    }
-                                />
-                                <FieldError message={errors.start_date} />
-                            </div>
-                            <div>
-                                <FieldLabel
-                                    required={
-                                        data.contract_type === 'fixed_term'
-                                    }
-                                >
-                                    End Date
-                                </FieldLabel>
-                                <Input
-                                    type="date"
-                                    value={data.end_date}
-                                    onChange={(e) =>
-                                        setData('end_date', e.target.value)
-                                    }
-                                />
-                                <FieldError message={errors.end_date} />
-                            </div>
-                            <div>
-                                <FieldLabel>Probation End Date</FieldLabel>
-                                <Input
-                                    type="date"
-                                    value={data.probation_end_date}
-                                    onChange={(e) =>
-                                        setData(
-                                            'probation_end_date',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <FieldError
-                                    message={errors.probation_end_date}
-                                />
-                            </div>
-                            <div>
-                                <FieldLabel>Signed At</FieldLabel>
-                                <Input
-                                    type="date"
-                                    value={data.signed_at}
-                                    onChange={(e) =>
-                                        setData('signed_at', e.target.value)
-                                    }
-                                />
-                                <FieldError message={errors.signed_at} />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Organisation */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Organisation</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <FieldLabel>Department</FieldLabel>
-                                <Select
-                                    value={data.department_id}
-                                    onValueChange={(v) =>
-                                        setData('department_id', v)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select department" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.departments.map((d) => (
-                                            <SelectItem
-                                                key={d.id}
-                                                value={String(d.id)}
+                                        <div>
+                                            <FieldLabel required>
+                                                Contract Type
+                                            </FieldLabel>
+                                            <Select
+                                                value={data.contract_type}
+                                                onValueChange={(v) =>
+                                                    setData('contract_type', v)
+                                                }
                                             >
-                                                {d.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.department_id} />
-                            </div>
-                            <div>
-                                <FieldLabel>Position</FieldLabel>
-                                <Select
-                                    value={data.position_id}
-                                    onValueChange={(v) =>
-                                        setData('position_id', v)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select position" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.positions.map((p) => (
-                                            <SelectItem
-                                                key={p.id}
-                                                value={String(p.id)}
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.contract_types.map((t) => (
+                                                        <SelectItem key={t} value={t}>
+                                                            {CONTRACT_TYPE_LABELS[t] || t}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError
+                                                message={errors.contract_type}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel required>Status</FieldLabel>
+                                            <Select
+                                                value={data.status}
+                                                onValueChange={(v) =>
+                                                    setData('status', v)
+                                                }
                                             >
-                                                {p.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.position_id} />
-                            </div>
-                            <div>
-                                <FieldLabel>Pay Point</FieldLabel>
-                                <Input
-                                    value={data.pay_point}
-                                    onChange={(e) =>
-                                        setData('pay_point', e.target.value)
-                                    }
-                                />
-                                <FieldError message={errors.pay_point} />
-                            </div>
-                        </CardContent>
-                    </Card>
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select status" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.statuses.map((s) => (
+                                                        <SelectItem key={s} value={s}>
+                                                            {s
+                                                                .replace(/_/g, ' ')
+                                                                .replace(/\b\w/g, (c) =>
+                                                                    c.toUpperCase(),
+                                                                )}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError message={errors.status} />
+                                        </div>
 
-                    {/* Compensation */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Compensation &amp; Terms</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <div>
-                                <FieldLabel>Basic Salary</FieldLabel>
-                                <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={data.basic_salary}
-                                    onChange={(e) =>
-                                        setData('basic_salary', e.target.value)
-                                    }
-                                />
-                                <FieldError message={errors.basic_salary} />
-                            </div>
-                            <div>
-                                <FieldLabel>Currency</FieldLabel>
-                                <Select
-                                    value={data.currency}
-                                    onValueChange={(v) =>
-                                        setData('currency', v)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select currency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.currencies.map((c) => (
-                                            <SelectItem key={c} value={c}>
-                                                {c}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.currency} />
-                            </div>
-                            <div>
-                                <FieldLabel>Pay Frequency</FieldLabel>
-                                <Select
-                                    value={data.pay_frequency}
-                                    onValueChange={(v) =>
-                                        setData('pay_frequency', v)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select frequency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {options.pay_frequencies.map((f) => (
-                                            <SelectItem key={f} value={f}>
-                                                {PAY_FREQUENCY_LABELS[f] || f}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FieldError message={errors.pay_frequency} />
-                            </div>
-                            <div>
-                                <FieldLabel>Working Hours / Week</FieldLabel>
-                                <Input
-                                    type="number"
-                                    step="0.5"
-                                    min="0"
-                                    max="168"
-                                    value={data.working_hours_per_week}
-                                    onChange={(e) =>
-                                        setData(
-                                            'working_hours_per_week',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <FieldError
-                                    message={errors.working_hours_per_week}
-                                />
-                            </div>
-                            <div>
-                                <FieldLabel>Notice Period (days)</FieldLabel>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    value={data.notice_period_days}
-                                    onChange={(e) =>
-                                        setData(
-                                            'notice_period_days',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <FieldError
-                                    message={errors.notice_period_days}
-                                />
-                            </div>
-                            <div>
-                                <FieldLabel>Leave Days / Year</FieldLabel>
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    value={data.leave_days_per_year}
-                                    onChange={(e) =>
-                                        setData(
-                                            'leave_days_per_year',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <FieldError
-                                    message={errors.leave_days_per_year}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
+                                        <div className="md:col-span-2">
+                                            <FieldLabel>Job Title</FieldLabel>
+                                            <Input
+                                                value={data.job_title}
+                                                onChange={(e) =>
+                                                    setData('job_title', e.target.value)
+                                                }
+                                                placeholder="e.g. Senior Developer"
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.job_title} />
+                                        </div>
+                                    </div>
+                                </SectionCard>
 
-                    {/* Notes & Flags */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Additional</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <FieldLabel>Renewal Notes</FieldLabel>
-                                <Textarea
-                                    value={data.renewal_notes}
-                                    onChange={(e) =>
-                                        setData(
-                                            'renewal_notes',
-                                            e.target.value,
-                                        )
-                                    }
-                                    rows={3}
-                                />
-                                <FieldError message={errors.renewal_notes} />
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="is_current"
-                                    checked={data.is_current}
-                                    onCheckedChange={(checked) =>
-                                        setData(
-                                            'is_current',
-                                            checked === true,
-                                        )
-                                    }
-                                />
-                                <label
-                                    htmlFor="is_current"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                <SectionCard
+                                    title="Contract Dates"
+                                    description="Manage start, end, signing, and probation dates."
+                                    icon={CalendarDays}
                                 >
-                                    Set as current active contract
-                                </label>
-                            </div>
-                            <FieldError message={errors.is_current} />
-                        </CardContent>
-                    </Card>
+                                    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2">
+                                        <div>
+                                            <FieldLabel required>Start Date</FieldLabel>
+                                            <Input
+                                                type="date"
+                                                value={data.start_date}
+                                                onChange={(e) =>
+                                                    setData('start_date', e.target.value)
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.start_date} />
+                                        </div>
 
-                    {/* Submit */}
-                    <div className="flex items-center justify-end gap-3">
-                        <Link href={`/employees/${employee.id}/contracts`}>
-                            <Button variant="outline" type="button">
-                                <X className="mr-2 h-4 w-4" />
-                                Cancel
-                            </Button>
-                        </Link>
-                        <Button type="submit" disabled={processing}>
-                            <Save className="mr-2 h-4 w-4" />
-                            {processing ? 'Saving...' : 'Save Contract'}
-                        </Button>
+                                        <div>
+                                            <FieldLabel
+                                                required={data.contract_type === 'fixed_term'}
+                                            >
+                                                End Date
+                                            </FieldLabel>
+                                            <Input
+                                                type="date"
+                                                value={data.end_date}
+                                                onChange={(e) =>
+                                                    setData('end_date', e.target.value)
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.end_date} />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Probation End Date</FieldLabel>
+                                            <Input
+                                                type="date"
+                                                value={data.probation_end_date}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'probation_end_date',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError
+                                                message={errors.probation_end_date}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Signed At</FieldLabel>
+                                            <Input
+                                                type="date"
+                                                value={data.signed_at}
+                                                onChange={(e) =>
+                                                    setData('signed_at', e.target.value)
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.signed_at} />
+                                        </div>
+                                    </div>
+                                </SectionCard>
+
+                                <SectionCard
+                                    title="Organisation"
+                                    description="Assign the contract to the employee’s department and position."
+                                    icon={Briefcase}
+                                >
+                                    <div className="grid gap-5 md:grid-cols-2">
+                                        <div>
+                                            <FieldLabel>Department</FieldLabel>
+                                            <Select
+                                                value={data.department_id}
+                                                onValueChange={(v) =>
+                                                    setData('department_id', v)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select department" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.departments.map((d) => (
+                                                        <SelectItem
+                                                            key={d.id}
+                                                            value={String(d.id)}
+                                                        >
+                                                            {d.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError
+                                                message={errors.department_id}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Position</FieldLabel>
+                                            <Select
+                                                value={data.position_id}
+                                                onValueChange={(v) =>
+                                                    setData('position_id', v)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select position" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.positions.map((p) => (
+                                                        <SelectItem
+                                                            key={p.id}
+                                                            value={String(p.id)}
+                                                        >
+                                                            {p.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError message={errors.position_id} />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <FieldLabel>Pay Point</FieldLabel>
+                                            <Input
+                                                value={data.pay_point}
+                                                onChange={(e) =>
+                                                    setData('pay_point', e.target.value)
+                                                }
+                                                placeholder="e.g. Grade C4"
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.pay_point} />
+                                        </div>
+                                    </div>
+                                </SectionCard>
+
+                                <SectionCard
+                                    title="Compensation & Terms"
+                                    description="Capture salary, frequency, hours, notice period, and leave."
+                                    icon={DollarSign}
+                                >
+                                    <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+                                        <div>
+                                            <FieldLabel>Basic Salary</FieldLabel>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={data.basic_salary}
+                                                onChange={(e) =>
+                                                    setData('basic_salary', e.target.value)
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError message={errors.basic_salary} />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Currency</FieldLabel>
+                                            <Select
+                                                value={data.currency}
+                                                onValueChange={(v) =>
+                                                    setData('currency', v)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select currency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.currencies.map((c) => (
+                                                        <SelectItem key={c} value={c}>
+                                                            {c}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError message={errors.currency} />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Pay Frequency</FieldLabel>
+                                            <Select
+                                                value={data.pay_frequency}
+                                                onValueChange={(v) =>
+                                                    setData('pay_frequency', v)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Select frequency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {options.pay_frequencies.map((f) => (
+                                                        <SelectItem key={f} value={f}>
+                                                            {PAY_FREQUENCY_LABELS[f] || f}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FieldError
+                                                message={errors.pay_frequency}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Working Hours / Week</FieldLabel>
+                                            <Input
+                                                type="number"
+                                                step="0.5"
+                                                min="0"
+                                                max="168"
+                                                value={data.working_hours_per_week}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'working_hours_per_week',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError
+                                                message={errors.working_hours_per_week}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Notice Period (days)</FieldLabel>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={data.notice_period_days}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'notice_period_days',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError
+                                                message={errors.notice_period_days}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <FieldLabel>Leave Days / Year</FieldLabel>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={data.leave_days_per_year}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'leave_days_per_year',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="h-11"
+                                            />
+                                            <FieldError
+                                                message={errors.leave_days_per_year}
+                                            />
+                                        </div>
+                                    </div>
+                                </SectionCard>
+
+                                <SectionCard
+                                    title="Additional Details"
+                                    description="Add notes and choose whether this should be the active contract."
+                                    icon={ClipboardList}
+                                    className="2xl:col-span-2"
+                                >
+                                    <div className="space-y-5">
+                                        <div>
+                                            <FieldLabel>Renewal Notes</FieldLabel>
+                                            <Textarea
+                                                value={data.renewal_notes}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'renewal_notes',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                rows={5}
+                                                placeholder="Add internal notes, renewal reminders, or other important context..."
+                                                className="resize-none"
+                                            />
+                                            <FieldError
+                                                message={errors.renewal_notes}
+                                            />
+                                        </div>
+
+                                        <div className="rounded-xl border bg-muted/30 p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Checkbox
+                                                    id="is_current"
+                                                    checked={data.is_current}
+                                                    onCheckedChange={(checked) =>
+                                                        setData(
+                                                            'is_current',
+                                                            checked === true,
+                                                        )
+                                                    }
+                                                    className="mt-0.5"
+                                                />
+                                                <div className="space-y-1">
+                                                    <label
+                                                        htmlFor="is_current"
+                                                        className="text-sm font-medium text-foreground"
+                                                    >
+                                                        Set as current active contract
+                                                    </label>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Use this when the employee should immediately
+                                                        use this contract as the primary active one.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <FieldError message={errors.is_current} />
+                                        </div>
+                                    </div>
+                                </SectionCard>
+                            </div>
+
+                            <div className="space-y-6 xl:sticky xl:top-28 xl:self-start">
+                                <Card className="border-border/60 shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="rounded-xl border bg-muted/50 p-2.5">
+                                                <UserSquare2 className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-base sm:text-lg">
+                                                    Contract Snapshot
+                                                </CardTitle>
+                                                <p className="mt-1 text-sm text-muted-foreground">
+                                                    Live summary as you fill the form.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-1">
+                                        <SummaryItem
+                                            label="Employee"
+                                            value={employee.full_name}
+                                        />
+                                        <SummaryItem
+                                            label="Staff Number"
+                                            value={employee.staff_number}
+                                        />
+                                        <SummaryItem
+                                            label="Contract Number"
+                                            value={data.contract_number}
+                                        />
+                                        <SummaryItem
+                                            label="Type"
+                                            value={
+                                                CONTRACT_TYPE_LABELS[data.contract_type] ||
+                                                data.contract_type
+                                            }
+                                        />
+                                        <SummaryItem
+                                            label="Status"
+                                            value={
+                                                data.status
+                                                    ? data.status
+                                                          .replace(/_/g, ' ')
+                                                          .replace(/\b\w/g, (c) =>
+                                                              c.toUpperCase(),
+                                                          )
+                                                    : ''
+                                            }
+                                        />
+                                        <SummaryItem
+                                            label="Department"
+                                            value={selectedDepartment}
+                                        />
+                                        <SummaryItem
+                                            label="Position"
+                                            value={selectedPosition}
+                                        />
+                                        <SummaryItem
+                                            label="Start Date"
+                                            value={data.start_date}
+                                        />
+                                        <SummaryItem
+                                            label="End Date"
+                                            value={data.end_date}
+                                        />
+                                        <SummaryItem
+                                            label="Salary"
+                                            value={
+                                                data.basic_salary
+                                                    ? `${data.currency || ''} ${data.basic_salary}`.trim()
+                                                    : ''
+                                            }
+                                        />
+                                        <SummaryItem
+                                            label="Pay Frequency"
+                                            value={
+                                                PAY_FREQUENCY_LABELS[data.pay_frequency] ||
+                                                data.pay_frequency
+                                            }
+                                        />
+                                        <SummaryItem
+                                            label="Current Contract"
+                                            value={data.is_current}
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-border/60 shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <CardTitle className="text-base sm:text-lg">
+                                            Tips
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3 text-sm text-muted-foreground">
+                                        <div className="rounded-lg border bg-muted/30 p-3">
+                                            Fixed-term contracts should usually include an end date.
+                                        </div>
+                                        <div className="rounded-lg border bg-muted/30 p-3">
+                                            Marking this as current may affect which contract is used elsewhere in the system.
+                                        </div>
+                                        <div className="rounded-lg border bg-muted/30 p-3">
+                                            Use renewal notes for reminders, special terms, or approval context.
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

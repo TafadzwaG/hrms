@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\EmployeeController::store
- * @see app/Http/Controllers/EmployeeController.php:537
+ * @see app/Http/Controllers/EmployeeController.php:788
  * @route '/employees/{employee}/next-of-kin'
  */
 export const store = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeController::store
- * @see app/Http/Controllers/EmployeeController.php:537
+ * @see app/Http/Controllers/EmployeeController.php:788
  * @route '/employees/{employee}/next-of-kin'
  */
 store.url = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
@@ -49,7 +49,7 @@ store.url = (args: { employee: number | { id: number } } | [employee: number | {
 
 /**
 * @see \App\Http\Controllers\EmployeeController::store
- * @see app/Http/Controllers/EmployeeController.php:537
+ * @see app/Http/Controllers/EmployeeController.php:788
  * @route '/employees/{employee}/next-of-kin'
  */
 store.post = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +59,7 @@ store.post = (args: { employee: number | { id: number } } | [employee: number | 
 
     /**
 * @see \App\Http\Controllers\EmployeeController::store
- * @see app/Http/Controllers/EmployeeController.php:537
+ * @see app/Http/Controllers/EmployeeController.php:788
  * @route '/employees/{employee}/next-of-kin'
  */
     const storeForm = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -69,7 +69,7 @@ store.post = (args: { employee: number | { id: number } } | [employee: number | 
 
             /**
 * @see \App\Http\Controllers\EmployeeController::store
- * @see app/Http/Controllers/EmployeeController.php:537
+ * @see app/Http/Controllers/EmployeeController.php:788
  * @route '/employees/{employee}/next-of-kin'
  */
         storeForm.post = (args: { employee: number | { id: number } } | [employee: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -80,7 +80,7 @@ store.post = (args: { employee: number | { id: number } } | [employee: number | 
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\EmployeeController::update
- * @see app/Http/Controllers/EmployeeController.php:557
+ * @see app/Http/Controllers/EmployeeController.php:808
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 export const update = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -95,7 +95,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeController::update
- * @see app/Http/Controllers/EmployeeController.php:557
+ * @see app/Http/Controllers/EmployeeController.php:808
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 update.url = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ update.url = (args: { employee: number | { id: number }, nextOfKin: number | { i
 
 /**
 * @see \App\Http\Controllers\EmployeeController::update
- * @see app/Http/Controllers/EmployeeController.php:557
+ * @see app/Http/Controllers/EmployeeController.php:808
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 update.put = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -135,7 +135,7 @@ update.put = (args: { employee: number | { id: number }, nextOfKin: number | { i
 
     /**
 * @see \App\Http\Controllers\EmployeeController::update
- * @see app/Http/Controllers/EmployeeController.php:557
+ * @see app/Http/Controllers/EmployeeController.php:808
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
     const updateForm = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -150,7 +150,7 @@ update.put = (args: { employee: number | { id: number }, nextOfKin: number | { i
 
             /**
 * @see \App\Http\Controllers\EmployeeController::update
- * @see app/Http/Controllers/EmployeeController.php:557
+ * @see app/Http/Controllers/EmployeeController.php:808
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
         updateForm.put = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -166,7 +166,7 @@ update.put = (args: { employee: number | { id: number }, nextOfKin: number | { i
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\EmployeeController::destroy
- * @see app/Http/Controllers/EmployeeController.php:580
+ * @see app/Http/Controllers/EmployeeController.php:831
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 export const destroy = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -181,7 +181,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\EmployeeController::destroy
- * @see app/Http/Controllers/EmployeeController.php:580
+ * @see app/Http/Controllers/EmployeeController.php:831
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 destroy.url = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ destroy.url = (args: { employee: number | { id: number }, nextOfKin: number | { 
 
 /**
 * @see \App\Http\Controllers\EmployeeController::destroy
- * @see app/Http/Controllers/EmployeeController.php:580
+ * @see app/Http/Controllers/EmployeeController.php:831
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
 destroy.delete = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -221,7 +221,7 @@ destroy.delete = (args: { employee: number | { id: number }, nextOfKin: number |
 
     /**
 * @see \App\Http\Controllers\EmployeeController::destroy
- * @see app/Http/Controllers/EmployeeController.php:580
+ * @see app/Http/Controllers/EmployeeController.php:831
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
     const destroyForm = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -236,7 +236,7 @@ destroy.delete = (args: { employee: number | { id: number }, nextOfKin: number |
 
             /**
 * @see \App\Http\Controllers\EmployeeController::destroy
- * @see app/Http/Controllers/EmployeeController.php:580
+ * @see app/Http/Controllers/EmployeeController.php:831
  * @route '/employees/{employee}/next-of-kin/{nextOfKin}'
  */
         destroyForm.delete = (args: { employee: number | { id: number }, nextOfKin: number | { id: number } } | [employee: number | { id: number }, nextOfKin: number | { id: number } ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

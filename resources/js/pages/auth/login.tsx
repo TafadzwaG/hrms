@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { BriefcaseBusiness, Building2, Lock, Mail, ShieldCheck, UserRound } from 'lucide-react';
-import type { FormEventHandler } from 'react';
+import { BriefcaseBusiness, Building2, Eye, EyeOff, Lock, Mail, ShieldCheck, UserRound } from 'lucide-react';
+import { type FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +53,7 @@ export default function LoginPage({
     canRegister,
     defaultPortal = null,
 }: Props) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -192,14 +193,22 @@ export default function LoginPage({
                                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="password"
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={data.password}
                                     onChange={(event) => setData('password', event.target.value)}
                                     required
                                     autoComplete="current-password"
                                     placeholder="••••••••"
-                                    className="pl-10"
+                                    className="pl-10 pr-10"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                             <InputError message={errors.password} />
                         </div>

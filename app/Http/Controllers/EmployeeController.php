@@ -39,8 +39,16 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         $filters = [
-            'search' => $request->string('search')->toString(),
-            'pay_point' => $request->string('pay_point')->toString(),
+            'search'            => $request->string('search')->toString(),
+            'pay_point'         => $request->string('pay_point')->toString(),
+            'occupation'        => $request->string('occupation')->toString(),
+            'department_id'     => $request->string('department_id')->toString(),
+            'position_id'       => $request->string('position_id')->toString(),
+            'gender'            => $request->string('gender')->toString(),
+            'marital_status'    => $request->string('marital_status')->toString(),
+            'nationality'       => $request->string('nationality')->toString(),
+            'educational_level' => $request->string('educational_level')->toString(),
+            'per_page'          => in_array((int) $request->input('per_page'), [10, 25, 50, 100]) ? (int) $request->input('per_page') : 10,
         ];
         $sortMap = [
             'employee' => ['surname', 'first_name'],
@@ -85,6 +93,12 @@ class EmployeeController extends Controller
                     ->orWhereHas('user', function ($uq) use ($s) {
                         $uq->where('email', 'like', "%{$s}%")
                             ->orWhere('name', 'like', "%{$s}%");
+                    })
+                    ->orWhereHas('orgUnit', function ($uq) use ($s) {
+                        $uq->where('name', 'like', "%{$s}%");
+                    })
+                    ->orWhereHas('position', function ($uq) use ($s) {
+                        $uq->where('name', 'like', "%{$s}%");
                     });
             });
         }
@@ -93,9 +107,37 @@ class EmployeeController extends Controller
             $query->where('pay_point', $filters['pay_point']);
         }
 
+        if (!empty($filters['occupation']) && $filters['occupation'] !== 'all') {
+            $query->where('occupation', $filters['occupation']);
+        }
+
+        if (!empty($filters['department_id']) && $filters['department_id'] !== 'all') {
+            $query->where('org_unit_id', $filters['department_id']);
+        }
+
+        if (!empty($filters['position_id']) && $filters['position_id'] !== 'all') {
+            $query->where('position_id', $filters['position_id']);
+        }
+
+        if (!empty($filters['gender']) && $filters['gender'] !== 'all') {
+            $query->where('gender', $filters['gender']);
+        }
+
+        if (!empty($filters['marital_status']) && $filters['marital_status'] !== 'all') {
+            $query->where('marital_status', $filters['marital_status']);
+        }
+
+        if (!empty($filters['nationality']) && $filters['nationality'] !== 'all') {
+            $query->where('nationality', $filters['nationality']);
+        }
+
+        if (!empty($filters['educational_level']) && $filters['educational_level'] !== 'all') {
+            $query->where('educational_level', $filters['educational_level']);
+        }
+
         IndexTableSorter::apply($query, $sortMap, $sorting['sort'], $sorting['direction']);
 
-        $employees = $query->paginate(15)->withQueryString()->through(function (Employee $employee) {
+        $employees = $query->paginate($filters['per_page'])->withQueryString()->through(function (Employee $employee) {
             return [
                 'id' => $employee->id,
                 'staff_number' => $employee->staff_number,
@@ -141,16 +183,225 @@ class EmployeeController extends Controller
             ->pluck('pay_point')
             ->values();
 
+        $occupations = Employee::query()
+            ->whereNotNull('occupation')
+            ->where('occupation', '!=', '')
+            ->distinct()
+            ->orderBy('occupation')
+            ->pluck('occupation')
+            ->values();
+
+        $genders = Employee::query()
+            ->whereNotNull('gender')
+            ->where('gender', '!=', '')
+            ->distinct()
+            ->orderBy('gender')
+            ->pluck('gender')
+            ->values();
+
+        $maritalStatuses = Employee::query()
+            ->whereNotNull('marital_status')
+            ->where('marital_status', '!=', '')
+            ->distinct()
+            ->orderBy('marital_status')
+            ->pluck('marital_status')
+            ->values();
+
+        $nationalities = Employee::query()
+            ->whereNotNull('nationality')
+            ->where('nationality', '!=', '')
+            ->distinct()
+            ->orderBy('nationality')
+            ->pluck('nationality')
+            ->values();
+
+        $educationalLevels = Employee::query()
+            ->whereNotNull('educational_level')
+            ->where('educational_level', '!=', '')
+            ->distinct()
+            ->orderBy('educational_level')
+            ->pluck('educational_level')
+            ->values();
+
+        $departments = OrgUnit::select('id', 'name')
+            ->where('type', 'DEPARTMENT')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])
+            ->values();
+
+        $positions = Position::select('id', 'name')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name])
+            ->values();
+
+        $stats = [
+            'total'            => Employee::count(),
+            'with_accounts'    => Employee::whereNotNull('user_id')->count(),
+            'departments'      => Employee::whereNotNull('org_unit_id')->distinct('org_unit_id')->count('org_unit_id'),
+            'new_this_month'   => Employee::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count(),
+            'male'             => Employee::where('gender', 'like', '%male%')->whereRaw("LOWER(gender) NOT LIKE '%female%'")->count(),
+            'female'           => Employee::whereRaw("LOWER(gender) LIKE '%female%'")->count(),
+        ];
+
         return Inertia::render('Employees/Index', [
             'employees' => $employees,
             'filters' => $this->roleScopedFilters([
-                'search' => $filters['search'] ?? '',
-                'pay_point' => $filters['pay_point'] ?: 'all',
-                'sort' => $sorting['sort'],
-                'direction' => $sorting['direction'],
+                'search'            => $filters['search'] ?? '',
+                'pay_point'         => $filters['pay_point'] ?: 'all',
+                'occupation'        => $filters['occupation'] ?: '',
+                'department_id'     => $filters['department_id'] ?: '',
+                'position_id'       => $filters['position_id'] ?: '',
+                'gender'            => $filters['gender'] ?: '',
+                'marital_status'    => $filters['marital_status'] ?: '',
+                'nationality'       => $filters['nationality'] ?: '',
+                'educational_level' => $filters['educational_level'] ?: '',
+                'per_page'          => $filters['per_page'],
+                'sort'              => $sorting['sort'],
+                'direction'         => $sorting['direction'],
             ], $scope),
-            'payPoints' => $payPoints,
-            'scope' => $scope,
+            'payPoints'        => $payPoints,
+            'occupations'      => $occupations,
+            'genders'          => $genders,
+            'maritalStatuses'  => $maritalStatuses,
+            'nationalities'    => $nationalities,
+            'educationalLevels' => $educationalLevels,
+            'departments'      => $departments,
+            'positions'        => $positions,
+            'stats'            => $stats,
+            'scope'            => $scope,
+        ]);
+    }
+
+    public function exportPdf(Request $request, Employee $employee): \Illuminate\Http\Response
+    {
+        $this->authorizeRoleScopedRecord($request, RolePageScopeResolver::MODULE_EMPLOYEES, $employee);
+
+        $employee->load([
+            'orgUnit:id,name,type',
+            'position:id,name',
+            'manager:id,first_name,surname,staff_number',
+            'nextOfKin',
+            'physicalProfile',
+            'skills',
+            'jobProfile',
+            'kpis',
+            'currentContract.department:id,name',
+            'currentContract.position:id,name',
+            'assetAssignments.asset:id,asset_tag,name,status',
+            'scorecards.cycle:id,title',
+            'benefitEnrollments.benefit:id,name,category',
+            'benefitEnrollments.benefitPlan:id,name',
+            'user.roles:id,code,name',
+        ]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('employees.pdf', ['employee' => $employee])
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled'      => false,
+                'defaultFont'          => 'DejaVu Sans',
+            ]);
+
+        $filename = 'employee_profile_' . $employee->staff_number . '_' . now()->format('Ymd') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function exportSelected(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $validated = $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:employees,id',
+        ]);
+
+        $employees = Employee::whereIn('id', $validated['ids'])
+            ->with(['orgUnit:id,name', 'position:id,name', 'user:id,name,email'])
+            ->orderBy('surname')
+            ->get();
+
+        $generatedBy = auth()->user()?->name ?? 'System';
+        $generatedAt = now()->format('d M Y, H:i:s');
+        $filename    = 'employees_export_' . now()->format('Ymd_His') . '.xlsx';
+
+        return response()->streamDownload(function () use ($employees, $generatedBy, $generatedAt) {
+        $writer = new \OpenSpout\Writer\XLSX\Writer();
+        $writer->openToFile('php://output');
+
+        // ── Sheet 1: Employee Data ────────────────────────────────────────
+        $sheet1 = $writer->getCurrentSheet();
+        $sheet1->setName('Employee Data');
+
+        $bold    = (new \OpenSpout\Common\Entity\Style\Style())->setFontBold();
+        $title   = (new \OpenSpout\Common\Entity\Style\Style())->setFontBold()->setFontSize(14);
+        $subhead = (new \OpenSpout\Common\Entity\Style\Style())->setFontBold()->setFontSize(11);
+
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['EMPLOYEE EXPORT REPORT'], $title));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Generated on: ' . $generatedAt]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Generated by: ' . $generatedBy]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Total Records: ' . $employees->count()]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([]));
+
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([
+            'Staff No.', 'Full Name', 'Department', 'Position', 'Occupation',
+            'Gender', 'Age', 'Marital Status', 'Nationality', 'Education Level',
+            'Email', 'Phone', 'Pay Point', 'Date of Birth', 'National ID',
+        ], $bold));
+
+        foreach ($employees as $emp) {
+            $dob     = $emp->date_of_birth ? \Carbon\Carbon::parse($emp->date_of_birth) : null;
+            $age     = $dob ? $dob->age : null;
+            $fullName = trim($emp->first_name . ' ' . ($emp->middle_name ? $emp->middle_name . ' ' : '') . $emp->surname);
+
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([
+                $emp->staff_number,
+                $fullName,
+                $emp->orgUnit?->name ?? '',
+                $emp->position?->name ?? '',
+                $emp->occupation ?? '',
+                $emp->gender ?? '',
+                $age,
+                $emp->marital_status ?? '',
+                $emp->nationality ?? '',
+                $emp->educational_level ?? '',
+                $emp->email ?? $emp->user?->email ?? '',
+                $emp->contact_number ?? $emp->alt_phone_number ?? '',
+                $emp->pay_point ?? '',
+                $dob?->toDateString() ?? '',
+                $emp->national_id ?? '',
+            ]));
+        }
+
+        // ── Sheet 2: Summary ─────────────────────────────────────────────
+        $writer->addNewSheetAndMakeItCurrent();
+        $writer->getCurrentSheet()->setName('Summary');
+
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['EXPORT SUMMARY'], $title));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Generated on: ' . $generatedAt]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Generated by: ' . $generatedBy]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([]));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Total Employees Exported', $employees->count()], $bold));
+        $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([]));
+
+        foreach ([
+            'By Department'     => fn ($e) => $e->orgUnit?->name ?? 'Unassigned',
+            'By Gender'         => fn ($e) => $e->gender ?? 'Not Specified',
+            'By Education Level'=> fn ($e) => $e->educational_level ?? 'Not Specified',
+            'By Pay Point'      => fn ($e) => $e->pay_point ?? 'Not Set',
+        ] as $sectionTitle => $grouper) {
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([$sectionTitle], $subhead));
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues(['Category', 'Count'], $bold));
+            foreach ($employees->groupBy($grouper)->sortKeys() as $label => $group) {
+                $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([$label, $group->count()]));
+            }
+            $writer->addRow(\OpenSpout\Common\Entity\Row::fromValues([]));
+        }
+
+        $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 

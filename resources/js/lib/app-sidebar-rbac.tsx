@@ -7,7 +7,7 @@ import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { useAuthorization } from '@/lib/authorization';
 import { iconFor } from '@/lib/lucide-icons';
-import type { Auth } from '@/types/auth';
+import type { Auth, DashboardRole } from '@/types/auth';
 import type { NavItem } from '@/types';
 import {
     Sidebar,
@@ -42,6 +42,19 @@ const mainNavItems: SidebarNavItem[] = [
     { title: 'Performance', href: '/performance', icon: Target, permissionsAny: ['performance.view', 'performance.dashboard.view'] },
     { title: 'Recruitment', href: '/recruitment', icon: Briefcase, permissionsAny: ['recruitment.view'] },
     { title: 'Reports', href: '/reports', icon: FileText, permissionsAny: ['reports.view'] },
+];
+
+const employeeNavItems = (employeeId?: number | null): SidebarNavItem[] => [
+    { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid, permissionsAny: ['dashboard.view'] },
+    { title: 'Documentation', href: '/documentation', icon: BookOpen },
+    ...(employeeId
+        ? [{ title: 'Profile', href: `/employees/${employeeId}`, icon: UserRoundCheckIcon, permissionsAny: ['employees.view'] }]
+        : []),
+    { title: 'Leave Management', href: '/leave-requests', icon: BookOpen, permissionsAny: ['leave.view'] },
+    { title: 'Attendance', href: '/attendance-records', icon: User, permissionsAny: ['attendance.view'] },
+    { title: 'Timesheets', href: '/timesheets', icon: BookOpen, permissionsAny: ['timesheets.view'] },
+    { title: 'Payslips', href: '/payroll/payslips', icon: Folder, permissionsAny: ['payslips.view', 'payroll.view'] },
+    { title: 'Benefits', href: '/benefits/dashboard', icon: Heart, permissionsAny: ['benefits.view'] },
 ];
 
 const footerNavGroups: SidebarNavGroup[] = [
@@ -132,6 +145,11 @@ const footerNavGroups: SidebarNavGroup[] = [
 export function RbacSidebar() {
     const { canAny } = useAuthorization();
     const { auth } = usePage<{ auth: Auth }>().props;
+    const dashboardRole = auth.user?.dashboard_role as DashboardRole | undefined;
+    const primaryItems =
+        dashboardRole === 'employee'
+            ? employeeNavItems(auth.user?.employee_id as number | null | undefined)
+            : mainNavItems;
 
     const pinnedItems: NavItem[] = (auth.user?.pinned_shortcuts ?? [])
         .filter((item) => item.href)
@@ -142,7 +160,7 @@ export function RbacSidebar() {
             badge: item.badge ?? null,
         }));
 
-    const visibleMain = mainNavItems.filter((item) => !item.permissionsAny || canAny(item.permissionsAny));
+    const visibleMain = primaryItems.filter((item) => !item.permissionsAny || canAny(item.permissionsAny));
     const visibleFooterGroups = footerNavGroups
         .map((group) => ({
             ...group,
