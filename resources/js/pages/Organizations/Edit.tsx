@@ -188,7 +188,7 @@ export default function EditOrganization() {
                                                 'Organization Name'}
                                         </p>
                                         <p className="truncate text-xs font-medium text-muted-foreground">
-                                            providence.hr
+                                            hrxchange.global
                                             {form.data.slug || '/org-slug'}
                                         </p>
                                     </div>

@@ -689,7 +689,7 @@ export default function AuditTrailIndex() {
             {/* Minimal Footer */}
             <div className="flex items-center justify-center border-t bg-background px-8 py-6">
                 <p className="text-[11px] font-medium text-muted-foreground">
-                    © 2024 Providence HRMS. Secure Audit Logging Active.
+                    © 2024 HRX. Secure Audit Logging Active.
                 </p>
             </div>
         </AppLayout>

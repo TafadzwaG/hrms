@@ -529,7 +529,7 @@ export default function OnboardingTaskShow() {
             {/* Minimal Footer */}
             <div className="flex items-center justify-between border-t bg-background px-8 py-6">
                 <p className="text-[11px] font-medium text-muted-foreground">
-                    © 2024 Providence HRMS. Confidential Enterprise System.
+                    © 2024 HRX. Confidential Enterprise System.
                 </p>
                 <div className="flex items-center gap-6 text-[11px] font-medium text-muted-foreground">
                     <a

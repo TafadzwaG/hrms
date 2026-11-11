@@ -82,6 +82,7 @@ class PayrollProcessingService
             $processedEmployees = 0;
             $statutoryTotals = [];
             $settlementTotals = [];
+            $warnings = [];
 
             foreach ($profiles as $employeeId => $profile) {
                 $employee = $profile->employee;
@@ -118,6 +119,10 @@ class PayrollProcessingService
                     $inputs,
                     $timesheets,
                 );
+
+                if (! empty($calculated['tax_warning'])) {
+                    $warnings[$calculated['tax_warning']] = true;
+                }
 
                 $result = $run->results()->create([
                     'organization_id' => $organizationId,
@@ -213,7 +218,7 @@ class PayrollProcessingService
                 ]);
             }
 
-            AuditContext::withoutAuditing(function () use ($period, $run, $actor, $processedEmployees, $grossTotal, $taxableTotal, $deductionTotal, $netTotal, $settlementTotals): void {
+            AuditContext::withoutAuditing(function () use ($period, $run, $actor, $processedEmployees, $grossTotal, $taxableTotal, $deductionTotal, $netTotal, $settlementTotals, $warnings): void {
                 $run->update([
                     'employee_count' => $processedEmployees,
                     'gross_total' => round($grossTotal, 2),
@@ -226,6 +231,7 @@ class PayrollProcessingService
                         'taxable_total' => round($taxableTotal, 2),
                         'deduction_total' => round($deductionTotal, 2),
                         'net_total' => round($netTotal, 2),
+                        'warnings' => array_keys($warnings),
                         'settlement_totals' => collect($settlementTotals)
                             ->map(fn (array $summary) => [
                                 'currency' => $summary['currency'],
@@ -326,9 +332,9 @@ class PayrollProcessingService
     {
         $run = $this->latestRun($period);
 
-        if (! $run || ! in_array($run->status, ['PROCESSED', 'APPROVED', 'CLOSED'], true)) {
+        if (! $run || ! in_array($run->status, ['APPROVED', 'CLOSED'], true)) {
             throw ValidationException::withMessages([
-                'period' => 'The selected period does not have a payroll run that can be closed.',
+                'period' => 'Approve the payroll run before closing the period.',
             ]);
         }
 

@@ -173,7 +173,7 @@ return [
             'recurring' => true,
             'affects_gross' => false,
             'affects_net' => true,
-            'is_pre_tax' => false,
+            'is_pre_tax' => true,
             'active' => true,
             'system_generated' => true,
             'sort_order' => 100,
@@ -187,7 +187,7 @@ return [
             'recurring' => true,
             'affects_gross' => false,
             'affects_net' => true,
-            'is_pre_tax' => false,
+            'is_pre_tax' => true,
             'active' => true,
             'system_generated' => false,
             'sort_order' => 110,
@@ -220,6 +220,20 @@ return [
             'system_generated' => true,
             'sort_order' => 130,
         ],
+        [
+            'code' => 'AIDS',
+            'description' => 'AIDS Levy',
+            'category' => 'TAX',
+            'type' => 'DEDUCTION',
+            'taxable' => false,
+            'recurring' => true,
+            'affects_gross' => false,
+            'affects_net' => true,
+            'is_pre_tax' => false,
+            'active' => true,
+            'system_generated' => true,
+            'sort_order' => 135,
+        ],
     ],
 
     'statutory' => [
@@ -239,6 +253,9 @@ return [
     ],
 
     'tax' => [
+        // PAYE now comes from the dated tables in payroll_tax_tables. These values are
+        // only the fallback for a currency or pay frequency that has no table loaded.
+        'aids_levy_percent' => 3.0,
         'bands' => [
             ['up_to' => 1000.00, 'rate' => 0.00, 'base' => 0.00],
             ['up_to' => 3000.00, 'rate' => 0.20, 'base' => 0.00],

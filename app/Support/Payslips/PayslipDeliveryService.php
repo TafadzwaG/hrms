@@ -20,9 +20,9 @@ class PayslipDeliveryService
     }
 
     /**
-     * @return array{delivery: PayslipDelivery, queued: bool, reason: string|null}
+     * @return array{delivery: PayslipDelivery|null, queued: bool, reason: string|null}
      */
-    public function queueEmail(PayrollResult $result, User $actor, ?string $batchId = null): array
+    public function queueEmail(PayrollResult $result, User $actor, ?string $batchId = null, ?string $overrideReason = null): array
     {
         $recipient = $result->employee?->user?->email;
 
@@ -33,13 +33,14 @@ class PayslipDeliveryService
             $recipient,
             $batchId,
             fn (PayslipDelivery $delivery) => SendPayslipEmailJob::dispatch($delivery->id),
+            $overrideReason,
         );
     }
 
     /**
-     * @return array{delivery: PayslipDelivery, queued: bool, reason: string|null}
+     * @return array{delivery: PayslipDelivery|null, queued: bool, reason: string|null}
      */
-    public function queueSms(PayrollResult $result, User $actor, ?string $batchId = null): array
+    public function queueSms(PayrollResult $result, User $actor, ?string $batchId = null, ?string $overrideReason = null): array
     {
         $recipient = $result->employee?->contact_number;
 
@@ -50,25 +51,41 @@ class PayslipDeliveryService
             $recipient,
             $batchId,
             fn (PayslipDelivery $delivery) => SendPayslipSmsJob::dispatch($delivery->id),
+            $overrideReason,
         );
     }
 
     /**
-     * @param  Collection<int, PayrollResult>  $results
-     * @return array{batch_id: string, queued: int, failed: int}
+     * Payslips may only go out once the payroll run is approved or closed.
+     * Returns the reason a payslip is held back, or null when it can be released.
      */
-    public function queueBulkEmail(Collection $results, User $actor): array
+    public function releaseBlockReason(PayrollResult $result): ?string
     {
-        return $this->queueBulk($results, $actor, fn (PayrollResult $result, User $actor, string $batchId) => $this->queueEmail($result, $actor, $batchId));
+        $status = strtoupper((string) $result->loadMissing('run')->run?->status);
+
+        if (in_array($status, ['APPROVED', 'CLOSED'], true)) {
+            return null;
+        }
+
+        return 'This payslip cannot be sent yet because its payroll run has not been approved.';
     }
 
     /**
      * @param  Collection<int, PayrollResult>  $results
-     * @return array{batch_id: string, queued: int, failed: int}
+     * @return array{batch_id: string, queued: int, failed: int, blocked: int}
      */
-    public function queueBulkSms(Collection $results, User $actor): array
+    public function queueBulkEmail(Collection $results, User $actor, ?string $overrideReason = null): array
     {
-        return $this->queueBulk($results, $actor, fn (PayrollResult $result, User $actor, string $batchId) => $this->queueSms($result, $actor, $batchId));
+        return $this->queueBulk($results, $actor, fn (PayrollResult $result, User $actor, string $batchId) => $this->queueEmail($result, $actor, $batchId, $overrideReason));
+    }
+
+    /**
+     * @param  Collection<int, PayrollResult>  $results
+     * @return array{batch_id: string, queued: int, failed: int, blocked: int}
+     */
+    public function queueBulkSms(Collection $results, User $actor, ?string $overrideReason = null): array
+    {
+        return $this->queueBulk($results, $actor, fn (PayrollResult $result, User $actor, string $batchId) => $this->queueSms($result, $actor, $batchId, $overrideReason));
     }
 
     private function queueBulk(Collection $results, User $actor, callable $callback): array
@@ -76,22 +93,28 @@ class PayslipDeliveryService
         $batchId = (string) Str::uuid();
         $queued = 0;
         $failed = 0;
+        $blocked = 0;
 
         foreach ($results as $result) {
             $response = $callback($result, $actor, $batchId);
             $response['queued'] ? $queued++ : $failed++;
+
+            if (! $response['queued'] && ($response['blocked'] ?? false)) {
+                $blocked++;
+            }
         }
 
         return [
             'batch_id' => $batchId,
             'queued' => $queued,
             'failed' => $failed,
+            'blocked' => $blocked,
         ];
     }
 
     /**
      * @param  callable(PayslipDelivery): void  $dispatch
-     * @return array{delivery: PayslipDelivery, queued: bool, reason: string|null}
+     * @return array{delivery: PayslipDelivery|null, queued: bool, reason: string|null}
      */
     private function queue(
         PayrollResult $result,
@@ -100,8 +123,36 @@ class PayslipDeliveryService
         ?string $recipient,
         ?string $batchId,
         callable $dispatch,
+        ?string $overrideReason = null,
     ): array {
         $this->viewService->load($result);
+
+        $blockReason = $this->releaseBlockReason($result);
+
+        if ($blockReason !== null && blank($overrideReason)) {
+            return [
+                'delivery' => null,
+                'queued' => false,
+                'blocked' => true,
+                'reason' => $blockReason,
+            ];
+        }
+
+        if ($blockReason !== null) {
+            $this->auditLogger->logCustom('payslip_release_override', $result, [
+                'actor' => $actor,
+                'module' => 'payroll',
+                'category' => 'communication',
+                'organization_id' => $result->organization_id,
+                'description' => 'Released a payslip before the payroll run was approved.',
+                'metadata' => [
+                    'channel' => $channel,
+                    'override_reason' => $overrideReason,
+                    'run_status' => $result->run?->status,
+                    'batch_id' => $batchId,
+                ],
+            ]);
+        }
 
         $delivery = PayslipDelivery::query()->create([
             'organization_id' => $result->organization_id,

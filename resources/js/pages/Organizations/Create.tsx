@@ -129,7 +129,7 @@ export default function CreateOrganization() {
                                                 'Organization Name'}
                                         </p>
                                         <p className="truncate text-xs font-medium text-muted-foreground">
-                                            providence.hr
+                                            hrxchange.global
                                             {form.data.slug || '/org-slug'}
                                         </p>
                                     </div>
@@ -189,7 +189,7 @@ export default function CreateOrganization() {
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        placeholder="e.g. Providence Global"
+                                                        placeholder="e.g. Acme Global"
                                                         className="h-11 bg-background text-base shadow-sm"
                                                     />
                                                 </Field>
@@ -214,7 +214,7 @@ export default function CreateOrganization() {
                                                                             .value,
                                                                     )
                                                                 }
-                                                                placeholder="providence-intl"
+                                                                placeholder="acme-intl"
                                                                 className="h-11 bg-background pl-7 font-mono text-sm shadow-sm"
                                                             />
                                                         </div>

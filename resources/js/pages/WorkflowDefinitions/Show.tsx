@@ -399,7 +399,7 @@ export default function WorkflowDefinitionShow() {
             {/* Minimal Footer */}
             <div className="border-t bg-background py-6 text-center">
                 <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                    Providence HRMS © 2024 • Enterprise Workflow Engine
+                    HRX © 2024 • Enterprise Workflow Engine
                 </p>
             </div>
         </AppLayout>
