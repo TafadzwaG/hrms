@@ -93,6 +93,10 @@ class EmployeePayrollProfileController extends Controller
                 'bank_account_type' => '',
                 'tax_number' => '',
                 'tax_table' => '',
+                'tax_method' => 'NON_FDS',
+                'tax_credit_elderly' => false,
+                'tax_credit_blind' => false,
+                'tax_credit_disabled' => false,
                 'pension_number' => '',
                 'pension_percent' => config('payroll.statutory.pension.default_percent', 5),
                 'nssa_number' => '',
@@ -293,6 +297,10 @@ class EmployeePayrollProfileController extends Controller
             'bank_account_type' => $profile->bank_account_type,
             'tax_number' => $profile->tax_number,
             'tax_table' => $profile->tax_table,
+            'tax_method' => (string) ($profile->tax_method ?: 'NON_FDS'),
+            'tax_credit_elderly' => (bool) $profile->tax_credit_elderly,
+            'tax_credit_blind' => (bool) $profile->tax_credit_blind,
+            'tax_credit_disabled' => (bool) $profile->tax_credit_disabled,
             'pension_number' => $profile->pension_number,
             'pension_percent' => (float) $profile->pension_percent,
             'nssa_number' => $profile->nssa_number,
@@ -348,7 +356,9 @@ class EmployeePayrollProfileController extends Controller
 
     private function normalizeProfileFlags(array $validated): array
     {
-        foreach (['tax_enabled', 'active'] as $flag) {
+        $validated['tax_method'] = $validated['tax_method'] ?? 'NON_FDS';
+
+        foreach (['tax_enabled', 'active', 'tax_credit_elderly', 'tax_credit_blind', 'tax_credit_disabled'] as $flag) {
             $validated[$flag] = (bool) ($validated[$flag] ?? false);
         }
 

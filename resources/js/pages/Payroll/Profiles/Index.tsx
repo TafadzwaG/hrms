@@ -117,6 +117,10 @@ type ProfileRow = {
     bank_account_type: string | null;
     tax_number: string | null;
     tax_table: string | null;
+    tax_method: string;
+    tax_credit_elderly: boolean;
+    tax_credit_blind: boolean;
+    tax_credit_disabled: boolean;
     pension_number: string | null;
     pension_percent: number;
     nssa_number: string | null;
@@ -157,6 +161,10 @@ type ProfileFormData = {
     bank_account_type: string;
     tax_number: string;
     tax_table: string;
+    tax_method: string;
+    tax_credit_elderly: boolean;
+    tax_credit_blind: boolean;
+    tax_credit_disabled: boolean;
     pension_number: string;
     pension_percent: string | number;
     nssa_number: string;
@@ -320,6 +328,10 @@ export default function PayrollProfilesIndex() {
             bank_account_type: profile.bank_account_type ?? '',
             tax_number: profile.tax_number ?? '',
             tax_table: profile.tax_table ?? '',
+            tax_method: profile.tax_method ?? 'NON_FDS',
+            tax_credit_elderly: profile.tax_credit_elderly ?? false,
+            tax_credit_blind: profile.tax_credit_blind ?? false,
+            tax_credit_disabled: profile.tax_credit_disabled ?? false,
             pension_number: profile.pension_number ?? '',
             pension_percent: profile.pension_percent,
             nssa_number: profile.nssa_number ?? '',
@@ -1582,6 +1594,44 @@ export default function PayrollProfilesIndex() {
                                             />
                                         </Field>
                                     </div>
+                                    <div className="md:col-span-2">
+                                        <Field
+                                            label="Tax Method"
+                                            error={
+                                                profileForm.errors.tax_method
+                                            }
+                                        >
+                                            <Select
+                                                value={
+                                                    profileForm.data
+                                                        .tax_method ||
+                                                    'NON_FDS'
+                                                }
+                                                onValueChange={(v) =>
+                                                    profileForm.setData(
+                                                        'tax_method',
+                                                        v,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11 bg-background text-sm shadow-sm">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="NON_FDS">
+                                                        PAYE (Non-FDS): each
+                                                        month on its own
+                                                    </SelectItem>
+                                                    <SelectItem value="FDS_AVERAGE">
+                                                        FDS Average
+                                                    </SelectItem>
+                                                    <SelectItem value="FDS_FORECAST">
+                                                        FDS Forecast
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </Field>
+                                    </div>
 
                                     <Field
                                         label="Pension Number"
@@ -1845,6 +1895,48 @@ export default function PayrollProfilesIndex() {
                                             onCheckedChange={(checked) =>
                                                 profileForm.setData(
                                                     'tax_enabled',
+                                                    !!checked,
+                                                )
+                                            }
+                                        />
+                                        <CheckField
+                                            label="Elderly Tax Credit"
+                                            description="Applied under FDS methods"
+                                            checked={
+                                                profileForm.data
+                                                    .tax_credit_elderly
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                profileForm.setData(
+                                                    'tax_credit_elderly',
+                                                    !!checked,
+                                                )
+                                            }
+                                        />
+                                        <CheckField
+                                            label="Blind Person Tax Credit"
+                                            description="Applied under FDS methods"
+                                            checked={
+                                                profileForm.data
+                                                    .tax_credit_blind
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                profileForm.setData(
+                                                    'tax_credit_blind',
+                                                    !!checked,
+                                                )
+                                            }
+                                        />
+                                        <CheckField
+                                            label="Disabled Person Tax Credit"
+                                            description="Applied under FDS methods"
+                                            checked={
+                                                profileForm.data
+                                                    .tax_credit_disabled
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                profileForm.setData(
+                                                    'tax_credit_disabled',
                                                     !!checked,
                                                 )
                                             }

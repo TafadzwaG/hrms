@@ -6,6 +6,7 @@ use App\Http\Controllers\Reports\BaseReportController;
 use App\Models\PayrollExport;
 use App\Models\PayrollPeriod;
 use App\Models\PayrollRun;
+use App\Models\PayrollTaxLedgerEntry;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -74,6 +75,7 @@ class PayrollReportController extends BaseReportController
                 'statutory_url' => "/payroll/reports/runs/{$selectedRun->id}/statutory",
                 'bank_url' => "/payroll/reports/runs/{$selectedRun->id}/bank",
                 'journal_url' => "/payroll/reports/runs/{$selectedRun->id}/journal",
+                'tax_comparison_url' => "/payroll/reports/runs/{$selectedRun->id}/tax-comparison",
             ] : null,
             'exportHistory' => PayrollExport::query()
                 ->whereNotNull('payroll_run_id')
@@ -240,6 +242,53 @@ class PayrollReportController extends BaseReportController
         $this->recordExport($run, 'JOURNAL', count($rows));
 
         return $this->exportRows($request, "payroll-journal-run-{$run->run_number}", ['gl_account_code', 'code', 'description', 'debit', 'credit'], $rows);
+    }
+
+    /**
+     * Parallel-run check: what each employee was charged, next to what Non-FDS and
+     * FDS Average would each have charged for the same period.
+     */
+    public function taxComparison(Request $request, int $run): BinaryFileResponse
+    {
+        /** @var PayrollRun $run */
+        $run = $this->findTenantModelOrFail(PayrollRun::class, $run);
+        $rows = PayrollTaxLedgerEntry::query()
+            ->with('employee')
+            ->where('payroll_run_id', $run->id)
+            ->get()
+            ->sortBy(fn (PayrollTaxLedgerEntry $entry) => $entry->employee?->staff_number)
+            ->map(function (PayrollTaxLedgerEntry $entry) {
+                $nonFds = round((float) $entry->standalone_paye + (float) $entry->standalone_aids_levy, 2);
+                $average = $entry->fds_average_paye !== null
+                    ? round((float) $entry->fds_average_paye + (float) $entry->fds_average_aids_levy, 2)
+                    : null;
+
+                return [
+                    'staff_number' => $entry->employee?->staff_number,
+                    'employee_name' => $entry->employee?->full_name,
+                    'tax_method_applied' => $entry->tax_method,
+                    'regular_taxable' => (float) $entry->regular_taxable,
+                    'irregular_taxable' => (float) $entry->irregular_taxable,
+                    'bonus_exempt' => (float) $entry->bonus_exempt,
+                    'credits_applied' => (float) $entry->credits_applied,
+                    'paye_charged' => (float) $entry->paye,
+                    'aids_levy_charged' => (float) $entry->aids_levy,
+                    'non_fds_tax' => $nonFds,
+                    'fds_average_tax' => $average,
+                    'fds_average_minus_non_fds' => $average !== null ? round($average - $nonFds, 2) : null,
+                ];
+            })
+            ->values()
+            ->all();
+
+        $this->recordExport($run, 'TAX_COMPARISON', count($rows));
+
+        return $this->exportRows(
+            $request,
+            "payroll-tax-comparison-run-{$run->run_number}",
+            ['staff_number', 'employee_name', 'tax_method_applied', 'regular_taxable', 'irregular_taxable', 'bonus_exempt', 'credits_applied', 'paye_charged', 'aids_levy_charged', 'non_fds_tax', 'fds_average_tax', 'fds_average_minus_non_fds'],
+            $rows
+        );
     }
 
     private function recordExport(PayrollRun $run, string $type, int $rows): void

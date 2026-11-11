@@ -226,6 +226,7 @@ return [
                 ['name' => 'payroll.profile.manage', 'label' => 'Manage payroll profiles', 'description' => 'Create and update employee payroll profiles and recurring pay items.'],
                 ['name' => 'payroll.paycodes.manage', 'label' => 'Manage pay codes', 'description' => 'Create and update earnings and deduction pay codes.'],
                 ['name' => 'payroll.inputs.manage', 'label' => 'Manage payroll inputs', 'description' => 'Capture and import period payroll inputs.'],
+                ['name' => 'payroll.tax.manage', 'label' => 'Manage tax tables and credits', 'description' => 'Enter and verify PAYE tax bands, the AIDS Levy rate, tax credits and the tax-free bonus amount.'],
                 ['name' => 'payroll.reports.view', 'label' => 'View payroll reports', 'description' => 'Open payroll report and export screens.'],
                 ['name' => 'payroll.create', 'label' => 'Create payroll exports', 'description' => 'Create legacy payroll export records.'],
                 ['name' => 'payroll.update', 'label' => 'Update payroll exports', 'description' => 'Edit legacy payroll export records and metadata.'],

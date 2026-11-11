@@ -26,6 +26,7 @@ class PayrollCalculationService
         Collection $recurringItems,
         Collection $inputs,
         Collection $timesheets,
+        array $ytd = [],
     ): array {
         $lines = collect();
         $generatedCodes = collect();
@@ -88,45 +89,52 @@ class PayrollCalculationService
 
         $grossPay = $this->grossFromLines($lines);
         $preTaxDeductions = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION' && ($line['is_pre_tax'] ?? false));
-        $taxableIncome = max(0, round($grossPay - $preTaxDeductions, 2));
 
-        $taxWarning = null;
+        // Split earnings by how FDS treats them: bonuses and other irregular pay are not annualised.
+        $isEarning = fn (array $line) => $line['type'] === 'EARNING' && ($line['affects_gross'] ?? false);
+        $bonusGross = $this->sumLines($lines, fn (array $line) => $isEarning($line) && ($line['income_type'] ?? 'REGULAR') === 'BONUS');
+        $irregularGross = $this->sumLines($lines, fn (array $line) => $isEarning($line) && ($line['income_type'] ?? 'REGULAR') === 'IRREGULAR');
+        $medicalContributions = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION' && ($line['tax_credit'] ?? null) === 'MEDICAL');
+        $regularTaxable = round($grossPay - $bonusGross - $irregularGross - $preTaxDeductions, 2);
+
+        $taxableIncome = max(0, round($grossPay - $preTaxDeductions, 2));
+        $taxWarnings = [];
+        $ledger = null;
 
         if ((bool) $profile->tax_enabled && ! $existingCodes->contains('PAYE')) {
             $payeCode = $payCodes->get('PAYE');
 
             if ($payeCode instanceof PayCode) {
-                $tax = $this->taxService->calculate(
-                    $taxableIncome,
-                    (string) ($profile->currency ?: $period->currency ?: config('payroll.default_currency', 'USD')),
-                    (string) ($period->frequency ?: 'MONTHLY'),
-                    optional($period->period_end)->toDateString() ?: now()->toDateString(),
-                    (int) $period->organization_id ?: null,
-                );
+                $tax = $this->taxService->assess([
+                    'currency' => (string) ($profile->currency ?: $period->currency ?: config('payroll.default_currency', 'USD')),
+                    'frequency' => (string) ($period->frequency ?: 'MONTHLY'),
+                    'date' => optional($period->period_end)->toDateString() ?: now()->toDateString(),
+                    'organization_id' => (int) $period->organization_id ?: null,
+                    'tax_method' => (string) ($profile->tax_method ?: PayrollTaxService::METHOD_NON_FDS),
+                    'credit_elderly' => (bool) $profile->tax_credit_elderly,
+                    'credit_blind' => (bool) $profile->tax_credit_blind,
+                    'credit_disabled' => (bool) $profile->tax_credit_disabled,
+                    'regular_taxable' => $regularTaxable,
+                    'irregular' => $irregularGross,
+                    'bonus' => $bonusGross,
+                    'medical' => $medicalContributions,
+                ], $ytd);
 
-                if ($tax['fallback']) {
-                    $taxWarning = sprintf(
-                        'No tax table is loaded for %s %s pay, so the legacy bands were used. Load the ZIMRA table for this currency and frequency.',
-                        (string) ($profile->currency ?: $period->currency),
-                        strtolower(str_replace('_', ' ', (string) ($period->frequency ?: 'MONTHLY'))),
-                    );
-                }
-
-                if (! $tax['fallback'] && ! $tax['verified']) {
-                    $taxWarning = sprintf(
-                        'The tax table "%s" has not yet been verified against ZIMRA\'s published tables.',
-                        (string) $tax['tax_table'],
-                    );
-                }
+                $taxWarnings = $tax['warnings'];
+                $taxableIncome = $tax['taxable_income'];
 
                 $taxMetadata = [
                     'taxable_income' => $taxableIncome,
+                    'tax_method' => $tax['method_applied'],
                     'tax_table_id' => $tax['tax_table_id'],
                     'tax_table' => $tax['tax_table'],
-                    'tax_table_verified' => $tax['verified'],
+                    'tax_table_verified' => $tax['tax_table_verified'],
+                    'bonus_exempt' => $tax['bonus_exempt'],
+                    'credits_applied' => $tax['credits_applied'],
                 ];
 
-                if ($tax['paye'] > 0) {
+                // Under FDS a period can carry a refund, so a negative amount is kept.
+                if (round($tax['paye'], 2) !== 0.0) {
                     $lines->push($this->makeLine($payeCode, [
                         'amount' => $tax['paye'],
                         'input_source' => 'SYSTEM_TAX',
@@ -139,18 +147,33 @@ class PayrollCalculationService
 
                 $levyCode = $payCodes->get('AIDS');
 
-                if ($levyCode instanceof PayCode && $tax['aids_levy'] > 0 && ! $existingCodes->contains('AIDS')) {
+                if ($levyCode instanceof PayCode && round($tax['aids_levy'], 2) !== 0.0 && ! $existingCodes->contains('AIDS')) {
                     $lines->push($this->makeLine($levyCode, [
                         'amount' => $tax['aids_levy'],
                         'input_source' => 'SYSTEM_TAX',
                         'metadata' => [
                             'source' => 'AIDS_LEVY',
-                            'base_amount' => $tax['paye'],
                             'percent' => $tax['aids_levy_percent'],
                             ...$taxMetadata,
                         ],
                     ]));
                 }
+
+                $ledger = [
+                    'tax_method' => $tax['method_applied'],
+                    'regular_taxable' => $tax['regular_taxable'],
+                    'irregular_taxable' => $tax['irregular_taxable'],
+                    'bonus_gross' => $bonusGross,
+                    'bonus_exempt' => $tax['bonus_exempt'],
+                    'medical_contributions' => $medicalContributions,
+                    'credits_applied' => $tax['credits_applied'],
+                    'paye' => $tax['paye'],
+                    'aids_levy' => $levyCode instanceof PayCode ? $tax['aids_levy'] : 0,
+                    'standalone_paye' => $tax['standalone_paye'],
+                    'standalone_aids_levy' => $tax['standalone_aids_levy'],
+                    'fds_average_paye' => $tax['fds_average_paye'],
+                    'fds_average_aids_levy' => $tax['fds_average_aids_levy'],
+                ];
             }
         }
 
@@ -166,7 +189,8 @@ class PayrollCalculationService
         $netPay = max(0, round($grossPay - $totalDeductions, 2));
 
         return [
-            'tax_warning' => $taxWarning,
+            'tax_warnings' => $taxWarnings,
+            'ledger' => $ledger,
             'result' => [
                 'staff_number_snapshot' => $employee->staff_number,
                 'employee_name_snapshot' => $employee->full_name,
@@ -395,6 +419,8 @@ class PayrollCalculationService
             'rate' => null,
             'taxable' => (bool) $payCode->taxable,
             'is_pre_tax' => (bool) $payCode->is_pre_tax,
+            'income_type' => (string) ($payCode->income_type ?: 'REGULAR'),
+            'tax_credit' => $payCode->tax_credit,
             'affects_gross' => (bool) $payCode->affects_gross,
             'affects_net' => (bool) $payCode->affects_net,
             'sort_order' => (int) ($payCode->sort_order ?? 0),

@@ -59,6 +59,8 @@ class PayrollPayCodeController extends Controller
                 'affects_gross' => true,
                 'affects_net' => true,
                 'is_pre_tax' => false,
+                'income_type' => 'REGULAR',
+                'tax_credit' => '',
                 'active' => true,
                 'system_generated' => false,
                 'gl_account_code' => '',
@@ -66,6 +68,7 @@ class PayrollPayCodeController extends Controller
             ],
             'categories' => ['SALARY', 'ALLOWANCE', 'OVERTIME', 'BONUS', 'STATUTORY', 'VOLUNTARY', 'TAX'],
             'types' => ['EARNING', 'DEDUCTION'],
+            'incomeTypes' => config('payroll.income_types', []),
         ]);
     }
 
@@ -123,6 +126,8 @@ class PayrollPayCodeController extends Controller
             'affects_gross' => (bool) $payCode->affects_gross,
             'affects_net' => (bool) $payCode->affects_net,
             'is_pre_tax' => (bool) $payCode->is_pre_tax,
+            'income_type' => (string) ($payCode->income_type ?: 'REGULAR'),
+            'tax_credit' => (string) ($payCode->tax_credit ?? ''),
             'active' => (bool) $payCode->active,
             'system_generated' => (bool) $payCode->system_generated,
             'gl_account_code' => $payCode->gl_account_code,
@@ -137,6 +142,13 @@ class PayrollPayCodeController extends Controller
         foreach (['taxable', 'recurring', 'affects_gross', 'affects_net', 'is_pre_tax', 'active', 'system_generated'] as $flag) {
             $validated[$flag] = (bool) ($validated[$flag] ?? false);
         }
+
+        $validated['income_type'] = ($validated['type'] ?? 'EARNING') === 'EARNING'
+            ? ($validated['income_type'] ?? 'REGULAR')
+            : 'REGULAR';
+        $validated['tax_credit'] = ($validated['type'] ?? 'EARNING') === 'DEDUCTION' && ! blank($validated['tax_credit'] ?? null)
+            ? $validated['tax_credit']
+            : null;
 
         return $validated;
     }

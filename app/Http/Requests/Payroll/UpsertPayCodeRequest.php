@@ -37,6 +37,8 @@ class UpsertPayCodeRequest extends FormRequest
             'affects_gross' => ['nullable', 'boolean'],
             'affects_net' => ['nullable', 'boolean'],
             'is_pre_tax' => ['nullable', 'boolean'],
+            'income_type' => ['nullable', Rule::in(['REGULAR', 'IRREGULAR', 'BONUS'])],
+            'tax_credit' => ['nullable', Rule::in(['MEDICAL'])],
             'active' => ['nullable', 'boolean'],
             'system_generated' => ['nullable', 'boolean'],
             'gl_account_code' => ['nullable', 'string', 'max:64'],

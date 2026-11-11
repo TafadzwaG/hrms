@@ -60,6 +60,7 @@ type SelectedRun = {
     statutory_url: string;
     bank_url: string;
     journal_url: string;
+    tax_comparison_url: string;
 } | null;
 
 export default function PayrollReportsIndex() {
@@ -356,6 +357,14 @@ export default function PayrollReportsIndex() {
                                             description="Finance accounting output"
                                             href={selectedRun.journal_url}
                                             icon={FileText}
+                                        />
+                                        <ExportLink
+                                            label="Tax Method Comparison"
+                                            description="Non-FDS vs FDS Average per employee"
+                                            href={
+                                                selectedRun.tax_comparison_url
+                                            }
+                                            icon={Calculator}
                                         />
                                     </>
                                 ) : (

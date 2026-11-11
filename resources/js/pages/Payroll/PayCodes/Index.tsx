@@ -57,6 +57,8 @@ type PayCodeRow = {
     affects_gross: boolean;
     affects_net: boolean;
     is_pre_tax: boolean;
+    income_type: string;
+    tax_credit: string;
     active: boolean;
     system_generated: boolean;
     gl_account_code: string | null;
@@ -718,6 +720,58 @@ export default function PayrollPayCodesIndex() {
                                         }
                                         disabled={editing?.system_generated}
                                     />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                        Tax treatment under FDS
+                                    </Label>
+                                    {form.data.type === 'EARNING' ? (
+                                        <Select
+                                            value={
+                                                form.data.income_type ||
+                                                'REGULAR'
+                                            }
+                                            onValueChange={(value) =>
+                                                form.setData(
+                                                    'income_type',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 bg-background text-sm shadow-sm">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="REGULAR">
+                                                    Regular: annualised
+                                                </SelectItem>
+                                                <SelectItem value="IRREGULAR">
+                                                    Irregular: taxed at actual
+                                                    amount
+                                                </SelectItem>
+                                                <SelectItem value="BONUS">
+                                                    Bonus: irregular, tax-free
+                                                    amount applies
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <CheckField
+                                            label="Medical aid contribution"
+                                            description="Earns the medical tax credit under FDS."
+                                            checked={
+                                                form.data.tax_credit ===
+                                                'MEDICAL'
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                form.setData(
+                                                    'tax_credit',
+                                                    checked ? 'MEDICAL' : '',
+                                                )
+                                            }
+                                        />
+                                    )}
                                 </div>
 
                                 {editing?.system_generated && (
