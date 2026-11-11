@@ -33,6 +33,8 @@ use App\Http\Controllers\PayslipDeliveryController;
 use App\Http\Controllers\PayrollExportController;
 use App\Http\Controllers\PayrollDashboardController;
 use App\Http\Controllers\PayrollInputController;
+use App\Http\Controllers\PayrollInputGridController;
+use App\Http\Controllers\PayrollPayslipInputController;
 use App\Http\Controllers\PerformanceCycleController;
 use App\Http\Controllers\PerformanceDashboardController;
 use App\Http\Controllers\PerformanceImprovementPlanController;
@@ -799,6 +801,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('inputs/import', [PayrollInputController::class, 'import'])
             ->middleware('permission:payroll.inputs.manage')
             ->name('inputs.import');
+        Route::post('inputs/bulk', [PayrollInputController::class, 'bulk'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.bulk');
+        Route::get('inputs/batches', [PayrollInputController::class, 'batches'])
+            ->middleware('permission:payroll.view')
+            ->name('inputs.batches');
+        Route::post('inputs/batches/{batch}/reverse', [PayrollInputController::class, 'reverseBatch'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.batches.reverse');
+        Route::post('inputs/layouts', [PayrollInputGridController::class, 'storeLayout'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.layouts.store');
+        Route::delete('inputs/layouts/{layout}', [PayrollInputGridController::class, 'destroyLayout'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.layouts.destroy');
+        Route::get('periods/{period}/grid', [PayrollInputGridController::class, 'show'])
+            ->middleware('permission:payroll.view')
+            ->name('periods.grid');
+        Route::post('periods/{period}/grid', [PayrollInputGridController::class, 'post'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('periods.grid.post');
+        Route::get('periods/{period}/employees/{employee}/payslip-input', [PayrollPayslipInputController::class, 'show'])
+            ->middleware('permission:payroll.view')
+            ->name('periods.payslip-input');
 
         Route::get('reports', [PayrollReportController::class, 'index'])
             ->middleware('permission:payroll.reports.view')

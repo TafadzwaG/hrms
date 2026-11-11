@@ -94,24 +94,7 @@ class PayrollProcessingService
                     continue;
                 }
 
-                $recurringItems = $profile->recurringItems()
-                    ->with('payCode')
-                    ->where('is_active', true)
-                    ->effectiveFor(optional($period->period_end)->toDateString() ?: now()->toDateString())
-                    ->get();
-
-                $inputs = $period->inputs()
-                    ->with('payCode')
-                    ->where('employee_id', $employeeId)
-                    ->get();
-
-                $timesheets = Timesheet::query()
-                    ->forOrganization($organizationId)
-                    ->where('employee_id', $employeeId)
-                    ->whereIn('status', ['Approved', 'APPROVED'])
-                    ->whereDate('period_start', '>=', $period->period_start)
-                    ->whereDate('period_end', '<=', $period->period_end)
-                    ->get();
+                ['recurring' => $recurringItems, 'inputs' => $inputs, 'timesheets' => $timesheets] = $this->sourcesFor($period, $profile);
 
                 $calculated = $this->calculationService->calculate(
                     $employee,
@@ -416,6 +399,100 @@ class PayrollProcessingService
         ]);
 
         return $period->fresh();
+    }
+
+    /**
+     * The payroll profile that a run of this period would use for the employee.
+     */
+    public function profileFor(PayrollPeriod $period, int $employeeId): ?EmployeePayrollProfile
+    {
+        return EmployeePayrollProfile::query()
+            ->forOrganization((int) $period->organization_id)
+            ->with(['employee.orgUnit', 'employee.position'])
+            ->where('employee_id', $employeeId)
+            ->where('active', true)
+            ->where('employment_status', 'ACTIVE')
+            ->effectiveFor(optional($period->period_end)->toDateString() ?: now()->toDateString())
+            ->orderByDesc('effective_from')
+            ->first();
+    }
+
+    /**
+     * Everything that feeds one employee's payslip for the period: recurring items on the
+     * profile, period inputs, and approved timesheets (for overtime).
+     *
+     * @return array{recurring: \Illuminate\Support\Collection, inputs: \Illuminate\Support\Collection, timesheets: \Illuminate\Support\Collection}
+     */
+    public function sourcesFor(PayrollPeriod $period, EmployeePayrollProfile $profile): array
+    {
+        return [
+            'recurring' => $profile->recurringItems()
+                ->with('payCode')
+                ->where('is_active', true)
+                ->effectiveFor(optional($period->period_end)->toDateString() ?: now()->toDateString())
+                ->get(),
+            'inputs' => $period->inputs()
+                ->with(['payCode', 'batch'])
+                ->where('employee_id', $profile->employee_id)
+                ->orderBy('id')
+                ->get(),
+            'timesheets' => Timesheet::query()
+                ->forOrganization((int) $period->organization_id)
+                ->where('employee_id', $profile->employee_id)
+                ->whereIn('status', ['Approved', 'APPROVED'])
+                ->whereDate('period_start', '>=', $period->period_start)
+                ->whereDate('period_end', '<=', $period->period_end)
+                ->get(),
+        ];
+    }
+
+    /**
+     * Calculate one employee's payslip for the period without saving anything. Uses the
+     * same rules, pay codes and year-to-date figures as processing.
+     *
+     * @return array{result: array<string, mixed>, lines: array<int, array<string, mixed>>, tax_warnings: array<int, string>, settlements: array<int, array<string, mixed>>, settlement_error: string|null}|null
+     */
+    public function preview(PayrollPeriod $period, EmployeePayrollProfile $profile): ?array
+    {
+        $employee = $profile->employee;
+
+        if (! $employee instanceof Employee) {
+            return null;
+        }
+
+        $organizationId = (int) $period->organization_id;
+        $payCodes = $this->catalogueSynchronizer->sync($organizationId)->keyBy('code');
+        ['recurring' => $recurring, 'inputs' => $inputs, 'timesheets' => $timesheets] = $this->sourcesFor($period, $profile);
+
+        $calculated = $this->calculationService->calculate(
+            $employee,
+            $profile,
+            $period,
+            $payCodes,
+            $recurring,
+            $inputs,
+            $timesheets,
+            $this->yearToDate($period, $organizationId)[$employee->id] ?? [],
+        );
+
+        $settlements = [];
+        $settlementError = null;
+
+        try {
+            $settlements = $this->settlementService->allocate(
+                $profile->loadMissing('settlementRules'),
+                $period->loadMissing('exchangeRates'),
+                (float) $calculated['result']['net_pay'],
+            );
+        } catch (ValidationException $exception) {
+            $settlementError = collect($exception->errors())->flatten()->first();
+        }
+
+        return [
+            ...$calculated,
+            'settlements' => $settlements,
+            'settlement_error' => $settlementError,
+        ];
     }
 
     /**

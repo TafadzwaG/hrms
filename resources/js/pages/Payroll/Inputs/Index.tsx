@@ -29,6 +29,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
+import {
+    BulkInputDialog,
+    ControlTotals,
+    type BulkEmployee,
+} from '@/components/payroll/bulk-input-dialog';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -36,6 +41,8 @@ import {
     Database,
     FileText,
     FileUp,
+    Grid3x3,
+    History,
     Keyboard,
     Layers,
     Pencil,
@@ -44,6 +51,7 @@ import {
     SlidersHorizontal,
     Trash2,
     UploadCloud,
+    Users,
 } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import ReactPaginate from 'react-paginate';
@@ -95,6 +103,8 @@ export default function PayrollInputsIndex() {
         payCodes,
         defaults,
         sources,
+        orgUnits,
+        costCentres,
     } = usePage<{
         inputs: PaginatedInputs;
         filters: {
@@ -116,11 +126,7 @@ export default function PayrollInputsIndex() {
             period_start: string | null;
             period_end: string | null;
         }>;
-        employees: Array<{
-            id: number;
-            staff_number: string;
-            full_name: string;
-        }>;
+        employees: BulkEmployee[];
         payCodes: Array<{
             id: number;
             code: string;
@@ -130,6 +136,8 @@ export default function PayrollInputsIndex() {
         }>;
         defaults: Record<string, string>;
         sources: string[];
+        orgUnits: Array<{ id: number; name: string }>;
+        costCentres: string[];
     }>().props;
 
     const { can } = useAuthorization();
@@ -140,12 +148,29 @@ export default function PayrollInputsIndex() {
     const [source, setSource] = useState(filters.source ?? 'all');
     const [open, setOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
+    const [bulkOpen, setBulkOpen] = useState(false);
+
+    // The period the grid opens on: the one filtered on, else the latest open period.
+    const gridPeriod =
+        periodId !== 'all'
+            ? periodId
+            : String(
+                  periods.find(
+                      (period) =>
+                          !['APPROVED', 'CLOSED'].includes(period.status),
+                  )?.id ??
+                      periods[0]?.id ??
+                      '',
+              );
     const [editing, setEditing] = useState<InputRow | null>(null);
 
     const form = useForm(defaults as Record<string, any>);
     const importForm = useForm({
         payroll_period_id: periodId === 'all' ? '' : periodId,
         file: null as File | null,
+        control_total: '',
+        control_count: '',
+        accept_mismatch: false,
     });
 
     useEffect(() => {
@@ -247,8 +272,38 @@ export default function PayrollInputsIndex() {
                     </div>
 
                     <div className="flex shrink-0 flex-wrap items-center gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                router.visit('/payroll/inputs/batches')
+                            }
+                            className="h-11 border-border bg-background px-5 font-bold text-foreground shadow-sm hover:bg-muted"
+                        >
+                            <History className="mr-2 h-4 w-4" /> Batches
+                        </Button>
+                        {gridPeriod && (
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    router.visit(
+                                        `/payroll/periods/${gridPeriod}/grid`,
+                                    )
+                                }
+                                className="h-11 border-border bg-background px-5 font-bold text-foreground shadow-sm hover:bg-muted"
+                            >
+                                <Grid3x3 className="mr-2 h-4 w-4" /> Grid input
+                            </Button>
+                        )}
                         {can('payroll.inputs.manage') && (
                             <>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setBulkOpen(true)}
+                                    className="h-11 border-border bg-background px-5 font-bold text-foreground shadow-sm hover:bg-muted"
+                                >
+                                    <Users className="mr-2 h-4 w-4" /> Bulk
+                                    input
+                                </Button>
                                 <Button
                                     variant="outline"
                                     onClick={() => setImportOpen(true)}
@@ -828,6 +883,21 @@ export default function PayrollInputsIndex() {
                 </DialogContent>
             </Dialog>
 
+            <BulkInputDialog
+                open={bulkOpen}
+                onOpenChange={setBulkOpen}
+                periods={periods}
+                payCodes={payCodes.filter(
+                    (code) =>
+                        !['TAX', 'STATUTORY'].includes(code.category) &&
+                        code.code !== 'BASIC',
+                )}
+                employees={employees}
+                orgUnits={orgUnits}
+                costCentres={costCentres}
+                defaultPeriodId={periodId === 'all' ? '' : periodId}
+            />
+
             {/* --- MODAL: Import Inputs (With Dropzone) --- */}
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent
@@ -855,8 +925,9 @@ export default function PayrollInputsIndex() {
                                         Import payroll inputs
                                     </DialogTitle>
                                     <DialogDescription className="mt-1 text-sm font-medium text-muted-foreground">
-                                        Upload a CSV file containing batch
-                                        adjustments.
+                                        Upload a CSV or Excel (.xlsx) file. The
+                                        import is posted as one batch you can
+                                        reverse.
                                     </DialogDescription>
                                 </div>
                             </div>
@@ -905,6 +976,16 @@ export default function PayrollInputsIndex() {
                                     }
                                 />
                             </Field>
+
+                            <ControlTotals
+                                total={importForm.data.control_total}
+                                count={importForm.data.control_count}
+                                accept={importForm.data.accept_mismatch}
+                                error={importForm.errors.control_total}
+                                onChange={(key, value) =>
+                                    importForm.setData(key, value as never)
+                                }
+                            />
                         </div>
 
                         <DialogFooter className="mt-0 flex shrink-0 items-center justify-between border-t border-border/50 bg-muted/5 p-6 md:p-8">
@@ -1040,7 +1121,7 @@ function FileDropzone({
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
-                accept=".csv,text/csv"
+                accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={handleFileChange}
             />
             {selectedFile ? (
@@ -1076,7 +1157,7 @@ function FileDropzone({
                         Click to upload or drag and drop
                     </p>
                     <p className="text-xs font-medium text-muted-foreground">
-                        CSV, XLS, or XLSX (max. 10MB)
+                        CSV or XLSX (max. 10MB)
                     </p>
                 </div>
             )}
