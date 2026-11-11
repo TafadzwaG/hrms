@@ -32,6 +32,7 @@ import AppLayout from '@/layouts/app-layout';
 import { useAuthorization } from '@/lib/authorization';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
+    AlertTriangle,
     ArrowRightLeft,
     Banknote,
     Calculator,
@@ -116,6 +117,7 @@ type PeriodPayload = {
         processed_at: string | null;
         approved_at: string | null;
         closed_at: string | null;
+        warnings?: string[];
         statutory_summaries: Array<{
             id: number;
             code: string;
@@ -197,8 +199,28 @@ export default function PayrollPeriodShow() {
         return () => window.clearTimeout(timer);
     }, [search, period.id]);
 
+    // Errors returned by process / approve / close / reopen, shown above the metrics.
+    const [actionErrors, setActionErrors] = useState<string[]>([]);
+    const [actionBusy, setActionBusy] = useState(false);
+
     const postAction = (url: string) =>
-        router.post(url, {}, { preserveScroll: true });
+        router.post(
+            url,
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setActionBusy(true);
+                    setActionErrors([]);
+                },
+                onError: (errors) =>
+                    setActionErrors(Object.values(errors).map(String)),
+                onFinish: () => setActionBusy(false),
+            },
+        );
+
+    const status = period.status.toLowerCase();
+    const runWarnings = period.latest_run?.warnings ?? [];
 
     // --- Exchange Rate Handlers ---
     const openCreateExchangeRate = () => {
@@ -314,30 +336,47 @@ export default function PayrollPeriodShow() {
                                 <Edit className="mr-2 h-4 w-4" /> Edit Period
                             </Button>
                         )}
-                        {can('payroll.process') && (
-                            <Button
-                                variant="outline"
-                                className="h-11 border-border bg-background font-bold shadow-sm"
-                                onClick={() => postAction(actions.process_url)}
-                            >
-                                <PlayCircle className="mr-2 h-4 w-4" /> Process
-                                Run
-                            </Button>
-                        )}
-                        {can('payroll.approve') && (
+                        {can('payroll.process') &&
+                            (status === 'draft' || status === 'processed') && (
+                                <Button
+                                    variant="outline"
+                                    className="h-11 border-border bg-background font-bold shadow-sm"
+                                    disabled={actionBusy}
+                                    onClick={() =>
+                                        postAction(actions.process_url)
+                                    }
+                                >
+                                    <PlayCircle className="mr-2 h-4 w-4" />{' '}
+                                    {status === 'processed'
+                                        ? 'Reprocess Run'
+                                        : 'Process Run'}
+                                </Button>
+                            )}
+                        {can('payroll.approve') && status === 'processed' && (
                             <Button
                                 className="h-11 bg-foreground px-6 font-bold text-background shadow-sm hover:bg-foreground/90"
+                                disabled={actionBusy}
                                 onClick={() => postAction(actions.approve_url)}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
-                                Approve & Close
+                                Approve
+                            </Button>
+                        )}
+                        {can('payroll.close') && status === 'approved' && (
+                            <Button
+                                className="h-11 bg-foreground px-6 font-bold text-background shadow-sm hover:bg-foreground/90"
+                                disabled={actionBusy}
+                                onClick={() => postAction(actions.close_url)}
+                            >
+                                <Lock className="mr-2 h-4 w-4" /> Close Period
                             </Button>
                         )}
                         {can('payroll.close') &&
-                            period.status.toLowerCase() === 'closed' && (
+                            (status === 'approved' || status === 'closed') && (
                                 <Button
                                     variant="outline"
                                     className="h-11 border-border bg-background font-bold text-destructive shadow-sm hover:text-destructive"
+                                    disabled={actionBusy}
                                     onClick={() =>
                                         postAction(actions.reopen_url)
                                     }
@@ -348,6 +387,37 @@ export default function PayrollPeriodShow() {
                             )}
                     </div>
                 </div>
+
+                {actionErrors.length > 0 && (
+                    <div
+                        role="alert"
+                        className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive"
+                    >
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <div className="space-y-1">
+                            <p className="font-bold">
+                                The action could not be completed
+                            </p>
+                            {actionErrors.map((message) => (
+                                <p key={message}>{message}</p>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {runWarnings.length > 0 && (
+                    <div className="flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 text-sm text-foreground">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                        <div className="space-y-1">
+                            <p className="font-bold">
+                                Warnings on this payroll run
+                            </p>
+                            {runWarnings.map((message) => (
+                                <p key={message}>{message}</p>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* --- Metrics Row --- */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

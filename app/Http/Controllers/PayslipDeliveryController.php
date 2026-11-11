@@ -20,7 +20,7 @@ class PayslipDeliveryController extends Controller
         /** @var PayrollResult $result */
         $result = $this->findTenantModelOrFail(PayrollResult::class, $result, ['employee.user', 'run.period']);
 
-        $response = $deliveryService->queueEmail($result, $actor);
+        $response = $deliveryService->queueEmail($result, $actor, null, $this->overrideReason());
 
         return back()->with(
             $response['queued'] ? 'success' : 'error',
@@ -37,7 +37,7 @@ class PayslipDeliveryController extends Controller
         /** @var PayrollResult $result */
         $result = $this->findTenantModelOrFail(PayrollResult::class, $result, ['employee.user', 'run.period']);
 
-        $response = $deliveryService->queueSms($result, $actor);
+        $response = $deliveryService->queueSms($result, $actor, null, $this->overrideReason());
 
         return back()->with(
             $response['queued'] ? 'success' : 'error',
@@ -53,12 +53,12 @@ class PayslipDeliveryController extends Controller
         $actor = $request->user();
         $results = $this->resolveResults($request->validated());
 
-        $summary = $deliveryService->queueBulkEmail($results, $actor);
+        $summary = $deliveryService->queueBulkEmail($results, $actor, $this->overrideReason());
         $this->logBulkAction($auditLogger, 'payslip_bulk_email_queued', $results, $summary);
 
         return back()->with(
             'success',
-            "Queued {$summary['queued']} payslip email(s). {$summary['failed']} record(s) were skipped."
+            "Queued {$summary['queued']} payslip email(s). {$summary['failed']} record(s) were skipped.".$this->blockedNote($summary)
         );
     }
 
@@ -68,13 +68,50 @@ class PayslipDeliveryController extends Controller
         $actor = $request->user();
         $results = $this->resolveResults($request->validated());
 
-        $summary = $deliveryService->queueBulkSms($results, $actor);
+        $summary = $deliveryService->queueBulkSms($results, $actor, $this->overrideReason());
         $this->logBulkAction($auditLogger, 'payslip_bulk_sms_queued', $results, $summary);
 
         return back()->with(
             'success',
-            "Queued {$summary['queued']} payslip SMS message(s). {$summary['failed']} record(s) were skipped."
+            "Queued {$summary['queued']} payslip SMS message(s). {$summary['failed']} record(s) were skipped.".$this->blockedNote($summary)
         );
+    }
+
+    /**
+     * A reason for releasing payslips before the run is approved. Only users with the
+     * payslips.release_override permission may supply one; every use is audit-logged.
+     */
+    private function overrideReason(): ?string
+    {
+        $validated = request()->validate([
+            'override_reason' => ['nullable', 'string', 'min:10', 'max:500'],
+        ]);
+
+        $reason = trim((string) ($validated['override_reason'] ?? ''));
+
+        if ($reason === '') {
+            return null;
+        }
+
+        abort_unless(
+            (bool) request()->user()?->hasPermission('payslips.release_override'),
+            403,
+            'You are not allowed to release payslips before payroll is approved.'
+        );
+
+        return $reason;
+    }
+
+    /**
+     * @param  array{blocked?: int}  $summary
+     */
+    private function blockedNote(array $summary): string
+    {
+        $blocked = (int) ($summary['blocked'] ?? 0);
+
+        return $blocked > 0
+            ? " {$blocked} of those were held back because their payroll run has not been approved."
+            : '';
     }
 
     /**

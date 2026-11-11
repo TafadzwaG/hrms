@@ -179,6 +179,7 @@ class PayrollPeriodController extends Controller
                     'processed_at' => optional($latestRun->processed_at)->toDateTimeString(),
                     'approved_at' => optional($latestRun->approved_at)->toDateTimeString(),
                     'closed_at' => optional($latestRun->closed_at)->toDateTimeString(),
+                    'warnings' => array_values((array) (($latestRun->summary_json ?? [])['warnings'] ?? [])),
                     'statutory_summaries' => $latestRun->statutorySummaries
                         ->map(fn ($summary) => [
                             'id' => $summary->id,

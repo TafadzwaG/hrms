@@ -244,6 +244,7 @@ return [
                 ['name' => 'payslips.sms', 'label' => 'Send payslip SMS', 'description' => 'Send an individual payslip summary by SMS.'],
                 ['name' => 'payslips.bulk_email', 'label' => 'Bulk email payslips', 'description' => 'Send payslip PDFs in bulk for selected employees or periods.'],
                 ['name' => 'payslips.bulk_sms', 'label' => 'Bulk send payslip SMS', 'description' => 'Send payslip summary SMS messages in bulk for selected employees or periods.'],
+                ['name' => 'payslips.release_override', 'label' => 'Release payslips before approval', 'description' => 'Send payslips before the payroll run is approved. A reason is required and recorded in the audit trail.'],
             ],
         ],
         [

@@ -199,7 +199,7 @@ Current configuration includes:
 - payroll statuses
 - default pay code catalogue
 - statutory deduction defaults
-- PAYE tax bands
+- legacy PAYE bands, used only when no tax table exists
 
 To add a new default pay code:
 
@@ -208,8 +208,30 @@ To add a new default pay code:
 
 To adjust tax rules:
 
-1. update the `tax.bands` configuration
-2. reprocess only open/reopened payroll periods
+1. add a new row to `payroll_tax_tables` (with its `payroll_tax_bands`) for the currency and pay frequency, with the date it takes effect
+2. set `effective_to` on the table it replaces
+3. reprocess only open/reopened payroll periods
+
+## Tax tables, AIDS Levy and pre-tax deductions
+
+PAYE comes from dated tax tables, not from `config/payroll.php`.
+
+- `payroll_tax_tables` holds one table per currency, pay frequency and effective date. `organization_id` is null for system-wide tables; an organization can override with its own row.
+- `payroll_tax_bands` holds the bands. Tax is charged progressively: each band's rate applies to the income between its lower and upper bound.
+- `PayrollTaxService::calculate()` picks the table in force on the period end date, using the employee profile's currency and the period's frequency.
+- The AIDS Levy is the table's `aids_levy_percent` (3%) of PAYE, shown as its own `AIDS` line.
+- Pension, NSSA, NEC and union contributions are deducted before tax. Union dues are `union_percent` of basic salary.
+- If no table exists for a currency and frequency, the legacy `tax.bands` in `config/payroll.php` are used and the run carries a warning.
+- A table with no `verified_at` date also puts a warning on the run. Set `verified_at` once a payroll specialist has checked the bands against ZIMRA's published tables.
+
+The USD tables are seeded by the migration and are unverified. No ZiG tables are seeded.
+
+## Workflow rules
+
+- The period page shows the buttons for the current status: Process (draft), Reprocess and Approve (processed), Close and Reopen (approved), Reopen (closed).
+- A period can only be closed after its run is approved.
+- Errors from process, approve, close and reopen are shown on the period page.
+- Payslips can only be emailed or sent by SMS once the run is approved or closed. A user with `payslips.release_override` can release one earlier by sending an `override_reason` (10 to 500 characters); each use is recorded in the audit trail as `payslip_release_override`.
 
 Closed historical runs are intentionally preserved and not recalculated automatically.
 

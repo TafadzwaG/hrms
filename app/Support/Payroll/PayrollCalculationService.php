@@ -74,23 +74,80 @@ class PayrollCalculationService
             ['source' => 'SYSTEM_PROFILE_PERCENT'],
         );
 
+        // Union dues are a percentage of basic salary and reduce taxable income.
+        $this->appendGeneratedStatutoryLine(
+            $lines,
+            $payCodes,
+            'UNION',
+            (float) $profile->union_percent,
+            (float) $profile->basic_salary,
+            $existingCodes,
+            $generatedCodes,
+            ['source' => 'SYSTEM_PROFILE_PERCENT'],
+        );
+
         $grossPay = $this->grossFromLines($lines);
         $preTaxDeductions = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION' && ($line['is_pre_tax'] ?? false));
         $taxableIncome = max(0, round($grossPay - $preTaxDeductions, 2));
+
+        $taxWarning = null;
 
         if ((bool) $profile->tax_enabled && ! $existingCodes->contains('PAYE')) {
             $payeCode = $payCodes->get('PAYE');
 
             if ($payeCode instanceof PayCode) {
-                $paye = $this->taxService->calculatePaye($taxableIncome);
+                $tax = $this->taxService->calculate(
+                    $taxableIncome,
+                    (string) ($profile->currency ?: $period->currency ?: config('payroll.default_currency', 'USD')),
+                    (string) ($period->frequency ?: 'MONTHLY'),
+                    optional($period->period_end)->toDateString() ?: now()->toDateString(),
+                    (int) $period->organization_id ?: null,
+                );
 
-                if ($paye > 0) {
+                if ($tax['fallback']) {
+                    $taxWarning = sprintf(
+                        'No tax table is loaded for %s %s pay, so the legacy bands were used. Load the ZIMRA table for this currency and frequency.',
+                        (string) ($profile->currency ?: $period->currency),
+                        strtolower(str_replace('_', ' ', (string) ($period->frequency ?: 'MONTHLY'))),
+                    );
+                }
+
+                if (! $tax['fallback'] && ! $tax['verified']) {
+                    $taxWarning = sprintf(
+                        'The tax table "%s" has not yet been verified against ZIMRA\'s published tables.',
+                        (string) $tax['tax_table'],
+                    );
+                }
+
+                $taxMetadata = [
+                    'taxable_income' => $taxableIncome,
+                    'tax_table_id' => $tax['tax_table_id'],
+                    'tax_table' => $tax['tax_table'],
+                    'tax_table_verified' => $tax['verified'],
+                ];
+
+                if ($tax['paye'] > 0) {
                     $lines->push($this->makeLine($payeCode, [
-                        'amount' => $paye,
+                        'amount' => $tax['paye'],
                         'input_source' => 'SYSTEM_TAX',
                         'metadata' => [
-                            'source' => 'PAYE_BANDS',
-                            'taxable_income' => $taxableIncome,
+                            'source' => $tax['fallback'] ? 'PAYE_BANDS_LEGACY' : 'PAYE_TAX_TABLE',
+                            ...$taxMetadata,
+                        ],
+                    ]));
+                }
+
+                $levyCode = $payCodes->get('AIDS');
+
+                if ($levyCode instanceof PayCode && $tax['aids_levy'] > 0 && ! $existingCodes->contains('AIDS')) {
+                    $lines->push($this->makeLine($levyCode, [
+                        'amount' => $tax['aids_levy'],
+                        'input_source' => 'SYSTEM_TAX',
+                        'metadata' => [
+                            'source' => 'AIDS_LEVY',
+                            'base_amount' => $tax['paye'],
+                            'percent' => $tax['aids_levy_percent'],
+                            ...$taxMetadata,
                         ],
                     ]));
                 }
@@ -103,12 +160,13 @@ class PayrollCalculationService
         ])->values();
 
         $totalDeductions = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION');
-        $taxAmount = $this->sumLines($lines, fn (array $line) => ($line['category'] ?? null) === 'TAX' || ($line['code_snapshot'] ?? null) === 'PAYE');
+        $taxAmount = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION' && (($line['category'] ?? null) === 'TAX' || ($line['code_snapshot'] ?? null) === 'PAYE'));
         $statutoryDeductions = $this->sumLines($lines, fn (array $line) => ($line['category'] ?? null) === 'STATUTORY');
         $voluntaryDeductions = max(0, round($totalDeductions - $taxAmount - $statutoryDeductions, 2));
         $netPay = max(0, round($grossPay - $totalDeductions, 2));
 
         return [
+            'tax_warning' => $taxWarning,
             'result' => [
                 'staff_number_snapshot' => $employee->staff_number,
                 'employee_name_snapshot' => $employee->full_name,
