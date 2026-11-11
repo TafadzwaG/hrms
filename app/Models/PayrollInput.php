@@ -18,6 +18,7 @@ class PayrollInput extends Model
         'payroll_period_id',
         'employee_id',
         'pay_code_id',
+        'payroll_input_batch_id',
         'input_mode',
         'amount',
         'quantity',
@@ -51,6 +52,27 @@ class PayrollInput extends Model
     public function payCode(): BelongsTo
     {
         return $this->belongsTo(PayCode::class);
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(PayrollInputBatch::class, 'payroll_input_batch_id');
+    }
+
+    /**
+     * The amount this input adds to the payslip: the fixed amount, or quantity x rate.
+     */
+    public function resolvedAmount(): float
+    {
+        if ($this->amount !== null) {
+            return round((float) $this->amount, 2);
+        }
+
+        if ($this->quantity !== null && $this->rate !== null) {
+            return round((float) $this->quantity * (float) $this->rate, 2);
+        }
+
+        return 0.0;
     }
 
     public function createdBy(): BelongsTo

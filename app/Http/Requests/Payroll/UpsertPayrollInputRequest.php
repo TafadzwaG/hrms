@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Payroll;
 
+use App\Models\PayrollPeriod;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpsertPayrollInputRequest extends FormRequest
 {
@@ -41,5 +43,16 @@ class UpsertPayrollInputRequest extends FormRequest
             'reference' => ['nullable', 'string', 'max:150'],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $status = PayrollPeriod::query()->whereKey((int) $this->input('payroll_period_id'))->value('status');
+
+            if (in_array($status, ['APPROVED', 'CLOSED'], true)) {
+                $validator->errors()->add('payroll_period_id', 'Inputs cannot be changed once the payroll period is approved or closed. Reopen the period first.');
+            }
+        });
     }
 }

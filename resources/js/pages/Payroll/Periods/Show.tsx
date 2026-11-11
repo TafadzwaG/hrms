@@ -43,6 +43,7 @@ import {
     Edit,
     Filter,
     Fingerprint,
+    Grid3x3,
     History,
     Info,
     Landmark,
@@ -336,6 +337,17 @@ export default function PayrollPeriodShow() {
                                 <Edit className="mr-2 h-4 w-4" /> Edit Period
                             </Button>
                         )}
+                        <Button
+                            variant="outline"
+                            className="h-11 border-border bg-background font-bold shadow-sm"
+                            onClick={() =>
+                                router.visit(
+                                    `/payroll/periods/${period.id}/grid`,
+                                )
+                            }
+                        >
+                            <Grid3x3 className="mr-2 h-4 w-4" /> Grid Input
+                        </Button>
                         {can('payroll.process') &&
                             (status === 'draft' || status === 'processed') && (
                                 <Button
@@ -570,20 +582,21 @@ export default function PayrollPeriodShow() {
                                             <Filter className="h-4 w-4" />
                                         </Link>
                                     </Button>
-                                    {period.latest_run && can('payroll.export') && (
-                                        <Button
-                                            asChild
-                                            variant="outline"
-                                            size="icon"
-                                            className="h-9 w-9 shrink-0 border-border/50 text-muted-foreground shadow-sm hover:text-foreground"
-                                        >
-                                            <a
-                                                href={`/payroll/reports/runs/${period.latest_run.id}/register`}
+                                    {period.latest_run &&
+                                        can('payroll.export') && (
+                                            <Button
+                                                asChild
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-9 w-9 shrink-0 border-border/50 text-muted-foreground shadow-sm hover:text-foreground"
                                             >
-                                                <Download className="h-4 w-4" />
-                                            </a>
-                                        </Button>
-                                    )}
+                                                <a
+                                                    href={`/payroll/reports/runs/${period.latest_run.id}/register`}
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                </a>
+                                            </Button>
+                                        )}
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -734,19 +747,32 @@ export default function PayrollPeriodShow() {
                                                             </div>
                                                         </TableCell>
                                                         <TableCell className="pr-6 text-right">
-                                                            <Button
-                                                                asChild
-                                                                variant="link"
-                                                                className="h-auto p-0 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary"
-                                                            >
-                                                                <Link
-                                                                    href={
-                                                                        result.payslip_url
-                                                                    }
+                                                            <div className="flex justify-end gap-4">
+                                                                <Button
+                                                                    asChild
+                                                                    variant="link"
+                                                                    className="h-auto p-0 text-xs font-bold tracking-widest text-muted-foreground uppercase hover:text-primary"
                                                                 >
-                                                                    View
-                                                                </Link>
-                                                            </Button>
+                                                                    <Link
+                                                                        href={`/payroll/periods/${period.id}/employees/${result.employee_id}/payslip-input`}
+                                                                    >
+                                                                        Inputs
+                                                                    </Link>
+                                                                </Button>
+                                                                <Button
+                                                                    asChild
+                                                                    variant="link"
+                                                                    className="h-auto p-0 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary"
+                                                                >
+                                                                    <Link
+                                                                        href={
+                                                                            result.payslip_url
+                                                                        }
+                                                                    >
+                                                                        View
+                                                                    </Link>
+                                                                </Button>
+                                                            </div>
                                                         </TableCell>
                                                     </TableRow>
                                                 ))
