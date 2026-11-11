@@ -16,6 +16,19 @@ return [
 
     'standard_monthly_hours' => (float) env('PAYROLL_STANDARD_MONTHLY_HOURS', 173.33),
 
+    // How an employee's PAYE is worked out. Non-FDS taxes each period on its own.
+    'tax_methods' => [
+        ['code' => 'NON_FDS', 'label' => 'PAYE (Non-FDS)'],
+        ['code' => 'FDS_AVERAGE', 'label' => 'FDS Average'],
+        ['code' => 'FDS_FORECAST', 'label' => 'FDS Forecast'],
+    ],
+
+    'income_types' => [
+        ['code' => 'REGULAR', 'label' => 'Regular (annualised under FDS)'],
+        ['code' => 'IRREGULAR', 'label' => 'Irregular (taxed at actual amount)'],
+        ['code' => 'BONUS', 'label' => 'Bonus (irregular, tax-free amount applies)'],
+    ],
+
     'frequencies' => [
         'MONTHLY',
         'FORTNIGHTLY',
@@ -104,6 +117,7 @@ return [
             'affects_gross' => true,
             'affects_net' => true,
             'is_pre_tax' => false,
+            'income_type' => 'BONUS',
             'active' => true,
             'system_generated' => false,
             'sort_order' => 50,
@@ -205,6 +219,21 @@ return [
             'active' => true,
             'system_generated' => false,
             'sort_order' => 120,
+        ],
+        [
+            'code' => 'MED',
+            'description' => 'Medical aid',
+            'category' => 'VOLUNTARY',
+            'type' => 'DEDUCTION',
+            'taxable' => false,
+            'recurring' => true,
+            'affects_gross' => false,
+            'affects_net' => true,
+            'is_pre_tax' => false,
+            'tax_credit' => 'MEDICAL',
+            'active' => true,
+            'system_generated' => false,
+            'sort_order' => 125,
         ],
         [
             'code' => 'PAYE',

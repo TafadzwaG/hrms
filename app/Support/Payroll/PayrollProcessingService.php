@@ -7,6 +7,7 @@ use App\Models\EmployeePayrollProfile;
 use App\Models\PayrollPeriod;
 use App\Models\PayrollRun;
 use App\Models\PayrollStatutorySummary;
+use App\Models\PayrollTaxLedgerEntry;
 use App\Models\Timesheet;
 use App\Models\User;
 use App\Support\Audit\AuditContext;
@@ -84,6 +85,8 @@ class PayrollProcessingService
             $settlementTotals = [];
             $warnings = [];
 
+            $yearToDate = $this->yearToDate($period, $organizationId);
+
             foreach ($profiles as $employeeId => $profile) {
                 $employee = $profile->employee;
 
@@ -118,10 +121,11 @@ class PayrollProcessingService
                     $recurringItems,
                     $inputs,
                     $timesheets,
+                    $yearToDate[$employeeId] ?? [],
                 );
 
-                if (! empty($calculated['tax_warning'])) {
-                    $warnings[$calculated['tax_warning']] = true;
+                foreach ($calculated['tax_warnings'] as $warning) {
+                    $warnings[$warning] = true;
                 }
 
                 $result = $run->results()->create([
@@ -140,6 +144,25 @@ class PayrollProcessingService
                         ])
                         ->all()
                 );
+
+                if ($calculated['ledger'] !== null) {
+                    PayrollTaxLedgerEntry::query()->withoutGlobalScopes()->updateOrCreate(
+                        [
+                            'organization_id' => $organizationId,
+                            'employee_id' => $employeeId,
+                            'payroll_period_id' => $period->id,
+                        ],
+                        [
+                            'payroll_run_id' => $run->id,
+                            'tax_year' => (int) $period->period_end->format('Y'),
+                            'period_end' => $period->period_end->toDateString(),
+                            'currency' => (string) $result->currency_snapshot,
+                            'periods_covered' => 1,
+                            'is_opening_balance' => false,
+                            ...$calculated['ledger'],
+                        ],
+                    );
+                }
 
                 $settlements = $this->settlementService->allocate(
                     $profile->loadMissing('settlementRules'),
@@ -393,6 +416,41 @@ class PayrollProcessingService
         ]);
 
         return $period->fresh();
+    }
+
+    /**
+     * Year-to-date tax figures per employee: everything in the tax ledger for this tax
+     * year that ends before this period starts, including opening balances.
+     *
+     * @return array<int, array<string, float>>
+     */
+    private function yearToDate(PayrollPeriod $period, int $organizationId): array
+    {
+        if (! $period->period_end || ! $period->period_start) {
+            return [];
+        }
+
+        return PayrollTaxLedgerEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('tax_year', (int) $period->period_end->format('Y'))
+            ->whereDate('period_end', '<', $period->period_start->toDateString())
+            ->where(function ($query) use ($period): void {
+                $query->whereNull('payroll_period_id')->orWhere('payroll_period_id', '!=', $period->id);
+            })
+            ->get()
+            ->groupBy('employee_id')
+            ->map(fn ($rows) => [
+                'periods' => (float) $rows->sum('periods_covered'),
+                'regular_taxable' => (float) $rows->sum('regular_taxable'),
+                'irregular_taxable' => (float) $rows->sum('irregular_taxable'),
+                'bonus_exempt' => (float) $rows->sum('bonus_exempt'),
+                'medical' => (float) $rows->sum('medical_contributions'),
+                'credits' => (float) $rows->sum('credits_applied'),
+                'paye' => (float) $rows->sum('paye'),
+                'aids_levy' => (float) $rows->sum('aids_levy'),
+            ])
+            ->all();
     }
 
     public function latestRun(PayrollPeriod $period): ?PayrollRun

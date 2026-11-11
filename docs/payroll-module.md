@@ -226,6 +226,42 @@ PAYE comes from dated tax tables, not from `config/payroll.php`.
 
 The USD tables are seeded by the migration and are unverified. No ZiG tables are seeded.
 
+## Tax methods (FDS)
+
+Each payroll profile has a tax method. The default, `NON_FDS`, taxes each period on its own, so nothing changes for an employee until their method is changed.
+
+- `NON_FDS`: the period is taxed on its own from the table for its pay frequency. No credits.
+- `FDS_AVERAGE`: year-to-date regular taxable income is averaged and annualised, taxed on the annual table, and the share for the months so far is taken. Irregular income is added at its actual amount. Credits to date are deducted, then the tax already deducted this year.
+- `FDS_FORECAST`: the same annual forecast, less forecast credits and tax already deducted, spread evenly over the months that remain. It has no worked example to test against yet and must be checked by a payroll specialist before use.
+
+FDS needs year-to-date figures, which come from `payroll_tax_ledger` (one row per employee and period, written every time a period is processed). An employee on an FDS method is taxed as Non-FDS for a period, with a warning on the run, when:
+
+- the pay frequency is not monthly
+- there is no `ANNUAL` tax table for the currency
+- the ledger does not cover every earlier month of the tax year (a mid-year joiner, a suspension, or history from before HRX)
+
+An opening balance row (`is_opening_balance`, `periods_covered` = months covered, no period) lets an employee start FDS part-way through a year. There is no screen for opening balances yet.
+
+The tax year is the calendar year of the period end date. Periods must be processed in order: reprocessing an earlier month does not recalculate later ones.
+
+Pay codes carry an income type: `REGULAR`, `IRREGULAR` or `BONUS`. A `BONUS` code is irregular and uses up the tax-free bonus amount for the year. A deduction pay code marked as a medical aid contribution earns the medical credit under FDS.
+
+## Figures the payroll specialist enters
+
+On Payroll > Tax tables and credits (`/payroll/tax-tables`, permission `payroll.tax.manage`):
+
+- tax bands, AIDS Levy rate and effective dates for each currency and pay frequency, including the annual table FDS uses
+- the tax-free bonus amount, the elderly, blind and disabled person credits, and the medical credit percentage, per tax year
+- a "Verified against ZIMRA" tick on each, which records who verified it and when
+
+Amounts left empty are not applied. System-wide rows can only be changed by a super admin; anyone else's change is saved as a row for their own organization, which then takes precedence.
+
+After deploying, run `php artisan db:seed --class=PermissionSeeder` so the new permissions exist.
+
+## Parallel run
+
+Every processed period records, per employee, what Non-FDS and FDS Average would each have charged. Payroll > Reports > Tax Method Comparison exports this for a run, so FDS can be checked against the current method before any employee is switched.
+
 ## Workflow rules
 
 - The period page shows the buttons for the current status: Process (draft), Reprocess and Approve (processed), Close and Reopen (approved), Reopen (closed).

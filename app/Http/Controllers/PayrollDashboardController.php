@@ -53,6 +53,7 @@ class PayrollDashboardController extends Controller
                 ['label' => 'Open payroll period', 'href' => '/payroll/periods'],
                 ['label' => 'Payroll results', 'href' => '/payroll/results'],
                 ['label' => 'Manage pay codes', 'href' => '/payroll/pay-codes'],
+                ['label' => 'Tax tables and credits', 'href' => '/payroll/tax-tables'],
                 ['label' => 'Manage profiles', 'href' => '/payroll/profiles'],
                 ['label' => 'Capture inputs', 'href' => '/payroll/inputs'],
                 ['label' => 'Payslip distribution', 'href' => '/payroll/payslips'],

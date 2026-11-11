@@ -24,6 +24,8 @@ class PayCode extends Model
         'affects_gross',
         'affects_net',
         'is_pre_tax',
+        'income_type',
+        'tax_credit',
         'active',
         'system_generated',
         'gl_account_code',

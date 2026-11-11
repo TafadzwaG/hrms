@@ -44,6 +44,7 @@ use App\Http\Controllers\EmployeeScorecardController;
 use App\Http\Controllers\PayrollPayCodeController;
 use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\PayrollResultController;
+use App\Http\Controllers\PayrollTaxTableController;
 use App\Http\Controllers\PayrollReportController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\Reports\AssetReportController;
@@ -820,6 +821,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('reports/runs/{run}/journal', [PayrollReportController::class, 'journal'])
             ->middleware('permission:payroll.export')
             ->name('reports.journal');
+
+        Route::get('reports/runs/{run}/tax-comparison', [PayrollReportController::class, 'taxComparison'])
+            ->middleware('permission:payroll.export')
+            ->name('reports.tax-comparison');
+
+        Route::get('tax-tables', [PayrollTaxTableController::class, 'index'])
+            ->middleware('permission:payroll.view')
+            ->name('tax-tables.index');
+        Route::post('tax-tables', [PayrollTaxTableController::class, 'storeTable'])
+            ->middleware('permission:payroll.tax.manage')
+            ->name('tax-tables.store');
+        Route::put('tax-tables/{table}', [PayrollTaxTableController::class, 'updateTable'])
+            ->middleware('permission:payroll.tax.manage')
+            ->name('tax-tables.update');
+        Route::delete('tax-tables/{table}', [PayrollTaxTableController::class, 'destroyTable'])
+            ->middleware('permission:payroll.tax.manage')
+            ->name('tax-tables.destroy');
+        Route::post('tax-settings', [PayrollTaxTableController::class, 'storeSetting'])
+            ->middleware('permission:payroll.tax.manage')
+            ->name('tax-settings.store');
+        Route::put('tax-settings/{setting}', [PayrollTaxTableController::class, 'updateSetting'])
+            ->middleware('permission:payroll.tax.manage')
+            ->name('tax-settings.update');
 
         Route::get('results', [PayrollResultController::class, 'index'])
             ->middleware('permission:payroll.view')
