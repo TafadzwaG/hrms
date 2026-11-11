@@ -459,7 +459,7 @@ export default function PayrollReportsIndex() {
 
             {/* Minimal Footer */}
             <div className="flex items-center justify-center border-t bg-background px-8 py-6 text-[11px] font-medium text-muted-foreground">
-                <p>© 2024 Providence HRMS. Payroll Reports Engine.</p>
+                <p>© 2024 HRX. Payroll Reports Engine.</p>
             </div>
         </AppLayout>
     );

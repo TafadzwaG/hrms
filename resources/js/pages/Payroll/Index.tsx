@@ -505,7 +505,7 @@ export default function PayrollDashboard() {
 
             {/* Minimal Footer */}
             <div className="flex items-center justify-center border-t bg-background px-8 py-6 text-[11px] font-medium text-muted-foreground">
-                <p>© 2026 Providence HRMS. Payroll Management Engine.</p>
+                <p>© 2026 HRX. Payroll Management Engine.</p>
             </div>
         </AppLayout>
     );

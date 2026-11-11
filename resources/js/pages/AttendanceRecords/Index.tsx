@@ -744,7 +744,7 @@ export default function AttendanceRecordsIndex() {
 
                     <footer className="mt-6 border-t border-border/50 bg-background px-10 py-6 text-center">
                         <p className="text-sm text-muted-foreground">
-                            © 2023 Providence HRMS. All rights reserved.
+                            © 2023 HRX. All rights reserved.
                         </p>
                     </footer>
                 </div>

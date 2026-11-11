@@ -49,7 +49,7 @@ export default function LocationShow() {
     const [currentTime, setCurrentTime] = useState('');
 
     // Safety fallbacks matching the DB schema
-    const name = location?.name || 'Downtown Providence HQ';
+    const name = location?.name || 'Head Office';
     const uuid =
         `LOC-${location?.id?.toString().padStart(4, '0')}-89B-RI` ||
         'LOC-7702-89B-RI';
@@ -58,7 +58,7 @@ export default function LocationShow() {
     const address2 = location?.address_line2 || 'Suite 1200, Finance Plaza';
     const cityState =
         [location?.city, location?.state].filter(Boolean).join(', ') ||
-        'Providence, Rhode Island';
+        'City not set';
     const zipCountry =
         [location?.postal_code, location?.country].filter(Boolean).join(', ') ||
         '02903, United States';

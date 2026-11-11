@@ -264,7 +264,7 @@ export default function LearningCourseShow() {
                                                 </AvatarFallback>
                                             </Avatar>
                                             <p className="text-sm font-semibold text-foreground">
-                                                Admin Providence
+                                                HRX Admin
                                             </p>
                                         </div>
                                     </div>
@@ -539,7 +539,7 @@ export default function LearningCourseShow() {
             {/* Minimal Footer */}
             <div className="flex items-center justify-center border-t bg-background px-8 py-6">
                 <p className="text-[11px] font-medium text-muted-foreground">
-                    © 2024 HRMS Providence Enterprise. All rights reserved.
+                    © 2024 HRX. All rights reserved.
                 </p>
             </div>
         </AppLayout>

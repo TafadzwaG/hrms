@@ -198,7 +198,7 @@ export const candidateRecentApplications: CandidateRecentApplication[] = [
     {
         id: 1,
         vacancy_title: 'Senior Frontend Developer',
-        company_name: 'Providence HR',
+        company_name: 'Acme HR',
         location: 'Harare',
         employment_type: 'Full-time',
         status: 'shortlisted',
@@ -248,7 +248,7 @@ export const candidateEducations: CandidateEducation[] = [
 export const candidateExperiences: CandidateExperience[] = [
     {
         id: 1,
-        employer_name: 'Providence Digital',
+        employer_name: 'Acme Digital',
         job_title: 'Frontend Developer',
         start_date: '2023-01-01',
         end_date: null,

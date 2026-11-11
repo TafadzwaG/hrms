@@ -103,7 +103,7 @@ export default function WorkflowDefinitionEdit() {
                     {/* Header */}
                     <div className="mb-8 max-w-3xl">
                         <p className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                            Providence HRMS
+                            HRX
                         </p>
                         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                             Configure Workflow Routing

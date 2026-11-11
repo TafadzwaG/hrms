@@ -38,7 +38,7 @@ export default function LeaveRequestApproval() {
             role: 'Lead Product Designer',
             id: 'EMP-9021',
             department: 'Design Department',
-            email: 's.jenkins@providence.io',
+            email: 's.jenkins@example.com',
             location: 'London, UK (HQ)',
             initials: 'SJ',
         },

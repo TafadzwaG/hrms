@@ -235,13 +235,13 @@ export type Invoice = {
 
 export const company: Company = {
     id: 1,
-    company_name: 'Providence HR',
+    company_name: 'Acme HR',
     status: 'verified',
 };
 
 export const user: User = {
     name: 'Amanda Ncube',
-    email: 'amanda@providencehr.co.zw',
+    email: 'amanda@acmehr.example',
 };
 
 export const metrics: Metrics = {

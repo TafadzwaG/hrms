@@ -270,7 +270,7 @@ export default function DocumentTypeCreate() {
                                                     , documents must be purged
                                                     once the purpose for
                                                     collection is fulfilled.
-                                                    Providence default for
+                                                    The HRX default for
                                                     personnel files is{' '}
                                                     <strong className="text-foreground">
                                                         7 years

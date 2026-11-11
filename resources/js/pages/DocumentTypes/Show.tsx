@@ -493,7 +493,7 @@ export default function DocumentTypeShow() {
             {/* Minimal Footer */}
             <div className="flex flex-col items-center justify-between gap-4 border-t bg-background px-8 py-6 md:flex-row">
                 <p className="text-[11px] font-medium text-muted-foreground">
-                    © 2025 Providence Human Resource Management System.
+                    © 2025 HRX.
                 </p>
                 <div className="flex items-center gap-6 text-[11px] font-medium text-muted-foreground">
                     <a

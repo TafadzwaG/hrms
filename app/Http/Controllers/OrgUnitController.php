@@ -230,8 +230,8 @@ class OrgUnitController extends Controller
             ]);
 
             // Example rows
-            fputcsv($out, ['Providence Human Capital', 'COMPANY', '', 'PROV-HC', '', '', '']);
-            fputcsv($out, ['ProCanteen', 'SBU', 'PROV-HC', 'PROC', '', '', '']);
+            fputcsv($out, ['Demo Company', 'COMPANY', '', 'DEMO-CO', '', '', '']);
+            fputcsv($out, ['ProCanteen', 'SBU', 'DEMO-CO', 'PROC', '', '', '']);
             fputcsv($out, ['IT', 'DEPARTMENT', 'PROC', 'PROC-IT', '', '', '']);
 
             fclose($out);

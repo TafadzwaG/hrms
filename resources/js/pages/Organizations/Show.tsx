@@ -389,7 +389,7 @@ export default function OrganizationShow() {
             {/* Minimal Footer */}
             <div className="flex items-center justify-center border-t bg-background px-8 py-6 text-[11px] font-medium text-muted-foreground">
                 <p>
-                    © 2024 Providence Health Services HRMS. All rights reserved.
+                    © 2024 HRX. All rights reserved.
                 </p>
             </div>
         </AppLayout>

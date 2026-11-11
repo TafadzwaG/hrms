@@ -563,7 +563,7 @@ export default function OrganizationsIndex() {
             {/* Minimal Footer */}
             <div className="flex flex-col items-center justify-between gap-4 border-t bg-background px-8 py-6 md:flex-row">
                 <p className="text-[11px] font-medium text-muted-foreground">
-                    © 2024 Providence HRMS. All rights reserved.
+                    © 2024 HRX. All rights reserved.
                 </p>
                 <div className="flex items-center gap-6 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
                     <a

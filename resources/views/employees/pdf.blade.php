@@ -8,7 +8,7 @@
         ->take(2)
         ->map(fn (string $part) => strtoupper(mb_substr($part, 0, 1)))
         ->implode('');
-    $brandName = strtoupper(config('app.name', 'Providence HRMS'));
+    $brandName = strtoupper(config('app.name', 'HRX'));
     $logoLetter = strtoupper(mb_substr($brandName, 0, 1));
     $statusLabel = $employee->status ? str($employee->status)->replace('_', ' ')->headline()->toString() : 'Employee Record';
     $employmentLabel = $currentContract?->contract_type
