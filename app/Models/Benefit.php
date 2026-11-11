@@ -35,7 +35,10 @@ class Benefit extends Model
     ];
 
 
-     public const CONTRIBUTION_TYPES = [
+     /** How enrolments in this benefit reach payroll. */
+    public const PAYROLL_TYPES = ['NONE', 'MEDICAL', 'FUNERAL', 'OTHER'];
+
+    public const CONTRIBUTION_TYPES = [
         'fixed',
         'percentage',
     ];
@@ -56,6 +59,7 @@ class Benefit extends Model
         'requires_dependants',
         'requires_plan_selection',
         'payroll_deductible',
+        'payroll_type',
         'active',
         'effective_from',
         'effective_to',

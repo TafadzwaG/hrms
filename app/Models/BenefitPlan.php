@@ -26,6 +26,10 @@ class BenefitPlan extends Model
         'employee_contribution_type',
         'employee_contribution_value',
         'coverage_limit',
+        'rate_member',
+        'rate_spouse',
+        'rate_child',
+        'rate_other_dependant',
         'metadata',
     ];
 
@@ -34,6 +38,10 @@ class BenefitPlan extends Model
         'employer_contribution_value' => 'decimal:2',
         'employee_contribution_value' => 'decimal:2',
         'coverage_limit' => 'decimal:2',
+        'rate_member' => 'decimal:2',
+        'rate_spouse' => 'decimal:2',
+        'rate_child' => 'decimal:2',
+        'rate_other_dependant' => 'decimal:2',
         'metadata' => 'array',
     ];
 

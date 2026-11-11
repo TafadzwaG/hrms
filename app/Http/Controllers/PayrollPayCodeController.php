@@ -69,8 +69,8 @@ class PayrollPayCodeController extends Controller
                 'gl_account_code' => '',
                 'sort_order' => 0,
             ],
-            'categories' => ['SALARY', 'ALLOWANCE', 'OVERTIME', 'BONUS', 'STATUTORY', 'VOLUNTARY', 'TAX'],
-            'types' => ['EARNING', 'DEDUCTION'],
+            'categories' => ['SALARY', 'ALLOWANCE', 'OVERTIME', 'BONUS', 'LEAVE', 'TERMINATION', 'STATUTORY', 'VOLUNTARY', 'TAX', 'EMPLOYER'],
+            'types' => ['EARNING', 'DEDUCTION', 'EMPLOYER'],
             'incomeTypes' => config('payroll.income_types', []),
         ]);
     }

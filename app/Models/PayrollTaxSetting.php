@@ -20,6 +20,9 @@ class PayrollTaxSetting extends Model
         'blind_credit_annual',
         'disabled_credit_annual',
         'medical_credit_percent',
+        'retrenchment_exempt_percent',
+        'retrenchment_exempt_minimum',
+        'retrenchment_exempt_cap',
         'source',
         'verified_at',
         'verified_by',
@@ -35,6 +38,9 @@ class PayrollTaxSetting extends Model
             'blind_credit_annual' => 'decimal:2',
             'disabled_credit_annual' => 'decimal:2',
             'medical_credit_percent' => 'decimal:3',
+            'retrenchment_exempt_percent' => 'decimal:4',
+            'retrenchment_exempt_minimum' => 'decimal:2',
+            'retrenchment_exempt_cap' => 'decimal:2',
             'verified_at' => 'datetime',
         ];
     }

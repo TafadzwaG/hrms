@@ -114,6 +114,7 @@ type Props = {
                   source: string;
               }>;
               settlements: Array<{ currency: string; amount: number }>;
+              employer_cost: number;
               settlement_error: string | null;
               warnings: string[];
           })
@@ -564,6 +565,13 @@ export default function PayslipInput() {
                                             </TableBody>
                                         </Table>
 
+                                        {preview.employer_cost > 0 && (
+                                            <p className="text-xs font-medium text-muted-foreground">
+                                                Employer contributions (not
+                                                deducted):{' '}
+                                                {money(preview.employer_cost)}
+                                            </p>
+                                        )}
                                         {preview.settlements.length > 0 && (
                                             <p className="text-xs font-medium text-muted-foreground">
                                                 Paid as{' '}

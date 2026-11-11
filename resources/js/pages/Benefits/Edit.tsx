@@ -36,6 +36,7 @@ type BenefitData = {
     requires_dependants: boolean;
     requires_plan_selection: boolean;
     payroll_deductible: boolean;
+    payroll_type?: string;
     effective_from: string | null;
     effective_to: string | null;
 };
@@ -113,6 +114,7 @@ export default function BenefitEdit() {
         requires_dependants: benefit.requires_dependants ?? false,
         requires_plan_selection: benefit.requires_plan_selection ?? false,
         payroll_deductible: benefit.payroll_deductible ?? false,
+        payroll_type: benefit.payroll_type ?? 'NONE',
         effective_from: benefit.effective_from ?? '',
         effective_to: benefit.effective_to ?? '',
     });
@@ -223,6 +225,23 @@ export default function BenefitEdit() {
                                             </SelectContent>
                                         </Select>
                                         <FieldError message={errors.benefit_type} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <FieldLabel>Payroll Deduction</FieldLabel>
+                                        <Select value={data.payroll_type} onValueChange={(v) => setData('payroll_type', v)}>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NONE">Not deducted through payroll</SelectItem>
+                                                <SelectItem value="MEDICAL">Medical aid (MED / MEDD, medical tax credit)</SelectItem>
+                                                <SelectItem value="FUNERAL">Funeral scheme (FUN)</SelectItem>
+                                                <SelectItem value="OTHER">Other benefit (BEN, or the enrolment&apos;s pay code)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-zinc-500">
+                                            Active enrolments are deducted on every payslip automatically.
+                                        </p>
                                     </div>
                                     <div className="space-y-1 sm:col-span-2">
                                         <FieldLabel>Description</FieldLabel>

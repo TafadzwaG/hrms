@@ -33,8 +33,8 @@ class PayrollTaxService
      * ledger does not cover every earlier month of the tax year (a mid-year joiner, a
      * suspension, or missing history).
      *
-     * @param  array{currency: string, frequency: string, date: string, organization_id: int|null, tax_method: string, credit_elderly?: bool, credit_blind?: bool, credit_disabled?: bool, regular_taxable: float, irregular: float, bonus: float, medical: float}  $input
-     * @param  array{periods?: int|float, regular_taxable?: float, irregular_taxable?: float, bonus_exempt?: float, medical?: float, credits?: float, paye?: float, aids_levy?: float}  $ytd
+     * @param  array{currency: string, frequency: string, date: string, organization_id: int|null, tax_method: string, credit_elderly?: bool, credit_blind?: bool, credit_disabled?: bool, regular_taxable: float, irregular: float, bonus: float, retrenchment?: float, medical: float}  $input
+     * @param  array{periods?: int|float, regular_taxable?: float, irregular_taxable?: float, bonus_exempt?: float, retrenchment_exempt?: float, medical?: float, credits?: float, paye?: float, aids_levy?: float}  $ytd
      * @return array<string, mixed>
      */
     public function assess(array $input, array $ytd = []): array
@@ -57,8 +57,25 @@ class PayrollTaxService
             $warnings[] = 'A bonus was taxed in full because the tax-free bonus amount has not been entered in the tax settings.';
         }
 
+        // Retrenchment packages are partly exempt (see retrenchmentExemption); the rest is
+        // taxed as irregular income.
+        $retrenchment = max(0, (float) ($input['retrenchment'] ?? 0));
+        $retrenchmentExempt = 0.0;
+
+        if ($retrenchment > 0) {
+            if ($settings?->retrenchment_exempt_percent === null && $settings?->retrenchment_exempt_minimum === null) {
+                $warnings[] = 'A retrenchment package was taxed in full because the retrenchment exemption has not been entered in the tax settings.';
+            } else {
+                $retrenchmentExempt = $this->retrenchmentExemption(
+                    $retrenchment,
+                    $settings,
+                    (float) ($ytd['retrenchment_exempt'] ?? 0),
+                );
+            }
+        }
+
         $regular = round((float) $input['regular_taxable'], 2);
-        $irregularTaxable = round(max(0, (float) $input['irregular']) + $bonus - $bonusExempt, 2);
+        $irregularTaxable = round(max(0, (float) $input['irregular']) + $bonus - $bonusExempt + $retrenchment - $retrenchmentExempt, 2);
         $periodTaxable = max(0, round($regular + $irregularTaxable, 2));
 
         $standalone = $this->calculate($periodTaxable, $currency, $frequency, $date, $organizationId);
@@ -81,6 +98,7 @@ class PayrollTaxService
             'aids_levy_percent' => $standalone['aids_levy_percent'],
             'credits_applied' => 0.0,
             'bonus_exempt' => $bonusExempt,
+            'retrenchment_exempt' => $retrenchmentExempt,
             'regular_taxable' => $regular,
             'irregular_taxable' => $irregularTaxable,
             'taxable_income' => $periodTaxable,
@@ -148,7 +166,7 @@ class PayrollTaxService
         $medicalRate = (float) ($settings?->medical_credit_percent ?? 50) / 100;
         $creditsToDate = $annualFixedCredits * $periods / 12 + $medicalToDate * $medicalRate;
 
-        if ($settings && $settings->verified_at === null && ($creditsToDate > 0 || $bonusExempt > 0)) {
+        if ($settings && $settings->verified_at === null && ($creditsToDate > 0 || $bonusExempt > 0 || $retrenchmentExempt > 0)) {
             $warnings[] = 'The tax credit and bonus amounts in the tax settings have not yet been verified.';
         }
 
@@ -198,6 +216,28 @@ class PayrollTaxService
         }
 
         return [...$result, 'warnings' => array_values(array_unique($warnings))];
+    }
+
+    /**
+     * Tax-free part of a retrenchment package (Finance Act 13 of 2023, as described by
+     * Belina): the greater of a share of the package (one third) or a minimum amount
+     * (US$3,200), but no more than the cap (US$5,033.33) and never more than the package.
+     * The cap applies to everything exempted for the employee in the tax year.
+     */
+    public function retrenchmentExemption(float $package, ?PayrollTaxSetting $settings, float $alreadyExempt = 0.0): float
+    {
+        if ($package <= 0 || ! $settings) {
+            return 0.0;
+        }
+
+        $share = $package * (float) ($settings->retrenchment_exempt_percent ?? 0) / 100;
+        $exempt = max($share, (float) ($settings->retrenchment_exempt_minimum ?? 0));
+
+        if ($settings->retrenchment_exempt_cap !== null) {
+            $exempt = min($exempt, max(0, (float) $settings->retrenchment_exempt_cap - $alreadyExempt));
+        }
+
+        return round(min($exempt, $package), 2);
     }
 
     public function resolveSettings(string $currency, string $date, ?int $organizationId = null): ?PayrollTaxSetting

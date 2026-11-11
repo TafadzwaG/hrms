@@ -31,6 +31,8 @@ class PayrollTaxLedgerEntry extends Model
         'irregular_taxable',
         'bonus_gross',
         'bonus_exempt',
+        'retrenchment_gross',
+        'retrenchment_exempt',
         'medical_contributions',
         'credits_applied',
         'paye',

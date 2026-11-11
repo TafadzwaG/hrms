@@ -27,6 +27,7 @@ class PayrollCalculationService
         Collection $inputs,
         Collection $timesheets,
         array $ytd = [],
+        array $benefitLines = [],
     ): array {
         $lines = collect();
         $generatedCodes = collect();
@@ -35,6 +36,7 @@ class PayrollCalculationService
         $this->addRecurringLines($lines, $recurringItems);
         $this->addInputLines($lines, $inputs);
         $this->addOvertimeLine($lines, $payCodes, $profile, $timesheets);
+        $benefitWarnings = $this->addBenefitLines($lines, $payCodes, $benefitLines, $employee);
 
         $lines = $lines
             ->filter(fn (array $line) => round((float) $line['amount'], 2) !== 0.0)
@@ -94,8 +96,9 @@ class PayrollCalculationService
         $isEarning = fn (array $line) => $line['type'] === 'EARNING' && ($line['affects_gross'] ?? false);
         $bonusGross = $this->sumLines($lines, fn (array $line) => $isEarning($line) && ($line['income_type'] ?? 'REGULAR') === 'BONUS');
         $irregularGross = $this->sumLines($lines, fn (array $line) => $isEarning($line) && ($line['income_type'] ?? 'REGULAR') === 'IRREGULAR');
+        $retrenchmentGross = $this->sumLines($lines, fn (array $line) => $isEarning($line) && ($line['income_type'] ?? 'REGULAR') === 'RETRENCHMENT');
         $medicalContributions = $this->sumLines($lines, fn (array $line) => $line['type'] === 'DEDUCTION' && ($line['tax_credit'] ?? null) === 'MEDICAL');
-        $regularTaxable = round($grossPay - $bonusGross - $irregularGross - $preTaxDeductions, 2);
+        $regularTaxable = round($grossPay - $bonusGross - $irregularGross - $retrenchmentGross - $preTaxDeductions, 2);
 
         $taxableIncome = max(0, round($grossPay - $preTaxDeductions, 2));
         $taxWarnings = [];
@@ -117,6 +120,7 @@ class PayrollCalculationService
                     'regular_taxable' => $regularTaxable,
                     'irregular' => $irregularGross,
                     'bonus' => $bonusGross,
+                    'retrenchment' => $retrenchmentGross,
                     'medical' => $medicalContributions,
                 ], $ytd);
 
@@ -130,6 +134,7 @@ class PayrollCalculationService
                     'tax_table' => $tax['tax_table'],
                     'tax_table_verified' => $tax['tax_table_verified'],
                     'bonus_exempt' => $tax['bonus_exempt'],
+                    'retrenchment_exempt' => $tax['retrenchment_exempt'],
                     'credits_applied' => $tax['credits_applied'],
                 ];
 
@@ -165,6 +170,8 @@ class PayrollCalculationService
                     'irregular_taxable' => $tax['irregular_taxable'],
                     'bonus_gross' => $bonusGross,
                     'bonus_exempt' => $tax['bonus_exempt'],
+                    'retrenchment_gross' => $retrenchmentGross,
+                    'retrenchment_exempt' => $tax['retrenchment_exempt'],
                     'medical_contributions' => $medicalContributions,
                     'credits_applied' => $tax['credits_applied'],
                     'paye' => $tax['paye'],
@@ -189,7 +196,7 @@ class PayrollCalculationService
         $netPay = max(0, round($grossPay - $totalDeductions, 2));
 
         return [
-            'tax_warnings' => $taxWarnings,
+            'tax_warnings' => [...$taxWarnings, ...$benefitWarnings],
             'ledger' => $ledger,
             'result' => [
                 'staff_number_snapshot' => $employee->staff_number,
@@ -367,6 +374,40 @@ class PayrollCalculationService
                 'metadata' => $metadata,
             ]));
         });
+    }
+
+    /**
+     * Deductions and employer contributions from benefit enrolments (BenefitPayrollService).
+     *
+     * @param  array<int, array{code: string, amount: float, metadata: array<string, mixed>}>  $benefitLines
+     * @return array<int, string> warnings
+     */
+    private function addBenefitLines(Collection $lines, Collection $payCodes, array $benefitLines, Employee $employee): array
+    {
+        $warnings = [];
+        $entered = $lines->pluck('code_snapshot')->filter()->unique();
+
+        foreach ($benefitLines as $benefit) {
+            $payCode = $payCodes->get($benefit['code']);
+
+            if (! $payCode instanceof PayCode) {
+                $warnings[] = "Benefit \"{$benefit['metadata']['benefit']}\" uses pay code {$benefit['code']}, which does not exist, so it was not deducted.";
+
+                continue;
+            }
+
+            if ($entered->contains($benefit['code'])) {
+                $warnings[] = "Some employees have {$benefit['code']} both from a benefit enrolment and entered on payroll. Remove one so it is not deducted twice.";
+            }
+
+            $lines->push($this->makeLine($payCode, [
+                'amount' => round((float) $benefit['amount'], 2),
+                'input_source' => 'BENEFIT',
+                'metadata' => $benefit['metadata'],
+            ]));
+        }
+
+        return $warnings;
     }
 
     /**

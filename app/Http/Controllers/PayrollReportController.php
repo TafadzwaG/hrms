@@ -249,18 +249,29 @@ class PayrollReportController extends BaseReportController
                 });
             })
             ->groupBy(fn ($item) => $item['line']->code_snapshot.'|'.$item['line']->type.'|'.$item['cost_centre'])
-            ->map(function ($items) {
+            ->flatMap(function ($items) {
                 $line = $items->first()['line'];
                 $total = round((float) $items->sum('amount'), 2);
-
-                return [
+                $row = [
                     'gl_account_code' => $line->payCode?->gl_account_code ?? null,
                     'cost_centre' => $items->first()['cost_centre'] !== '' ? $items->first()['cost_centre'] : null,
                     'code' => $line->code_snapshot,
                     'description' => $line->description_snapshot,
+                ];
+
+                // An employer contribution is an expense and an amount owed to the scheme.
+                if ($line->type === 'EMPLOYER') {
+                    return [
+                        [...$row, 'debit' => $total, 'credit' => 0.0],
+                        [...$row, 'description' => $line->description_snapshot.' payable', 'debit' => 0.0, 'credit' => $total],
+                    ];
+                }
+
+                return [[
+                    ...$row,
                     'debit' => $line->type === 'EARNING' ? $total : 0.0,
                     'credit' => $line->type === 'DEDUCTION' ? $total : 0.0,
-                ];
+                ]];
             })
             ->sortBy(['code', 'cost_centre'])
             ->values()

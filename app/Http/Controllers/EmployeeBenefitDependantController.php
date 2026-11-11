@@ -50,6 +50,8 @@ class EmployeeBenefitDependantController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'relationship' => ['required', 'string', 'max:50'],
             'date_of_birth' => ['nullable', 'date'],
+            // A child over 18 who is a full-time student still counts as immediate family.
+            'is_student' => ['nullable', 'boolean'],
             'national_id' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'string', 'max:50'],
             'effective_date' => ['nullable', 'date'],

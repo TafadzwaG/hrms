@@ -396,6 +396,7 @@ class EmployeeBenefitEnrollmentController extends Controller
                 'full_name' => $dep->full_name,
                 'relationship' => $dep->relationship,
                 'date_of_birth' => optional($dep->date_of_birth)->toDateString(),
+                'is_student' => (bool) $dep->is_student,
                 'national_id' => $dep->national_id,
                 'contact_number' => $dep->contact_number,
                 'effective_date' => optional($dep->effective_date)->toDateString(),

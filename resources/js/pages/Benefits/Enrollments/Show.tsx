@@ -67,6 +67,7 @@ type DependantRecord = {
     full_name: string;
     relationship: string;
     date_of_birth: string | null;
+    is_student?: boolean;
     national_id: string | null;
     contact_number: string | null;
     notes: string | null;
@@ -455,6 +456,7 @@ export default function EnrollmentShow() {
         full_name: '',
         relationship: '',
         date_of_birth: '',
+        is_student: false,
         national_id: '',
         contact_number: '',
         notes: '',
@@ -482,6 +484,7 @@ export default function EnrollmentShow() {
             full_name: dep.full_name,
             relationship: dep.relationship,
             date_of_birth: dep.date_of_birth ?? '',
+            is_student: dep.is_student ?? false,
             national_id: dep.national_id ?? '',
             contact_number: dep.contact_number ?? '',
             notes: dep.notes ?? '',
@@ -1509,6 +1512,21 @@ export default function EnrollmentShow() {
                                         )
                                     }
                                 />
+                                <label className="mt-2 flex items-center gap-2 text-sm text-zinc-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!dependantForm.data.is_student}
+                                        onChange={(e) =>
+                                            dependantForm.setData(
+                                                'is_student',
+                                                e.target.checked,
+                                            )
+                                        }
+                                        className="h-4 w-4 rounded border-zinc-300"
+                                    />
+                                    Full-time student (counts as family for
+                                    medical aid until 25)
+                                </label>
                             </div>
 
                             <div>
