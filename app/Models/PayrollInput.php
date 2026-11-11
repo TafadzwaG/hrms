@@ -23,6 +23,8 @@ class PayrollInput extends Model
         'amount',
         'quantity',
         'rate',
+        'work_date',
+        'cost_centre',
         'source',
         'reference',
         'notes',
@@ -36,6 +38,7 @@ class PayrollInput extends Model
             'amount' => 'decimal:2',
             'quantity' => 'decimal:4',
             'rate' => 'decimal:4',
+            'work_date' => 'date',
         ];
     }
 

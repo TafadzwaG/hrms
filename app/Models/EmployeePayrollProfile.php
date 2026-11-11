@@ -28,6 +28,7 @@ class EmployeePayrollProfile extends Model
         'organization_id',
         'employee_id',
         'pay_frequency',
+        'pay_basis',
         'currency',
         'basic_salary',
         'hourly_rate',

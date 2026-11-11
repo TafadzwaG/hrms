@@ -196,7 +196,9 @@ class PayrollInputGridController extends Controller
             ->where('active', true)
             ->whereNotIn('category', ['TAX', 'STATUTORY'])
             ->where('code', '!=', 'BASIC')
-            ->where(fn ($query) => $query->where('system_generated', false)->orWhere('code', 'OT'))
+            // Hour and unit codes are paid at a rate, so they are captured in Hourly input.
+            ->where('unit', 'AMOUNT')
+            ->where('system_generated', false)
             ->orderBy('sort_order')
             ->orderBy('code');
     }

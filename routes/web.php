@@ -33,6 +33,7 @@ use App\Http\Controllers\PayslipDeliveryController;
 use App\Http\Controllers\PayrollExportController;
 use App\Http\Controllers\PayrollDashboardController;
 use App\Http\Controllers\PayrollInputController;
+use App\Http\Controllers\PayrollHourlyInputController;
 use App\Http\Controllers\PayrollInputGridController;
 use App\Http\Controllers\PayrollPayslipInputController;
 use App\Http\Controllers\PerformanceCycleController;
@@ -822,6 +823,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('periods/{period}/grid', [PayrollInputGridController::class, 'post'])
             ->middleware('permission:payroll.inputs.manage')
             ->name('periods.grid.post');
+        Route::get('periods/{period}/hourly', [PayrollHourlyInputController::class, 'show'])
+            ->middleware('permission:payroll.view')
+            ->name('periods.hourly');
+        Route::post('periods/{period}/hourly', [PayrollHourlyInputController::class, 'post'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('periods.hourly.post');
+        Route::post('periods/{period}/hourly/import', [PayrollHourlyInputController::class, 'import'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('periods.hourly.import');
+        Route::get('inputs/hourly-template', [PayrollHourlyInputController::class, 'template'])
+            ->middleware('permission:payroll.inputs.manage')
+            ->name('inputs.hourly-template');
         Route::get('periods/{period}/employees/{employee}/payslip-input', [PayrollPayslipInputController::class, 'show'])
             ->middleware('permission:payroll.view')
             ->name('periods.payslip-input');

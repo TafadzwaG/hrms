@@ -61,6 +61,9 @@ class PayrollPayCodeController extends Controller
                 'is_pre_tax' => false,
                 'income_type' => 'REGULAR',
                 'tax_credit' => '',
+                'unit' => 'AMOUNT',
+                'rate_multiplier' => '',
+                'default_rate' => '',
                 'active' => true,
                 'system_generated' => false,
                 'gl_account_code' => '',
@@ -128,6 +131,9 @@ class PayrollPayCodeController extends Controller
             'is_pre_tax' => (bool) $payCode->is_pre_tax,
             'income_type' => (string) ($payCode->income_type ?: 'REGULAR'),
             'tax_credit' => (string) ($payCode->tax_credit ?? ''),
+            'unit' => (string) ($payCode->unit ?: 'AMOUNT'),
+            'rate_multiplier' => $payCode->rate_multiplier !== null ? (string) (float) $payCode->rate_multiplier : '',
+            'default_rate' => $payCode->default_rate !== null ? (string) (float) $payCode->default_rate : '',
             'active' => (bool) $payCode->active,
             'system_generated' => (bool) $payCode->system_generated,
             'gl_account_code' => $payCode->gl_account_code,
@@ -146,6 +152,10 @@ class PayrollPayCodeController extends Controller
         $validated['income_type'] = ($validated['type'] ?? 'EARNING') === 'EARNING'
             ? ($validated['income_type'] ?? 'REGULAR')
             : 'REGULAR';
+        $isEarning = ($validated['type'] ?? 'EARNING') === 'EARNING';
+        $validated['unit'] = $isEarning ? ($validated['unit'] ?? 'AMOUNT') : 'AMOUNT';
+        $validated['rate_multiplier'] = $validated['unit'] === 'HOURS' && ! blank($validated['rate_multiplier'] ?? null) ? $validated['rate_multiplier'] : null;
+        $validated['default_rate'] = $validated['unit'] === 'UNITS' && ! blank($validated['default_rate'] ?? null) ? $validated['default_rate'] : null;
         $validated['tax_credit'] = ($validated['type'] ?? 'EARNING') === 'DEDUCTION' && ! blank($validated['tax_credit'] ?? null)
             ? $validated['tax_credit']
             : null;

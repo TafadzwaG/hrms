@@ -47,7 +47,7 @@ class PayrollCalculationService
             $payCodes,
             'PENS',
             (float) $profile->pension_percent,
-            (float) $profile->basic_salary,
+            $this->basicPay($lines),
             $existingCodes,
             $generatedCodes,
             ['source' => 'SYSTEM_PROFILE_PERCENT'],
@@ -81,7 +81,7 @@ class PayrollCalculationService
             $payCodes,
             'UNION',
             (float) $profile->union_percent,
-            (float) $profile->basic_salary,
+            $this->basicPay($lines),
             $existingCodes,
             $generatedCodes,
             ['source' => 'SYSTEM_PROFILE_PERCENT'],
@@ -197,6 +197,7 @@ class PayrollCalculationService
                 'department_snapshot' => $employee->orgUnit?->name,
                 'position_snapshot' => $employee->position?->name,
                 'pay_point_snapshot' => $employee->pay_point,
+                'cost_centre_snapshot' => $profile->cost_centre,
                 'currency_snapshot' => $profile->currency,
                 'bank_account_name_snapshot' => $profile->bank_account_name,
                 'bank_account_number_snapshot' => $profile->bank_account_number,
@@ -259,7 +260,8 @@ class PayrollCalculationService
     {
         $basicCode = $payCodes->get('BASIC');
 
-        if (! $basicCode instanceof PayCode || (float) $profile->basic_salary <= 0) {
+        // Hourly-paid employees are paid for the hours captured, not a fixed salary.
+        if ($profile->pay_basis === 'HOURLY' || ! $basicCode instanceof PayCode || (float) $profile->basic_salary <= 0) {
             return;
         }
 
@@ -301,7 +303,39 @@ class PayrollCalculationService
 
     private function addInputLines(Collection $lines, Collection $inputs): void
     {
-        $inputs->each(function (PayrollInput $input) use ($lines): void {
+        // Hours captured line by line (per day or per cost centre) show on the payslip as one
+        // line per pay code and rate, like a timesheet total. The split is kept in metadata.
+        [$hourly, $other] = $inputs->partition(fn (PayrollInput $input) => $input->source === 'HOURLY');
+
+        $hourly
+            ->filter(fn (PayrollInput $input) => $input->payCode !== null)
+            ->groupBy(fn (PayrollInput $input) => $input->pay_code_id.'|'.round((float) $input->rate, 4))
+            ->each(function (Collection $group) use ($lines): void {
+                /** @var PayrollInput $first */
+                $first = $group->first();
+                $quantity = round((float) $group->sum(fn (PayrollInput $input) => (float) $input->quantity), 4);
+                $amount = round((float) $group->sum(fn (PayrollInput $input) => $input->resolvedAmount()), 2);
+
+                if ($amount === 0.0) {
+                    return;
+                }
+
+                $lines->push($this->makeLine($first->payCode, [
+                    'amount' => $amount,
+                    'quantity' => $quantity,
+                    'rate' => $first->rate !== null ? (float) $first->rate : null,
+                    'input_source' => 'HOURLY',
+                    'metadata' => [
+                        'input_ids' => $group->pluck('id')->values()->all(),
+                        'cost_centres' => $group
+                            ->groupBy(fn (PayrollInput $input) => (string) $input->cost_centre)
+                            ->map(fn (Collection $items) => round((float) $items->sum(fn (PayrollInput $input) => $input->resolvedAmount()), 2))
+                            ->all(),
+                    ],
+                ]));
+            });
+
+        $other->each(function (PayrollInput $input) use ($lines): void {
             if (! $input->payCode) {
                 return;
             }
@@ -316,17 +350,32 @@ class PayrollCalculationService
                 return;
             }
 
+            $metadata = [
+                'input_id' => $input->id,
+                'reference' => $input->reference,
+            ];
+
+            if (! blank($input->cost_centre)) {
+                $metadata['cost_centres'] = [(string) $input->cost_centre => $amount];
+            }
+
             $lines->push($this->makeLine($input->payCode, [
                 'amount' => $amount,
                 'quantity' => $input->quantity !== null ? (float) $input->quantity : null,
                 'rate' => $input->rate !== null ? (float) $input->rate : null,
                 'input_source' => (string) $input->source,
-                'metadata' => [
-                    'input_id' => $input->id,
-                    'reference' => $input->reference,
-                ],
+                'metadata' => $metadata,
             ]));
         });
+    }
+
+    /**
+     * Pay that percentage deductions such as pension are charged on: the BASIC salary line,
+     * or for hourly-paid employees their normal hours.
+     */
+    private function basicPay(Collection $lines): float
+    {
+        return $this->sumLines($lines, fn (array $line) => in_array($line['code_snapshot'] ?? null, ['BASIC', 'NORM'], true));
     }
 
     private function addOvertimeLine(Collection $lines, Collection $payCodes, EmployeePayrollProfile $profile, Collection $timesheets): void

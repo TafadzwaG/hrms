@@ -22,6 +22,7 @@ class PayrollResult extends Model
         'department_snapshot',
         'position_snapshot',
         'pay_point_snapshot',
+        'cost_centre_snapshot',
         'currency_snapshot',
         'bank_account_name_snapshot',
         'bank_account_number_snapshot',

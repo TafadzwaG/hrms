@@ -17,6 +17,8 @@ class PayrollInputBatch extends Model
 
     public const SOURCE_GRID = 'GRID';
 
+    public const SOURCE_HOURLY = 'HOURLY';
+
     public const STATUS_POSTED = 'POSTED';
 
     public const STATUS_REVERSED = 'REVERSED';

@@ -23,6 +23,15 @@ return [
         ['code' => 'FDS_FORECAST', 'label' => 'FDS Forecast'],
     ],
 
+    // SALARIED: BASIC comes from basic_salary. HOURLY: paid for hours captured each period.
+    'pay_bases' => [
+        ['code' => 'SALARIED', 'label' => 'Salaried'],
+        ['code' => 'HOURLY', 'label' => 'Hourly'],
+    ],
+
+    // Hours captured for one employee on one day above this are refused.
+    'max_hours_per_day' => 24,
+
     'income_types' => [
         ['code' => 'REGULAR', 'label' => 'Regular (annualised under FDS)'],
         ['code' => 'IRREGULAR', 'label' => 'Irregular (taxed at actual amount)'],
@@ -66,6 +75,22 @@ return [
             'sort_order' => 10,
         ],
         [
+            'code' => 'NORM',
+            'description' => 'Normal hours',
+            'category' => 'SALARY',
+            'type' => 'EARNING',
+            'unit' => 'HOURS',
+            'rate_multiplier' => 1,
+            'taxable' => true,
+            'recurring' => false,
+            'affects_gross' => true,
+            'affects_net' => true,
+            'is_pre_tax' => false,
+            'active' => true,
+            'system_generated' => false,
+            'sort_order' => 15,
+        ],
+        [
             'code' => 'HOU',
             'description' => 'Housing allowance',
             'category' => 'ALLOWANCE',
@@ -98,6 +123,7 @@ return [
             'description' => 'Overtime',
             'category' => 'OVERTIME',
             'type' => 'EARNING',
+            'unit' => 'HOURS',
             'taxable' => true,
             'recurring' => false,
             'affects_gross' => true,
@@ -106,6 +132,22 @@ return [
             'active' => true,
             'system_generated' => true,
             'sort_order' => 40,
+        ],
+        [
+            'code' => 'OT2',
+            'description' => 'Overtime (double time)',
+            'category' => 'OVERTIME',
+            'type' => 'EARNING',
+            'unit' => 'HOURS',
+            'rate_multiplier' => 2,
+            'taxable' => true,
+            'recurring' => false,
+            'affects_gross' => true,
+            'affects_net' => true,
+            'is_pre_tax' => false,
+            'active' => true,
+            'system_generated' => false,
+            'sort_order' => 45,
         ],
         [
             'code' => 'BONUS',

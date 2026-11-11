@@ -42,6 +42,7 @@ type Batch = {
     entered_total: number;
     entered_count: number;
     differences: string[];
+    measure: 'amount' | 'quantity';
     status: string;
     created_by: string | null;
     created_at: string | null;
@@ -209,6 +210,11 @@ export default function PayrollInputBatches() {
                                     </TableCell>
                                     <TableCell className="text-right font-mono">
                                         {money(batch.entered_total)}
+                                        {batch.measure === 'quantity' && (
+                                            <span className="ml-1 text-[10px] text-muted-foreground">
+                                                hrs
+                                            </span>
+                                        )}
                                         {batch.control_total !== null && (
                                             <span className="block text-[10px] text-muted-foreground">
                                                 control{' '}
