@@ -19,6 +19,9 @@ class PayCode extends Model
         'description',
         'category',
         'type',
+        'unit',
+        'rate_multiplier',
+        'default_rate',
         'taxable',
         'recurring',
         'affects_gross',
@@ -44,6 +47,8 @@ class PayCode extends Model
             'active' => 'boolean',
             'system_generated' => 'boolean',
             'rules' => 'array',
+            'rate_multiplier' => 'decimal:4',
+            'default_rate' => 'decimal:4',
         ];
     }
 

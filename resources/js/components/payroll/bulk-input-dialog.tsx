@@ -475,11 +475,13 @@ export function ControlTotals({
     accept,
     error,
     onChange,
+    totalLabel = 'Expected total amount',
 }: {
     total: string;
     count: string;
     accept: boolean;
     error?: string;
+    totalLabel?: string;
     onChange: (
         key: 'control_total' | 'control_count' | 'accept_mismatch',
         value: string | boolean,
@@ -492,12 +494,12 @@ export function ControlTotals({
                     Control totals (optional)
                 </p>
                 <p className="text-xs font-medium text-muted-foreground">
-                    The total amount and number of rows you expect. If the batch
+                    The total and the number of rows you expect. If the batch
                     does not match, nothing is posted.
                 </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-                <Field label="Expected total amount">
+                <Field label={totalLabel}>
                     <Input
                         type="number"
                         step="0.01"

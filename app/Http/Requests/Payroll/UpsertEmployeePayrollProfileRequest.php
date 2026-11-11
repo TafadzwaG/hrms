@@ -23,9 +23,11 @@ class UpsertEmployeePayrollProfileRequest extends FormRequest
                 Rule::exists('employees', 'id')->where(fn ($query) => $query->where('organization_id', $tenantId)),
             ],
             'pay_frequency' => ['required', Rule::in(config('payroll.frequencies', []))],
+            'pay_basis' => ['nullable', Rule::in(['SALARIED', 'HOURLY'])],
             'currency' => ['required', 'string', 'max:8'],
             'basic_salary' => ['required', 'numeric', 'min:0'],
-            'hourly_rate' => ['nullable', 'numeric', 'min:0'],
+            // Hourly-paid employees are paid only through their hourly rate.
+            'hourly_rate' => ['nullable', 'required_if:pay_basis,HOURLY', 'numeric', 'min:0'],
             'overtime_multiplier' => ['nullable', 'numeric', 'min:1'],
             'bank_name' => ['nullable', 'string', 'max:150'],
             'bank_branch' => ['nullable', 'string', 'max:150'],

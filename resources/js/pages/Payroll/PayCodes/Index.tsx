@@ -58,6 +58,9 @@ type PayCodeRow = {
     affects_net: boolean;
     is_pre_tax: boolean;
     income_type: string;
+    unit: string;
+    rate_multiplier: string;
+    default_rate: string;
     tax_credit: string;
     active: boolean;
     system_generated: boolean;
@@ -721,6 +724,88 @@ export default function PayrollPayCodesIndex() {
                                         disabled={editing?.system_generated}
                                     />
                                 </div>
+
+                                {form.data.type === 'EARNING' && (
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                                Paid by
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    form.data.unit || 'AMOUNT'
+                                                }
+                                                onValueChange={(value) =>
+                                                    form.setData('unit', value)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11 bg-background text-sm shadow-sm">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="AMOUNT">
+                                                        Amount
+                                                    </SelectItem>
+                                                    <SelectItem value="HOURS">
+                                                        Hours (employee hourly
+                                                        rate)
+                                                    </SelectItem>
+                                                    <SelectItem value="UNITS">
+                                                        Units (e.g. mileage)
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {form.data.unit === 'HOURS' && (
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                                    Rate multiplier
+                                                </Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    placeholder="1 = normal, 1.5 = time and a half"
+                                                    value={
+                                                        form.data
+                                                            .rate_multiplier ??
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'rate_multiplier',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="h-11 bg-background shadow-sm"
+                                                />
+                                            </div>
+                                        )}
+                                        {form.data.unit === 'UNITS' && (
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                                                    Default rate per unit
+                                                </Label>
+                                                <Input
+                                                    type="number"
+                                                    step="0.0001"
+                                                    min="0"
+                                                    value={
+                                                        form.data
+                                                            .default_rate ?? ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'default_rate',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="h-11 bg-background shadow-sm"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">

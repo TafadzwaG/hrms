@@ -118,6 +118,7 @@ type ProfileRow = {
     tax_number: string | null;
     tax_table: string | null;
     tax_method: string;
+    pay_basis: string;
     tax_credit_elderly: boolean;
     tax_credit_blind: boolean;
     tax_credit_disabled: boolean;
@@ -162,6 +163,7 @@ type ProfileFormData = {
     tax_number: string;
     tax_table: string;
     tax_method: string;
+    pay_basis: string;
     tax_credit_elderly: boolean;
     tax_credit_blind: boolean;
     tax_credit_disabled: boolean;
@@ -329,6 +331,7 @@ export default function PayrollProfilesIndex() {
             tax_number: profile.tax_number ?? '',
             tax_table: profile.tax_table ?? '',
             tax_method: profile.tax_method ?? 'NON_FDS',
+            pay_basis: profile.pay_basis ?? 'SALARIED',
             tax_credit_elderly: profile.tax_credit_elderly ?? false,
             tax_credit_blind: profile.tax_credit_blind ?? false,
             tax_credit_disabled: profile.tax_credit_disabled ?? false,
@@ -1296,6 +1299,37 @@ export default function PayrollProfilesIndex() {
                                         </Field>
                                     </div>
                                     <Field
+                                        label="Pay Basis"
+                                        error={profileForm.errors.pay_basis}
+                                    >
+                                        <Select
+                                            value={
+                                                profileForm.data.pay_basis ||
+                                                'SALARIED'
+                                            }
+                                            onValueChange={(v) =>
+                                                profileForm.setData(
+                                                    'pay_basis',
+                                                    v,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 bg-background text-sm shadow-sm">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="SALARIED">
+                                                    Salaried: basic salary each
+                                                    period
+                                                </SelectItem>
+                                                <SelectItem value="HOURLY">
+                                                    Hourly: paid for hours
+                                                    captured
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </Field>
+                                    <Field
                                         label="Pay Frequency"
                                         error={profileForm.errors.pay_frequency}
                                     >
@@ -1604,8 +1638,7 @@ export default function PayrollProfilesIndex() {
                                             <Select
                                                 value={
                                                     profileForm.data
-                                                        .tax_method ||
-                                                    'NON_FDS'
+                                                        .tax_method || 'NON_FDS'
                                                 }
                                                 onValueChange={(v) =>
                                                     profileForm.setData(

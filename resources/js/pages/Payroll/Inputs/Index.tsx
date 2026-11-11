@@ -38,6 +38,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarClock,
+    Clock,
     Database,
     FileText,
     FileUp,
@@ -133,6 +134,7 @@ export default function PayrollInputsIndex() {
             description: string;
             type: string;
             category: string;
+            unit: string;
         }>;
         defaults: Record<string, string>;
         sources: string[];
@@ -292,6 +294,19 @@ export default function PayrollInputsIndex() {
                                 className="h-11 border-border bg-background px-5 font-bold text-foreground shadow-sm hover:bg-muted"
                             >
                                 <Grid3x3 className="mr-2 h-4 w-4" /> Grid input
+                            </Button>
+                        )}
+                        {gridPeriod && (
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    router.visit(
+                                        `/payroll/periods/${gridPeriod}/hourly`,
+                                    )
+                                }
+                                className="h-11 border-border bg-background px-5 font-bold text-foreground shadow-sm hover:bg-muted"
+                            >
+                                <Clock className="mr-2 h-4 w-4" /> Hourly input
                             </Button>
                         )}
                         {can('payroll.inputs.manage') && (
@@ -890,7 +905,8 @@ export default function PayrollInputsIndex() {
                 payCodes={payCodes.filter(
                     (code) =>
                         !['TAX', 'STATUTORY'].includes(code.category) &&
-                        code.code !== 'BASIC',
+                        code.code !== 'BASIC' &&
+                        code.unit === 'AMOUNT',
                 )}
                 employees={employees}
                 orgUnits={orgUnits}

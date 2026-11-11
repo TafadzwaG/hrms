@@ -92,13 +92,14 @@ class PayrollInputController extends Controller
                 ->where('active', true)
                 ->orderBy('sort_order')
                 ->orderBy('code')
-                ->get(['id', 'code', 'description', 'type', 'category'])
+                ->get(['id', 'code', 'description', 'type', 'category', 'unit'])
                 ->map(fn (PayCode $payCode) => [
                     'id' => $payCode->id,
                     'code' => $payCode->code,
                     'description' => $payCode->description,
                     'type' => $payCode->type,
                     'category' => $payCode->category,
+                    'unit' => $payCode->unit ?: 'AMOUNT',
                 ])
                 ->values(),
             'defaults' => [
@@ -113,7 +114,7 @@ class PayrollInputController extends Controller
                 'reference' => '',
                 'notes' => '',
             ],
-            'sources' => ['MANUAL', 'IMPORT', 'BULK', 'GRID', 'TIMESHEET', 'LEAVE', 'SYSTEM'],
+            'sources' => ['MANUAL', 'IMPORT', 'BULK', 'GRID', 'HOURLY', 'TIMESHEET', 'LEAVE', 'SYSTEM'],
             'orgUnits' => OrgUnit::query()->orderBy('name')->get(['id', 'name'])->map(fn (OrgUnit $unit) => ['id' => $unit->id, 'name' => $unit->name])->values(),
             'costCentres' => EmployeePayrollProfile::query()->whereNotNull('cost_centre')->where('cost_centre', '!=', '')->distinct()->orderBy('cost_centre')->pluck('cost_centre')->values(),
         ]);
@@ -308,6 +309,10 @@ class PayrollInputController extends Controller
             return back()->withErrors(['pay_code_id' => "{$payCode->code} is calculated by the system and cannot be entered in bulk."]);
         }
 
+        if (($payCode->unit ?? 'AMOUNT') !== 'AMOUNT') {
+            return back()->withErrors(['pay_code_id' => "{$payCode->code} is paid by the hour or unit. Capture it in Hourly input so each employee's own rate is used."]);
+        }
+
         $profiles = $batches->payrollProfiles($period, $validated);
 
         if ($profiles->isEmpty()) {
@@ -392,6 +397,7 @@ class PayrollInputController extends Controller
                     'entered_total' => (float) $batch->entered_total,
                     'entered_count' => (int) $batch->entered_count,
                     'differences' => $batch->metadata['control_differences'] ?? [],
+                    'measure' => $batch->metadata['measure'] ?? 'amount',
                     'status' => $batch->status,
                     'created_by' => $batch->createdBy?->name,
                     'created_at' => optional($batch->created_at)->toDateTimeString(),

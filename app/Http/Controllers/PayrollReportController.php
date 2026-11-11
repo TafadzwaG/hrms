@@ -218,30 +218,57 @@ class PayrollReportController extends BaseReportController
     {
         /** @var PayrollRun $run */
         $run = $this->findTenantModelOrFail(PayrollRun::class, $run);
+
+        // One row per GL account, pay code and cost centre. Hours captured against another
+        // cost centre are charged there; everything else goes to the employee's own.
         $rows = $run->results()
             ->with('lines.payCode')
             ->get()
-            ->flatMap->lines
-            ->groupBy(fn ($line) => $line->code_snapshot.'|'.($line->type ?? ''))
-            ->map(function ($lines) {
-                $first = $lines->first();
-                $debit = $first->type === 'EARNING' ? round((float) $lines->sum('amount'), 2) : 0.0;
-                $credit = $first->type === 'DEDUCTION' ? round((float) $lines->sum('amount'), 2) : 0.0;
+            ->flatMap(function ($result) {
+                return $result->lines->flatMap(function ($line) use ($result) {
+                    $amount = round((float) $line->amount, 2);
+                    $split = collect($line->metadata['cost_centres'] ?? [])->map(fn ($value) => round((float) $value, 2));
+
+                    if ($split->isEmpty()) {
+                        $split = collect([(string) $result->cost_centre_snapshot => $amount]);
+                    }
+
+                    // Keep the line total exact if the split was rounded.
+                    $difference = round($amount - $split->sum(), 2);
+
+                    if ($difference !== 0.0) {
+                        $first = $split->keys()->first();
+                        $split[$first] = round($split[$first] + $difference, 2);
+                    }
+
+                    return $split->map(fn ($value, $centre) => [
+                        'line' => $line,
+                        'cost_centre' => (string) $centre,
+                        'amount' => $value,
+                    ])->values();
+                });
+            })
+            ->groupBy(fn ($item) => $item['line']->code_snapshot.'|'.$item['line']->type.'|'.$item['cost_centre'])
+            ->map(function ($items) {
+                $line = $items->first()['line'];
+                $total = round((float) $items->sum('amount'), 2);
 
                 return [
-                    'gl_account_code' => $first->payCode?->gl_account_code ?? null,
-                    'code' => $first->code_snapshot,
-                    'description' => $first->description_snapshot,
-                    'debit' => $debit,
-                    'credit' => $credit,
+                    'gl_account_code' => $line->payCode?->gl_account_code ?? null,
+                    'cost_centre' => $items->first()['cost_centre'] !== '' ? $items->first()['cost_centre'] : null,
+                    'code' => $line->code_snapshot,
+                    'description' => $line->description_snapshot,
+                    'debit' => $line->type === 'EARNING' ? $total : 0.0,
+                    'credit' => $line->type === 'DEDUCTION' ? $total : 0.0,
                 ];
             })
+            ->sortBy(['code', 'cost_centre'])
             ->values()
             ->all();
 
         $this->recordExport($run, 'JOURNAL', count($rows));
 
-        return $this->exportRows($request, "payroll-journal-run-{$run->run_number}", ['gl_account_code', 'code', 'description', 'debit', 'credit'], $rows);
+        return $this->exportRows($request, "payroll-journal-run-{$run->run_number}", ['gl_account_code', 'cost_centre', 'code', 'description', 'debit', 'credit'], $rows);
     }
 
     /**

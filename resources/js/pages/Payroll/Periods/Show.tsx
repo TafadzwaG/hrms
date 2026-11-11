@@ -39,6 +39,7 @@ import {
     CheckCircle2,
     ChevronRight,
     CircleDollarSign,
+    Clock,
     Download,
     Edit,
     Filter,
@@ -347,6 +348,17 @@ export default function PayrollPeriodShow() {
                             }
                         >
                             <Grid3x3 className="mr-2 h-4 w-4" /> Grid Input
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-11 border-border bg-background font-bold shadow-sm"
+                            onClick={() =>
+                                router.visit(
+                                    `/payroll/periods/${period.id}/hourly`,
+                                )
+                            }
+                        >
+                            <Clock className="mr-2 h-4 w-4" /> Hourly Input
                         </Button>
                         {can('payroll.process') &&
                             (status === 'draft' || status === 'processed') && (

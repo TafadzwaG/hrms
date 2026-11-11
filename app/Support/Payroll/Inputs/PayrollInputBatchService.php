@@ -54,6 +54,21 @@ class PayrollInputBatchService
     }
 
     /**
+     * Add a new input as part of the batch, even when one with the same keys exists.
+     * Used where several lines for the same employee and pay code are expected (hours
+     * captured per day or per cost centre).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function create(PayrollInputBatch $batch, array $attributes): PayrollInput
+    {
+        $input = PayrollInput::query()->create([...$attributes, 'payroll_input_batch_id' => $batch->id]);
+        $this->undo[$batch->id][] = ['op' => 'created', 'id' => $input->id];
+
+        return $input;
+    }
+
+    /**
      * Delete an input as part of the batch, keeping a copy so a reversal can restore it.
      */
     public function remove(PayrollInputBatch $batch, PayrollInput $input): void
@@ -77,7 +92,7 @@ class PayrollInputBatchService
      * $post receives the batch and returns the inputs it wrote (for INSERT) or removed
      * (for DELETE), as a collection of PayrollInput or ['amount' => float] items.
      *
-     * @param  array{source: string, action?: string, description?: string|null, control_total?: float|string|null, control_count?: int|string|null, accept_mismatch?: bool, metadata?: array<string, mixed>}  $options
+     * @param  array{source: string, action?: string, description?: string|null, control_total?: float|string|null, control_count?: int|string|null, accept_mismatch?: bool, measure?: string, metadata?: array<string, mixed>}  $options
      * @param  callable(PayrollInputBatch): Collection<int, mixed>  $post
      */
     public function post(PayrollPeriod $period, User $actor, array $options, callable $post): PayrollInputBatch
@@ -103,13 +118,21 @@ class PayrollInputBatchService
             ]);
 
             $rows = $post($batch);
-            $enteredTotal = round((float) $rows->sum(fn ($row) => $row instanceof PayrollInput ? $row->resolvedAmount() : (float) ($row['amount'] ?? 0)), 2);
+            // Hourly batches are checked on hours (quantity); everything else on amounts.
+            $byQuantity = ($options['measure'] ?? 'amount') === 'quantity';
+            $enteredTotal = round((float) $rows->sum(function ($row) use ($byQuantity) {
+                if ($row instanceof PayrollInput) {
+                    return $byQuantity ? (float) $row->quantity : $row->resolvedAmount();
+                }
+
+                return (float) ($row[$byQuantity ? 'quantity' : 'amount'] ?? 0);
+            }), 2);
             $enteredCount = $rows->count();
 
             $differences = [];
 
             if ($controlTotal !== null && abs($enteredTotal - (float) $controlTotal) > 0.004) {
-                $differences[] = sprintf('amounts total %s, but the control total is %s (difference %s)',
+                $differences[] = sprintf(($byQuantity ? 'hours' : 'amounts').' total %s, but the control total is %s (difference %s)',
                     number_format($enteredTotal, 2), number_format((float) $controlTotal, 2), number_format($enteredTotal - (float) $controlTotal, 2));
             }
 
@@ -130,6 +153,7 @@ class PayrollInputBatchService
                 'metadata' => [
                     ...($batch->metadata ?? []),
                     'control_differences' => $differences,
+                    'measure' => $byQuantity ? 'quantity' : 'amount',
                     'undo' => $this->undo[$batch->id] ?? [],
                 ],
             ]);
