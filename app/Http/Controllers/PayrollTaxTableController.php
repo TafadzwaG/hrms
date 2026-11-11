@@ -77,6 +77,9 @@ class PayrollTaxTableController extends Controller
                 'blind_credit_annual' => $setting->blind_credit_annual !== null ? (float) $setting->blind_credit_annual : null,
                 'disabled_credit_annual' => $setting->disabled_credit_annual !== null ? (float) $setting->disabled_credit_annual : null,
                 'medical_credit_percent' => (float) $setting->medical_credit_percent,
+                'retrenchment_exempt_percent' => $setting->retrenchment_exempt_percent !== null ? (float) $setting->retrenchment_exempt_percent : null,
+                'retrenchment_exempt_minimum' => $setting->retrenchment_exempt_minimum !== null ? (float) $setting->retrenchment_exempt_minimum : null,
+                'retrenchment_exempt_cap' => $setting->retrenchment_exempt_cap !== null ? (float) $setting->retrenchment_exempt_cap : null,
                 'source' => $setting->source,
                 'verified_at' => optional($setting->verified_at)->toDateTimeString(),
             ]);
@@ -294,6 +297,9 @@ class PayrollTaxTableController extends Controller
             'blind_credit_annual' => ['nullable', 'numeric', 'min:0'],
             'disabled_credit_annual' => ['nullable', 'numeric', 'min:0'],
             'medical_credit_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            'retrenchment_exempt_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'retrenchment_exempt_minimum' => ['nullable', 'numeric', 'min:0'],
+            'retrenchment_exempt_cap' => ['nullable', 'numeric', 'min:0'],
             'source' => ['nullable', 'string', 'max:255'],
             'verified' => ['nullable', 'boolean'],
         ]);
@@ -316,6 +322,9 @@ class PayrollTaxTableController extends Controller
             'blind_credit_annual' => $amount('blind_credit_annual'),
             'disabled_credit_annual' => $amount('disabled_credit_annual'),
             'medical_credit_percent' => $data['medical_credit_percent'],
+            'retrenchment_exempt_percent' => $amount('retrenchment_exempt_percent'),
+            'retrenchment_exempt_minimum' => $amount('retrenchment_exempt_minimum'),
+            'retrenchment_exempt_cap' => $amount('retrenchment_exempt_cap'),
             'source' => $data['source'] ?? null,
             ...$this->verification((bool) ($data['verified'] ?? false), $request),
         ];

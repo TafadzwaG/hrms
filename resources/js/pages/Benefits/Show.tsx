@@ -53,9 +53,15 @@ type PlanRecord = {
     id: number;
     name: string;
     code: string;
-    employer_contribution: string | number | null;
-    employee_contribution: string | number | null;
-    coverage_details: string | null;
+    employer_contribution_type: string | null;
+    employer_contribution_value: string | number | null;
+    employee_contribution_type: string | null;
+    employee_contribution_value: string | number | null;
+    coverage_limit: string | number | null;
+    rate_member: string | number | null;
+    rate_spouse: string | number | null;
+    rate_child: string | number | null;
+    rate_other_dependant: string | number | null;
     active: boolean;
 };
 
@@ -108,6 +114,7 @@ type BenefitPayload = {
     requires_dependants: boolean;
     requires_plan_selection: boolean;
     payroll_deductible: boolean;
+    payroll_type?: string;
     effective_from: string | null;
     effective_to: string | null;
     plans: PlanRecord[];
@@ -200,9 +207,13 @@ export default function BenefitShow() {
     const planForm = useForm({
         name: '',
         code: '',
-        employer_contribution: '',
-        employee_contribution: '',
-        coverage_details: '',
+        employer_contribution_type: 'percentage',
+        employer_contribution_value: '',
+        coverage_limit: '',
+        rate_member: '',
+        rate_spouse: '',
+        rate_child: '',
+        rate_other_dependant: '',
     });
 
     const ruleForm = useForm({
@@ -385,6 +396,7 @@ export default function BenefitShow() {
                                         { label: 'Requires Dependants', value: benefit.requires_dependants },
                                         { label: 'Requires Plan Selection', value: benefit.requires_plan_selection },
                                         { label: 'Payroll Deductible', value: benefit.payroll_deductible },
+                                        { label: `Payroll: ${(benefit.payroll_type ?? 'NONE').toLowerCase()}`, value: (benefit.payroll_type ?? 'NONE') !== 'NONE' },
                                     ].map((flag, index) => (
                                         <div key={index} className="flex items-center gap-2 rounded-lg border border-zinc-100 p-3">
                                             {flag.value ? (
@@ -429,9 +441,9 @@ export default function BenefitShow() {
                                     <TableRow>
                                         <TableHead className="font-bold text-zinc-900">Code</TableHead>
                                         <TableHead className="font-bold text-zinc-900">Name</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Employer Contrib.</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Employee Contrib.</TableHead>
-                                        <TableHead className="font-bold text-zinc-900">Coverage</TableHead>
+                                        <TableHead className="font-bold text-zinc-900">Rates per person (member / spouse / child / other)</TableHead>
+                                        <TableHead className="font-bold text-zinc-900">Employer share</TableHead>
+                                        <TableHead className="font-bold text-zinc-900">Cover limit</TableHead>
                                         <TableHead className="font-bold text-zinc-900">Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -445,9 +457,19 @@ export default function BenefitShow() {
                                             <TableRow key={plan.id} className="hover:bg-zinc-50/50">
                                                 <TableCell className="font-mono text-xs text-zinc-500">{plan.code}</TableCell>
                                                 <TableCell className="font-bold text-zinc-900">{plan.name}</TableCell>
-                                                <TableCell>{formatMoney(plan.employer_contribution)}</TableCell>
-                                                <TableCell>{formatMoney(plan.employee_contribution)}</TableCell>
-                                                <TableCell className="max-w-[200px] truncate text-zinc-500">{plan.coverage_details ?? '---'}</TableCell>
+                                                <TableCell className="font-mono text-xs">
+                                                    {plan.rate_member === null
+                                                        ? 'Fixed amounts on each enrolment'
+                                                        : [plan.rate_member, plan.rate_spouse, plan.rate_child, plan.rate_other_dependant]
+                                                              .map((rate) => formatMoney(rate))
+                                                              .join(' / ')}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {plan.employer_contribution_type === 'percentage'
+                                                        ? `${Number(plan.employer_contribution_value ?? 0)}% of premium`
+                                                        : formatMoney(plan.employer_contribution_value)}
+                                                </TableCell>
+                                                <TableCell className="text-zinc-500">{formatMoney(plan.coverage_limit)}</TableCell>
                                                 <TableCell>
                                                     <Badge variant="outline" className={`${plan.active ? statusStyles.active : statusStyles.draft} font-semibold`}>
                                                         {plan.active ? 'Active' : 'Inactive'}
@@ -638,34 +660,73 @@ export default function BenefitShow() {
                             />
                             <FieldError message={planForm.errors.name} />
                         </div>
+                        <div className="space-y-2 rounded-lg border border-zinc-200 p-3">
+                            <FieldLabel>Monthly premium per person</FieldLabel>
+                            <p className="text-xs text-zinc-500">
+                                Used by payroll: the premium is the member rate plus a rate for each covered dependant.
+                                Leave the member rate empty to use fixed amounts on each enrolment instead.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                {(
+                                    [
+                                        ['rate_member', 'Member'],
+                                        ['rate_spouse', 'Spouse'],
+                                        ['rate_child', 'Child (under 18 or student)'],
+                                        ['rate_other_dependant', 'Other dependant'],
+                                    ] as const
+                                ).map(([field, label]) => (
+                                    <div key={field} className="space-y-1">
+                                        <span className="text-xs font-medium text-zinc-600">{label}</span>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            value={planForm.data[field]}
+                                            onChange={(e) => planForm.setData(field, e.target.value)}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <FieldLabel>Employer Contribution</FieldLabel>
-                                <Input
-                                    type="number"
-                                    step="0.01"
-                                    value={planForm.data.employer_contribution}
-                                    onChange={(e) => planForm.setData('employer_contribution', e.target.value)}
-                                    placeholder="0.00"
-                                />
+                                <FieldLabel>Employer pays</FieldLabel>
+                                <Select
+                                    value={planForm.data.employer_contribution_type}
+                                    onValueChange={(v) => planForm.setData('employer_contribution_type', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="percentage">% of the premium</SelectItem>
+                                        <SelectItem value="fixed">Fixed amount</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-1">
-                                <FieldLabel>Employee Contribution</FieldLabel>
+                                <FieldLabel>Employer share</FieldLabel>
                                 <Input
                                     type="number"
                                     step="0.01"
-                                    value={planForm.data.employee_contribution}
-                                    onChange={(e) => planForm.setData('employee_contribution', e.target.value)}
-                                    placeholder="0.00"
+                                    min="0"
+                                    value={planForm.data.employer_contribution_value}
+                                    onChange={(e) => planForm.setData('employer_contribution_value', e.target.value)}
+                                    placeholder={planForm.data.employer_contribution_type === 'percentage' ? 'e.g. 50' : '0.00'}
                                 />
+                                <FieldError message={planForm.errors.employer_contribution_value} />
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <FieldLabel>Coverage Details</FieldLabel>
+                            <FieldLabel>Cover limit</FieldLabel>
                             <Input
-                                value={planForm.data.coverage_details}
-                                onChange={(e) => planForm.setData('coverage_details', e.target.value)}
-                                placeholder="Describe coverage..."
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={planForm.data.coverage_limit}
+                                onChange={(e) => planForm.setData('coverage_limit', e.target.value)}
+                                placeholder="0.00"
                             />
                         </div>
                         <AlertDialogFooter>

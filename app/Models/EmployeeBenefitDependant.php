@@ -28,6 +28,7 @@ class EmployeeBenefitDependant extends Model
         'full_name',
         'relationship',
         'date_of_birth',
+        'is_student',
         'national_id',
         'contact_number',
         'effective_date',
@@ -38,6 +39,7 @@ class EmployeeBenefitDependant extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'is_student' => 'boolean',
         'effective_date' => 'date',
         'end_date' => 'date',
     ];

@@ -121,8 +121,8 @@ class BenefitController extends Controller
             'plans',
             'enrollments.employee:id,first_name,surname,staff_number',
             'contributionRules',
-            'createdBy:id,name',
-            'updatedBy:id,name',
+            'creator:id,name',
+            'updater:id,name',
         ]);
 
         return Inertia::render('Benefits/Show', [
@@ -195,6 +195,7 @@ class BenefitController extends Controller
             'requires_dependants' => ['nullable', 'boolean'],
             'requires_plan_selection' => ['nullable', 'boolean'],
             'payroll_deductible' => ['nullable', 'boolean'],
+            'payroll_type' => ['nullable', Rule::in(Benefit::PAYROLL_TYPES)],
             'active' => ['nullable', 'boolean'],
             'effective_from' => ['nullable', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
@@ -233,11 +234,12 @@ class BenefitController extends Controller
             'requires_dependants' => $benefit->requires_dependants,
             'requires_plan_selection' => $benefit->requires_plan_selection,
             'payroll_deductible' => $benefit->payroll_deductible,
+            'payroll_type' => $benefit->payroll_type ?: 'NONE',
             'effective_from' => optional($benefit->effective_from)->toDateString(),
             'effective_to' => optional($benefit->effective_to)->toDateString(),
             'metadata' => $benefit->metadata,
-            'created_by' => $benefit->createdBy ? ['id' => $benefit->createdBy->id, 'name' => $benefit->createdBy->name] : null,
-            'updated_by' => $benefit->updatedBy ? ['id' => $benefit->updatedBy->id, 'name' => $benefit->updatedBy->name] : null,
+            'created_by' => $benefit->creator ? ['id' => $benefit->creator->id, 'name' => $benefit->creator->name] : null,
+            'updated_by' => $benefit->updater ? ['id' => $benefit->updater->id, 'name' => $benefit->updater->name] : null,
             'created_at' => optional($benefit->created_at)->toDateTimeString(),
             'plans' => $benefit->relationLoaded('plans') ? $benefit->plans->map(fn ($plan) => [
                 'id' => $plan->id,
@@ -249,6 +251,10 @@ class BenefitController extends Controller
                 'employee_contribution_type' => $plan->employee_contribution_type,
                 'employee_contribution_value' => $plan->employee_contribution_value,
                 'coverage_limit' => $plan->coverage_limit,
+                'rate_member' => $plan->rate_member,
+                'rate_spouse' => $plan->rate_spouse,
+                'rate_child' => $plan->rate_child,
+                'rate_other_dependant' => $plan->rate_other_dependant,
             ])->values()->all() : [],
             'enrollments' => $benefit->relationLoaded('enrollments') ? $benefit->enrollments->map(fn ($enrollment) => [
                 'id' => $enrollment->id,

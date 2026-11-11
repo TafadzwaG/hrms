@@ -110,6 +110,11 @@ class BenefitPlanController extends Controller
             'employee_contribution_type' => ['nullable', 'string', Rule::in(Benefit::CONTRIBUTION_TYPES)],
             'employee_contribution_value' => ['nullable', 'numeric', 'min:0'],
             'coverage_limit' => ['nullable', 'numeric', 'min:0'],
+            // Monthly premium per covered person; used for payroll when rate_member is set.
+            'rate_member' => ['nullable', 'numeric', 'min:0'],
+            'rate_spouse' => ['nullable', 'numeric', 'min:0'],
+            'rate_child' => ['nullable', 'numeric', 'min:0'],
+            'rate_other_dependant' => ['nullable', 'numeric', 'min:0'],
         ]);
     }
 
@@ -127,6 +132,10 @@ class BenefitPlanController extends Controller
             'employee_contribution_type' => $plan->employee_contribution_type,
             'employee_contribution_value' => $plan->employee_contribution_value,
             'coverage_limit' => $plan->coverage_limit,
+            'rate_member' => $plan->rate_member,
+            'rate_spouse' => $plan->rate_spouse,
+            'rate_child' => $plan->rate_child,
+            'rate_other_dependant' => $plan->rate_other_dependant,
             'enrollments_count' => $plan->enrollments_count ?? 0,
             'updated_at' => optional($plan->updated_at)->toDateTimeString(),
             'links' => [

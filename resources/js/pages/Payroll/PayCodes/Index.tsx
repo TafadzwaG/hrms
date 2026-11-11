@@ -839,6 +839,11 @@ export default function PayrollPayCodesIndex() {
                                                     Bonus: irregular, tax-free
                                                     amount applies
                                                 </SelectItem>
+                                                <SelectItem value="RETRENCHMENT">
+                                                    Retrenchment: irregular,
+                                                    retrenchment exemption
+                                                    applies
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     ) : (

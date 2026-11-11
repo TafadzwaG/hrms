@@ -72,6 +72,9 @@ type TaxSetting = {
     blind_credit_annual: number | null;
     disabled_credit_annual: number | null;
     medical_credit_percent: number;
+    retrenchment_exempt_percent: number | null;
+    retrenchment_exempt_minimum: number | null;
+    retrenchment_exempt_cap: number | null;
     source: string | null;
     verified_at: string | null;
 };
@@ -99,6 +102,9 @@ type SettingForm = {
     blind_credit_annual: string;
     disabled_credit_annual: string;
     medical_credit_percent: string;
+    retrenchment_exempt_percent: string;
+    retrenchment_exempt_minimum: string;
+    retrenchment_exempt_cap: string;
     source: string;
     verified: boolean;
 };
@@ -159,6 +165,9 @@ export default function PayrollTaxTablesIndex() {
         blind_credit_annual: '',
         disabled_credit_annual: '',
         medical_credit_percent: '50',
+        retrenchment_exempt_percent: '',
+        retrenchment_exempt_minimum: '',
+        retrenchment_exempt_cap: '',
         source: '',
         verified: false,
     });
@@ -226,6 +235,15 @@ export default function PayrollTaxTablesIndex() {
             ),
             medical_credit_percent: String(
                 setting?.medical_credit_percent ?? 50,
+            ),
+            retrenchment_exempt_percent: text(
+                setting?.retrenchment_exempt_percent ?? null,
+            ),
+            retrenchment_exempt_minimum: text(
+                setting?.retrenchment_exempt_minimum ?? null,
+            ),
+            retrenchment_exempt_cap: text(
+                setting?.retrenchment_exempt_cap ?? null,
             ),
             source: setting?.source ?? '',
             verified: !!setting?.verified_at,
@@ -388,6 +406,17 @@ export default function PayrollTaxTablesIndex() {
                                             value={money(
                                                 setting.disabled_credit_annual,
                                             )}
+                                        />
+                                        <Fact
+                                            label="Retrenchment exemption"
+                                            value={
+                                                setting.retrenchment_exempt_percent ===
+                                                    null &&
+                                                setting.retrenchment_exempt_minimum ===
+                                                    null
+                                                    ? 'Not entered'
+                                                    : `Greater of ${setting.retrenchment_exempt_percent ?? 0}% or ${money(setting.retrenchment_exempt_minimum)}, capped at ${money(setting.retrenchment_exempt_cap)}`
+                                            }
                                         />
                                     </dl>
                                     {setting.source && (
@@ -959,6 +988,69 @@ export default function PayrollTaxTablesIndex() {
                                     )
                                 }
                             />
+                            <div className="space-y-3 rounded-lg border border-border p-4 sm:col-span-2">
+                                <p className="text-sm font-bold text-foreground">
+                                    Retrenchment exemption
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    Tax-free part of a retrenchment package: the
+                                    greater of the share or the minimum, but no
+                                    more than the cap for the tax year.
+                                </p>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                    <AmountField
+                                        label="Share of package (%)"
+                                        value={
+                                            settingForm.data
+                                                .retrenchment_exempt_percent
+                                        }
+                                        error={
+                                            settingForm.errors
+                                                .retrenchment_exempt_percent
+                                        }
+                                        onChange={(v) =>
+                                            settingForm.setData(
+                                                'retrenchment_exempt_percent',
+                                                v,
+                                            )
+                                        }
+                                    />
+                                    <AmountField
+                                        label="Minimum exempt"
+                                        value={
+                                            settingForm.data
+                                                .retrenchment_exempt_minimum
+                                        }
+                                        error={
+                                            settingForm.errors
+                                                .retrenchment_exempt_minimum
+                                        }
+                                        onChange={(v) =>
+                                            settingForm.setData(
+                                                'retrenchment_exempt_minimum',
+                                                v,
+                                            )
+                                        }
+                                    />
+                                    <AmountField
+                                        label="Cap"
+                                        value={
+                                            settingForm.data
+                                                .retrenchment_exempt_cap
+                                        }
+                                        error={
+                                            settingForm.errors
+                                                .retrenchment_exempt_cap
+                                        }
+                                        onChange={(v) =>
+                                            settingForm.setData(
+                                                'retrenchment_exempt_cap',
+                                                v,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
                             <div className="sm:col-span-2">
                                 <Field
                                     label="Source"

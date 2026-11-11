@@ -3,6 +3,7 @@
 namespace App\Support\Payroll\Inputs;
 
 use App\Models\EmployeePayrollProfile;
+use App\Support\Payroll\PayrollRoster;
 use App\Models\PayrollInput;
 use App\Models\PayrollInputBatch;
 use App\Models\PayrollPeriod;
@@ -238,8 +239,7 @@ class PayrollInputBatchService
     }
 
     /**
-     * Employees who will be in this period's payroll run: an active profile effective at
-     * the period end, optionally narrowed to departments, cost centres or named employees.
+     * Employees who will be in this period's payroll run (see PayrollRoster), optionally narrowed to departments, cost centres or named employees.
      *
      * @param  array{org_unit_ids?: array<int, int|string>, cost_centres?: array<int, string>, employee_ids?: array<int, int|string>}  $filters
      * @return Collection<int, EmployeePayrollProfile>
@@ -250,16 +250,7 @@ class PayrollInputBatchService
         $costCentres = collect($filters['cost_centres'] ?? [])->filter()->map(fn ($value) => (string) $value)->values();
         $employees = collect($filters['employee_ids'] ?? [])->filter()->map(fn ($id) => (int) $id)->values();
 
-        return EmployeePayrollProfile::query()
-            ->forOrganization((int) $period->organization_id)
-            ->with(['employee.orgUnit'])
-            ->where('active', true)
-            ->where('employment_status', 'ACTIVE')
-            ->effectiveFor(optional($period->period_end)->toDateString() ?: now()->toDateString())
-            ->whereHas('employee', fn ($query) => $query->where('status', 'ACTIVE'))
-            ->orderByDesc('effective_from')
-            ->get()
-            ->unique('employee_id')
+        return PayrollRoster::profiles($period)
             ->filter(function (EmployeePayrollProfile $profile) use ($orgUnits, $costCentres, $employees) {
                 if ($orgUnits->isNotEmpty() && ! $orgUnits->contains((int) $profile->employee?->org_unit_id)) {
                     return false;

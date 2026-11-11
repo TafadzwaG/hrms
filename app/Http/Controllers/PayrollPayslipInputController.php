@@ -107,7 +107,8 @@ class PayrollPayslipInputController extends Controller
                 'tax' => round((float) $previewTax, 2),
                 'total_deductions' => (float) $preview['result']['total_deductions'],
                 'net_pay' => (float) $preview['result']['net_pay'],
-                'lines' => collect($preview['lines'])->map(fn ($line) => [
+                'employer_cost' => round((float) collect($preview['lines'])->where('type', 'EMPLOYER')->sum('amount'), 2),
+                'lines' => collect($preview['lines'])->where('type', '!=', 'EMPLOYER')->map(fn ($line) => [
                     'code' => $line['code_snapshot'],
                     'description' => $line['description_snapshot'],
                     'type' => $line['type'],

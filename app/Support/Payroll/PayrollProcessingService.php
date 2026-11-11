@@ -22,6 +22,7 @@ class PayrollProcessingService
         private readonly PayrollCalculationService $calculationService,
         private readonly PayrollSettlementService $settlementService,
         private readonly AuditLogger $auditLogger,
+        private readonly BenefitPayrollService $benefitPayroll,
     ) {
     }
 
@@ -36,17 +37,7 @@ class PayrollProcessingService
         $organizationId = (int) $period->organization_id;
         $payCodes = $this->catalogueSynchronizer->sync($organizationId)->keyBy('code');
 
-        $periodDate = optional($period->period_end)->toDateString() ?: now()->toDateString();
-        $profiles = EmployeePayrollProfile::query()
-            ->forOrganization($organizationId)
-            ->with(['employee.orgUnit', 'employee.position', 'employee.location'])
-            ->where('active', true)
-            ->where('employment_status', 'ACTIVE')
-            ->effectiveFor($periodDate)
-            ->orderByDesc('effective_from')
-            ->get()
-            ->unique('employee_id')
-            ->keyBy('employee_id');
+        $profiles = PayrollRoster::profiles($period);
 
         if ($profiles->isEmpty()) {
             throw ValidationException::withMessages([
@@ -86,11 +77,12 @@ class PayrollProcessingService
             $warnings = [];
 
             $yearToDate = $this->yearToDate($period, $organizationId);
+            $benefits = $this->benefitPayroll->linesFor($period, $profiles->keys());
 
             foreach ($profiles as $employeeId => $profile) {
                 $employee = $profile->employee;
 
-                if (! $employee instanceof Employee || $employee->status !== 'ACTIVE') {
+                if (! $employee instanceof Employee) {
                     continue;
                 }
 
@@ -105,6 +97,7 @@ class PayrollProcessingService
                     $inputs,
                     $timesheets,
                     $yearToDate[$employeeId] ?? [],
+                    $benefits[$employeeId] ?? [],
                 );
 
                 foreach ($calculated['tax_warnings'] as $warning) {
@@ -406,15 +399,7 @@ class PayrollProcessingService
      */
     public function profileFor(PayrollPeriod $period, int $employeeId): ?EmployeePayrollProfile
     {
-        return EmployeePayrollProfile::query()
-            ->forOrganization((int) $period->organization_id)
-            ->with(['employee.orgUnit', 'employee.position'])
-            ->where('employee_id', $employeeId)
-            ->where('active', true)
-            ->where('employment_status', 'ACTIVE')
-            ->effectiveFor(optional($period->period_end)->toDateString() ?: now()->toDateString())
-            ->orderByDesc('effective_from')
-            ->first();
+        return PayrollRoster::profiles($period, $employeeId)->first();
     }
 
     /**
@@ -473,6 +458,7 @@ class PayrollProcessingService
             $inputs,
             $timesheets,
             $this->yearToDate($period, $organizationId)[$employee->id] ?? [],
+            $this->benefitPayroll->linesFor($period, collect([$employee->id]))[$employee->id] ?? [],
         );
 
         $settlements = [];
@@ -522,6 +508,7 @@ class PayrollProcessingService
                 'regular_taxable' => (float) $rows->sum('regular_taxable'),
                 'irregular_taxable' => (float) $rows->sum('irregular_taxable'),
                 'bonus_exempt' => (float) $rows->sum('bonus_exempt'),
+                'retrenchment_exempt' => (float) $rows->sum('retrenchment_exempt'),
                 'medical' => (float) $rows->sum('medical_contributions'),
                 'credits' => (float) $rows->sum('credits_applied'),
                 'paye' => (float) $rows->sum('paye'),
